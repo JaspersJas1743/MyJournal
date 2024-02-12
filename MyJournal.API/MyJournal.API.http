@@ -1,6 +1,6 @@
 @MyJournal.API_HostAddress = http://localhost:5056
 
-GET {{MyJournal.API_HostAddress}}/weatherforecast/
+GET {{MyJournal.API_HostAddress}}/api/WeatherForecast/
 Accept: application/json
 
 ###

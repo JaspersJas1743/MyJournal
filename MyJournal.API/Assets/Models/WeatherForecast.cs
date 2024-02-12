@@ -1,4 +1,4 @@
-namespace MyJournal.API;
+namespace MyJournal.API.Assets.Models;
 
 public class WeatherForecast
 {
