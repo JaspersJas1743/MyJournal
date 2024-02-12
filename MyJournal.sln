@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.Core", "MyJournal.Core\MyJournal.Core.csproj", "{544928FA-7D55-4538-98AA-09C8AAFA7886}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.API", "MyJournal.API\MyJournal.API.csproj", "{455752B9-B663-47B2-B573-14FDF0699629}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{544928FA-7D55-4538-98AA-09C8AAFA7886}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{544928FA-7D55-4538-98AA-09C8AAFA7886}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{544928FA-7D55-4538-98AA-09C8AAFA7886}.Release|Any CPU.Build.0 = Release|Any CPU
+		{455752B9-B663-47B2-B573-14FDF0699629}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{455752B9-B663-47B2-B573-14FDF0699629}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{455752B9-B663-47B2-B573-14FDF0699629}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{455752B9-B663-47B2-B573-14FDF0699629}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
