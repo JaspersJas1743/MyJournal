@@ -33,6 +33,8 @@ public partial class User
 
     public string? LinkToPhoto { get; set; }
 
+    public int UserRoleId { get; set; }
+
     public virtual ICollection<Administrator> Administrators { get; set; } = new List<Administrator>();
 
     public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
@@ -48,6 +50,8 @@ public partial class User
     public virtual ICollection<Teacher> Teachers { get; set; } = new List<Teacher>();
 
     public virtual UserActivityStatus UserActivityStatus { get; set; } = null!;
+
+    public virtual UserRole UserRole { get; set; } = null!;
 
     public virtual ICollection<Chat> ChatsNavigation { get; set; } = new List<Chat>();
 }

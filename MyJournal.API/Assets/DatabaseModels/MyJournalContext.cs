@@ -79,6 +79,8 @@ public partial class MyJournalContext : DbContext
 
     public virtual DbSet<UserActivityStatus> UserActivityStatuses { get; set; }
 
+    public virtual DbSet<UserRole> UserRoles { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Administrator>(entity =>
@@ -741,6 +743,11 @@ public partial class MyJournalContext : DbContext
                 .HasForeignKey(d => d.UserActivityStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Users__UserActiv__08B54D69");
+
+            entity.HasOne(d => d.UserRole).WithMany(p => p.Users)
+                .HasForeignKey(d => d.UserRoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Users__UserRoleI__08B54D69");
         });
 
         modelBuilder.Entity<UserActivityStatus>(entity =>
@@ -755,6 +762,16 @@ public partial class MyJournalContext : DbContext
             entity.HasIndex(e => e.ActivityStatus, "UQ__UserActi__121B440BD047BE26").IsUnique();
 
             entity.Property(e => e.ActivityStatus).HasMaxLength(7);
+        });
+
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.Property(e => e.Role).HasMaxLength(13);
+
+            entity.Property(e => e.Role).HasConversion(
+                v => v.ToString(),
+                v => Enum.Parse<UserRoles>(v)
+            );
         });
 
         OnModelCreatingPartial(modelBuilder);
