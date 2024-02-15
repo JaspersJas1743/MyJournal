@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace MyJournal.API.Assets.Security.JWT;
 
-public class JwtOptions
+public sealed class JwtOptions
 {
 	public string SecretKey { get; set; } = null!;
 	public SymmetricSecurityKey SymmetricKey { get; set; } = null!;

@@ -1,6 +1,6 @@
 namespace MyJournal.API.Assets.Security.Hash;
 
-public class BCryptHashService : IHashService
+public sealed class BCryptHashService : IHashService
 {
 	public string Generate(string toHash)
 		=> BCrypt.Net.BCrypt.HashPassword(inputKey: toHash);

@@ -24,6 +24,7 @@
         <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.300" />
         <PackageReference Include="AWSSDK.S3" Version="3.7.305.25" />
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+        <PackageReference Include="FluentValidation" Version="11.9.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
@@ -42,6 +43,7 @@
       <Folder Include="Assets\Controllers\" />
       <Folder Include="Assets\DatabaseModels\" />
       <Folder Include="Assets\Models\" />
+      <Folder Include="Assets\Validation\Validators\" />
     </ItemGroup>
 
 </Project>

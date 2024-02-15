@@ -15,6 +15,7 @@ using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
 using MyJournal.API.Assets.Utilities;
+using MyJournal.API.Assets.Validation;
 
 namespace MyJournal.API;
 
@@ -48,12 +49,14 @@ public class Program
 		builder.Services.AddAWSService<IAmazonS3>(options: awsOptions);
 		builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
-		builder.Services.AddControllers().AddJsonOptions(configure: options =>
-		{
-			options.JsonSerializerOptions.WriteIndented = true;
-			options.JsonSerializerOptions.PropertyNamingPolicy = null;
-			options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-		});
+		builder.Services.AddControllers(
+			configure: options => options.AddAutoValidation()
+			).AddJsonOptions(configure: options =>
+			{
+				options.JsonSerializerOptions.WriteIndented = true;
+				options.JsonSerializerOptions.PropertyNamingPolicy = null;
+				options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+			});
 
 		builder.Services.AddEndpointsApiExplorer();
 

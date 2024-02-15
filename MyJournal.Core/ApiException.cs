@@ -6,7 +6,7 @@ namespace MyJournal.Core;
 public record Error(string Message);
 
 [Serializable]
-public class ApiException : Exception
+public sealed class ApiException : Exception
 {
 	private static HttpStatusCode[] _handlers = new HttpStatusCode[]
 	{
