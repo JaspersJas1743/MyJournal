@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.S3;
+using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
 using MyJournal.API.Assets.Utilities;
 
@@ -163,6 +164,8 @@ public class Program
 					   ValidateLifetime = false
 				   };
 			   });
+
+		builder.Services.AddScoped<IHashService, BCryptHashService>();
 
 		WebApplication app = builder.Build();
 
