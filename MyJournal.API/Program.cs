@@ -1,14 +1,19 @@
-using System.Diagnostics;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text.Json.Serialization;
-using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.S3;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.S3;
+using MyJournal.API.Assets.Security.JWT;
 using MyJournal.API.Assets.Utilities;
 
 namespace MyJournal.API;
@@ -33,7 +38,7 @@ public class Program
 			setupAction: options => options.Configuration = redisConnectionString
 		);
 
-		S3Configuration? configuration = builder.Configuration.GetS3Configuration();
+		S3Options? configuration = builder.Configuration.GetS3Options();
 		AWSOptions awsOptions = new AWSOptions
 		{
 			DefaultClientConfig = { ServiceURL = configuration?.Endpoint },
@@ -52,7 +57,38 @@ public class Program
 
 		builder.Services.AddEndpointsApiExplorer();
 
-		builder.Services.AddSwaggerGen();
+		builder.Services.AddSwaggerGen(setupAction: options =>
+		{
+			options.SwaggerDoc(name: "v1", info: new OpenApiInfo()
+			{
+				Description = "Документация к API приложения MyJournal",
+				Version = "v1",
+				Title = "MyJournal API"
+			});
+			options.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme()
+			{
+				In = ParameterLocation.Header,
+				Description = "Введите jwt-токен в формате: Bearer <токен>",
+				Name = "Authorization",
+				Type = SecuritySchemeType.ApiKey,
+				Scheme = JwtBearerDefaults.AuthenticationScheme
+			});
+			options.AddSecurityRequirement(securityRequirement: new OpenApiSecurityRequirement {
+			{
+				new OpenApiSecurityScheme
+				{
+					Reference = new OpenApiReference
+					{
+						Type = ReferenceType.SecurityScheme,
+						Id = "Bearer"
+					}
+				},
+				new string[] { }
+			}});
+
+			var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+			options.IncludeXmlComments(filePath: Path.Combine(path1: AppContext.BaseDirectory, path2: xmlFilename));
+		});
 
 		builder.Services.AddHealthChecks()
 			   .AddSqlServer(
@@ -74,11 +110,33 @@ public class Program
 					   };
 				   },
 				   name: "MyJournal AWS S3",
-				   tags: new string[] { "aws s3", "s3", "aws" });
+				   tags: new string[] { "aws s3", "s3", "aws" })
+			   .AddDbContextCheck<MyJournalContext>(
+				   name: "MyJournal DB Context",
+				   tags: new string[] { "context", "db-context", "database" });
 
 		string healthDbConnectionString = builder.Configuration.GetConnectionString(name: "MyJournalHealthDB")
 			?? throw new ArgumentException(message: "Строка подключения к MyJournalHealthDB отсутствует или некорректна", paramName: nameof(healthDbConnectionString));
 		builder.Services.AddHealthChecksUI().AddSqlServerStorage(connectionString: healthDbConnectionString);
+
+		JwtOptions jwtOptions = builder.Configuration.GetJwtOptions();
+		builder.Services.AddSingleton<JwtOptions>(implementationInstance: jwtOptions);
+		builder.Services.AddScoped<IJwtService, JwtService>();
+
+		builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
+			   .AddJwtBearer(configureOptions: options =>
+			   {
+				   options.TokenValidationParameters = new TokenValidationParameters()
+				   {
+					   ValidIssuer = jwtOptions.Issuer,
+					   ValidateIssuer = true,
+					   ValidAudience = jwtOptions.Audience,
+					   ValidateAudience = true,
+					   IssuerSigningKey = jwtOptions.SymmetricKey,
+					   ValidateIssuerSigningKey = true,
+					   ValidateLifetime = false
+				   };
+			   });
 
 		WebApplication app = builder.Build();
 
@@ -88,17 +146,20 @@ public class Program
 			app.UseSwaggerUI();
 		}
 
-		app.UseHttpsRedirection();
-
 		app.MapHealthChecks(pattern: "/health", options: CreateHealthCheckOptions(predicate: _ => true));
 		app.MapHealthChecks(pattern: "/health/db", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "db")));
 		app.MapHealthChecks(pattern: "/health/redis", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "redis")));
 		app.MapHealthChecks(pattern: "/health/s3", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "s3")));
 		app.MapHealthChecks(pattern: "/health/aws", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "aws")));
+		app.MapHealthChecks(pattern: "/health/context", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "context")));
 
 		// добавить SignalR
 
 		app.MapHealthChecksUI(options => options.UIPath = "/health-ui");
+
+		app.UseAuthentication();
+
+		app.UseHttpsRedirection();
 
 		app.UseAuthorization();
 
