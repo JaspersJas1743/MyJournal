@@ -1,10 +1,9 @@
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.S3;
-using Microsoft.AspNetCore.Authentication.BearerToken;
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
@@ -123,6 +122,33 @@ public class Program
 		builder.Services.AddSingleton<JwtOptions>(implementationInstance: jwtOptions);
 		builder.Services.AddScoped<IJwtService, JwtService>();
 
+		builder.Services.AddMemoryCache();
+		builder.Services.Configure<IpRateLimitOptions>(options =>
+		{
+			options.EnableEndpointRateLimiting = true;
+			options.StackBlockedRequests = false;
+			options.HttpStatusCode = StatusCodes.Status429TooManyRequests;
+			options.RealIpHeader = "X-Real-IP";
+			options.ClientIdHeader = "X-ClientId";
+			options.GeneralRules = new List<RateLimitRule>
+			{
+				new RateLimitRule
+				{
+					Endpoint = "*",
+					PeriodTimespan = TimeSpan.FromSeconds(value: 1),
+					Limit = 10,
+				}
+			};
+		});
+
+		builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+		builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+		builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+		builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+		builder.Services.AddInMemoryRateLimiting();
+
+		builder.Services.AddAuthorization();
+
 		builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
 			   .AddJwtBearer(configureOptions: options =>
 			   {
@@ -156,6 +182,8 @@ public class Program
 		// добавить SignalR
 
 		app.MapHealthChecksUI(options => options.UIPath = "/health-ui");
+
+		app.UseIpRateLimiting();
 
 		app.UseAuthentication();
 
