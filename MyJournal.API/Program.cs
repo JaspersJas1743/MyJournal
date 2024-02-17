@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Amazon.Extensions.NETCore.Setup;
@@ -6,11 +7,13 @@ using Amazon.S3;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyJournal.API.Assets.DatabaseModels;
+using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
@@ -116,7 +119,11 @@ public class Program
 				   tags: new string[] { "aws s3", "s3", "aws" })
 			   .AddDbContextCheck<MyJournalContext>(
 				   name: "MyJournal DB Context",
-				   tags: new string[] { "context", "db-context", "database" });
+				   tags: new string[] { "context", "db-context", "database" })
+			   .AddSignalRHub(
+				   url: $"https://localhost:7267/offers",
+				   name: "SignalR",
+				   tags: new string[] { "signalR", "message-hub"});
 
 		string healthDbConnectionString = builder.Configuration.GetConnectionString(name: "MyJournalHealthDB")
 			?? throw new ArgumentException(message: "Строка подключения к MyJournalHealthDB отсутствует или некорректна", paramName: nameof(healthDbConnectionString));
@@ -170,6 +177,15 @@ public class Program
 
 		builder.Services.AddScoped<IHashService, BCryptHashService>();
 
+		builder.Services.AddSignalR();
+		builder.Services.AddCors(options => options.AddPolicy(name: "CORSPolicy", configurePolicy: policyBuilder =>
+		{
+			policyBuilder.AllowAnyMethod();
+			policyBuilder.AllowAnyHeader();
+			policyBuilder.AllowCredentials();
+			policyBuilder.SetIsOriginAllowed(_ => true);
+		}));
+
 		WebApplication app = builder.Build();
 
 		if (app.Environment.IsDevelopment())
@@ -184,8 +200,7 @@ public class Program
 		app.MapHealthChecks(pattern: "/health/s3", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "s3")));
 		app.MapHealthChecks(pattern: "/health/aws", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "aws")));
 		app.MapHealthChecks(pattern: "/health/context", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "context")));
-
-		// добавить SignalR
+		app.MapHealthChecks(pattern: "/health/signalR", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "signalR")));
 
 		app.MapHealthChecksUI(options => options.UIPath = "/health-ui");
 
@@ -198,6 +213,9 @@ public class Program
 		app.UseAuthorization();
 
 		app.MapControllers();
+
+		app.UseCors("CORSPolicy");
+		app.MapHub<MessageHub>("/offers");
 
 		app.Run();
 	}

@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <UserSecretsId>72f4c3f8-a936-4ee2-ad33-2c229b4e1cbc</UserSecretsId>
+        <UserSecretsId>340e6501-c535-4ace-ba0a-c13437a7db9d</UserSecretsId>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -15,6 +15,7 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.SignalR" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />

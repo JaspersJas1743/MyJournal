@@ -20,8 +20,8 @@ public sealed class ModelValidator(Type validatorType) : IModelValidator
         return result.Errors.Select(
             selector: failure => new ModelValidationResult(
                 memberName: failure.PropertyName,
-                message: failure.ErrorMessage)
-        ).ToArray();
+                message: failure.ErrorMessage
+            )).ToArray();
     }
 
     private IValidationContext GetValidationContext(object model)
