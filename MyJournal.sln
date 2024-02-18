@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.Core", "MyJournal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.API", "MyJournal.API\MyJournal.API.csproj", "{455752B9-B663-47B2-B573-14FDF0699629}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.Tests", "MyJournal.Tests\MyJournal.Tests.csproj", "{EC2F3C97-3994-4873-9C38-7103B8F2EFC6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{455752B9-B663-47B2-B573-14FDF0699629}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{455752B9-B663-47B2-B573-14FDF0699629}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{455752B9-B663-47B2-B573-14FDF0699629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC2F3C97-3994-4873-9C38-7103B8F2EFC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC2F3C97-3994-4873-9C38-7103B8F2EFC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC2F3C97-3994-4873-9C38-7103B8F2EFC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC2F3C97-3994-4873-9C38-7103B8F2EFC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
