@@ -41,10 +41,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Assets\Controllers\" />
       <Folder Include="Assets\DatabaseModels\" />
       <Folder Include="Assets\Models\" />
-      <Folder Include="Assets\Validation\Validators\" />
     </ItemGroup>
 
 </Project>

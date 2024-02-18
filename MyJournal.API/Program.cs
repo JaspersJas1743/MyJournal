@@ -52,14 +52,13 @@ public class Program
 		builder.Services.AddAWSService<IAmazonS3>(options: awsOptions);
 		builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
-		builder.Services.AddControllers(
-			configure: options => options.AddAutoValidation()
-			).AddJsonOptions(configure: options =>
-			{
-				options.JsonSerializerOptions.WriteIndented = true;
-				options.JsonSerializerOptions.PropertyNamingPolicy = null;
-				options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-			});
+		builder.Services.AddControllers(configure: options => options.AddAutoValidation())
+			   .AddJsonOptions(configure: options =>
+			   {
+				   options.JsonSerializerOptions.WriteIndented = true;
+				   options.JsonSerializerOptions.PropertyNamingPolicy = null;
+				   options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+			   });
 
 		builder.Services.AddEndpointsApiExplorer();
 
@@ -92,7 +91,7 @@ public class Program
 				new string[] { }
 			}});
 
-			var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+			string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 			options.IncludeXmlComments(filePath: Path.Combine(path1: AppContext.BaseDirectory, path2: xmlFilename));
 		});
 

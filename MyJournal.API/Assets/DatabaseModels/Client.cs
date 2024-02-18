@@ -17,7 +17,7 @@ public partial class Client
 {
     public int Id { get; set; }
 
-    public Clients Type { get; set; }
+    public Clients ClientName { get; set; }
 
     public virtual ICollection<MyJournalClient> MyJournalClients { get; set; } = new List<MyJournalClient>();
 }

@@ -14,7 +14,7 @@ public partial class Session
     public int MyJournalClientId { get; set; }
 
     public int SessionActivityStatusId { get; set; }
-
+    
     public virtual MyJournalClient MyJournalClient { get; set; } = null!;
 
     public virtual SessionActivityStatus SessionActivityStatus { get; set; } = null!;

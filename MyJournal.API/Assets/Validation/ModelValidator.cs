@@ -21,7 +21,7 @@ public sealed class ModelValidator(Type validatorType) : IModelValidator
             selector: failure => new ModelValidationResult(
                 memberName: failure.PropertyName,
                 message: failure.ErrorMessage
-            )).ToArray();
+            )).AsEnumerable();
     }
 
     private IValidationContext GetValidationContext(object model)

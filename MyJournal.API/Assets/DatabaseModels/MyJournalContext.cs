@@ -255,14 +255,14 @@ public partial class MyJournalContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Clients__3214EC0705F81109");
 
-            entity.HasIndex(e => e.Type, "UQ__Clients__65800DA001DBF1AC").IsUnique();
+            entity.HasIndex(e => e.ClientName, "UQ__Clients__65800DA001DBF1AC").IsUnique();
 
-            entity.Property(e => e.Type).HasConversion(
+            entity.Property(e => e.ClientName).HasConversion(
                 v => v.ToString(),
                 v => Enum.Parse<Clients>(v)
             );
 
-            entity.Property(e => e.Type).HasMaxLength(7);
+            entity.Property(e => e.ClientName).HasMaxLength(7);
         });
 
         modelBuilder.Entity<CommentsOnGrade>(entity =>
@@ -535,7 +535,7 @@ public partial class MyJournalContext : DbContext
             entity.Property(e => e.Ip)
                 .HasMaxLength(15)
                 .HasColumnName("IP");
-
+            
             entity.HasOne(d => d.MyJournalClient).WithMany(p => p.Sessions)
                 .HasForeignKey(d => d.MyJournalClientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

@@ -6,6 +6,5 @@ public static class MyJournalClaimTypes
 	public const string Password = "myjournal:password";
 	public const string Identifier = "myjournal:identifier";
 	public const string Role = "myjournal:role";
-	public const string Ip = "myjournal:ip";
-	public const string Client = "myjournal:client";
+	public const string Session = "myjournal:session";
 }

@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using MyJournal.API.Assets.DatabaseModels;
@@ -8,7 +7,7 @@ namespace MyJournal.API.Assets.Security.JWT;
 
 public sealed class JwtService(JwtOptions options) : IJwtService
 {
-	public string Generate(User tokenOwner, IPAddress tokenOwnerIp, Clients usedClient)
+	public string Generate(User tokenOwner, int sessionId)
 	{
 		JwtSecurityToken jwtSecurityToken = new JwtSecurityToken(
 			issuer: options.Issuer,
@@ -19,8 +18,7 @@ public sealed class JwtService(JwtOptions options) : IJwtService
 				new Claim(type: MyJournalClaimTypes.Password, value: tokenOwner.Password!),
 				new Claim(type: MyJournalClaimTypes.Identifier, value: tokenOwner.Id.ToString()),
 				new Claim(type: MyJournalClaimTypes.Role, value: tokenOwner.UserRole.Role.ToString()),
-				new Claim(type: MyJournalClaimTypes.Ip, value: tokenOwnerIp.ToString()),
-				new Claim(type: MyJournalClaimTypes.Client, value: usedClient.ToString())
+				new Claim(type: MyJournalClaimTypes.Session, value: sessionId.ToString()),
 			},
 			signingCredentials: new SigningCredentials(
 				key: options.SymmetricKey,
