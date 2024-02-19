@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace MyJournal.API.Assets.DatabaseModels;
+﻿namespace MyJournal.API.Assets.DatabaseModels;
 
 public enum Clients
 {

@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace MyJournal.Core;
+namespace MyJournal.Core.Utilities;
 
 public record Error(string Message);
 

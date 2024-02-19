@@ -1,5 +1,3 @@
-using MyJournal.API.Assets.Security.JWT;
-
 namespace MyJournal.API.Assets.S3;
 
 public sealed class S3Options

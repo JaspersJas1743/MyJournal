@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace MyJournal.API.Assets.Validation;
 
-public sealed class ModelValidator(Type validatorType) : IModelValidator
+public sealed class ModelValidator(
+    Type validatorType
+) : IModelValidator
 {
     public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
     {

@@ -1,4 +1,3 @@
-using System.Net;
 using MyJournal.API.Assets.DatabaseModels;
 
 namespace MyJournal.API.Assets.Security.JWT;

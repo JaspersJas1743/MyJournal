@@ -1,5 +1,3 @@
-using Amazon.S3;
-
 namespace MyJournal.API.Assets.S3;
 
 public interface IFileStorageService

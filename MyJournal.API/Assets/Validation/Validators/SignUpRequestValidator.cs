@@ -3,7 +3,7 @@ using MyJournal.API.Assets.Controllers;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public class SignUpRequestValidator : AbstractValidator<AccountController.SignUpRequest>
+public sealed class SignUpRequestValidator : AbstractValidator<AccountController.SignUpRequest>
 {
 	public SignUpRequestValidator()
 	{

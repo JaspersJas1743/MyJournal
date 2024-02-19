@@ -3,7 +3,9 @@ using Amazon.S3.Model;
 
 namespace MyJournal.API.Assets.S3;
 
-public sealed class FileStorageService(IAmazonS3 amazonS3Client) : IFileStorageService
+public sealed class FileStorageService(
+	IAmazonS3 amazonS3Client
+) : IFileStorageService
 {
 	private const string ColdBucketName = "myjournal_logs";
 	private const string HotBucketName = "myjournal_assets";
