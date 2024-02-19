@@ -1,10 +1,11 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
-namespace MyJournal.Core;
+namespace MyJournal.Core.Utilities;
 
 public static class ApiClient
 {
@@ -209,7 +210,7 @@ public static class ApiClient
 
 	private static async Task<HttpResponseMessage> HelperAsync<TIn>(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		HttpResponseMessage responseMessage = await func(uri, JsonContent.Create<TIn>(inputValue: arg), cancellationToken);
+		HttpResponseMessage responseMessage = await func(uri, JsonContent.Create(inputValue: arg, inputType: arg!.GetType()), cancellationToken);
 		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: Options);
 		return responseMessage;
 	}
