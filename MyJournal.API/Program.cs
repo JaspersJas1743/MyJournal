@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Net.Mime;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Amazon.Extensions.NETCore.Setup;
@@ -7,12 +7,12 @@ using Amazon.S3;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyJournal.API.Assets.DatabaseModels;
+using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
@@ -52,13 +52,24 @@ public class Program
 		builder.Services.AddAWSService<IAmazonS3>(options: awsOptions);
 		builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
-		builder.Services.AddControllers(configure: options => options.AddAutoValidation())
-			   .AddJsonOptions(configure: options =>
-			   {
-				   options.JsonSerializerOptions.WriteIndented = true;
-				   options.JsonSerializerOptions.PropertyNamingPolicy = null;
-				   options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-			   });
+		builder.Services.AddControllers(configure: options =>
+		{
+			options.AddValidateModeFilter()
+				   .AddAutoValidation();
+		}).ConfigureApiBehaviorOptions(options =>
+		{
+			options.InvalidModelStateResponseFactory = context =>
+			{
+				ValidationFailedResult result = new ValidationFailedResult(context.ModelState);
+				result.ContentTypes.Add(item: MediaTypeNames.Application.Json);
+				return result;
+			};
+		}).AddJsonOptions(configure: options =>
+		{
+			options.JsonSerializerOptions.WriteIndented = true;
+			options.JsonSerializerOptions.PropertyNamingPolicy = null;
+			options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+		});
 
 		builder.Services.AddEndpointsApiExplorer();
 
@@ -177,13 +188,16 @@ public class Program
 		builder.Services.AddScoped<IHashService, BCryptHashService>();
 
 		builder.Services.AddSignalR();
-		builder.Services.AddCors(options => options.AddPolicy(name: "CORSPolicy", configurePolicy: policyBuilder =>
+		builder.Services.AddCors(setupAction: options => options.AddPolicy(name: "CORSPolicy", configurePolicy: policyBuilder =>
 		{
 			policyBuilder.AllowAnyMethod();
 			policyBuilder.AllowAnyHeader();
 			policyBuilder.AllowCredentials();
 			policyBuilder.SetIsOriginAllowed(_ => true);
 		}));
+
+		builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+		builder.Services.AddProblemDetails();
 
 		WebApplication app = builder.Build();
 
@@ -201,7 +215,7 @@ public class Program
 		app.MapHealthChecks(pattern: "/health/context", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "context")));
 		app.MapHealthChecks(pattern: "/health/signalR", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "signalR")));
 
-		app.MapHealthChecksUI(options => options.UIPath = "/health-ui");
+		app.MapHealthChecksUI(setupOptions: options => options.UIPath = "/health-ui");
 
 		app.UseIpRateLimiting();
 
@@ -215,6 +229,8 @@ public class Program
 
 		app.UseCors("CORSPolicy");
 		app.MapHub<MessageHub>("/offers");
+
+		app.UseExceptionHandler();
 
 		app.Run();
 	}

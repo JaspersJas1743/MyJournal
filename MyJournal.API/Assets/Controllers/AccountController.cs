@@ -1,9 +1,11 @@
 using System.Net;
+using System.Net.Mime;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
+using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
 using MyJournal.API.Assets.Utilities;
@@ -166,7 +168,7 @@ public class AccountController(
     /// <response code="200">Возвращает статус переданного регистрационного кода: true - существует, false - не сушествует</response>
     /// <response code="404">Некорректный регистрационный код</response>
     [HttpGet(template: nameof(VerifyRegistrationCode))]
-    [Produces(contentType: "application/json")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyRegistrationCodeResponse))]
     public async Task<ActionResult<VerifyRegistrationCodeResponse>> VerifyRegistrationCode(
         [FromQuery] VerifyRegistrationCodeRequest request,
@@ -210,9 +212,9 @@ public class AccountController(
     /// <response code="200">Возвращает авторизационный токен, содержащий информацию о пользователе и текущей сессии</response>
     /// <response code="404">Авторизационные данные неверны</response>
     [HttpPost(template: nameof(SignInWithCredentials))]
-    [Produces(contentType: "application/json")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ApiError))]
+    [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
     public async Task<ActionResult<SignInResponse>> SignInWithCredentials(
         [FromBody] SignInRequest request,
         CancellationToken cancellationToken = default(CancellationToken)
@@ -221,7 +223,7 @@ public class AccountController(
         User? user = await FindUserByLoginAsync(login: request.Login, cancellationToken: cancellationToken);
 
         if (user is null || !hash.Verify(text: request.Password, hashedText: user.Password))
-            return NotFound(value: ApiError.Create(message: "Неверный логин и/или пароль пользователя."));
+            throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Неверный логин и/или пароль пользователя.");
 
         Session currentSession = new Session()
         {
@@ -258,10 +260,10 @@ public class AccountController(
     /// <response code="400">Некорректный авторизационный токен</response>
     /// <response code="401">Пользователь не авторизован</response>
     [Authorize]
-    [Produces(contentType: "application/json")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
     [HttpPost(template: nameof(SignInWithToken))]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInWithTokenResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ApiError))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
     public async Task<ActionResult<SignInWithTokenResponse>> SignInWithToken(
         CancellationToken cancellationToken = default(CancellationToken)
@@ -269,7 +271,7 @@ public class AccountController(
     {
         Session? session = await GetCurrentSession(cancellationToken: cancellationToken);
         if (session is null)
-            return BadRequest(error: ApiError.Create(message: "Некорректный авторизационный токен"));
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
 
         return Ok(
             value: new SignInWithTokenResponse(
@@ -296,12 +298,13 @@ public class AccountController(
     /// <response code="400">Переданный логин занят другим пользователем</response>
     /// <response code="404">Неверный регистрационный код</response>
     [HttpPost(template: nameof(SignUp))]
-    [Produces(contentType: "application/json")]
-    [ProducesResponseType(statusCode: StatusCodes.Status201Created)]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ApiError))]
-    [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ApiError))]
-    public async Task<ActionResult> SignUp([FromBody] SignUpRequest request,
-                                           CancellationToken cancellationToken = default(CancellationToken)
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+    public async Task<ActionResult> SignUp(
+        [FromBody] SignUpRequest request,
+        CancellationToken cancellationToken = default(CancellationToken)
     )
     {
         User? user = await FindUserByRegistrationCodeAsync(
@@ -309,10 +312,10 @@ public class AccountController(
             cancellationToken: cancellationToken
         );
         if (user is null)
-            return NotFound(value: ApiError.Create(message: "Неверный регистрационный код"));
+            throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Неверный регистрационный код.");
 
         if (await FindUserByLoginAsync(login: request.Login, cancellationToken: cancellationToken) is not null)
-            return BadRequest(error: ApiError.Create(message: "Данный логин не может быть занят"));
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Данный логин не может быть занят.");
 
         context.Entry(entity: user).State = EntityState.Modified;
         user.RegistrationCode = null;
@@ -338,17 +341,17 @@ public class AccountController(
     /// <response code="400">Неверный авторизационный токен</response>
     [Authorize]
     [HttpPost(template: nameof(SignOut))]
-    [Produces(contentType: "application/json")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ApiError))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-    public async Task<ActionResult<SignOutResponse>> SignOut(CancellationToken cancellationToken =
-                                                                 default(CancellationToken)
+    public async Task<ActionResult<SignOutResponse>> SignOut(
+        CancellationToken cancellationToken = default(CancellationToken)
     )
     {
         Session? session = await GetCurrentSession(cancellationToken: cancellationToken);
         if (session is null)
-            return BadRequest(error: ApiError.Create(message: "Некорректный авторизационный токен"));
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
 
         await DisableSession(session: session, cancellationToken: cancellationToken);
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
@@ -369,17 +372,17 @@ public class AccountController(
     /// <response code="400">Некорректный авторизационный токен</response>
     [Authorize]
     [HttpPost(template: nameof(SignOutAll))]
-    [Produces(contentType: "application/json")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ApiError))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-    public async Task<ActionResult<SignOutResponse>> SignOutAll(CancellationToken cancellationToken =
-                                                                    default(CancellationToken)
+    public async Task<ActionResult<SignOutResponse>> SignOutAll(
+        CancellationToken cancellationToken = default(CancellationToken)
     )
     {
         User? user = await GetAuthorizedUser(cancellationToken: cancellationToken);
         if (user is null)
-            return BadRequest(error: ApiError.Create(message: "Некорректный авторизационный токен"));
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
 
         foreach (Session session in user.Sessions)
             await DisableSession(session: session, cancellationToken: cancellationToken);
@@ -401,10 +404,10 @@ public class AccountController(
     /// <response code="400">Некорректный авторизационный токен</response>
     /// <response code="401">Пользователь не авторизован</response>
     [Authorize]
-    [Produces(contentType: "application/json")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
     [HttpPost(template: nameof(SignOutAllExceptThis))]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ApiError))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
     public async Task<ActionResult<SignOutResponse>> SignOutAllExceptThis(
         CancellationToken cancellationToken = default(CancellationToken)
@@ -414,7 +417,7 @@ public class AccountController(
         Session? currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
 
         if (user is null || currentSession is null)
-            return BadRequest(error: ApiError.Create(message: "Некорректный авторизационный токен"));
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
 
         foreach (Session session in user.Sessions.Except(second: new Session[] { currentSession }))
             await DisableSession(session: session, cancellationToken: cancellationToken);

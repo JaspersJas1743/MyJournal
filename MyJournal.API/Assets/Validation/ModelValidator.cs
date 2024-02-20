@@ -2,6 +2,7 @@ using System.Reflection;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace MyJournal.API.Assets.Validation;
 
@@ -19,11 +20,14 @@ public sealed class ModelValidator(
         if (result.IsValid)
             return Enumerable.Empty<ModelValidationResult>();
 
-        return result.Errors.Select(
-            selector: failure => new ModelValidationResult(
+        ValidationFailure? failure = result.Errors.First();
+        return new ModelValidationResult[1]
+        {
+            new ModelValidationResult(
                 memberName: failure.PropertyName,
                 message: failure.ErrorMessage
-            )).AsEnumerable();
+            )
+        };
     }
 
     private IValidationContext GetValidationContext(object model)
