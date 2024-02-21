@@ -61,7 +61,7 @@ public static class ApiClient
     public static async Task<TOut?> GetAsync<TOut>(string apiMethod, Dictionary<string, string> argQuery, CancellationToken cancellationToken = default(CancellationToken))
         => await GetAsync<TOut>(uri: CreateUri(apiMethod: apiMethod, arg: argQuery), cancellationToken: cancellationToken);
 
-	public static async Task<TOut?> GetAsync<TIn, TOut>(string apiMethod, TIn argQuery, CancellationToken cancellationToken = default(CancellationToken))
+	public static async Task<TOut?> GetAsync<TOut, TIn>(string apiMethod, TIn argQuery, CancellationToken cancellationToken = default(CancellationToken))
 		=> await GetAsync<TOut>(uri: CreateUri(apiMethod: apiMethod, arg: argQuery), cancellationToken: cancellationToken);
 
     public static async Task<byte[]> GetBytesAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
@@ -93,6 +93,12 @@ public static class ApiClient
     public static async Task PostAsync<TIn>(string apiMethod, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
         => await PostAsync<TIn>(uri: CreateUri(apiMethod: apiMethod), arg: arg, cancellationToken: cancellationToken);
 
+	public static async Task<TOut?> PostAsync<TOut>(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperForPostAsync<TOut>(uri: uri, cancellationToken: cancellationToken);
+
+	public static async Task<TOut?> PostAsync<TOut>(string apiMethod, CancellationToken cancellationToken = default(CancellationToken))
+		=> await PostAsync<TOut>(uri: CreateUri(apiMethod: apiMethod), cancellationToken: cancellationToken);
+
 	public static async Task PostAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
 		=> await HelperForPostAsync(uri: uri, arg: String.Empty, cancellationToken: cancellationToken);
 
@@ -101,6 +107,9 @@ public static class ApiClient
 
 	public static async Task PostAsync(string apiMethod, Dictionary<string, string> arg, CancellationToken cancellationToken = default(CancellationToken))
         => await PostAsync(uri: CreateUri(apiMethod, arg: arg), cancellationToken: cancellationToken);
+
+	private static async Task<TOut?> HelperForPostAsync<TOut>(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperAsync<TOut>(func: Client.PostAsync, uri: uri, cancellationToken: cancellationToken);
 
 	private static async Task<HttpResponseMessage> HelperForPostAsync<TIn>(Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
         => await HelperAsync(func: Client.PostAsync, uri: uri, arg: arg, cancellationToken: cancellationToken);
@@ -196,6 +205,9 @@ public static class ApiClient
 	public static void SetToken(string token)
 		=> Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme: "Bearer", parameter: token);
 
+	public static void ResetToken()
+		=> Client.DefaultRequestHeaders.Authorization = null;
+
 	private static async Task<HttpResponseMessage> HelperFileAsync(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, string path, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		using MultipartFormDataContent data = new MultipartFormDataContent();
@@ -206,6 +218,13 @@ public static class ApiClient
 		HttpResponseMessage responseMessage = await func(uri, data, cancellationToken);
 		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: Options);
 		return responseMessage;
+	}
+
+	private static async Task<TOut?> HelperAsync<TOut>(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		HttpResponseMessage responseMessage = await func(uri, new StringContent(content: String.Empty), cancellationToken);
+		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: Options);
+		return await responseMessage.Content.ReadFromJsonAsync<TOut>(options: Options, cancellationToken: cancellationToken);
 	}
 
 	private static async Task<HttpResponseMessage> HelperAsync<TIn>(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))

@@ -2,30 +2,15 @@ using MyJournal.Core.Utilities;
 
 namespace MyJournal.Core.Authorization;
 
-public sealed class AuthorizationWithCredentialsService(
-	string login,
-	string password,
-	AuthorizationWithCredentialsService.Clients client
-) : IAuthorizationService
+public sealed class AuthorizationWithCredentialsService : IAuthorizationService<User>
 {
-	public enum Clients
-	{
-		Windows,
-		Linux,
-		Chrome,
-		Opera,
-		Yandex,
-		Other
-	}
-
-	private record Request(string Login, string Password, Clients Client);
 	private record Response(string Token);
 
-	public async Task<User> SignIn(CancellationToken cancellationToken = default(CancellationToken))
+	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		Response response = await ApiClient.PostAsync<Response, Request>(
+		Response response = await ApiClient.PostAsync<Response, Credentials<User>>(
 			apiMethod: "Account/SignInWithCredentials",
-			arg: new Request(Login: login, Password: password, Client: client),
+			arg: credentials,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 

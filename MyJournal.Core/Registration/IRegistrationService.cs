@@ -1,3 +1,5 @@
+using MyJournal.Core.Utilities;
+
 namespace MyJournal.Core.Registration;
 
 public interface IRegistrationService<T>

@@ -1,6 +1,8 @@
+using MyJournal.Core.Utilities;
+
 namespace MyJournal.Core.Authorization;
 
-public interface IAuthorizationService
+public interface IAuthorizationService<T>
 {
-	Task<User> SignIn(CancellationToken cancellationToken = default(CancellationToken));
+	Task<T> SignIn(Credentials<T> credentials, CancellationToken cancellationToken = default(CancellationToken));
 }

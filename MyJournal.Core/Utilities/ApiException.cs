@@ -26,8 +26,11 @@ public sealed class ApiException : Exception
 
 	public static async Task ThrowIfErrorAsync(HttpResponseMessage message, JsonSerializerOptions options)
 	{
-		if (!_handlers.Contains(message.StatusCode))
+		if (!_handlers.Contains(value: message.StatusCode))
 			return;
+
+		if (message.StatusCode.Equals(obj: HttpStatusCode.Unauthorized))
+			throw new UnauthorizedAccessException(message: "Некорректный авторизационный токен.");
 
 		Error? error = await JsonSerializer.DeserializeAsync<Error>(
 			utf8Json: await message.Content.ReadAsStreamAsync(),

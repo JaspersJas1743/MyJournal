@@ -13,6 +13,6 @@ public static class S3ConfigurationExtension
 	public static S3Options GetS3Options(this IConfiguration configuration)
 	{
 		return configuration.GetSection(key: "AWS").Get<S3Options>()
-			?? throw new ArgumentNullException(message: "Данные для AWS S3 отсутствуют или некорректны", paramName: nameof(S3Options));
+			?? throw new ArgumentNullException(message: "Данные для AWS S3 отсутствуют или некорректны.", paramName: nameof(S3Options));
 	}
 }

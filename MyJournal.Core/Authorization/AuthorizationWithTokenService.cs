@@ -2,24 +2,22 @@ using MyJournal.Core.Utilities;
 
 namespace MyJournal.Core.Authorization;
 
-public class AuthorizationWithTokenService(
-	string token
-) : IAuthorizationService
+public class AuthorizationWithTokenService : IAuthorizationService<User>
 {
-	private record Request(string Token);
 	private record Response(bool SessionIsEnabled);
 
-	public async Task<User> SignIn(CancellationToken cancellationToken = default(CancellationToken))
+	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		Response response = await ApiClient.PostAsync<Response, Request>(
+		ApiClient.SetToken(token: credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token)));
+		Response response = await ApiClient.PostAsync<Response>(
 			apiMethod: "Account/SignInWithToken",
-			arg: new Request(Token: token),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		ApiClient.ResetToken();
 
 		if (!response.SessionIsEnabled)
-			throw new InvalidTokenException(message: "Переданный токен не является корректным");
+			throw new InvalidTokenException(message: "Переданный токен не является корректным.");
 
-		return await User.Create(token: token);
+		return await User.Create(token: credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token)));
 	}
 }

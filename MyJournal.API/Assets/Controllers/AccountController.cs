@@ -108,7 +108,7 @@ public class AccountController(
     {
         int userId = Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Identifier) ??
             throw new ArgumentNullException(
-                message: "Некорректный авторизационный токен",
+                message: "Некорректный авторизационный токен.",
                 paramName: nameof(MyJournalClaimTypes.Identifier)
             )
         );
@@ -127,7 +127,7 @@ public class AccountController(
     {
         int sessionId = Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Session) ??
             throw new ArgumentNullException(
-                message: "Некорректный авторизационный токен",
+                message: "Некорректный авторизационный токен.",
                 paramName: nameof(MyJournalClaimTypes.Session)
             )
         );
@@ -355,7 +355,7 @@ public class AccountController(
 
         await DisableSession(session: session, cancellationToken: cancellationToken);
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
-        return Ok(value: new SignOutResponse(Result: "Текущая сессия успешно завершена"));
+        return Ok(value: new SignOutResponse(Result: "Текущая сессия успешно завершена."));
     }
 
     /// <summary>
@@ -388,7 +388,7 @@ public class AccountController(
             await DisableSession(session: session, cancellationToken: cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
-        return Ok(value: new SignOutResponse(Result: "Все сессии успешно завершены"));
+        return Ok(value: new SignOutResponse(Result: "Все сессии успешно завершены."));
     }
 
     /// <summary>
@@ -423,7 +423,7 @@ public class AccountController(
             await DisableSession(session: session, cancellationToken: cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
-        return Ok(value: new SignOutResponse(Result: "Все сессии, кроме текущей, успешно завершены"));
+        return Ok(value: new SignOutResponse(Result: "Все сессии, кроме текущей, успешно завершены."));
     }
     #endregion
     #endregion

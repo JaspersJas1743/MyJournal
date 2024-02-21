@@ -38,7 +38,7 @@ public sealed class ModelValidator(
         );
 
         if (constructor is null)
-            throw new ArgumentException(message: $"Не удалось найти конструктор с 1 параметров в виде {genericType}", paramName: nameof(constructor));
+            throw new ArgumentException(message: $"Не удалось найти конструктор с 1 параметров в виде `{genericType}`.", paramName: nameof(constructor));
 
         return (IValidationContext)constructor.Invoke(parameters: new object?[] { model });
     }

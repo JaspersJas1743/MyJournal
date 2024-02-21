@@ -171,19 +171,19 @@ public class Program
 		builder.Services.AddAuthorization();
 
 		builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
-			   .AddJwtBearer(configureOptions: options =>
-			   {
-				   options.TokenValidationParameters = new TokenValidationParameters()
-				   {
-					   ValidIssuer = jwtOptions.Issuer,
-					   ValidateIssuer = true,
-					   ValidAudience = jwtOptions.Audience,
-					   ValidateAudience = true,
-					   IssuerSigningKey = jwtOptions.SymmetricKey,
-					   ValidateIssuerSigningKey = true,
-					   ValidateLifetime = false
-				   };
-			   });
+				.AddJwtBearer(configureOptions: options =>
+				{
+					options.TokenValidationParameters = new TokenValidationParameters()
+					{
+						ValidIssuer = jwtOptions.Issuer,
+						ValidateIssuer = true,
+						ValidAudience = jwtOptions.Audience,
+						ValidateAudience = true,
+						IssuerSigningKey = jwtOptions.SymmetricKey,
+						ValidateIssuerSigningKey = true,
+						ValidateLifetime = false
+					};
+				});
 
 		builder.Services.AddScoped<IHashService, BCryptHashService>();
 
@@ -228,7 +228,7 @@ public class Program
 		app.MapControllers();
 
 		app.UseCors("CORSPolicy");
-		app.MapHub<MessageHub>("/offers");
+		app.MapHub<MessageHub>(pattern: "/offers");
 
 		app.UseExceptionHandler();
 
