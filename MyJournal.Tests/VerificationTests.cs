@@ -11,7 +11,7 @@ public class VerificationTests
 		RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
 		UserCredentials userCredentials = new UserCredentials()
 		{
-			RegistrationCode = "1234567"
+			RegistrationCode = "testtes"
 		};
 		bool isVerified = await registrationCodeVerificationService.Verify(credentials: userCredentials);
 		Assert.That(actual: isVerified, expression: Is.True);
@@ -23,7 +23,7 @@ public class VerificationTests
 		RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
 		UserCredentials userCredentials = new UserCredentials()
 		{
-			RegistrationCode = "1111111"
+			RegistrationCode = "testttt"
 		};
 		bool isVerified = await registrationCodeVerificationService.Verify(credentials: userCredentials);
 		Assert.That(actual: isVerified, expression: Is.False);
@@ -71,7 +71,7 @@ public class VerificationTests
 		});
 	}
 
-												 [Test]
+	[Test]
 	public async Task RegistrationCodeVerification_WithLongVerificationCode_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
@@ -79,7 +79,7 @@ public class VerificationTests
 			RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
 			UserCredentials userCredentials = new UserCredentials()
 			{
-				RegistrationCode = "12345678"
+				RegistrationCode = "testtest"
 			};
 			_ = await registrationCodeVerificationService.Verify(credentials: userCredentials);
 		});

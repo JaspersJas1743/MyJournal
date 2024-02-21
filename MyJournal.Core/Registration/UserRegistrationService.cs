@@ -16,12 +16,19 @@ public sealed class UserRegistrationService : IRegistrationService<User>
 				return false;
 		}
 
-		await ApiClient.PostAsync(
-			apiMethod: "Account/SignUp",
-			arg: credentials,
-			cancellationToken: cancellationToken
-		);
+		try
+		{
+			await ApiClient.PostAsync(
+				apiMethod: "Account/SignUp",
+				arg: credentials,
+				cancellationToken: cancellationToken
+			);
 
-		return true;
+			return true;
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
 	}
 }
