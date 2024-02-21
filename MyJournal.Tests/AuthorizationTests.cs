@@ -3,7 +3,7 @@ using MyJournal.Core.Utilities;
 
 namespace MyJournal.Tests;
 
-public class Tests
+public class AuthorizationTests
 {
 	[Test]
 	public async Task AuthorizationWithCredentials_WithCorrectData_ShouldReturnUser()
