@@ -18,7 +18,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 	{
 		ProblemDetails problemDetails = new ProblemDetails()
 		{
-			Title = "Bad Request",
+			Title = "BadRequest",
 			Status = StatusCodes.Status400BadRequest,
 			Detail = exception.Message
 		};
