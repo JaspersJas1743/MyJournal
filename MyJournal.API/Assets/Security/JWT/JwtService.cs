@@ -16,8 +16,6 @@ public sealed class JwtService(
 			audience: options.Audience,
 			claims: new Claim[]
 			{
-				new Claim(type: MyJournalClaimTypes.Login, value: tokenOwner.Login!),
-				new Claim(type: MyJournalClaimTypes.Password, value: tokenOwner.Password!),
 				new Claim(type: MyJournalClaimTypes.Identifier, value: tokenOwner.Id.ToString()),
 				new Claim(type: MyJournalClaimTypes.Role, value: tokenOwner.UserRole.Role.ToString()),
 				new Claim(type: MyJournalClaimTypes.Session, value: sessionId.ToString()),
