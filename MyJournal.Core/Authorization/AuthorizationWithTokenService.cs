@@ -10,7 +10,7 @@ public class AuthorizationWithTokenService : IAuthorizationService<User>
 	{
 		ApiClient.Token = credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token));
 		Response response = await ApiClient.PostAsync<Response>(
-			apiMethod: "Account/SignInWithToken",
+			apiMethod: "account/sign-in/token",
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		ApiClient.ResetToken();

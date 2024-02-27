@@ -15,7 +15,7 @@ using Task = System.Threading.Tasks.Task;
 namespace MyJournal.API.Assets.Controllers;
 
 [ApiController]
-[Route(template: "api/[controller]/[action]")]
+[Route(template: "api/account")]
 public class AccountController(
     MyJournalContext context,
     IHashService hash,
@@ -110,19 +110,17 @@ public class AccountController(
 
     #region GET
     /// <summary>
-    /// Проверка регистрационного кода на существование
+    /// Проверка регистрационного кода на коррекность и принадлежность какому-либо пользователю
     /// </summary>
     /// <remarks>
-    /// Sample request:
+    /// Пример запроса к API:
     ///
-    ///     GET /VerifyRegistrationCode
-    ///     {
-    ///        "RegistrationCode": "your_registration_code"
-    ///     }
+    ///     GET api/account/code/verify?RegistrationCode=`your_code`
+    ///
     /// </remarks>
     /// <response code="200">Возвращает статус переданного регистрационного кода: true - существует, false - не сушествует</response>
     /// <response code="404">Некорректный регистрационный код</response>
-    [HttpGet]
+    [HttpGet(template: "code/verify")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyRegistrationCodeResponse))]
     public async Task<ActionResult<VerifyRegistrationCodeResponse>> VerifyRegistrationCode(
@@ -146,9 +144,9 @@ public class AccountController(
     /// Вход в аккаунт через логин и пароль
     /// </summary>
     /// <remarks>
-    /// Sample request:
+    /// Пример запроса к API:
     ///
-    ///     POST /SignInWithCredentials
+    ///     POST /api/account/sign-in/credentials
     ///     {
     ///        "Login": "your_login",
     ///        "Password": "your_password",
@@ -163,7 +161,7 @@ public class AccountController(
     /// </remarks>
     /// <response code="200">Возвращает авторизационный токен, содержащий информацию о пользователе и текущей сессии</response>
     /// <response code="404">Авторизационные данные неверны</response>
-    [HttpPost]
+    [HttpPost(template: "sign-in/credentials")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
@@ -202,15 +200,15 @@ public class AccountController(
     /// Вход в аккаунт через авторизационный токен, указанный в заголовках авторизации
     /// </summary>
     /// <remarks>
-    /// Sample request:
+    /// Пример запроса к API:
     ///
-    ///     POST /SignInWithToken
+    ///     POST /api/account/sign-in/token
     ///
     /// </remarks>
     /// <response code="200">Возвращает статус текущей сессии: true, если сессия активна и false, если неактивна</response>
     /// <response code="400">Некорректный авторизационный токен</response>
     /// <response code="401">Пользователь не авторизован</response>
-    [HttpPost]
+    [HttpPost(template: "sign-in/token")]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInWithTokenResponse))]
@@ -224,20 +222,18 @@ public class AccountController(
         if (session is null)
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
 
-        return Ok(
-            value: new SignInWithTokenResponse(
-                SessionIsEnabled: session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Enable)
-            )
-        );
+        return Ok(value: new SignInWithTokenResponse(
+            SessionIsEnabled: session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Enable)
+        ));
     }
 
     /// <summary>
     /// Регистрация в системе через регистрационный код
     /// </summary>
     /// <remarks>
-    /// Sample request:
+    /// Пример запроса к API:
     ///
-    ///     POST /SignUp
+    ///     POST /api/account/sign-up/
     ///     {
     ///        "RegistrationCode": "your_registration_code",
     ///        "Login": "login_for_auth",
@@ -248,7 +244,7 @@ public class AccountController(
     /// <response code="204">Аккаунт успешно создан</response>
     /// <response code="400">Переданный логин занят другим пользователем</response>
     /// <response code="404">Неверный регистрационный код</response>
-    [HttpPost]
+    [HttpPost(template: "sign-up")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
@@ -282,21 +278,21 @@ public class AccountController(
     /// Завершение текущего сеанса
     /// </summary>
     /// <remarks>
-    /// Sample request:
+    /// Пример запроса к API:
     ///
-    ///     POST /SignOut
+    ///     POST /api/account/sign-out/this
     ///
     /// </remarks>
     /// <response code="200">Сессия успешно завершена</response>
     /// <response code="401">Пользователь не авторизован</response>
     /// <response code="400">Неверный авторизационный токен</response>
-    [HttpPost]
+    [HttpPost(template: "sign-out/this")]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-    public async Task<ActionResult<SignOutResponse>> SignOut(
+    public async Task<ActionResult<SignOutResponse>> SignOutThis(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
@@ -316,15 +312,15 @@ public class AccountController(
     /// Завершение всех сеансов
     /// </summary>
     /// <remarks>
-    /// Sample request:
+    /// Пример запроса к API:
     ///
-    ///     POST /SignOutAll
+    ///     POST /api/account/sign-out/all
     ///
     /// </remarks>
     /// <response code="200">Все сессии успешно завершены</response>
     /// <response code="401">Пользователь не авторизован</response>
     /// <response code="400">Некорректный авторизационный токен</response>
-    [HttpPost]
+    [HttpPost(template: "sign-out/all")]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
@@ -349,21 +345,21 @@ public class AccountController(
     /// Завершение всех сеансов, кроме текущего
     /// </summary>
     /// <remarks>
-    /// Sample request:
+    /// Пример запроса к API:
     ///
-    ///     POST /SignOutAllExceptThis
+    ///     POST /api/account/sign-out/others
     ///
     /// </remarks>
     /// <response code="200">Все сессии, кроме текущей, успешно завершены</response>
     /// <response code="400">Некорректный авторизационный токен</response>
     /// <response code="401">Пользователь не авторизован</response>
-    [HttpPost]
+    [HttpPost(template: "sign-out/others")]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-    public async Task<ActionResult<SignOutResponse>> SignOutAllExceptThis(
+    public async Task<ActionResult<SignOutResponse>> SignOutOthers(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {

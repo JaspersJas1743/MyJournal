@@ -6,21 +6,24 @@ using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Hubs;
+using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Utilities;
 
 namespace MyJournal.API.Assets.Controllers;
 
 [Authorize]
 [ApiController]
-[Route(template: "api/[controller]/[action]")]
+[Route(template: "api/user")]
 public class UserController(
 	MyJournalContext context,
-	IHubContext<UserHub, IUserHub> userActivityHub
+	IHubContext<UserHub, IUserHub> userActivityHub,
+	IFileStorageService fileStorageService
 ) : MyJournalBaseController(context: context)
 {
 	#region Records
 	public record GetInforamtionResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email);
 	public record GetUserInforamtionResponse(string Surname, string Name, string? Patronymic, string Activity, DateTime? OnlineAt);
+	public record UploadProfilePhotoResponse(string Message);
 	#endregion
 
 	#region Methods
@@ -69,19 +72,54 @@ public class UserController(
 
 	#region GET
 	/// <summary>
-	/// Получение основных данных пользователя
+	/// Загрузка фотографии профиля
 	/// </summary>
 	/// <remarks>
-	/// Sample request:
+	/// Пример запроса к API:
 	///
-	///     GET /GetInformation
+	///     GET api/user/profile/photo/download
 	///
 	/// </remarks>
-	/// <response code="200">Возвращает основную информацию о пользователе</response>
+	/// <response code="200">Возвращает фотографию профиля пользователя</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован</response>
-	[HttpGet]
-	[Authorize]
+	/// <response code="404">Фотография пользователя не установлена</response>
+	[HttpGet(template: "profile/photo/download")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult> DownloadProfilePhoto(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken) ??
+					throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+
+		if (String.IsNullOrEmpty(user?.LinkToPhoto))
+			throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Фотография пользователя не установлена");
+
+		Stream file = await fileStorageService.GetFileAsync(key: user.LinkToPhoto, cancellationToken: cancellationToken);
+		string fileName = Path.GetFileName(path: user.LinkToPhoto);
+		string fileExtension = Path.GetExtension(path: fileName).Trim(trimChar: '.');
+
+		return File(fileStream: file, contentType: $"image/{fileExtension}", fileDownloadName: fileName);
+	}
+
+	/// <summary>
+	/// Получение основной информации
+	/// </summary>
+	/// <remarks>
+	/// Пример запроса к API:
+	///
+	///     GET api/user/profile/info/me
+	///
+	/// </remarks>
+	/// <response code="200">Возвращает основную информацию об авторизованном пользователе</response>
+	/// <response code="400">Некорректный авторизационный токен</response>
+	/// <response code="401">Пользователь не авторизован</response>
+	[HttpGet(template: "profile/info/me")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetInforamtionResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
@@ -103,25 +141,25 @@ public class UserController(
 	}
 
 	/// <summary>
-	/// Получение основных данных пользователя
+	/// Получение основной информации о пользователе по его идентификатору
 	/// </summary>
+	/// <param name="id">Идентификатор пользователя, информацию о котором необходимо получить</param>
 	/// <remarks>
-	/// Sample request:
+	/// Пример запроса к API:
 	///
-	///     GET /GetUserInformation/{id}
+	///     GET api/user/profile/info/{id:int}
 	///
 	/// </remarks>
 	/// <response code="200">Возвращает основную информацию о пользователе</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован</response>
-	[Authorize]
-	[HttpGet(template: "{id:int}")]
+	[HttpGet(template: "profile/info/{id:int}")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetUserInforamtionResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
 	public async Task<ActionResult<GetUserInforamtionResponse>> GetUserInformation(
-		int id,
+		[FromRoute] int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -138,25 +176,25 @@ public class UserController(
 	}
 	#endregion
 
-	#region POST
+	#region PUT
 	/// <summary>
-	/// Устанавливает статус активности пользователя как "В сети"
+	/// Изменяет статус активности на "В сети"
 	/// </summary>
 	/// <remarks>
-	/// Sample request:
+	/// Пример запроса к API:
 	///
-	///     POST /SetOnline
+	///     PUT api/user/profile/activity/online
 	///
 	/// </remarks>
 	/// <response code="200">Статус "В сети" установлен успешно</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован</response>
-	[HttpPost]
+	[HttpPut(template: "profile/activity/online")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-	public async Task<ActionResult<GetInforamtionResponse>> SetOnline(
+	public async Task<ActionResult> SetOnline(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -170,23 +208,23 @@ public class UserController(
 	}
 
 	/// <summary>
-	/// Устанавливает статус активности пользователя как "Не в сети"
+	/// Изменяет статус активности на "Не в сети"
 	/// </summary>
 	/// <remarks>
-	/// Sample request:
+	/// Пример запроса к API:
 	///
-	///     POST /SetOffline
+	///     PUT api/user/profile/activity/offline
 	///
 	/// </remarks>
 	/// <response code="200">Статус "Не в сети" установлен успешно</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован</response>
-	[HttpPost]
+	[HttpPut(template: "profile/activity/offline")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-	public async Task<ActionResult<GetInforamtionResponse>> SetOffline(
+	public async Task<ActionResult> SetOffline(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -199,6 +237,40 @@ public class UserController(
 		return Ok();
 	}
 
+	/// <summary>
+	/// Установка фотографии профиля
+	/// </summary>
+	/// <remarks>
+	/// Пример запроса к API:
+	///
+	///     PUT api/user/profile/photo/upload
+	///
+	/// </remarks>
+	/// <response code="200">Возвращает сообщение об успешной установке фотографии профиля</response>
+	/// <response code="400">Некорректный авторизационный токен</response>
+	/// <response code="401">Пользователь не авторизован</response>
+	[HttpPut(template: "profile/photo/upload")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(UploadProfilePhotoResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+	public async Task<ActionResult<UploadProfilePhotoResponse>> UploadProfilePhoto(
+		IFormFile file,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken) ??
+					throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+
+		string fileExtension = Path.GetExtension(path: file.FileName);
+		string fileName = $"ProfilePhotos/id{user.Id}_profilephoto{fileExtension}";
+
+		await fileStorageService.UploadFileAsync(key: fileName, fileStream: file.OpenReadStream(), cancellationToken: cancellationToken);
+		context.Entry(entity: user).State = EntityState.Modified;
+		user.LinkToPhoto = fileName;
+		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		return Ok(value: new UploadProfilePhotoResponse(Message: "Фотография сохранена успешно!"));
+	}
 	#endregion
 	#endregion
 }

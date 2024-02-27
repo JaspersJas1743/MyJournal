@@ -9,7 +9,7 @@ public sealed class AuthorizationWithCredentialsService : IAuthorizationService<
 	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		Response response = await ApiClient.PostAsync<Response, Credentials<User>>(
-			apiMethod: "Account/SignInWithCredentials",
+			apiMethod: "account/sign-in/credentials",
 			arg: credentials,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();

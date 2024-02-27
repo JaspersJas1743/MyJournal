@@ -10,7 +10,7 @@ public sealed class RegistrationCodeVerificationService : IVerificationService<C
 	public async Task<bool> Verify(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		Response response = await ApiClient.GetAsync<Response, Request>(
-			apiMethod: "Account/VerifyRegistrationCode",
+			apiMethod: "account/code/verify",
 			argQuery: new Request(RegistrationCode: credentials.GetCredential<string>(name: nameof(Request.RegistrationCode))),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();

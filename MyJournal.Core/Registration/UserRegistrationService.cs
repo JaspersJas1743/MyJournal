@@ -19,7 +19,7 @@ public sealed class UserRegistrationService : IRegistrationService<User>
 		try
 		{
 			await ApiClient.PostAsync(
-				apiMethod: "Account/SignUp",
+				apiMethod: "account/sign-up",
 				arg: credentials,
 				cancellationToken: cancellationToken
 			);

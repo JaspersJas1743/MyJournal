@@ -26,9 +26,9 @@ public sealed class User
 	#region Enums
 	private enum SignOutOptions
 	{
-		SignOut,
-		SignOutAll,
-		SignOutAllExceptThis
+		This,
+		All,
+		Others
 	}
 
 	public enum ActivityStatus
@@ -57,7 +57,7 @@ public sealed class User
 	{
 		ApiClient.Token = token;
 		UserInformation response = await ApiClient.GetAsync<UserInformation>(
-			apiMethod: "User/GetInformation",
+			apiMethod: "user/profile/info/me",
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 
@@ -81,7 +81,7 @@ public sealed class User
 	private async Task<string> SignOut(SignOutOptions options, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		SignOutResponse response = await ApiClient.PostAsync<SignOutResponse>(
-			apiMethod: $"Account/{options.ToString()}",
+			apiMethod: $"account/sign-out/{options.ToString().ToLower()}",
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 
@@ -93,8 +93,8 @@ public sealed class User
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await ApiClient.PostAsync(
-			apiMethod: $"User/Set{activity.ToString()}",
+		await ApiClient.PutAsync(
+			apiMethod: $"profile/activity/{activity.ToString().ToLower()}",
 			cancellationToken: cancellationToken
 		);
 	}
@@ -106,11 +106,11 @@ public sealed class User
 		=> await SetActivityStatus(activity: ActivityStatus.Online, cancellationToken: cancellationToken);
 
 	public async Task<string> SignOut(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SignOut(options: SignOutOptions.SignOut, cancellationToken: cancellationToken);
+		=> await SignOut(options: SignOutOptions.This, cancellationToken: cancellationToken);
 
 	public async Task<string> SignOutAll(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SignOut(options: SignOutOptions.SignOutAll, cancellationToken: cancellationToken);
+		=> await SignOut(options: SignOutOptions.All, cancellationToken: cancellationToken);
 
 	public async Task<string> SignOutAllExceptThis(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SignOut(options: SignOutOptions.SignOutAllExceptThis, cancellationToken: cancellationToken);
+		=> await SignOut(options: SignOutOptions.Others, cancellationToken: cancellationToken);
 }

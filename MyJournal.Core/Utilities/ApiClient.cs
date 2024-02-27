@@ -106,13 +106,16 @@ public static class ApiClient
 		=> await PostAsync<TOut>(uri: CreateUri(apiMethod: apiMethod), cancellationToken: cancellationToken);
 
 	public static async Task PostAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
-		=> await HelperForPostAsync(uri: uri, arg: String.Empty, cancellationToken: cancellationToken);
+		=> await HelperForPostAsync(uri: uri, cancellationToken: cancellationToken);
 
 	public static async Task PostAsync(string apiMethod, CancellationToken cancellationToken = default(CancellationToken))
 		=> await PostAsync(uri: CreateUri(apiMethod: apiMethod), cancellationToken: cancellationToken);
 
 	public static async Task PostAsync(string apiMethod, Dictionary<string, string> arg, CancellationToken cancellationToken = default(CancellationToken))
         => await PostAsync(uri: CreateUri(apiMethod, arg: arg), cancellationToken: cancellationToken);
+
+	private static async Task HelperForPostAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperAsync(func: Client.PostAsync, uri: uri, cancellationToken: cancellationToken);
 
 	private static async Task<TOut?> HelperForPostAsync<TOut>(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
 		=> await HelperAsync<TOut>(func: Client.PostAsync, uri: uri, cancellationToken: cancellationToken);
@@ -146,11 +149,23 @@ public static class ApiClient
         return await response.Content.ReadFromJsonAsync<TOut>(options: Options, cancellationToken: cancellationToken);
     }
 
+	public static async Task PutAsync(string apiMethod, CancellationToken cancellationToken = default(CancellationToken))
+		=> await PutAsync(uri: CreateUri(apiMethod: apiMethod), cancellationToken: cancellationToken);
+
+	public static async Task PutAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperForPutAsync(uri: uri, cancellationToken: cancellationToken);
+
     public static async Task PutAsync<TIn>(string apiMethod, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
         => await PutAsync<TIn>(uri: CreateUri(apiMethod: apiMethod), arg: arg, cancellationToken: cancellationToken);
 
     public static async Task PutAsync<TIn>(Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
-        => await HelperForPostAsync<TIn>(uri: uri, arg: arg, cancellationToken: cancellationToken);
+        => await HelperForPutAsync<TIn>(uri: uri, arg: arg, cancellationToken: cancellationToken);
+
+	private static async Task HelperForPutAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperAsync(func: Client.PutAsync, uri: uri, cancellationToken: cancellationToken);
+
+	private static async Task<TOut?> HelperForPutAsync<TOut>(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperAsync<TOut>(func: Client.PutAsync, uri: uri, cancellationToken: cancellationToken);
 
     private static async Task<HttpResponseMessage> HelperForPutAsync<TIn>(Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
         => await HelperAsync<TIn>(func: Client.PutAsync, uri: uri, arg: arg, cancellationToken: cancellationToken);
@@ -221,6 +236,12 @@ public static class ApiClient
 		HttpResponseMessage responseMessage = await func(uri, data, cancellationToken);
 		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: Options);
 		return responseMessage;
+	}
+
+	private static async Task HelperAsync(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		HttpResponseMessage responseMessage = await func(uri, new StringContent(content: String.Empty), cancellationToken);
+		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: Options);
 	}
 
 	private static async Task<TOut?> HelperAsync<TOut>(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, CancellationToken cancellationToken = default(CancellationToken))
