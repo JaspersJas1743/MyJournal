@@ -131,9 +131,9 @@ public class Program
 				   name: "MyJournal DB Context",
 				   tags: new string[] { "context", "db-context", "database" })
 			   .AddSignalRHub(
-				   url: $"https://localhost:7267/offers",
+				   url: "https://localhost:7267/hub/User",
 				   name: "SignalR",
-				   tags: new string[] { "signalR", "message-hub"});
+				   tags: new string[] { "signalR", "user-hub"});
 
 		string healthDbConnectionString = builder.Configuration.GetConnectionString(name: "MyJournalHealthDB")
 			?? throw new ArgumentException(message: "Строка подключения к MyJournalHealthDB отсутствует или некорректна", paramName: nameof(healthDbConnectionString));
@@ -228,7 +228,7 @@ public class Program
 		app.MapControllers();
 
 		app.UseCors("CORSPolicy");
-		app.MapHub<MessageHub>(pattern: "/offers");
+		app.MapHub<UserHub>(pattern: "/hub/User");
 
 		app.UseExceptionHandler();
 

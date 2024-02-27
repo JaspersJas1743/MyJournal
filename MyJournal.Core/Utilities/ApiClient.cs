@@ -34,6 +34,12 @@ public static class ApiClient
 
 	#region Properties
 	public static string ContentType { get; set; }
+
+	public static string? Token
+	{
+		get => Client.DefaultRequestHeaders.Authorization?.ToString();
+		set => Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme: "Bearer", parameter: value);
+	}
 	#endregion
 
 	#region Methods
@@ -201,9 +207,6 @@ public static class ApiClient
 		return responseMessage;
 	}
     #endregion DELETE
-
-	public static void SetToken(string token)
-		=> Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme: "Bearer", parameter: token);
 
 	public static void ResetToken()
 		=> Client.DefaultRequestHeaders.Authorization = null;

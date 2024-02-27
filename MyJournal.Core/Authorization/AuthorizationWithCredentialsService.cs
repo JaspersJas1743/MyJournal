@@ -14,6 +14,6 @@ public sealed class AuthorizationWithCredentialsService : IAuthorizationService<
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 
-		return await User.Create(token: response.Token);
+		return await User.Create(token: response.Token, cancellationToken: cancellationToken);
 	}
 }

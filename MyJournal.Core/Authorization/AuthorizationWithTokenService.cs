@@ -8,7 +8,7 @@ public class AuthorizationWithTokenService : IAuthorizationService<User>
 
 	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		ApiClient.SetToken(token: credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token)));
+		ApiClient.Token = credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token));
 		Response response = await ApiClient.PostAsync<Response>(
 			apiMethod: "Account/SignInWithToken",
 			cancellationToken: cancellationToken

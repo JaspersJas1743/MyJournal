@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Mime;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,35 +15,29 @@ using Task = System.Threading.Tasks.Task;
 namespace MyJournal.API.Assets.Controllers;
 
 [ApiController]
-[Route(template: "api/[controller]")]
+[Route(template: "api/[controller]/[action]")]
 public class AccountController(
     MyJournalContext context,
     IHashService hash,
     IJwtService jwt
-) : ControllerBase
+) : MyJournalBaseController(context: context)
 {
     #region Records
     [Validator<VerifyRegistrationCodeRequestValidator>]
     public record VerifyRegistrationCodeRequest(string RegistrationCode);
-
     public record VerifyRegistrationCodeResponse(bool IsVerified);
 
     [Validator<SignInRequestValidator>]
     public record SignInRequest(string Login, string Password, Clients Client);
-
     public record SignInResponse(string Token);
-
     public record SignInWithTokenResponse(bool SessionIsEnabled);
 
     [Validator<SignUpRequestValidator>]
     public record SignUpRequest(string RegistrationCode, string Login, string Password);
-
     public record SignOutResponse(string Result);
-
     #endregion
 
     #region Methods
-
     #region AuxiliaryMethods
     private IPAddress GetSenderIp()
     {
@@ -102,44 +95,6 @@ public class AccountController(
         );
     }
 
-    private async Task<User?> GetAuthorizedUser(
-        CancellationToken cancellationToken = default(CancellationToken)
-    )
-    {
-        int userId = Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Identifier) ??
-            throw new ArgumentNullException(
-                message: "Некорректный авторизационный токен.",
-                paramName: nameof(MyJournalClaimTypes.Identifier)
-            )
-        );
-        User? user = await context.Users.Include(navigationPropertyPath: user => user.Sessions)
-                                  .ThenInclude(navigationPropertyPath: session => session.SessionActivityStatus)
-                                  .SingleOrDefaultAsync(
-                                      predicate: user => user.Id.Equals(userId),
-                                      cancellationToken: cancellationToken
-                                  );
-        return user;
-    }
-
-    private async Task<Session?> GetCurrentSession(
-        CancellationToken cancellationToken = default(CancellationToken)
-    )
-    {
-        int sessionId = Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Session) ??
-            throw new ArgumentNullException(
-                message: "Некорректный авторизационный токен.",
-                paramName: nameof(MyJournalClaimTypes.Session)
-            )
-        );
-        Session? session = await context.Sessions
-                                        .Include(navigationPropertyPath: session => session.SessionActivityStatus)
-                                        .SingleOrDefaultAsync(
-                                            predicate: session => session.Id.Equals(sessionId),
-                                            cancellationToken: cancellationToken
-                                        );
-        return session;
-    }
-
     private async Task DisableSession(
         Session session,
         CancellationToken cancellationToken = default(CancellationToken)
@@ -167,7 +122,7 @@ public class AccountController(
     /// </remarks>
     /// <response code="200">Возвращает статус переданного регистрационного кода: true - существует, false - не сушествует</response>
     /// <response code="404">Некорректный регистрационный код</response>
-    [HttpGet(template: nameof(VerifyRegistrationCode))]
+    [HttpGet]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyRegistrationCodeResponse))]
     public async Task<ActionResult<VerifyRegistrationCodeResponse>> VerifyRegistrationCode(
@@ -180,13 +135,10 @@ public class AccountController(
             cancellationToken: cancellationToken
         );
 
-        return Ok(
-            value: new VerifyRegistrationCodeResponse(
-                IsVerified: user is not null && user.RegistrationCode!.Equals(request.RegistrationCode)
-            )
-        );
+        return Ok(value: new VerifyRegistrationCodeResponse(
+            IsVerified: user is not null && user.RegistrationCode!.Equals(request.RegistrationCode)
+        ));
     }
-
     #endregion
 
     #region POST
@@ -211,7 +163,7 @@ public class AccountController(
     /// </remarks>
     /// <response code="200">Возвращает авторизационный токен, содержащий информацию о пользователе и текущей сессии</response>
     /// <response code="404">Авторизационные данные неверны</response>
-    [HttpPost(template: nameof(SignInWithCredentials))]
+    [HttpPost]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
@@ -229,15 +181,14 @@ public class AccountController(
         {
             User = user,
             Ip = GetSenderIp().ToString(),
-            MyJournalClient =
-                await FindMyJournalClientByClientType(
-                    clientType: request.Client,
-                    cancellationToken: cancellationToken
-                ),
+            MyJournalClient = await FindMyJournalClientByClientType(
+                clientType: request.Client,
+                cancellationToken: cancellationToken
+            ),
             SessionActivityStatus = await GetActivityStatus(
                 activityStatus: SessionActivityStatuses.Enable,
                 cancellationToken: cancellationToken
-            ),
+            )
         };
 
         await context.Sessions.AddAsync(entity: currentSession, cancellationToken: cancellationToken);
@@ -259,9 +210,9 @@ public class AccountController(
     /// <response code="200">Возвращает статус текущей сессии: true, если сессия активна и false, если неактивна</response>
     /// <response code="400">Некорректный авторизационный токен</response>
     /// <response code="401">Пользователь не авторизован</response>
+    [HttpPost]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
-    [HttpPost(template: nameof(SignInWithToken))]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInWithTokenResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
@@ -297,7 +248,7 @@ public class AccountController(
     /// <response code="204">Аккаунт успешно создан</response>
     /// <response code="400">Переданный логин занят другим пользователем</response>
     /// <response code="404">Неверный регистрационный код</response>
-    [HttpPost(template: nameof(SignUp))]
+    [HttpPost]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
@@ -339,8 +290,8 @@ public class AccountController(
     /// <response code="200">Сессия успешно завершена</response>
     /// <response code="401">Пользователь не авторизован</response>
     /// <response code="400">Неверный авторизационный токен</response>
+    [HttpPost]
     [Authorize]
-    [HttpPost(template: nameof(SignOut))]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
@@ -352,6 +303,9 @@ public class AccountController(
         Session? session = await GetCurrentSession(cancellationToken: cancellationToken);
         if (session is null)
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+
+        if (session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Disable))
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанная сессия уже является неактивной.");
 
         await DisableSession(session: session, cancellationToken: cancellationToken);
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
@@ -370,8 +324,8 @@ public class AccountController(
     /// <response code="200">Все сессии успешно завершены</response>
     /// <response code="401">Пользователь не авторизован</response>
     /// <response code="400">Некорректный авторизационный токен</response>
+    [HttpPost]
     [Authorize]
-    [HttpPost(template: nameof(SignOutAll))]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
@@ -403,9 +357,9 @@ public class AccountController(
     /// <response code="200">Все сессии, кроме текущей, успешно завершены</response>
     /// <response code="400">Некорректный авторизационный токен</response>
     /// <response code="401">Пользователь не авторизован</response>
+    [HttpPost]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
-    [HttpPost(template: nameof(SignOutAllExceptThis))]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
