@@ -218,9 +218,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        Session? session = await GetCurrentSession(cancellationToken: cancellationToken);
-        if (session is null)
-            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+        Session session = await GetCurrentSession(cancellationToken: cancellationToken);
 
         return Ok(value: new SignInWithTokenResponse(
             SessionIsEnabled: session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Enable)
@@ -296,9 +294,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        Session? session = await GetCurrentSession(cancellationToken: cancellationToken);
-        if (session is null)
-            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+        Session session = await GetCurrentSession(cancellationToken: cancellationToken);
 
         if (session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Disable))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанная сессия уже является неактивной.");
@@ -330,9 +326,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        User? user = await GetAuthorizedUser(cancellationToken: cancellationToken);
-        if (user is null)
-            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+        User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
         foreach (Session session in user.Sessions)
             await DisableSession(session: session, cancellationToken: cancellationToken);
@@ -363,11 +357,8 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        User? user = await GetAuthorizedUser(cancellationToken: cancellationToken);
-        Session? currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
-
-        if (user is null || currentSession is null)
-            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+        User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+        Session currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
 
         foreach (Session session in user.Sessions.Except(second: new Session[] { currentSession }))
             await DisableSession(session: session, cancellationToken: cancellationToken);

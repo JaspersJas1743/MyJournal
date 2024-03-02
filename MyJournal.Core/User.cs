@@ -20,7 +20,6 @@ public sealed class User
 
 	#region Records
 	private record SignOutResponse(string Message);
-	private record UserInformation(string Surname, string Name, string? Patronymic, string? Phone, string? Email);
 	private record UserInformationResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
 	public record UploadProfilePhotoResponse(string Link);
 	#endregion
