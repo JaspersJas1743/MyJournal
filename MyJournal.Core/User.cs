@@ -113,4 +113,30 @@ public sealed class User
 
 	public async Task<string> SignOutAllExceptThis(CancellationToken cancellationToken = default(CancellationToken))
 		=> await SignOut(options: SignOutOptions.Others, cancellationToken: cancellationToken);
+
+	public async Task UploadProfilePhoto(string pathToPhoto, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		UploadProfilePhotoResponse? response = await _client.PutFileAsync<UploadProfilePhotoResponse>(
+			apiMethod: "user/profile/photo/upload",
+			path: pathToPhoto,
+			cancellationToken: cancellationToken
+		);
+		Photo = response?.Link;
+	}
+
+	public async Task DownloadProfilePhoto(string folderToSave, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		byte[] response = await _client.GetBytesAsync(apiMethod: "user/profile/photo/download", cancellationToken: cancellationToken);
+		string fileExtension = _client.ContentType.Split(separator: '/').Last();
+		await File.WriteAllBytesAsync(
+			path: Path.Join(path1: folderToSave, path2: $"{Surname} {Name} {Patronymic}.{fileExtension}"),
+			bytes: response, cancellationToken: cancellationToken
+		);
+	}
+
+	public async Task DeleteProfilePhoto(string pathToSave, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		await _client.DeleteAsync(apiMethod: "user/profile/photo/delete", cancellationToken: cancellationToken);
+		Photo = null;
+	}
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,8 @@ using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Utilities;
+using MyJournal.API.Assets.Validation;
+using MyJournal.API.Assets.Validation.Validators;
 
 namespace MyJournal.API.Assets.Controllers;
 
@@ -21,9 +24,12 @@ public class UserController(
 ) : MyJournalBaseController(context: context)
 {
 	#region Records
-	public record GetInforamtionResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email);
-	public record GetUserInforamtionResponse(string Surname, string Name, string? Patronymic, string Activity, DateTime? OnlineAt);
-	public record UploadProfilePhotoResponse(string Message);
+	public record GetInforamtionResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
+	public record GetUserInforamtionResponse(string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
+	[Validator<UploadProfilePhotoRequestValidator>]
+	public record UploadProfilePhotoRequest(IFormFile File);
+	public record UploadProfilePhotoResponse(string Link);
+	public record DownloadProfilePhotoResponse(string Link);
 	#endregion
 
 	#region Methods
@@ -39,14 +45,13 @@ public class UserController(
 		);
 	}
 
-	private async Task<int> SetActivityStatus(
+	private async Task<(int id, DateTime? onlineAt)> SetActivityStatus(
 		UserActivityStatuses activityStatus,
 		DateTime? onlineAt,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		User? user = await GetAuthorizedUser(cancellationToken: cancellationToken) ??
-			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
 		user.UserActivityStatus = await GetActivityStatus(
 			activityStatus: activityStatus,
@@ -54,7 +59,7 @@ public class UserController(
 		);
 		user.OnlineAt = onlineAt;
 		await context.SaveChangesAsync(cancellationToken: cancellationToken);
-		return user.Id;
+		return (id: user.Id, onlineAt: onlineAt);
 	}
 
 	private async Task<User?> FindUserByIdAsync(
@@ -94,17 +99,16 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		User user = await GetAuthorizedUser(cancellationToken: cancellationToken) ??
-					throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
 		if (String.IsNullOrEmpty(user?.LinkToPhoto))
 			throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Фотография пользователя не установлена");
 
-		Stream file = await fileStorageService.GetFileAsync(key: user.LinkToPhoto, cancellationToken: cancellationToken);
-		string fileName = Path.GetFileName(path: user.LinkToPhoto);
-		string fileExtension = Path.GetExtension(path: fileName).Trim(trimChar: '.');
+		FileInfo fileInfo = new FileInfo(fileName: user.LinkToPhoto);
+		Stream file = await fileStorageService.GetFileAsync(key: $"{fileInfo.Directory?.Name}/{fileInfo.Name}", cancellationToken: cancellationToken);
+		string fileExtension = fileInfo.Extension.Trim(trimChar: '.');
 
-		return File(fileStream: file, contentType: $"image/{fileExtension}", fileDownloadName: fileName);
+		return File(fileStream: file, contentType: $"image/{fileExtension}", fileDownloadName: $"{user.Surname} {user.Name} {user.Patronymic}.{fileExtension}");
 	}
 
 	/// <summary>
@@ -128,15 +132,15 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		User? user = await GetAuthorizedUser(cancellationToken: cancellationToken) ??
-			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
 		return Ok(value: new GetInforamtionResponse(
 			Surname: user.Surname,
 			Name: user.Name,
 			Patronymic: user.Patronymic,
 			Phone: user.Phone,
-			Email: user.Email
+			Email: user.Email,
+			Photo: user.LinkToPhoto
 		));
 	}
 
@@ -167,12 +171,13 @@ public class UserController(
 					 throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор пользователя.");
 
 		return Ok(value: new GetUserInforamtionResponse(
-					  Surname: user.Surname,
-					  Name: user.Name,
-					  Patronymic: user.Patronymic,
-					  Activity: user.UserActivityStatus.ActivityStatus.ToString(),
-					  OnlineAt: user.OnlineAt
-				  ));
+			Surname: user.Surname,
+			Name: user.Name,
+			Patronymic: user.Patronymic,
+			Activity: user.UserActivityStatus.ActivityStatus.ToString(),
+			OnlineAt: user.OnlineAt,
+			Photo: user.LinkToPhoto
+		));
 	}
 	#endregion
 
@@ -198,12 +203,12 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = await SetActivityStatus(
+		(int userId, DateTime? onlineAt) = await SetActivityStatus(
 			activityStatus: UserActivityStatuses.Online,
 			onlineAt: null,
 			cancellationToken: cancellationToken
 		);
-		await userActivityHub.Clients.All.SetOnline(userId: userId);
+		await userActivityHub.Clients.All.SetOnline(userId: userId, onlineAt: onlineAt);
 		return Ok();
 	}
 
@@ -228,12 +233,12 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = await SetActivityStatus(
+		(int userId, DateTime? onlineAt) = await SetActivityStatus(
 			activityStatus: UserActivityStatuses.Offline,
 			onlineAt: DateTime.Now,
 			cancellationToken: cancellationToken
 		);
-		await userActivityHub.Clients.All.SetOffline(userId: userId);
+		await userActivityHub.Clients.All.SetOffline(userId: userId, onlineAt: onlineAt);
 		return Ok();
 	}
 
@@ -246,7 +251,7 @@ public class UserController(
 	///     PUT api/user/profile/photo/upload
 	///
 	/// </remarks>
-	/// <response code="200">Возвращает сообщение об успешной установке фотографии профиля</response>
+	/// <response code="200">Возвращает ссылку на фотографию профиля пользователя</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован</response>
 	[HttpPut(template: "profile/photo/upload")]
@@ -255,21 +260,59 @@ public class UserController(
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
 	public async Task<ActionResult<UploadProfilePhotoResponse>> UploadProfilePhoto(
-		IFormFile file,
+		[FromForm] UploadProfilePhotoRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		User user = await GetAuthorizedUser(cancellationToken: cancellationToken) ??
-					throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный авторизационный токен.");
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		string fileExtension = Path.GetExtension(path: file.FileName);
-		string fileName = $"ProfilePhotos/id{user.Id}_profilephoto{fileExtension}";
+		string fileExtension = Path.GetExtension(path: request.File.FileName);
+		string fileKey = $"ProfilePhotos/id{user.Id}_profilephoto{fileExtension}";
 
-		await fileStorageService.UploadFileAsync(key: fileName, fileStream: file.OpenReadStream(), cancellationToken: cancellationToken);
+		string link = await fileStorageService.UploadFileAsync(key: fileKey, fileStream: request.File.OpenReadStream(), cancellationToken: cancellationToken);
 		context.Entry(entity: user).State = EntityState.Modified;
-		user.LinkToPhoto = fileName;
+		user.LinkToPhoto = link;
 		await context.SaveChangesAsync(cancellationToken: cancellationToken);
-		return Ok(value: new UploadProfilePhotoResponse(Message: "Фотография сохранена успешно!"));
+
+		await userActivityHub.Clients.All.UpdatedProfilePhoto(userId: user.Id);
+
+		return Ok(value: new UploadProfilePhotoResponse(Link: link));
+	}
+	#endregion
+
+	#region DELETE
+	/// <summary>
+	/// Удаление фотографии профиля
+	/// </summary>
+	/// <remarks>
+	/// Пример запроса к API:
+	///
+	///     DELETE api/user/profile/photo/delete
+	///
+	/// </remarks>
+	/// <response code="200">Фотография профиля пользователя удалена успешна</response>
+	/// <response code="400">Некорректный авторизационный токен</response>
+	/// <response code="401">Пользователь не авторизован</response>
+	[HttpDelete(template: "profile/photo/delete")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+	public async Task<ActionResult> DeleteProfilePhoto(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+
+		string? extension = Path.GetExtension(path: user.LinkToPhoto);
+		await fileStorageService.DeleteFileAsync(key: $"ProfilePhotos/id{user.Id}_profilephoto{extension}", cancellationToken: cancellationToken);
+		context.Entry(entity: user).State = EntityState.Modified;
+		user.LinkToPhoto = null;
+		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		await userActivityHub.Clients.All.DeletedProfilePhoto(userId: user.Id);
+
+		return Ok();
 	}
 	#endregion
 	#endregion
