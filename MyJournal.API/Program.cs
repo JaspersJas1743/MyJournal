@@ -199,6 +199,10 @@ public class Program
 		builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 		builder.Services.AddProblemDetails();
 
+		builder.Services.Configure<FormOptions>(configureOptions: options =>
+			options.MultipartBodyLengthLimit = 31457280
+		);
+
 		WebApplication app = builder.Build();
 
 		if (app.Environment.IsDevelopment())
