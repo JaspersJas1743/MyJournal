@@ -2,7 +2,7 @@ using MyJournal.Core.Utilities;
 
 namespace MyJournal.Core.Registration;
 
-public sealed class UserRegistrationService : IRegistrationService<User>
+public sealed class UserRegistrationService(ApiClient client) : IRegistrationService<User>
 {
 	public async Task<bool> Register(
 		Credentials<User> credentials,
@@ -18,7 +18,7 @@ public sealed class UserRegistrationService : IRegistrationService<User>
 
 		try
 		{
-			await ApiClient.PostAsync(
+			await client.PostAsync(
 				apiMethod: "account/sign-up",
 				arg: credentials,
 				cancellationToken: cancellationToken

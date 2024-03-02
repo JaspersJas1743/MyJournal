@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities;
 
@@ -5,10 +7,28 @@ namespace MyJournal.Tests;
 
 public class AuthorizationTests
 {
+	private ServiceProvider _serviceProvider;
+
+	[SetUp]
+	public void Setup()
+	{
+		ServiceCollection serviceCollection = new ServiceCollection();
+		serviceCollection.AddApiClient();
+		serviceCollection.AddKeyedTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: "AuthorizationWithCredentialsService");
+		serviceCollection.AddKeyedTransient<IAuthorizationService<User>, AuthorizationWithTokenService>(serviceKey: "AuthorizationWithTokenService");
+		_serviceProvider = serviceCollection.BuildServiceProvider();
+	}
+
+	[TearDown]
+	public async Task Teardown()
+	{
+		await _serviceProvider.DisposeAsync();
+	}
+
 	[Test]
 	public async Task AuthorizationWithCredentials_WithCorrectData_ShouldReturnUser()
 	{
-		AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+		IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -23,7 +43,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jasper",
 				password: "JaspersJas1743",
@@ -38,7 +58,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas",
@@ -53,7 +73,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: String.Empty,
 				password: "JaspersJas1743",
@@ -68,7 +88,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: null,
 				password: "JaspersJas1743",
@@ -83,7 +103,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jas",
 				password: "JaspersJas1743",
@@ -98,7 +118,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: String.Empty,
@@ -113,7 +133,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: null,
@@ -128,7 +148,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			AuthorizationWithCredentialsService service = new AuthorizationWithCredentialsService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithCredentialsService");
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "Jas",
@@ -141,9 +161,9 @@ public class AuthorizationTests
 	[Test]
 	public async Task AuthorizationWithToken_WithCorrectToken_ShouldReturnUser()
 	{
-		AuthorizationWithTokenService service = new AuthorizationWithTokenService();
+		IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithTokenService");
 		UserTokenCredentials credentials = new UserTokenCredentials(
-			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjEwNzIiLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.dgDMZCgno4_gQ3RFr884p3H6Jt8OCZ50TaUqz7tqp0c"
+			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjEwOTQiLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.Z4mASF3KO4ozfqCqheiC8nrh0ZE1dOAeIkgA8UZk0bI"
 		);
 		_ = await service.SignIn(credentials: credentials);
 		Assert.Pass();
@@ -154,7 +174,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<UnauthorizedAccessException>(code: async () =>
 		{
-			AuthorizationWithTokenService service = new AuthorizationWithTokenService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithTokenService");
 			UserTokenCredentials credentials = new UserTokenCredentials(
 				token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..O8yQXKcI9HaLsg8KM39ByE8PS9OqHtij4hQfdrsiCvQ"
 			);
@@ -167,7 +187,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<UnauthorizedAccessException>(code: async () =>
 		{
-			AuthorizationWithTokenService service = new AuthorizationWithTokenService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithTokenService");
 			UserTokenCredentials credentials = new UserTokenCredentials(
 				token: String.Empty
 			);
@@ -180,7 +200,7 @@ public class AuthorizationTests
 	{
 		_ = Assert.ThrowsAsync<UnauthorizedAccessException>(code: async () =>
 		{
-			AuthorizationWithTokenService service = new AuthorizationWithTokenService();
+			IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithTokenService");
 			UserTokenCredentials credentials = new UserTokenCredentials(
 				token: null
 			);

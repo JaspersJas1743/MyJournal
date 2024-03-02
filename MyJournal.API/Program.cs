@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Amazon.Extensions.NETCore.Setup;
@@ -7,6 +6,7 @@ using Amazon.S3;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +18,7 @@ using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
 using MyJournal.API.Assets.Utilities;
+using MyJournal.API.Assets.Utilities.DisabledTokenFilter;
 using MyJournal.API.Assets.Validation;
 
 namespace MyJournal.API;
@@ -53,18 +54,10 @@ public class Program
 		builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 		builder.Services.AddControllers(configure: options =>
-		{
-			options.AddValidateModeFilter()
-				   .AddAutoValidation();
-		}).ConfigureApiBehaviorOptions(options =>
-		{
-			options.InvalidModelStateResponseFactory = context =>
-			{
-				ValidationFailedResult result = new ValidationFailedResult(context.ModelState);
-				result.ContentTypes.Add(item: MediaTypeNames.Application.Json);
-				return result;
-			};
-		}).AddJsonOptions(configure: options =>
+			options.AddValidateModeFilter().AddDisabledTokenFilter().AddAutoValidation()
+		).ConfigureApiBehaviorOptions(
+			setupAction: options => options.InvalidModelStateResponseFactory = context => new ValidationFailedResult(modelState: context.ModelState)
+		).AddJsonOptions(configure: options =>
 		{
 			options.JsonSerializerOptions.WriteIndented = true;
 			options.JsonSerializerOptions.PropertyNamingPolicy = null;
@@ -129,11 +122,7 @@ public class Program
 				   tags: new string[] { "aws s3", "s3", "aws" })
 			   .AddDbContextCheck<MyJournalContext>(
 				   name: "MyJournal DB Context",
-				   tags: new string[] { "context", "db-context", "database" })
-			   .AddSignalRHub(
-				   url: "https://localhost:7267/hub/User",
-				   name: "SignalR",
-				   tags: new string[] { "signalR", "user-hub"});
+				   tags: new string[] { "context", "db-context", "database" });
 
 		string healthDbConnectionString = builder.Configuration.GetConnectionString(name: "MyJournalHealthDB")
 			?? throw new ArgumentException(message: "Строка подключения к MyJournalHealthDB отсутствует или некорректна", paramName: nameof(healthDbConnectionString));
@@ -171,19 +160,19 @@ public class Program
 		builder.Services.AddAuthorization();
 
 		builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
-				.AddJwtBearer(configureOptions: options =>
+			.AddJwtBearer(configureOptions: options =>
+			{
+				options.TokenValidationParameters = new TokenValidationParameters()
 				{
-					options.TokenValidationParameters = new TokenValidationParameters()
-					{
-						ValidIssuer = jwtOptions.Issuer,
-						ValidateIssuer = true,
-						ValidAudience = jwtOptions.Audience,
-						ValidateAudience = true,
-						IssuerSigningKey = jwtOptions.SymmetricKey,
-						ValidateIssuerSigningKey = true,
-						ValidateLifetime = false
-					};
-				});
+					ValidIssuer = jwtOptions.Issuer,
+					ValidateIssuer = true,
+					ValidAudience = jwtOptions.Audience,
+					ValidateAudience = true,
+					IssuerSigningKey = jwtOptions.SymmetricKey,
+					ValidateIssuerSigningKey = true,
+					ValidateLifetime = false
+				};
+			});
 
 		builder.Services.AddScoped<IHashService, BCryptHashService>();
 
@@ -217,7 +206,6 @@ public class Program
 		app.MapHealthChecks(pattern: "/health/s3", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "s3")));
 		app.MapHealthChecks(pattern: "/health/aws", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "aws")));
 		app.MapHealthChecks(pattern: "/health/context", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "context")));
-		app.MapHealthChecks(pattern: "/health/signalR", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "signalR")));
 
 		app.MapHealthChecksUI(setupOptions: options => options.UIPath = "/health-ui");
 

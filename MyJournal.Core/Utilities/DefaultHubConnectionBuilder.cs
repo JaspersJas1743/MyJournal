@@ -1,13 +1,14 @@
+using System.Net;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MyJournal.Core.Utilities;
 
 public static class DefaultHubConnectionBuilder
 {
-	public static HubConnection CreateHubConnection(string url)
+	public static HubConnection CreateHubConnection(string url, string token)
 	{
 		return new HubConnectionBuilder().WithUrl(url: url, configureHttpConnection:
-			options => options.Headers.Add(key: "Authorization", value: ApiClient.Token)
+			options => options.Headers.Add(key: nameof(HttpRequestHeader.Authorization), value: token)
 		).Build();
 	}
 }

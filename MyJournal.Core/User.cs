@@ -5,17 +5,22 @@ namespace MyJournal.Core;
 
 public sealed class User
 {
-	private HubConnection _userHubConnection;
+	private readonly HubConnection _userHubConnection;
+	private readonly ApiClient _client;
 
-	private User(string surname, string name, string? patronymic, string? phone = null, string? email = null, string? activity = null, DateTime? onlineAt = null)
+	private User(ApiClient client, HubConnection userHubConnection, string surname, string name, string? patronymic, string? phone = null, string? email = null, string? photo = null, ActivityStatus? activity = null, DateTime? onlineAt = null)
 	{
+		_client = client;
+		_userHubConnection = userHubConnection;
+
 		Surname = surname;
 		Name = name;
 		Patronymic = patronymic;
 		Phone = phone;
 		Email = email;
-		Activity = activity is null ? null : Enum.Parse<ActivityStatus>(value: activity);
+		Activity = activity;
 		OnlineAt = onlineAt;
+		Photo = photo;
 	}
 
 	#region Records
@@ -43,10 +48,11 @@ public sealed class User
 	public string Surname { get; init; }
 	public string Name { get; init; }
 	public string? Patronymic { get; init; }
-	public string? Phone { get; init; }
-	public string? Email { get; init; }
-	public ActivityStatus? Activity { get; init; }
-	public DateTime? OnlineAt { get; init; }
+	public string? Phone { get; private set; }
+	public string? Email { get; private set; }
+	public ActivityStatus? Activity { get; private set; }
+	public DateTime? OnlineAt { get; private set; }
+	public string? Photo { get; private set; }
 	#endregion
 
 	public delegate void SignedInUserHandler(int userId, DateTime? onlineAt);
@@ -58,23 +64,24 @@ public sealed class User
 	public delegate void DeletedProfilePhotoHandler(int userId);
 	public event DeletedProfilePhotoHandler? DeletedProfilePhoto;
 
-	public static async Task<User> Create(string token, CancellationToken cancellationToken = default(CancellationToken))
+	public static async Task<User> Create(ApiClient client, string token, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		ApiClient.Token = token;
-		UserInformation response = await ApiClient.GetAsync<UserInformation>(
+		client.Token = token;
+		UserInformationResponse response = await client.GetAsync<UserInformationResponse>(
 			apiMethod: "user/profile/info/me",
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 
 		User createdUser = new User(
+			client: client,
+			userHubConnection: DefaultHubConnectionBuilder.CreateHubConnection(url: "https://localhost:7267/hub/User", token: client.Token),
 			surname: response.Surname,
 			name: response.Name,
 			patronymic: response.Patronymic,
 			phone: response.Phone,
-			email: response.Email
+			email: response.Email,
+			photo: response.Photo
 		);
-
-		createdUser._userHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(url: "https://localhost:7267/hub/User");
 
 		await createdUser._userHubConnection.StartAsync(cancellationToken: cancellationToken);
 		createdUser._userHubConnection.On<int, DateTime?>(methodName: "SetOnline",
@@ -92,10 +99,13 @@ public sealed class User
 
 		return createdUser;
 	}
-
-	private async Task<string> SignOut(SignOutOptions options, CancellationToken cancellationToken = default(CancellationToken))
+	
+	private async Task<string> SignOut(
+		SignOutOptions options,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
 	{
-		SignOutResponse response = await ApiClient.PostAsync<SignOutResponse>(
+		SignOutResponse response = await _client.PostAsync<SignOutResponse>(
 			apiMethod: $"account/sign-out/{options.ToString().ToLower()}",
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
@@ -108,8 +118,8 @@ public sealed class User
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await ApiClient.PutAsync(
-			apiMethod: $"profile/activity/{activity.ToString().ToLower()}",
+		await _client.PutAsync(
+			apiMethod: $"user/profile/activity/{activity.ToString().ToLower()}",
 			cancellationToken: cancellationToken
 		);
 	}
@@ -121,10 +131,18 @@ public sealed class User
 		=> await SetActivityStatus(activity: ActivityStatus.Online, cancellationToken: cancellationToken);
 
 	public async Task<string> SignOut(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SignOut(options: SignOutOptions.This, cancellationToken: cancellationToken);
+	{
+		string message = await SignOut(options: SignOutOptions.This, cancellationToken: cancellationToken);
+		_client.Token = null;
+		return message;
+	}
 
 	public async Task<string> SignOutAll(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SignOut(options: SignOutOptions.All, cancellationToken: cancellationToken);
+	{
+		string message = await SignOut(options: SignOutOptions.All, cancellationToken: cancellationToken);
+		_client.Token = null;
+		return message;
+	}
 
 	public async Task<string> SignOutAllExceptThis(CancellationToken cancellationToken = default(CancellationToken))
 		=> await SignOut(options: SignOutOptions.Others, cancellationToken: cancellationToken);

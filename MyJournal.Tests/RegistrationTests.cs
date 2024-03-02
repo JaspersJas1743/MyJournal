@@ -1,13 +1,34 @@
+using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core;
 using MyJournal.Core.Registration;
+using MyJournal.Core.Utilities;
 
 namespace MyJournal.Tests;
 
 public class RegistrationTests
 {
+	private ServiceProvider _serviceProvider;
+
+	[SetUp]
+	public void Setup()
+	{
+		ServiceCollection serviceCollection = new ServiceCollection();
+		serviceCollection.AddApiClient();
+		serviceCollection.AddTransient<IRegistrationService<User>, UserRegistrationService>();
+		serviceCollection.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>();
+		_serviceProvider = serviceCollection.BuildServiceProvider();
+	}
+
+	[TearDown]
+	public async Task Teardown()
+	{
+		await _serviceProvider.DisposeAsync();
+	}
+
 	[Test]
 	public async Task UserRegistration_WithCorrectData_ShouldReturnTrue()
 	{
-		UserRegistrationService userRegistrationService = new UserRegistrationService();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Ivan",
@@ -21,7 +42,7 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithIncorrectRegistrationCode_ShouldReturnFalse()
 	{
-		UserRegistrationService userRegistrationService = new UserRegistrationService();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Jaspers",
@@ -35,7 +56,7 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithUsedLogin_ShouldReturnFalse()
 	{
-		UserRegistrationService userRegistrationService = new UserRegistrationService();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Jaspers",
@@ -49,14 +70,14 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithVerificationAndCorrectData_ShouldReturnTrue()
 	{
-		UserRegistrationService userRegistrationService = new UserRegistrationService();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Ivan",
 			Password = "IvanIvanovich",
 			RegistrationCode = "1234567"
 		};
-		RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, verifier: registrationCodeVerificationService);
 		Assert.That(actual: isRegistered, expression: Is.True);
 	}
@@ -64,14 +85,14 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithVerificationAndIncorrectRegistrationCode_ShouldReturnFalse()
 	{
-		UserRegistrationService userRegistrationService = new UserRegistrationService();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Jaspers",
 			Password = "IvanIvanovich",
 			RegistrationCode = "1111111"
 		};
-		RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, verifier: registrationCodeVerificationService);
 		Assert.That(actual: isRegistered, expression: Is.False);
 	}

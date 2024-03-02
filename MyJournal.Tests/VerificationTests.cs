@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core;
 using MyJournal.Core.Registration;
 using MyJournal.Core.Utilities;
 
@@ -5,27 +7,45 @@ namespace MyJournal.Tests;
 
 public class VerificationTests
 {
+	private ServiceProvider _serviceProvider;
+
+	[SetUp]
+	public void Setup()
+	{
+		ServiceCollection serviceCollection = new ServiceCollection();
+		serviceCollection.AddApiClient();
+		serviceCollection.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>();
+		_serviceProvider = serviceCollection.BuildServiceProvider();
+	}
+
+	[TearDown]
+	public async Task Teardown()
+	{
+		await _serviceProvider.DisposeAsync();
+	}
+
+
 	[Test]
 	public async Task RegistrationCodeVerification_WithCorrectVerificationCode_ShouldReturnTrue()
 	{
-		RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			RegistrationCode = "testtes"
 		};
-		bool isVerified = await registrationCodeVerificationService.Verify(credentials: userCredentials);
+		bool isVerified = await registrationCodeVerificationService.Verify(toVerifying: userCredentials);
 		Assert.That(actual: isVerified, expression: Is.True);
 	}
 
 	[Test]
 	public async Task RegistrationCodeVerification_WithIncorrectVerificationCode_ShouldReturnFalse()
 	{
-		RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			RegistrationCode = "testttt"
 		};
-		bool isVerified = await registrationCodeVerificationService.Verify(credentials: userCredentials);
+		bool isVerified = await registrationCodeVerificationService.Verify(toVerifying: userCredentials);
 		Assert.That(actual: isVerified, expression: Is.False);
 	}
 
@@ -34,12 +54,12 @@ public class VerificationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = String.Empty
 			};
-			_ = await registrationCodeVerificationService.Verify(credentials: userCredentials);
+			_ = await registrationCodeVerificationService.Verify(toVerifying: userCredentials);
 		});
 	}
 
@@ -48,12 +68,12 @@ public class VerificationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = null
 			};
-			_ = await registrationCodeVerificationService.Verify(credentials: userCredentials);
+			_ = await registrationCodeVerificationService.Verify(toVerifying: userCredentials);
 		});
 	}
 
@@ -62,12 +82,12 @@ public class VerificationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = "123"
 			};
-			_ = await registrationCodeVerificationService.Verify(credentials: userCredentials);
+			_ = await registrationCodeVerificationService.Verify(toVerifying: userCredentials);
 		});
 	}
 
@@ -76,12 +96,12 @@ public class VerificationTests
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			RegistrationCodeVerificationService registrationCodeVerificationService = new RegistrationCodeVerificationService();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = "testtest"
 			};
-			_ = await registrationCodeVerificationService.Verify(credentials: userCredentials);
+			_ = await registrationCodeVerificationService.Verify(toVerifying: userCredentials);
 		});
 	}
 }
