@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -14,5 +15,6 @@ public sealed class ValidationFailedResult : ObjectResult
 		: base(value: new ValidationResultModel(modelState: modelState))
 	{
 		StatusCode = StatusCodes.Status400BadRequest;
+		ContentTypes.Add(item: MediaTypeNames.Application.Json);
 	}
 }

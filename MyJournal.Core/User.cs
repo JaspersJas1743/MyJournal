@@ -21,6 +21,8 @@ public sealed class User
 	#region Records
 	private record SignOutResponse(string Message);
 	private record UserInformation(string Surname, string Name, string? Patronymic, string? Phone, string? Email);
+	private record UserInformationResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
+	public record UploadProfilePhotoResponse(string Link);
 	#endregion
 
 	#region Enums
@@ -48,10 +50,14 @@ public sealed class User
 	public DateTime? OnlineAt { get; init; }
 	#endregion
 
-	public delegate void SignedInUserHandler(int userId);
+	public delegate void SignedInUserHandler(int userId, DateTime? onlineAt);
 	public event SignedInUserHandler? SignedInUser;
-	public delegate void SignedOutUserHandler(int userId);
+	public delegate void SignedOutUserHandler(int userId, DateTime? onlineAt);
 	public event SignedOutUserHandler? SignedOutUser;
+	public delegate void UpdatedProfilePhotoHandler(int userId);
+	public event UpdatedProfilePhotoHandler? UpdatedProfilePhoto;
+	public delegate void DeletedProfilePhotoHandler(int userId);
+	public event DeletedProfilePhotoHandler? DeletedProfilePhoto;
 
 	public static async Task<User> Create(string token, CancellationToken cancellationToken = default(CancellationToken))
 	{
@@ -72,8 +78,18 @@ public sealed class User
 		createdUser._userHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(url: "https://localhost:7267/hub/User");
 
 		await createdUser._userHubConnection.StartAsync(cancellationToken: cancellationToken);
-		createdUser._userHubConnection.On<int>(methodName: "SetOnline",  handler: userId => createdUser.SignedInUser?.Invoke(userId: userId));
-		createdUser._userHubConnection.On<int>(methodName: "SetOffline", handler: userId => createdUser.SignedOutUser?.Invoke(userId: userId));
+		createdUser._userHubConnection.On<int, DateTime?>(methodName: "SetOnline",
+			handler: (userId, onlineAt) => createdUser.SignedInUser?.Invoke(userId: userId, onlineAt: onlineAt)
+		);
+		createdUser._userHubConnection.On<int, DateTime?>(methodName: "SetOffline",
+			handler: (userId, onlineAt) => createdUser.SignedOutUser?.Invoke(userId: userId, onlineAt: onlineAt)
+		);
+		createdUser._userHubConnection.On<int>(methodName: "UpdatedProfilePhoto",
+			handler: userId => createdUser.UpdatedProfilePhoto?.Invoke(userId: userId)
+		);
+		createdUser._userHubConnection.On<int>(methodName: "DeletedProfilePhoto",
+			handler: userId => createdUser.DeletedProfilePhoto?.Invoke(userId: userId)
+		);
 
 		return createdUser;
 	}
