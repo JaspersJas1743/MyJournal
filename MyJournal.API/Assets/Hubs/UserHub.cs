@@ -14,4 +14,7 @@ public class UserHub : Hub<IUserHub>
 
 	public async Task UpdatedProfilePhoto(int userId)
 		=> await Clients.All.UpdatedProfilePhoto(userId: userId);
+
+	public async Task DeletedProfilePhoto(int userId)
+		=> await Clients.All.DeletedProfilePhoto(userId: userId);
 }

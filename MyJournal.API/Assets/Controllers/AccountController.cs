@@ -206,14 +206,11 @@ public class AccountController(
     ///
     /// </remarks>
     /// <response code="200">Возвращает статус текущей сессии: true, если сессия активна и false, если неактивна</response>
-    /// <response code="400">Некорректный авторизационный токен</response>
-    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
     [HttpPost(template: "sign-in/token")]
-    [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInWithTokenResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
     public async Task<ActionResult<SignInWithTokenResponse>> SignInWithToken(
         CancellationToken cancellationToken = default(CancellationToken)
     )
@@ -282,14 +279,12 @@ public class AccountController(
     ///
     /// </remarks>
     /// <response code="200">Сессия успешно завершена</response>
-    /// <response code="401">Пользователь не авторизован</response>
-    /// <response code="400">Неверный авторизационный токен</response>
+    /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
     [HttpPost(template: "sign-out/this")]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
     public async Task<ActionResult<SignOutResponse>> SignOutThis(
         CancellationToken cancellationToken = default(CancellationToken)
     )
@@ -314,14 +309,12 @@ public class AccountController(
     ///
     /// </remarks>
     /// <response code="200">Все сессии успешно завершены</response>
-    /// <response code="401">Пользователь не авторизован</response>
-    /// <response code="400">Некорректный авторизационный токен</response>
+    /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
     [HttpPost(template: "sign-out/all")]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
     public async Task<ActionResult<SignOutResponse>> SignOutAll(
         CancellationToken cancellationToken = default(CancellationToken)
     )
@@ -345,14 +338,12 @@ public class AccountController(
     ///
     /// </remarks>
     /// <response code="200">Все сессии, кроме текущей, успешно завершены</response>
-    /// <response code="400">Некорректный авторизационный токен</response>
-    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
     [HttpPost(template: "sign-out/others")]
     [Authorize]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
     public async Task<ActionResult<SignOutResponse>> SignOutOthers(
         CancellationToken cancellationToken = default(CancellationToken)
     )
