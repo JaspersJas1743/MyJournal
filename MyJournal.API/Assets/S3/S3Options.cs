@@ -8,7 +8,7 @@ public sealed class S3Options
 	public string BucketName { get; set; } = null!;
 }
 
-public static class S3ConfigurationExtension
+public static class S3OptionsExtension
 {
 	public static S3Options GetS3Options(this IConfiguration configuration)
 	{

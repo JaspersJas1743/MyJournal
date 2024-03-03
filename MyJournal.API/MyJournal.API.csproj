@@ -26,6 +26,7 @@
         <PackageReference Include="AWSSDK.S3" Version="3.7.305.28" />
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="FluentValidation" Version="11.9.0" />
+        <PackageReference Include="MailKit" Version="4.4.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
@@ -42,7 +43,6 @@
 
     <ItemGroup>
       <Folder Include="Assets\DatabaseModels\" />
-      <Folder Include="Assets\Models\" />
     </ItemGroup>
 
 </Project>
