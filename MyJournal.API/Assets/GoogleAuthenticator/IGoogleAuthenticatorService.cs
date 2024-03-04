@@ -6,5 +6,5 @@ public interface IGoogleAuthenticatorService
 
 	Task<string> GenerateAuthenticationCode();
 	Task<AuthenticationData> GenerateQrCode(string username, string authCode);
-	Task<bool> VerifyCode(string code, string authCode);
+	Task<bool> VerifyCode(string code, string? authCode);
 }

@@ -27,7 +27,7 @@ public class GoogleAuthenticatorService : IGoogleAuthenticatorService
 		);
 	}
 
-	public async Task<bool> VerifyCode(string code, string authCode)
+	public async Task<bool> VerifyCode(string code, string? authCode)
 	{
 		TwoFactorAuthenticator tfa = new TwoFactorAuthenticator();
 		return tfa.ValidateTwoFactorPIN(accountSecretKey: authCode, twoFactorCodeFromClient: code, secretIsBase32: true);

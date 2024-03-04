@@ -32,6 +32,7 @@ public class AccountController(
     [Validator<SignInRequestValidator>]
     public record SignInRequest(string Login, string Password, Clients Client);
     public record SignInResponse(string Token);
+
     public record SignInWithTokenResponse(bool SessionIsEnabled);
 
     [Validator<SignUpRequestValidator>]
@@ -45,6 +46,14 @@ public class AccountController(
     [Validator<VerifyGoogleAuthenticatorRequestValidator>]
     public record VerifyGoogleAuthenticatorRequest(string UserCode);
     public record VerifyGoogleAuthenticatorResponse(bool IsVerified);
+
+    [Validator<SetPhoneRequestValidator>]
+    public record SetPhoneRequest(string NewPhone);
+    public record SetPhoneResponse(string Message);
+
+    [Validator<SetEmailRequestValidator>]
+    public record SetEmailRequest(string NewEmail);
+    public record SetEmailResponse(string Message);
     #endregion
 
     #region Methods
@@ -444,6 +453,80 @@ public class AccountController(
 
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SignOutResponse(Result: "Все сессии, кроме текущей, успешно завершены."));
+    }
+
+    /// <summary>
+    /// Устанавливает номер телефона пользователя
+    /// </summary>
+    /// <remarks>
+    /// Пример запроса к API:
+    ///
+    ///     POST /api/account/sign-up/user/{id:int}/phone/set
+    ///     {
+    ///         "NewPhone": "your_phone"
+    ///     }
+    ///
+    /// </remarks>
+    /// <response code="200">Номер телефона успешно установлен</response>
+    /// <response code="400">Указанный номер телефона не может быть занят</response>
+    /// <response code="400">Некорректный идентификатор пользователя</response>
+    [HttpPost(template: "sign-up/user/{id:int}/phone/set")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SetPhoneResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<SetPhoneResponse>> SetPhone(
+        [FromBody] SetPhoneRequest request,
+        [FromRoute] int id,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        if (await context.Users.AnyAsync(predicate: user => user.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный номер телефона не может быть занят.");
+
+        User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
+
+        context.Entry(entity: user).State = EntityState.Modified;
+        user.Phone = request.NewPhone;
+        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        return Ok(value: new SetPhoneResponse(Message: "Номер телефона успешно установлен!"));
+    }
+
+    /// <summary>
+    /// Устанавливает электронную почту пользователя
+    /// </summary>
+    /// <remarks>
+    /// Пример запроса к API:
+    ///
+    ///     POST /api/account/sign-up/user/{id:int}/email/set
+    ///     {
+    ///         "NewEmail": "your_email_address"
+    ///     }
+    ///
+    /// </remarks>
+    /// <response code="200">Электронная почта успешно установлена</response>
+    /// <response code="400">Указанный адрес электронной почты не может быть занят</response>
+    /// <response code="400">Некорректный идентификатор пользователя</response>
+    [HttpPost(template: "sign-up/user/{id:int}/email/set")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SetEmailResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<SetEmailResponse>> SetEmail(
+        [FromBody] SetEmailRequest request,
+        [FromRoute] int id,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        if (await context.Users.AnyAsync(predicate: user => user.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный адрес электронной почты не может быть занят.");
+
+        User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
+
+        context.Entry(entity: user).State = EntityState.Modified;
+        user.Email = request.NewEmail;
+        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        return Ok(value: new SetPhoneResponse(Message: "Электронная почта успешно установлена!"));
     }
     #endregion
     #endregion

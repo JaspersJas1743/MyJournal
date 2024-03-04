@@ -326,6 +326,10 @@ public class UserController(
 	/// Пример запроса к API:
 	///
 	///     PUT api/user/profile/security/password/change
+	///		{
+	///			"CurrentPassword": "your_current_password",
+	///			"NewPassword": "your_new_password"
+	///		}
 	///
 	/// </remarks>
 	/// <response code="200">Возвращает сообщение об успешной смене пароля</response>
