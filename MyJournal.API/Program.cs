@@ -12,7 +12,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyJournal.API.Assets.DatabaseModels;
-using MyJournal.API.Assets.Email;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.S3;
@@ -192,10 +191,6 @@ public class Program
 		builder.Services.Configure<FormOptions>(configureOptions: options =>
 			options.MultipartBodyLengthLimit = 31457280
 		);
-
-		EmailOptions emailOptions = builder.Configuration.GetEmailOptions();
-		builder.Services.AddSingleton<EmailOptions>(implementationInstance: emailOptions);
-		builder.Services.AddSingleton<IEmailSendingService, EmailSendingService>();
 
 		WebApplication app = builder.Build();
 
