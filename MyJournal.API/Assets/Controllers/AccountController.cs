@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
+using MyJournal.API.Assets.GoogleAuthenticator;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
 using MyJournal.API.Assets.Utilities;
@@ -19,7 +20,8 @@ namespace MyJournal.API.Assets.Controllers;
 public class AccountController(
     MyJournalContext context,
     IHashService hash,
-    IJwtService jwt
+    IJwtService jwt,
+    IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
 {
     #region Records
@@ -34,7 +36,15 @@ public class AccountController(
 
     [Validator<SignUpRequestValidator>]
     public record SignUpRequest(string RegistrationCode, string Login, string Password);
+    public record SignUpResponse(int Id);
+
     public record SignOutResponse(string Result);
+
+    public record GetGoogleAuthenticatorResponse(string QRCodeBase64, string AuthenticationCode);
+
+    [Validator<VerifyGoogleAuthenticatorRequestValidator>]
+    public record VerifyGoogleAuthenticatorRequest(string UserCode);
+    public record VerifyGoogleAuthenticatorResponse(bool IsVerified);
     #endregion
 
     #region Methods
@@ -43,6 +53,19 @@ public class AccountController(
     {
         return HttpContext.Connection.RemoteIpAddress?.MapToIPv4() ??
                throw new NullReferenceException(message: "HttpContext.Connection.RemoteIpAddress is null");
+    }
+
+    private async Task<User?> FindUserByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole);
+
+        return await users.SingleOrDefaultAsync(
+            predicate: user => user.Id.Equals(id),
+            cancellationToken: cancellationToken
+        );
     }
 
     private async Task<User?> FindUserByLoginAsync(
@@ -136,6 +159,71 @@ public class AccountController(
         return Ok(value: new VerifyRegistrationCodeResponse(
             IsVerified: user is not null && user.RegistrationCode!.Equals(request.RegistrationCode)
         ));
+    }
+
+    /// <summary>
+    /// Получение данных для дальнейшего использования Google Authenticator
+    /// </summary>
+    /// <remarks>
+    /// Пример запроса к API:
+    ///
+    ///     GET api/account/sign-up/code/{id:int}/get
+    ///
+    /// </remarks>
+    /// <response code="200">Возвращает ссылку на QR-код в виде изображения и символьный код</response>
+    /// <response code="404">Некорректный идентификатор пользователя</response>
+    [HttpGet(template: "sign-up/code/{id:int}/get")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetGoogleAuthenticatorResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<GetGoogleAuthenticatorResponse>> GetGoogleAuthenticator(
+        [FromRoute] int id,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
+
+        context.Entry(entity: user).State = EntityState.Modified;
+        user.AuthorizationCode = await googleAuthenticatorService.GenerateAuthenticationCode();
+        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+        IGoogleAuthenticatorService.AuthenticationData data = await googleAuthenticatorService.GenerateQrCode(
+            username: $"{user.Surname} {user.Name}",
+            authCode: user.AuthorizationCode
+        );
+        return Ok(new GetGoogleAuthenticatorResponse(QRCodeBase64: data.QrCodeUrl, AuthenticationCode: data.Code));
+    }
+
+    /// <summary>
+    /// Возвращает значение, является ли код, введенный пользователем, верным
+    /// </summary>
+    /// <remarks>
+    /// Пример запроса к API:
+    ///
+    ///     GET api/account/sign-up/code/{id:int}/verify?UserCode=`your_code`
+    ///
+    /// </remarks>
+    /// <response code="200">Возвращает статус кода от пользователя: true - верный, false - неверный</response>
+    /// <response code="404">Некорректный идентификатор пользователя</response>
+    [HttpGet(template: "sign-up/code/{id:int}/verify")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyGoogleAuthenticatorResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<VerifyGoogleAuthenticatorResponse>> VerifyGoogleAuthenticator(
+        [FromRoute] int id,
+        [FromQuery] VerifyGoogleAuthenticatorRequest request,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
+
+        bool isVerified = await googleAuthenticatorService.VerifyCode(
+            authCode: user.AuthorizationCode,
+            code: request.UserCode
+        );
+        return Ok(new VerifyGoogleAuthenticatorResponse(IsVerified: isVerified));
     }
     #endregion
 
@@ -241,10 +329,10 @@ public class AccountController(
     /// <response code="404">Неверный регистрационный код</response>
     [HttpPost(template: "sign-up")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
-    [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignUpResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
-    public async Task<ActionResult> SignUp(
+    public async Task<ActionResult<SignUpResponse>> SignUp(
         [FromBody] SignUpRequest request,
         CancellationToken cancellationToken = default(CancellationToken)
     )
@@ -266,7 +354,7 @@ public class AccountController(
         user.Password = hash.Generate(toHash: request.Password);
 
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
-        return Created();
+        return Ok(value: new SignUpResponse(Id: user.Id));
     }
 
     /// <summary>

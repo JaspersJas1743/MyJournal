@@ -738,6 +738,7 @@ public partial class MyJournalContext : DbContext
             entity.Property(e => e.RegisteredAt).HasColumnType("datetime");
             entity.Property(e => e.RegistrationCode).HasMaxLength(7);
             entity.Property(e => e.Surname).HasMaxLength(20);
+            entity.Property(e => e.AuthorizationCode).HasMaxLength(10);
 
             entity.HasOne(d => d.UserActivityStatus).WithMany(p => p.Users)
                 .HasForeignKey(d => d.UserActivityStatusId)

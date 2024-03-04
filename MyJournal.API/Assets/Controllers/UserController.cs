@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
+using MyJournal.API.Assets.GoogleAuthenticator;
 using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
@@ -21,7 +22,8 @@ public class UserController(
 	MyJournalContext context,
 	IHubContext<UserHub, IUserHub> userActivityHub,
 	IFileStorageService fileStorageService,
-	IHashService hashService
+	IHashService hashService,
+	IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
 {
 	#region Records
@@ -192,6 +194,35 @@ public class UserController(
 			OnlineAt: user.OnlineAt,
 			Photo: user.LinkToPhoto
 		));
+	}
+
+	/// <summary>
+	/// Возвращает значение, является ли код, введенный пользователем, верным
+	/// </summary>
+	/// <remarks>
+	/// Пример запроса к API:
+	///
+	///     GET api/user/profile/security/code/verify?UserCode=`your_code`
+	///
+	/// </remarks>
+	/// <response code="200">Возвращает статус кода от пользователя: true - верный, false - неверный</response>
+	/// <response code="404">Некорректный идентификатор пользователя</response>
+	[HttpGet(template: "profile/security/code/verify")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(AccountController.VerifyGoogleAuthenticatorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<AccountController.VerifyGoogleAuthenticatorResponse>> VerifyGoogleAuthenticator(
+		[FromQuery] AccountController.VerifyGoogleAuthenticatorRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+
+		bool isVerified = await googleAuthenticatorService.VerifyCode(
+			authCode: user.AuthorizationCode,
+			code: request.UserCode
+		);
+		return Ok(new AccountController.VerifyGoogleAuthenticatorResponse(IsVerified: isVerified));
 	}
 	#endregion
 

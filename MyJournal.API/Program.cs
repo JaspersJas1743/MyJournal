@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
+using MyJournal.API.Assets.GoogleAuthenticator;
 using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
@@ -191,6 +192,8 @@ public class Program
 		builder.Services.Configure<FormOptions>(configureOptions: options =>
 			options.MultipartBodyLengthLimit = 31457280
 		);
+
+		builder.Services.AddScoped<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
 
 		WebApplication app = builder.Build();
 

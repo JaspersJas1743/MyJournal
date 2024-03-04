@@ -35,6 +35,8 @@ public partial class User
 
     public int UserRoleId { get; set; }
 
+    public string? AuthorizationCode { get; set; }
+
     public virtual ICollection<Administrator> Administrators { get; set; } = new List<Administrator>();
 
     public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
