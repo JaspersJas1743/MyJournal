@@ -6,7 +6,7 @@ namespace MyJournal.API.Assets.Validation;
 
 public sealed class ValidationResultModel(ModelStateDictionary modelState)
 {
-	public string Message { get; } = modelState.Values.First().Errors.First().ErrorMessage;
+	public string Message { get; } = modelState.Values.Last().Errors.First().ErrorMessage;
 }
 
 public sealed class ValidationFailedResult : ObjectResult
