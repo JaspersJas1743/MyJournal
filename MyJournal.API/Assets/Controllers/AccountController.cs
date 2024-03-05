@@ -54,6 +54,18 @@ public class AccountController(
     [Validator<SetEmailRequestValidator>]
     public record SetEmailRequest(string NewEmail);
     public record SetEmailResponse(string Message);
+
+    [Validator<VerifyPhoneRequestValidator>]
+    public record VerifyPhoneRequest(string Phone);
+    public record VerifyPhoneResponse(int UserId);
+
+    [Validator<VerifyEmailRequestValidator>]
+    public record VerifyEmailRequest(string Email);
+    public record VerifyEmailResponse(int UserId);
+
+    [Validator<ResetPasswordRequestValidator>]
+    public record ResetPasswordRequest(string NewPassword);
+    public record ResetPasswordResponse(string Message);
     #endregion
 
     #region Methods
@@ -176,12 +188,12 @@ public class AccountController(
     /// <remarks>
     /// Пример запроса к API:
     ///
-    ///     GET api/account/sign-up/code/{id:int}/get
+    ///     GET api/account/sign-up/user/{id:int}/code/get
     ///
     /// </remarks>
     /// <response code="200">Возвращает ссылку на QR-код в виде изображения и символьный код</response>
     /// <response code="404">Некорректный идентификатор пользователя</response>
-    [HttpGet(template: "sign-up/code/{id:int}/get")]
+    [HttpGet(template: "sign-up/user/{id:int}/code/get")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetGoogleAuthenticatorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
@@ -210,12 +222,12 @@ public class AccountController(
     /// <remarks>
     /// Пример запроса к API:
     ///
-    ///     GET api/account/sign-up/code/{id:int}/verify?UserCode=`your_code`
+    ///     GET api/account/user/{id:int}/code/verify?UserCode=`your_code`
     ///
     /// </remarks>
     /// <response code="200">Возвращает статус кода от пользователя: true - верный, false - неверный</response>
     /// <response code="404">Некорректный идентификатор пользователя</response>
-    [HttpGet(template: "sign-up/code/{id:int}/verify")]
+    [HttpGet(template: "user/{id:int}/code/verify")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyGoogleAuthenticatorResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
@@ -226,13 +238,69 @@ public class AccountController(
     )
     {
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
-            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
+                    throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
         bool isVerified = await googleAuthenticatorService.VerifyCode(
             authCode: user.AuthorizationCode,
             code: request.UserCode
         );
         return Ok(new VerifyGoogleAuthenticatorResponse(IsVerified: isVerified));
+    }
+
+    /// <summary>
+    /// Получение идентификатора пользователя, к которому привязан номер телефона
+    /// </summary>
+    /// <remarks>
+    /// Пример запроса к API:
+    ///
+    ///     GET api/account/restoring-access/phone/user/id/get?Phone=%2B7%28###%29###-####
+    ///
+    /// </remarks>
+    /// <response code="200">Возвращает идентификатор пользователя с указанным номером телефона</response>
+    /// <response code="404">Некорректный номер телефона</response>
+    [HttpGet(template: "restoring-access/phone/user/id/get")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyPhoneResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<VerifyPhoneResponse>> GetPhoneOwner(
+        [FromQuery] VerifyPhoneRequest request,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        User user = await context.Users.SingleOrDefaultAsync(
+            predicate: user => user.Phone.Equals(request.Phone),
+            cancellationToken: cancellationToken
+        ) ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный номер телефона.");
+        return Ok(value: new VerifyPhoneResponse(UserId: user.Id));
+    }
+
+    /// <summary>
+    /// Получение идентификатора пользователя, к которому привязан адрес электронной почты
+    /// </summary>
+    /// <remarks>
+    /// Пример запроса к API:
+    ///
+    ///     GET api/account/restoring-access/email/user/id/get?Email=your_email%40your_email_domain
+    ///
+    /// </remarks>
+    /// <response code="200">Возвращает идентификатор пользователя с указанным адресом электронной почты</response>
+    /// <response code="404">Некорректный номер телефона</response>
+    [HttpGet(template: "restoring-access/email/user/id/get")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyEmailResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<VerifyEmailResponse>> GetEmailOwner(
+        [FromQuery] VerifyEmailRequest request,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        User user = await context.Users.SingleOrDefaultAsync(
+            predicate: user => user.Email.Equals(request.Email),
+            cancellationToken: cancellationToken
+        ) ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный адрес электронной почты.");
+        return Ok(value: new VerifyEmailResponse(UserId: user.Id));
     }
     #endregion
 
@@ -473,7 +541,7 @@ public class AccountController(
     [HttpPost(template: "sign-up/user/{id:int}/phone/set")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SetPhoneResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     public async Task<ActionResult<SetPhoneResponse>> SetPhone(
         [FromBody] SetPhoneRequest request,
         [FromRoute] int id,
@@ -510,10 +578,10 @@ public class AccountController(
     [HttpPost(template: "sign-up/user/{id:int}/email/set")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SetEmailResponse))]
-    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
     public async Task<ActionResult<SetEmailResponse>> SetEmail(
-        [FromBody] SetEmailRequest request,
         [FromRoute] int id,
+        [FromBody] SetEmailRequest request,
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
@@ -527,6 +595,44 @@ public class AccountController(
         user.Email = request.NewEmail;
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SetPhoneResponse(Message: "Электронная почта успешно установлена!"));
+    }
+
+    /// <summary>
+    /// Устанавливает новый пароль для аутентификации пользователя
+    /// </summary>
+    /// <remarks>
+    /// Пример запроса к API:
+    ///
+    ///     POST /api/account/restoring-access/user/{id:int}/password/reset
+    ///     {
+    ///         "NewPassword": "your_new_password"
+    ///     }
+    ///
+    /// </remarks>
+    /// <response code="200">Смена пароля прошла успешно</response>
+    /// <response code="400">Указанный пароль не может быть занят</response>
+    /// <response code="400">Некорректный идентификатор пользователя</response>
+    [HttpPost(template: "restoring-access/user/{id:int}/password/reset")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(ResetPasswordResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<ResetPasswordResponse>> ResetPassword(
+        [FromRoute] int id,
+        [FromBody] ResetPasswordRequest request,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        IQueryable<User> usersWithPassword = context.Users.Where(predicate: user => !String.IsNullOrEmpty(user.Password));
+        if (usersWithPassword.AsEnumerable().Any(predicate: user => hash.Verify(text: request.NewPassword, hashedText: user.Password)))
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный пароль не может быть занят.");
+
+        User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
+
+        context.Entry(entity: user).State = EntityState.Modified;
+        user.Password = hash.Generate(toHash: request.NewPassword);
+        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        return Ok(value: new SetPhoneResponse(Message: "Новый пароль успешно установлен!"));
     }
     #endregion
     #endregion
