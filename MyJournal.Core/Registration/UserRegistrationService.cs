@@ -4,7 +4,9 @@ namespace MyJournal.Core.Registration;
 
 public sealed class UserRegistrationService(ApiClient client) : IRegistrationService<User>
 {
-	private int _userId;
+	private int _userId = -1;
+	private bool _googleAuthenticatorIsCreated = false;
+	private bool _googleAuthenticatorIsVerified = false;
 
 	public record SetPhoneRequest(string NewPhone);
 	public record SetEmailRequest(string NewEmail);
@@ -40,10 +42,14 @@ public sealed class UserRegistrationService(ApiClient client) : IRegistrationSer
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (Int32.IsNegative(value: _userId))
+			throw new InvalidOperationException(message: "Перед созданием Google Authenticator необходимо зарегистрировать пользователя.");
+
 		IRegistrationService<User>.AuthenticationData data = await client.GetAsync<IRegistrationService<User>.AuthenticationData>(
 			apiMethod: $"account/sign-up/user/{_userId}/code/get",
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		_googleAuthenticatorIsCreated = true;
 		return data;
 	}
 
@@ -52,17 +58,24 @@ public sealed class UserRegistrationService(ApiClient client) : IRegistrationSer
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (!_googleAuthenticatorIsCreated)
+			throw new InvalidOperationException(message: "Сначала необходимо создать аутентификационный код.");
+
 		VerifyAuthenticationCodeResponse data = await client.GetAsync<VerifyAuthenticationCodeResponse>(
-			apiMethod: $"sign-up/user/{_userId}/code/verify",
+			apiMethod: $"account/user/{_userId}/code/verify",
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		_googleAuthenticatorIsVerified = data.IsVerified;
 		return data.IsVerified;
 	}
 
 	public async Task SetEmail(string email, CancellationToken cancellationToken = default(CancellationToken))
 	{
+		if (!_googleAuthenticatorIsVerified)
+			throw new InvalidOperationException(message: "Сначала необходимо проверить аутентификационный код.");
+
 		await client.PostAsync<SetEmailRequest>(
-			apiMethod: $"sign-up/user/{_userId}/email/set",
+			apiMethod: $"account/sign-up/user/{_userId}/email/set",
 			arg: new SetEmailRequest(NewEmail: email),
 			cancellationToken: cancellationToken
 		);
@@ -70,8 +83,11 @@ public sealed class UserRegistrationService(ApiClient client) : IRegistrationSer
 
 	public async Task SetPhone(string phone, CancellationToken cancellationToken = default(CancellationToken))
 	{
+		if (!_googleAuthenticatorIsVerified)
+			throw new InvalidOperationException(message: "Сначала необходимо проверить аутентификационный код.");
+
 		await client.PostAsync<SetPhoneRequest>(
-			apiMethod: $"sign-up/user/{_userId}/phone/set",
+			apiMethod: $"account/sign-up/user/{_userId}/phone/set",
 			arg: new SetPhoneRequest(NewPhone: phone),
 			cancellationToken: cancellationToken
 		);
