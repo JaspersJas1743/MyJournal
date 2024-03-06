@@ -34,7 +34,7 @@ public class RestoringAccessTests
 			Email = "lesha.smirnov@mail.ru"
 		};
 		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		await userRegistrationService.VerifyAuthenticationCode(code: "557944");
+		await userRegistrationService.VerifyAuthenticationCode(code: "345015");
 		await userRegistrationService.ResetPassword(newPassword: "bratbratubrat");
 		Assert.Pass();
 	}

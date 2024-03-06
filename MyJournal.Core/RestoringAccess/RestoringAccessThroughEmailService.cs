@@ -1,16 +1,19 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.RestoringAccess;
 
-public class RestoringAccessThroughEmailService(ApiClient client) : IRestoringAccessService<User>
+public class RestoringAccessThroughEmailService(
+	ApiClient client,
+	IGoogleAuthenticatorService googleAuthenticatorService
+) : IRestoringAccessService<User>
 {
 	private int _userId = -1;
 	private bool _googleAuthenticatorIsVerified = false;
 
 	private record VerifyCredentialRequest(string Email);
 	private record VerifyCredentialResponse(int UserId);
-		private record VerifyAuthenticationCodeRequest(string UserCode);
-	private record VerifyAuthenticationCodeResponse(bool IsVerified);
 	private record ResetPasswordRequest(string NewPassword);
 
 	public async Task<bool> VerifyCredential(
@@ -41,13 +44,12 @@ public class RestoringAccessThroughEmailService(ApiClient client) : IRestoringAc
 		if (Int32.IsNegative(value: _userId))
 			throw new InvalidOperationException(message: "Сначала нужно проверить данные для восстановления доступа.");
 
-		VerifyAuthenticationCodeResponse data = await client.GetAsync<VerifyAuthenticationCodeResponse, VerifyAuthenticationCodeRequest>(
-			apiMethod: $"account/user/{_userId}/code/verify",
-			argQuery: new VerifyAuthenticationCodeRequest(UserCode: code),
+		_googleAuthenticatorIsVerified = await googleAuthenticatorService.VerifyAuthenticationCode(
+			userId: _userId,
+			code: code,
 			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		_googleAuthenticatorIsVerified = data.IsVerified;
-		return data.IsVerified;
+		);
+		return _googleAuthenticatorIsVerified;
 	}
 
 	public async Task ResetPassword(

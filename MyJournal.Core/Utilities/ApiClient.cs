@@ -288,7 +288,5 @@ public class ApiClient
 public static class ApiClientExtension
 {
 	public static void AddApiClient(this IServiceCollection serviceCollection)
-	{
-		serviceCollection.AddTransient<ApiClient>();
-	}
+		=> serviceCollection.AddTransient<ApiClient>();
 }

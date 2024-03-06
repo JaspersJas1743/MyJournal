@@ -1,8 +1,12 @@
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.Registration;
 
-public sealed class UserRegistrationService(ApiClient client) : IRegistrationService<User>
+public sealed class UserRegistrationService(
+	ApiClient client,
+	IGoogleAuthenticatorService googleAuthenticatorService
+) : IRegistrationService<User>
 {
 	private int _userId = -1;
 	private bool _googleAuthenticatorIsCreated = false;
@@ -11,7 +15,6 @@ public sealed class UserRegistrationService(ApiClient client) : IRegistrationSer
 	public record SetPhoneRequest(string NewPhone);
 	public record SetEmailRequest(string NewEmail);
 	private record SignUpResponse(int Id);
-	private record VerifyAuthenticationCodeResponse(bool IsVerified);
 
 	public async Task<bool> Register(
 		Credentials<User> credentials,
@@ -61,12 +64,12 @@ public sealed class UserRegistrationService(ApiClient client) : IRegistrationSer
 		if (!_googleAuthenticatorIsCreated)
 			throw new InvalidOperationException(message: "Сначала необходимо создать аутентификационный код.");
 
-		VerifyAuthenticationCodeResponse data = await client.GetAsync<VerifyAuthenticationCodeResponse>(
-			apiMethod: $"account/user/{_userId}/code/verify",
+		_googleAuthenticatorIsVerified = await googleAuthenticatorService.VerifyAuthenticationCode(
+			userId: _userId,
+			code: code,
 			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		_googleAuthenticatorIsVerified = data.IsVerified;
-		return data.IsVerified;
+		);
+		return _googleAuthenticatorIsVerified;
 	}
 
 	public async Task SetEmail(string email, CancellationToken cancellationToken = default(CancellationToken))
