@@ -107,4 +107,97 @@ public class UserTests
 		await user.SignOutAllExceptThis();
 		await user.DownloadProfilePhoto(folderToSave: @"C:\Users\JaspersJas1743\Downloads");
 	}
+
+	[Test]
+	public async Task UserChangeEmail_WithCorrectEmail_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		User user = await service.SignIn(credentials: credentials);
+		await user.ChangeEmail(email: "test@mail.ru");
+	}
+
+	[Test]
+	public async Task UserChangeEmail_WithUsedEmail_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangeEmail(email: "test@mail.ru");
+		});
+	}
+
+	[Test]
+	public async Task UserChangeEmail_WithIncorrectEmailName_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangeEmail(email: "@mail.ru");
+		});
+	}
+
+	[Test]
+	public async Task UserChangeEmail_WithIncorrectEmailDomain_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangeEmail(email: "test@.ru");
+		});
+	}
+
+	[Test]
+	public async Task UserChangeEmail_WithoutEmailDomain_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangeEmail(email: "test@");
+		});
+	}
+
+	[Test]
+	public async Task UserChangeEmail_WithoutAt_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangeEmail(email: "testmail.ru");
+		});
+	}
 }

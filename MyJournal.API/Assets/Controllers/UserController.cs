@@ -28,13 +28,24 @@ public class UserController(
 {
 	#region Records
 	public record GetInforamtionResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
+
 	public record GetUserInforamtionResponse(string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
+
 	[Validator<UploadProfilePhotoRequestValidator>]
 	public record UploadProfilePhotoRequest(IFormFile File);
 	public record UploadProfilePhotoResponse(string Link);
 
+	[Validator<ChangePasswordRequestValidator>]
 	public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 	public record ChangePasswordResponse(string Message);
+
+	[Validator<ChangeEmailRequestValidator>]
+	public record ChangeEmailRequest(string NewEmail);
+	public record ChangeEmailResponse(string Email, string Message);
+
+	[Validator<ChangePhoneRequestValidator>]
+	public record ChangePhoneRequest(string NewPhone);
+	public record ChangePhoneResponse(string Phone, string Message);
 	#endregion
 
 	#region Methods
@@ -333,7 +344,6 @@ public class UserController(
 	///
 	/// </remarks>
 	/// <response code="200">Возвращает сообщение об успешной смене пароля</response>
-	/// <response code="400">Пользователь пытается установить новый пароль, который одинаков с текущим</response>
 	/// <response code="400">Текущий пароль пользователя указан неверно</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpPut(template: "profile/security/password/change")]
@@ -346,9 +356,6 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		if (request.CurrentPassword.Equals(request.NewPassword))
-			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Новый и текущий пароли совпадают.");
-
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 		bool isVerified = hashService.Verify(text: request.CurrentPassword, hashedText: user.Password);
 
@@ -373,6 +380,78 @@ public class UserController(
 		await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		return Ok(value: new ChangePasswordResponse(Message: "Текущий пароль изменен успешно!"));
+	}
+
+	/// <summary>
+	/// Заменяет текущий адрес электронной почты пользователя на новый
+	/// </summary>
+	/// <remarks>
+	/// Пример запроса к API:
+	///
+	///     PUT api/user/profile/security/email/change
+	///		{
+	///			"NewEmail": "your_new_email"
+	///		}
+	///
+	/// </remarks>
+	/// <response code="200">Возвращает сообщение об успешной смене адреса электронной почты</response>
+	/// <response code="400">Указанный адрес электронной почты занят другим пользователем</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	[HttpPut(template: "profile/security/email/change")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(ChangeEmailResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<ChangeEmailResponse>> ChangeEmail(
+		[FromBody] ChangeEmailRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+
+		if (await context.Users.AnyAsync(predicate: u => u.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
+			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный адрес электронной почты не может быть занят.");
+
+		context.Entry(entity: user).State = EntityState.Modified;
+		user.Email = request.NewEmail;
+		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		return Ok(value: new ChangeEmailResponse(Email: user.Email, Message: "Текущий адрес электронной почты изменен успешно!"));
+	}
+
+	/// <summary>
+	/// Заменяет текущий номер телефона пользователя на новый
+	/// </summary>
+	/// <remarks>
+	/// Пример запроса к API:
+	///
+	///     PUT api/user/profile/security/phone/change
+	///		{
+	///			"NewPhone": "your_new_phone"
+	///		}
+	///
+	/// </remarks>
+	/// <response code="200">Возвращает сообщение об успешной смене номера телефона</response>
+	/// <response code="400">Указанный номер телефона занят другим пользователем</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	[HttpPut(template: "profile/security/phone/change")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(ChangePhoneResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<ChangePhoneResponse>> ChangePhone(
+		[FromBody] ChangePhoneRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+
+		if (await context.Users.AnyAsync(predicate: u => u.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
+			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный номер телефона не может быть занят.");
+
+		context.Entry(entity: user).State = EntityState.Modified;
+		user.Phone = request.NewPhone;
+		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		return Ok(value: new ChangePhoneResponse(Phone: user.Phone, Message: "Текущий адрес электронной почты изменен успешно!"));
 	}
 	#endregion
 
