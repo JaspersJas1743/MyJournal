@@ -10,7 +10,7 @@ public sealed class RegistrationCodeVerificationService(ApiClient client) : IVer
 	public async Task<bool> Verify(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		Response response = await client.GetAsync<Response, Request>(
-			apiMethod: "account/code/verify",
+			apiMethod: "account/registration-code/verify",
 			argQuery: new Request(RegistrationCode: credentials.GetCredential<string>(name: nameof(Request.RegistrationCode))),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();

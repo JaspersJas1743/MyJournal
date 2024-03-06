@@ -24,6 +24,8 @@ public class AccountController(
     IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
 {
+    private readonly MyJournalContext _context = context;
+
     #region Records
     [Validator<VerifyRegistrationCodeRequestValidator>]
     public record VerifyRegistrationCodeRequest(string RegistrationCode);
@@ -41,7 +43,7 @@ public class AccountController(
 
     public record SignOutResponse(string Result);
 
-    public record GetGoogleAuthenticatorResponse(string QRCodeBase64, string AuthenticationCode);
+    public record GetGoogleAuthenticatorResponse(string QrCodeBase64, string AuthenticationCode);
 
     [Validator<VerifyGoogleAuthenticatorRequestValidator>]
     public record VerifyGoogleAuthenticatorRequest(string UserCode);
@@ -81,7 +83,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole);
+        IQueryable<User> users = _context.Users.Include(navigationPropertyPath: user => user.UserRole);
 
         return await users.SingleOrDefaultAsync(
             predicate: user => user.Id.Equals(id),
@@ -94,7 +96,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole)
+        IQueryable<User> users = _context.Users.Include(navigationPropertyPath: user => user.UserRole)
                                         .Where(predicate: user => !String.IsNullOrEmpty(user.Login));
 
         return await users.SingleOrDefaultAsync(
@@ -108,7 +110,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole)
+        IQueryable<User> users = _context.Users.Include(navigationPropertyPath: user => user.UserRole)
                                         .Where(predicate: user => !String.IsNullOrEmpty(user.RegistrationCode));
 
         return await users.SingleOrDefaultAsync(
@@ -122,7 +124,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        return await context.MyJournalClients.FirstAsync(
+        return await _context.MyJournalClients.FirstAsync(
             predicate: client => client.Client.ClientName.Equals(clientType),
             cancellationToken: cancellationToken
         );
@@ -133,7 +135,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        return await context.SessionActivityStatuses.FirstAsync(
+        return await _context.SessionActivityStatuses.FirstAsync(
             predicate: status => status.ActivityStatus.Equals(activityStatus),
             cancellationToken: cancellationToken
         );
@@ -144,7 +146,7 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        context.Entry(entity: session).State = EntityState.Modified;
+        _context.Entry(entity: session).State = EntityState.Modified;
         session.SessionActivityStatus = await GetActivityStatus(
             activityStatus: SessionActivityStatuses.Disable,
             cancellationToken: cancellationToken
@@ -159,12 +161,12 @@ public class AccountController(
     /// <remarks>
     /// Пример запроса к API:
     ///
-    ///     GET api/account/code/verify?RegistrationCode=`your_code`
+    ///     GET api/account/registration-code/verify?RegistrationCode=`your_code`
     ///
     /// </remarks>
     /// <response code="200">Возвращает статус переданного регистрационного кода: true - существует, false - не сушествует</response>
     /// <response code="404">Некорректный регистрационный код</response>
-    [HttpGet(template: "code/verify")]
+    [HttpGet(template: "registration-code/verify")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyRegistrationCodeResponse))]
     public async Task<ActionResult<VerifyRegistrationCodeResponse>> VerifyRegistrationCode(
@@ -205,15 +207,15 @@ public class AccountController(
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
-        context.Entry(entity: user).State = EntityState.Modified;
+        _context.Entry(entity: user).State = EntityState.Modified;
         user.AuthorizationCode = await googleAuthenticatorService.GenerateAuthenticationCode();
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
         IGoogleAuthenticatorService.AuthenticationData data = await googleAuthenticatorService.GenerateQrCode(
             username: $"{user.Surname} {user.Name}",
             authCode: user.AuthorizationCode
         );
-        return Ok(new GetGoogleAuthenticatorResponse(QRCodeBase64: data.QrCodeUrl, AuthenticationCode: data.Code));
+        return Ok(new GetGoogleAuthenticatorResponse(QrCodeBase64: data.QrCodeUrl, AuthenticationCode: data.Code));
     }
 
     /// <summary>
@@ -268,8 +270,8 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        User user = await context.Users.SingleOrDefaultAsync(
-            predicate: user => user.Phone.Equals(request.Phone),
+        User user = await _context.Users.SingleOrDefaultAsync(
+            predicate: user => user.Phone != null && user.Phone.Equals(request.Phone),
             cancellationToken: cancellationToken
         ) ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный номер телефона.");
         return Ok(value: new VerifyPhoneResponse(UserId: user.Id));
@@ -296,8 +298,8 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        User user = await context.Users.SingleOrDefaultAsync(
-            predicate: user => user.Email.Equals(request.Email),
+        User user = await _context.Users.SingleOrDefaultAsync(
+            predicate: user => user.Email != null && user.Email.Equals(request.Email),
             cancellationToken: cancellationToken
         ) ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный адрес электронной почты.");
         return Ok(value: new VerifyEmailResponse(UserId: user.Id));
@@ -354,8 +356,8 @@ public class AccountController(
             )
         };
 
-        await context.Sessions.AddAsync(entity: currentSession, cancellationToken: cancellationToken);
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.Sessions.AddAsync(entity: currentSession, cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
         string token = jwt.Generate(tokenOwner: user, sessionId: currentSession.Id);
         return Ok(value: new SignInResponse(Token: token));
@@ -424,13 +426,13 @@ public class AccountController(
         if (await FindUserByLoginAsync(login: request.Login, cancellationToken: cancellationToken) is not null)
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Данный логин не может быть занят.");
 
-        context.Entry(entity: user).State = EntityState.Modified;
+        _context.Entry(entity: user).State = EntityState.Modified;
         user.RegistrationCode = null;
         user.RegisteredAt = DateTime.Now;
         user.Login = request.Login;
         user.Password = hash.Generate(toHash: request.Password);
 
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SignUpResponse(Id: user.Id));
     }
 
@@ -460,7 +462,7 @@ public class AccountController(
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанная сессия уже является неактивной.");
 
         await DisableSession(session: session, cancellationToken: cancellationToken);
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SignOutResponse(Result: "Текущая сессия успешно завершена."));
     }
 
@@ -489,7 +491,7 @@ public class AccountController(
         foreach (Session session in user.Sessions)
             await DisableSession(session: session, cancellationToken: cancellationToken);
 
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SignOutResponse(Result: "Все сессии успешно завершены."));
     }
 
@@ -519,7 +521,7 @@ public class AccountController(
         foreach (Session session in user.Sessions.Except(second: new Session[] { currentSession }))
             await DisableSession(session: session, cancellationToken: cancellationToken);
 
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SignOutResponse(Result: "Все сессии, кроме текущей, успешно завершены."));
     }
 
@@ -548,15 +550,15 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        if (await context.Users.AnyAsync(predicate: user => user.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
+        if (await _context.Users.AnyAsync(predicate: user => user.Phone != null && user.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный номер телефона не может быть занят.");
 
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
-        context.Entry(entity: user).State = EntityState.Modified;
+        _context.Entry(entity: user).State = EntityState.Modified;
         user.Phone = request.NewPhone;
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SetPhoneResponse(Message: "Номер телефона успешно установлен!"));
     }
 
@@ -585,15 +587,15 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        if (await context.Users.AnyAsync(predicate: user => user.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
+        if (await _context.Users.AnyAsync(predicate: user => user.Email != null && user.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный адрес электронной почты не может быть занят.");
 
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
-        context.Entry(entity: user).State = EntityState.Modified;
+        _context.Entry(entity: user).State = EntityState.Modified;
         user.Email = request.NewEmail;
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SetPhoneResponse(Message: "Электронная почта успешно установлена!"));
     }
 
@@ -622,16 +624,16 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> usersWithPassword = context.Users.Where(predicate: user => !String.IsNullOrEmpty(user.Password));
+        IQueryable<User> usersWithPassword = _context.Users.Where(predicate: user => !String.IsNullOrEmpty(user.Password));
         if (usersWithPassword.AsEnumerable().Any(predicate: user => hash.Verify(text: request.NewPassword, hashedText: user.Password)))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный пароль не может быть занят.");
 
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
-        context.Entry(entity: user).State = EntityState.Modified;
+        _context.Entry(entity: user).State = EntityState.Modified;
         user.Password = hash.Generate(toHash: request.NewPassword);
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SetPhoneResponse(Message: "Новый пароль успешно установлен!"));
     }
     #endregion

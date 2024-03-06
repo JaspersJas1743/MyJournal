@@ -37,18 +37,11 @@ public class Program
 			optionsAction: options => options.UseSqlServer(connectionString: dbConnectionString)
 		);
 
-		string redisConnectionString = builder.Configuration.GetConnectionString(name: "MyJournalRedis")
-			?? throw new ArgumentException(message: "Строка подключения к MyJournalRedis отсутствует или некорректна", paramName: nameof(dbConnectionString));
-
-		builder.Services.AddStackExchangeRedisCache(
-			setupAction: options => options.Configuration = redisConnectionString
-		);
-
-		S3Options? configuration = builder.Configuration.GetS3Options();
+		S3Options configuration = builder.Configuration.GetS3Options();
 		AWSOptions awsOptions = new AWSOptions
 		{
-			DefaultClientConfig = { ServiceURL = configuration?.Endpoint },
-			Credentials = new BasicAWSCredentials(accessKey: configuration?.AccessKeyId, secretKey: configuration?.SecretAccessKey)
+			DefaultClientConfig = { ServiceURL = configuration.Endpoint },
+			Credentials = new BasicAWSCredentials(accessKey: configuration.AccessKeyId, secretKey: configuration.SecretAccessKey)
 		};
 
 		builder.Services.AddAWSService<IAmazonS3>(options: awsOptions);
@@ -105,15 +98,11 @@ public class Program
 				   connectionString: dbConnectionString,
 				   name: "MyJournal database",
 				   tags: new string[] { "db", "database" })
-			   .AddRedis(
-				   name: "MyJournal redis",
-				   redisConnectionString: redisConnectionString,
-				   tags: new string[] { "redis" })
 			   .AddS3(
 				   setup: options =>
 				   {
 					   options.Credentials = awsOptions.Credentials;
-					   options.BucketName = configuration?.BucketName ?? throw new ArgumentNullException(paramName: nameof(configuration.BucketName));
+					   options.BucketName = configuration.BucketName;
 					   options.S3Config = new AmazonS3Config()
 					   {
 						   ServiceURL = awsOptions.DefaultClientConfig.ServiceURL
@@ -205,7 +194,6 @@ public class Program
 
 		app.MapHealthChecks(pattern: "/health", options: CreateHealthCheckOptions(predicate: _ => true));
 		app.MapHealthChecks(pattern: "/health/db", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "db")));
-		app.MapHealthChecks(pattern: "/health/redis", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "redis")));
 		app.MapHealthChecks(pattern: "/health/s3", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "s3")));
 		app.MapHealthChecks(pattern: "/health/aws", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "aws")));
 		app.MapHealthChecks(pattern: "/health/context", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "context")));

@@ -12,7 +12,7 @@ public sealed class FileStorageService(
 
 	private async Task<string> UploadAsync(string bucket, string key, Stream fileStream, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		PutObjectResponse response = await amazonS3Client.PutObjectAsync(request: new PutObjectRequest()
+		_ = await amazonS3Client.PutObjectAsync(request: new PutObjectRequest()
 		{
 			BucketName = bucket,
 			Key = key,

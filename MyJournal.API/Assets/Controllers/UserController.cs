@@ -26,10 +26,12 @@ public class UserController(
 	IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
 {
-	#region Records
-	public record GetInforamtionResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
+	private readonly MyJournalContext _context = context;
 
-	public record GetUserInforamtionResponse(string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
+	#region Records
+	public record GetInformationResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
+
+	public record GetUserInformationResponse(string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
 
 	[Validator<UploadProfilePhotoRequestValidator>]
 	public record UploadProfilePhotoRequest(IFormFile File);
@@ -55,7 +57,7 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await context.UserActivityStatuses.FirstAsync(
+		return await _context.UserActivityStatuses.FirstAsync(
 			predicate: status => status.ActivityStatus.Equals(activityStatus),
 			cancellationToken: cancellationToken
 		);
@@ -66,7 +68,7 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await context.SessionActivityStatuses.FirstAsync(
+		return await _context.SessionActivityStatuses.FirstAsync(
 			predicate: status => status.ActivityStatus.Equals(activityStatus),
 			cancellationToken: cancellationToken
 		);
@@ -85,8 +87,8 @@ public class UserController(
 			cancellationToken: cancellationToken
 		);
 		user.OnlineAt = onlineAt;
-		await context.SaveChangesAsync(cancellationToken: cancellationToken);
-		return (id: user.Id, onlineAt: onlineAt);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+		return (user.Id, onlineAt);
 	}
 
 	private async Task<User?> FindUserByIdAsync(
@@ -94,7 +96,7 @@ public class UserController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await context.Users.Include(navigationPropertyPath: user => user.UserActivityStatus)
+		return await _context.Users.Include(navigationPropertyPath: user => user.UserActivityStatus)
 			.SingleOrDefaultAsync(
 				predicate: user => user.Id.Equals(id),
 				cancellationToken: cancellationToken
@@ -128,7 +130,7 @@ public class UserController(
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		if (String.IsNullOrEmpty(user?.LinkToPhoto))
+		if (String.IsNullOrEmpty(user.LinkToPhoto))
 			throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Фотография пользователя не установлена");
 
 		FileInfo fileInfo = new FileInfo(fileName: user.LinkToPhoto);
@@ -152,16 +154,16 @@ public class UserController(
 	/// <response code="401">Пользователь не авторизован</response>
 	[HttpGet(template: "profile/info/me")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetInforamtionResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetInformationResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-	public async Task<ActionResult<GetInforamtionResponse>> GetInformation(
+	public async Task<ActionResult<GetInformationResponse>> GetInformation(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		return Ok(value: new GetInforamtionResponse(
+		return Ok(value: new GetInformationResponse(
 			Surname: user.Surname,
 			Name: user.Name,
 			Patronymic: user.Patronymic,
@@ -174,7 +176,6 @@ public class UserController(
 	/// <summary>
 	/// Получение основной информации о пользователе по его идентификатору
 	/// </summary>
-	/// <param name="id">Идентификатор пользователя, информацию о котором необходимо получить</param>
 	/// <remarks>
 	/// Пример запроса к API:
 	///
@@ -186,18 +187,18 @@ public class UserController(
 	/// <response code="401">Пользователь не авторизован</response>
 	[HttpGet(template: "profile/info/{id:int}")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetUserInforamtionResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetUserInformationResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
-	public async Task<ActionResult<GetUserInforamtionResponse>> GetUserInformation(
+	public async Task<ActionResult<GetUserInformationResponse>> GetUserInformation(
 		[FromRoute] int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		User? user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
+		User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
 					 throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор пользователя.");
 
-		return Ok(value: new GetUserInforamtionResponse(
+		return Ok(value: new GetUserInformationResponse(
 			Surname: user.Surname,
 			Name: user.Name,
 			Patronymic: user.Patronymic,
@@ -318,12 +319,12 @@ public class UserController(
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
 		string fileExtension = Path.GetExtension(path: request.File.FileName);
-		string fileKey = $"ProfilePhotos/id{user.Id}_profilephoto{fileExtension}";
+		string fileKey = $"ProfilePhotos/id{user.Id}_profile-photo{fileExtension}";
 
 		string link = await fileStorageService.UploadFileAsync(key: fileKey, fileStream: request.File.OpenReadStream(), cancellationToken: cancellationToken);
-		context.Entry(entity: user).State = EntityState.Modified;
+		_context.Entry(entity: user).State = EntityState.Modified;
 		user.LinkToPhoto = link;
-		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		await userActivityHub.Clients.All.UpdatedProfilePhoto(userId: user.Id);
 
@@ -364,7 +365,7 @@ public class UserController(
 
 		Session currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
 
-		context.Entry(entity: user).State = EntityState.Modified;
+		_context.Entry(entity: user).State = EntityState.Modified;
 		user.Password = hashService.Generate(toHash: request.NewPassword);
 		SessionActivityStatus disableStatus = await GetSessionActivityStatus(
 			activityStatus: SessionActivityStatuses.Disable,
@@ -373,11 +374,11 @@ public class UserController(
 
 		foreach (Session session in user.Sessions.Except(second: new Session[] { currentSession }))
 		{
-			context.Entry(entity: session).State = EntityState.Modified;
+			_context.Entry(entity: session).State = EntityState.Modified;
 			session.SessionActivityStatus = disableStatus;
 		}
 
-		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		return Ok(value: new ChangePasswordResponse(Message: "Текущий пароль изменен успешно!"));
 	}
@@ -409,12 +410,12 @@ public class UserController(
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		if (await context.Users.AnyAsync(predicate: u => u.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
+		if (await _context.Users.AnyAsync(predicate: u => u.Email != null && u.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
 			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный адрес электронной почты не может быть занят.");
 
-		context.Entry(entity: user).State = EntityState.Modified;
+		_context.Entry(entity: user).State = EntityState.Modified;
 		user.Email = request.NewEmail;
-		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 		return Ok(value: new ChangeEmailResponse(Email: user.Email, Message: "Текущий адрес электронной почты изменен успешно!"));
 	}
 
@@ -445,12 +446,12 @@ public class UserController(
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		if (await context.Users.AnyAsync(predicate: u => u.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
+		if (await _context.Users.AnyAsync(predicate: u => u.Phone != null && u.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
 			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный номер телефона не может быть занят.");
 
-		context.Entry(entity: user).State = EntityState.Modified;
+		_context.Entry(entity: user).State = EntityState.Modified;
 		user.Phone = request.NewPhone;
-		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 		return Ok(value: new ChangePhoneResponse(Phone: user.Phone, Message: "Текущий адрес электронной почты изменен успешно!"));
 	}
 	#endregion
@@ -478,10 +479,10 @@ public class UserController(
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
 		string? extension = Path.GetExtension(path: user.LinkToPhoto);
-		await fileStorageService.DeleteFileAsync(key: $"ProfilePhotos/id{user.Id}_profilephoto{extension}", cancellationToken: cancellationToken);
-		context.Entry(entity: user).State = EntityState.Modified;
+		await fileStorageService.DeleteFileAsync(key: $"ProfilePhotos/id{user.Id}_profile-photo{extension}", cancellationToken: cancellationToken);
+		_context.Entry(entity: user).State = EntityState.Modified;
 		user.LinkToPhoto = null;
-		await context.SaveChangesAsync(cancellationToken: cancellationToken);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		await userActivityHub.Clients.All.DeletedProfilePhoto(userId: user.Id);
 
