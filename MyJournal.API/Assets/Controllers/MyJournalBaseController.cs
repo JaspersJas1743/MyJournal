@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,5 +39,85 @@ public class MyJournalBaseController(
 				cancellationToken: cancellationToken
 			) ?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
 		return session;
+	}
+
+	protected IPAddress GetSenderIp()
+    {
+        return HttpContext.Connection.RemoteIpAddress?.MapToIPv4() ??
+               throw new NullReferenceException(message: "HttpContext.Connection.RemoteIpAddress is null");
+    }
+
+	protected async Task<User?> FindUserByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole);
+
+        return await users.SingleOrDefaultAsync(
+            predicate: user => user.Id.Equals(id),
+            cancellationToken: cancellationToken
+        );
+    }
+
+	protected async Task<User?> FindUserByLoginAsync(
+        string login,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole)
+                                        .Where(predicate: user => !String.IsNullOrEmpty(user.Login));
+
+        return await users.SingleOrDefaultAsync(
+            predicate: user => user.Login!.Equals(login),
+            cancellationToken: cancellationToken
+        );
+    }
+
+	protected async Task<User?> FindUserByRegistrationCodeAsync(
+        string registrationCode,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole)
+                                        .Where(predicate: user => !String.IsNullOrEmpty(user.RegistrationCode));
+
+        return await users.SingleOrDefaultAsync(
+            predicate: user => user.RegistrationCode!.Equals(registrationCode),
+            cancellationToken: cancellationToken
+        );
+    }
+
+	protected async Task<MyJournalClient> FindMyJournalClientByClientType(
+        Clients clientType,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        return await context.MyJournalClients.FirstAsync(
+            predicate: client => client.Client.ClientName.Equals(clientType),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    protected async Task<SessionActivityStatus> FindSessionActivityStatus(
+        SessionActivityStatuses activityStatus,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        return await context.SessionActivityStatuses.FirstAsync(
+            predicate: status => status.ActivityStatus.Equals(activityStatus),
+            cancellationToken: cancellationToken
+        );
+    }
+
+	protected async Task<UserActivityStatus> FindUserActivityStatus(
+		UserActivityStatuses activityStatus,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return await context.UserActivityStatuses.FirstAsync(
+			predicate: status => status.ActivityStatus.Equals(activityStatus),
+			cancellationToken: cancellationToken
+		);
 	}
 }

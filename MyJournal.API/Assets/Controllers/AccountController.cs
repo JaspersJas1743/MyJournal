@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -72,82 +71,13 @@ public class AccountController(
 
     #region Methods
     #region AuxiliaryMethods
-    private IPAddress GetSenderIp()
-    {
-        return HttpContext.Connection.RemoteIpAddress?.MapToIPv4() ??
-               throw new NullReferenceException(message: "HttpContext.Connection.RemoteIpAddress is null");
-    }
-
-    private async Task<User?> FindUserByIdAsync(
-        int id,
-        CancellationToken cancellationToken = default(CancellationToken)
-    )
-    {
-        IQueryable<User> users = _context.Users.Include(navigationPropertyPath: user => user.UserRole);
-
-        return await users.SingleOrDefaultAsync(
-            predicate: user => user.Id.Equals(id),
-            cancellationToken: cancellationToken
-        );
-    }
-
-    private async Task<User?> FindUserByLoginAsync(
-        string login,
-        CancellationToken cancellationToken = default(CancellationToken)
-    )
-    {
-        IQueryable<User> users = _context.Users.Include(navigationPropertyPath: user => user.UserRole)
-                                        .Where(predicate: user => !String.IsNullOrEmpty(user.Login));
-
-        return await users.SingleOrDefaultAsync(
-            predicate: user => user.Login!.Equals(login),
-            cancellationToken: cancellationToken
-        );
-    }
-
-    private async Task<User?> FindUserByRegistrationCodeAsync(
-        string registrationCode,
-        CancellationToken cancellationToken = default(CancellationToken)
-    )
-    {
-        IQueryable<User> users = _context.Users.Include(navigationPropertyPath: user => user.UserRole)
-                                        .Where(predicate: user => !String.IsNullOrEmpty(user.RegistrationCode));
-
-        return await users.SingleOrDefaultAsync(
-            predicate: user => user.RegistrationCode!.Equals(registrationCode),
-            cancellationToken: cancellationToken
-        );
-    }
-
-    private async Task<MyJournalClient> FindMyJournalClientByClientType(
-        Clients clientType,
-        CancellationToken cancellationToken = default(CancellationToken)
-    )
-    {
-        return await _context.MyJournalClients.FirstAsync(
-            predicate: client => client.Client.ClientName.Equals(clientType),
-            cancellationToken: cancellationToken
-        );
-    }
-
-    private async Task<SessionActivityStatus> GetActivityStatus(
-        SessionActivityStatuses activityStatus,
-        CancellationToken cancellationToken = default(CancellationToken)
-    )
-    {
-        return await _context.SessionActivityStatuses.FirstAsync(
-            predicate: status => status.ActivityStatus.Equals(activityStatus),
-            cancellationToken: cancellationToken
-        );
-    }
-
     private async Task DisableSession(
         Session session,
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
         _context.Entry(entity: session).State = EntityState.Modified;
-        session.SessionActivityStatus = await GetActivityStatus(
+        session.SessionActivityStatus = await FindSessionActivityStatus(
             activityStatus: SessionActivityStatuses.Disable,
             cancellationToken: cancellationToken
         );
@@ -350,7 +280,7 @@ public class AccountController(
                 clientType: request.Client,
                 cancellationToken: cancellationToken
             ),
-            SessionActivityStatus = await GetActivityStatus(
+            SessionActivityStatus = await FindSessionActivityStatus(
                 activityStatus: SessionActivityStatuses.Enable,
                 cancellationToken: cancellationToken
             )

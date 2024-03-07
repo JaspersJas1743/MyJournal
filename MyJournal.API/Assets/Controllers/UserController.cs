@@ -52,28 +52,6 @@ public class UserController(
 
 	#region Methods
 	#region AuxiliaryMethods
-	private async Task<UserActivityStatus> GetUserActivityStatus(
-		UserActivityStatuses activityStatus,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		return await _context.UserActivityStatuses.FirstAsync(
-			predicate: status => status.ActivityStatus.Equals(activityStatus),
-			cancellationToken: cancellationToken
-		);
-	}
-
-	private async Task<SessionActivityStatus> GetSessionActivityStatus(
-		SessionActivityStatuses activityStatus,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		return await _context.SessionActivityStatuses.FirstAsync(
-			predicate: status => status.ActivityStatus.Equals(activityStatus),
-			cancellationToken: cancellationToken
-		);
-	}
-
 	private async Task<(int id, DateTime? onlineAt)> SetActivityStatus(
 		UserActivityStatuses activityStatus,
 		DateTime? onlineAt,
@@ -82,25 +60,13 @@ public class UserController(
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		user.UserActivityStatus = await GetUserActivityStatus(
+		user.UserActivityStatus = await FindUserActivityStatus(
 			activityStatus: activityStatus,
 			cancellationToken: cancellationToken
 		);
 		user.OnlineAt = onlineAt;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 		return (user.Id, onlineAt);
-	}
-
-	private async Task<User?> FindUserByIdAsync(
-		int id,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		return await _context.Users.Include(navigationPropertyPath: user => user.UserActivityStatus)
-			.SingleOrDefaultAsync(
-				predicate: user => user.Id.Equals(id),
-				cancellationToken: cancellationToken
-			);
 	}
 	#endregion
 
@@ -367,7 +333,7 @@ public class UserController(
 
 		_context.Entry(entity: user).State = EntityState.Modified;
 		user.Password = hashService.Generate(toHash: request.NewPassword);
-		SessionActivityStatus disableStatus = await GetSessionActivityStatus(
+		SessionActivityStatus disableStatus = await FindSessionActivityStatus(
 			activityStatus: SessionActivityStatuses.Disable,
 			cancellationToken: cancellationToken
 		);
