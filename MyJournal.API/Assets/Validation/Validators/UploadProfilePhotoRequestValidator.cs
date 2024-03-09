@@ -8,7 +8,7 @@ public sealed class UploadProfilePhotoRequestValidator : AbstractValidator<UserC
 {
 	public UploadProfilePhotoRequestValidator()
 	{
-		RuleFor(expression: request => request.File)
+		RuleFor(expression: request => request.Photo)
 			.Cascade(cascadeMode: CascadeMode.Stop)
 			.HaveContent().WithMessage(errorMessage: "Файл поврежден")
 			.WithSizeBetween(minSize: 1, maxSize: 2097153)

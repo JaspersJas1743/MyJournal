@@ -44,7 +44,7 @@ public class AccountController(
 
     public record GetGoogleAuthenticatorResponse(string QrCodeBase64, string AuthenticationCode);
 
-    [Validator<VerifyGoogleAuthenticatorRequestValidator>]
+    [Validator<AccountControllerVerifyGoogleAuthenticatorRequestValidator>]
     public record VerifyGoogleAuthenticatorRequest(string UserCode);
     public record VerifyGoogleAuthenticatorResponse(bool IsVerified);
 

@@ -33,8 +33,12 @@ public class UserController(
 
 	public record GetUserInformationResponse(string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
 
+	[Validator<UserControllerVerifyGoogleAuthenticatorRequest>]
+	public record VerifyGoogleAuthenticatorRequest(string UserCode);
+	public record VerifyGoogleAuthenticatorResponse(bool IsVerified);
+
 	[Validator<UploadProfilePhotoRequestValidator>]
-	public record UploadProfilePhotoRequest(IFormFile File);
+	public record UploadProfilePhotoRequest(IFormFile Photo);
 	public record UploadProfilePhotoResponse(string Link);
 
 	[Validator<ChangePasswordRequestValidator>]
@@ -188,9 +192,9 @@ public class UserController(
 	[HttpGet(template: "profile/security/code/verify")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(AccountController.VerifyGoogleAuthenticatorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<AccountController.VerifyGoogleAuthenticatorResponse>> VerifyGoogleAuthenticator(
-		[FromQuery] AccountController.VerifyGoogleAuthenticatorRequest request,
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<VerifyGoogleAuthenticatorResponse>> VerifyGoogleAuthenticator(
+		[FromQuery] VerifyGoogleAuthenticatorRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
