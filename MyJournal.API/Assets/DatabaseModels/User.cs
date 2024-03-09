@@ -39,7 +39,7 @@ public partial class User
 
     public virtual ICollection<Administrator> Administrators { get; set; } = new List<Administrator>();
 
-    public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
+    public virtual ICollection<Chat> CreatedChats { get; set; } = new List<Chat>();
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
@@ -55,5 +55,5 @@ public partial class User
 
     public virtual UserRole UserRole { get; set; } = null!;
 
-    public virtual ICollection<Chat> ChatsNavigation { get; set; } = new List<Chat>();
+    public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
 }

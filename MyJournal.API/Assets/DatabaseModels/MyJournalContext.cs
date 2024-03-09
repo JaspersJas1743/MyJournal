@@ -161,13 +161,12 @@ public partial class MyJournalContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Chats__ChatTypeI__1332DBDC");
 
-            entity.HasOne(d => d.Creator).WithMany(p => p.Chats)
+            entity.HasOne(d => d.Creator).WithMany(p => p.CreatedChats)
                 .HasForeignKey(d => d.CreatorId)
                 .HasConstraintName("FK__Chats__CreatorId__151B244E");
 
             entity.HasOne(d => d.LastMessageNavigation).WithMany(p => p.Chats)
-                .HasForeignKey(d => d.LastMessage)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.LastMessageId)
                 .HasConstraintName("FK__Chats__LastMessa__14270015");
 
             entity.HasMany(d => d.Attachments).WithMany(p => p.Chats)
@@ -189,26 +188,7 @@ public partial class MyJournalContext : DbContext
                         j.IndexerProperty<int>("AttachmentsId").HasColumnName("Attachments_Id");
                     });
 
-            entity.HasMany(d => d.Messages).WithMany(p => p.ChatsNavigation)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ChatsMessage",
-                    r => r.HasOne<Message>().WithMany()
-                        .HasForeignKey("MessagesId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Chats_Mes__Messa__3864608B"),
-                    l => l.HasOne<Chat>().WithMany()
-                        .HasForeignKey("ChatsId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Chats_Mes__Chats__37703C52"),
-                    j =>
-                    {
-                        j.HasKey("ChatsId", "MessagesId").HasName("PK__Chats_Me__322961A54AC0FFAD");
-                        j.ToTable("Chats_Messages");
-                        j.IndexerProperty<int>("ChatsId").HasColumnName("Chats_Id");
-                        j.IndexerProperty<int>("MessagesId").HasColumnName("Messages_Id");
-                    });
-
-            entity.HasMany(d => d.Users).WithMany(p => p.ChatsNavigation)
+            entity.HasMany(d => d.Users).WithMany(p => p.Chats)
                 .UsingEntity<Dictionary<string, object>>(
                     "ChatsUser",
                     r => r.HasOne<User>().WithMany()
@@ -462,7 +442,7 @@ public partial class MyJournalContext : DbContext
             entity.Property(e => e.ReadedAt).HasColumnType("datetime");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Chat).WithMany(p => p.MessagesNavigation)
+            entity.HasOne(d => d.Chat).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ChatId)
                 .HasConstraintName("FK__Messages__ChatId__18EBB532");
 
@@ -535,7 +515,7 @@ public partial class MyJournalContext : DbContext
             entity.Property(e => e.Ip)
                 .HasMaxLength(15)
                 .HasColumnName("IP");
-            
+
             entity.HasOne(d => d.MyJournalClient).WithMany(p => p.Sessions)
                 .HasForeignKey(d => d.MyJournalClientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -725,6 +705,7 @@ public partial class MyJournalContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Users__3214EC07EC4A57DC");
 
+            entity.Property(e => e.AuthorizationCode).HasMaxLength(10);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -732,13 +713,12 @@ public partial class MyJournalContext : DbContext
             entity.Property(e => e.Login).HasMaxLength(25);
             entity.Property(e => e.Name).HasMaxLength(20);
             entity.Property(e => e.OnlineAt).HasColumnType("datetime");
-            entity.Property(e => e.Password).HasMaxLength(25);
+            entity.Property(e => e.Password).HasMaxLength(100);
             entity.Property(e => e.Patronymic).HasMaxLength(20);
             entity.Property(e => e.Phone).HasMaxLength(15);
             entity.Property(e => e.RegisteredAt).HasColumnType("datetime");
             entity.Property(e => e.RegistrationCode).HasMaxLength(7);
             entity.Property(e => e.Surname).HasMaxLength(20);
-            entity.Property(e => e.AuthorizationCode).HasMaxLength(10);
 
             entity.HasOne(d => d.UserActivityStatus).WithMany(p => p.Users)
                 .HasForeignKey(d => d.UserActivityStatusId)

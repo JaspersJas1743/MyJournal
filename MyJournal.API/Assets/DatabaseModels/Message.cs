@@ -40,6 +40,4 @@ public partial class Message
     public virtual User Sender { get; set; } = null!;
 
     public virtual ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
-
-    public virtual ICollection<Chat> ChatsNavigation { get; set; } = new List<Chat>();
 }
