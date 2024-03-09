@@ -86,7 +86,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает фотографию профиля пользователя</response>
+	/// <response code="200">Фотография профиля пользователя</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="404">Фотография пользователя не установлена</response>
@@ -123,7 +123,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает основную информацию об авторизованном пользователе</response>
+	/// <response code="200">Основная информацию об авторизованном пользователе</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/info/me")]
@@ -162,7 +162,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает основную информацию о пользователе</response>
+	/// <response code="200">Основная информация о пользователе</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/info/{id:int}")]
@@ -203,7 +203,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает статус кода от пользователя: true - верный, false - неверный</response>
+	/// <response code="200">Статус корректности кода: true - верный, false - неверный</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/security/code/verify")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
@@ -300,7 +300,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает ссылку на фотографию профиля пользователя</response>
+	/// <response code="200">Ссылка на фотографию профиля пользователя</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpPut(template: "profile/photo/upload")]
@@ -351,7 +351,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает сообщение об успешной смене пароля</response>
+	/// <response code="200">Успешная смена пароля</response>
 	/// <response code="400">Текущий пароль пользователя указан неверно</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpPut(template: "profile/security/password/change")]
@@ -408,7 +408,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает сообщение об успешной смене адреса электронной почты</response>
+	/// <response code="200">Успешная смена адреса электронной почты</response>
 	/// <response code="400">Указанный адрес электронной почты занят другим пользователем</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpPut(template: "profile/security/email/change")]
@@ -450,7 +450,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Возвращает сообщение об успешной смене номера телефона</response>
+	/// <response code="200">Успешная смена номера телефона</response>
 	/// <response code="400">Указанный номер телефона занят другим пользователем</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpPut(template: "profile/security/phone/change")]
@@ -487,7 +487,7 @@ public class UserController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Фотография профиля пользователя удалена успешна</response>
+	/// <response code="200">Фотография профиля пользователя удалена успешно</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpDelete(template: "profile/photo/delete")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]

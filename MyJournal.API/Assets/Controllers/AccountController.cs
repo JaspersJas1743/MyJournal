@@ -100,7 +100,7 @@ public class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="200">Возвращает статус переданного регистрационного кода: true - существует, false - не сушествует</response>
+    /// <response code="200">Статус переданного регистрационного кода: true - существует, false - не сушествует</response>
     /// <response code="404">Некорректный регистрационный код</response>
     [HttpGet(template: "registration-code/verify")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
@@ -135,7 +135,7 @@ public class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="200">Возвращает ссылку на QR-код в виде изображения и символьный код</response>
+    /// <response code="200">Ссылка на QR-код в виде изображения и символьный код Google Authenticator'а</response>
     /// <response code="404">Некорректный идентификатор пользователя</response>
     [HttpGet(template: "sign-up/user/{id:int}/code/get")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
@@ -176,7 +176,7 @@ public class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="200">Возвращает статус кода от пользователя: true - верный, false - неверный</response>
+    /// <response code="200">Статус корректности кода: true - верный, false - неверный</response>
     /// <response code="404">Некорректный идентификатор пользователя</response>
     [HttpGet(template: "user/{id:int}/code/verify")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
@@ -213,7 +213,7 @@ public class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="200">Возвращает идентификатор пользователя с указанным номером телефона</response>
+    /// <response code="200">Идентификатор пользователя с указанным номером телефона</response>
     /// <response code="404">Некорректный номер телефона</response>
     [HttpGet(template: "restoring-access/phone/user/id/get")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
@@ -247,7 +247,7 @@ public class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="200">Возвращает идентификатор пользователя с указанным адресом электронной почты</response>
+    /// <response code="200">Идентификатор пользователя с указанным адресом электронной почты</response>
     /// <response code="404">Некорректный номер телефона</response>
     [HttpGet(template: "restoring-access/email/user/id/get")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
@@ -296,7 +296,7 @@ public class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="200">Возвращает авторизационный токен, содержащий информацию о пользователе и текущей сессии</response>
+    /// <response code="200">Авторизационный токен, содержащий информацию о пользователе и текущей сессии</response>
     /// <response code="404">Авторизационные данные неверны</response>
     [HttpPost(template: "sign-in/credentials")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
@@ -348,7 +348,7 @@ public class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="200">Возвращает статус текущей сессии: true, если сессия активна и false, если неактивна</response>
+    /// <response code="200">Статус активности текущей сессии: true, если сессия активна и false, если неактивна</response>
     /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
     [Authorize]
     [HttpPost(template: "sign-in/token")]
