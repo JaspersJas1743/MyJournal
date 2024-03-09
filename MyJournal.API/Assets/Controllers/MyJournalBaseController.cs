@@ -27,6 +27,14 @@ public class MyJournalBaseController(
 		return user;
 	}
 
+	protected async Task<int> GetAuthorizedUserId(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Identifier)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
+	}
+
 	protected async Task<Session> GetCurrentSession(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)

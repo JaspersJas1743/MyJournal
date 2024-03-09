@@ -3,7 +3,7 @@ using MyJournal.API.Assets.Controllers;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public class UserControllerVerifyGoogleAuthenticatorRequest : AbstractValidator<UserController.VerifyGoogleAuthenticatorRequest>
+public sealed class UserControllerVerifyGoogleAuthenticatorRequest : AbstractValidator<UserController.VerifyGoogleAuthenticatorRequest>
 {
 	public UserControllerVerifyGoogleAuthenticatorRequest()
 	{

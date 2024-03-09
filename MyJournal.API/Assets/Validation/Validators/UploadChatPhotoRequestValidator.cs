@@ -4,9 +4,9 @@ using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public sealed class UploadProfilePhotoRequestValidator : AbstractValidator<UserController.UploadProfilePhotoRequest>
+public sealed class UploadChatPhotoRequestValidator : AbstractValidator<ChatsController.UploadChatPhotoRequest>
 {
-	public UploadProfilePhotoRequestValidator()
+	public UploadChatPhotoRequestValidator()
 	{
 		RuleFor(expression: request => request.Photo)
 			.Cascade(cascadeMode: CascadeMode.Stop)

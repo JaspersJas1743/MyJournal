@@ -4,7 +4,7 @@ using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public class SetPhoneRequestValidator : AbstractValidator<AccountController.SetPhoneRequest>
+public sealed class SetPhoneRequestValidator : AbstractValidator<AccountController.SetPhoneRequest>
 {
 	public SetPhoneRequestValidator()
 	{

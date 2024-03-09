@@ -4,7 +4,7 @@ using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public class ChangeEmailRequestValidator : AbstractValidator<UserController.ChangeEmailRequest>
+public sealed class ChangeEmailRequestValidator : AbstractValidator<UserController.ChangeEmailRequest>
 {
 	public ChangeEmailRequestValidator()
 	{

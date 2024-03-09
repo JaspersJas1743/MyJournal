@@ -10,8 +10,8 @@ public static class FileSizeValidationExtensions
 		int maxSize = Int32.MaxValue
 	)
 	{
-		return ruleBuilder.Must(predicate: file => file.Length >= minSize).WithMessage($"Размер файла не должен быть менее, чем {minSize} байт")
-						  .Must(predicate: file => file.Length <= maxSize).WithMessage($"Размер файла не должен быть более, чем {maxSize / 1024 / 1024} Мбайт");
+		return ruleBuilder.Must(predicate: file => file.Length >= minSize).WithMessage(errorMessage: $"Размер файла не должен быть менее, чем {minSize} байт.")
+			.Must(predicate: file => file.Length <= maxSize).WithMessage(errorMessage: $"Размер файла не должен быть более, чем {maxSize / 1024 / 1024} Мбайт.");
 	}
 
 	public static IRuleBuilderOptions<T, IFormFile> WithSizeBetween<T>(
@@ -20,7 +20,7 @@ public static class FileSizeValidationExtensions
 		int maxSize = Int32.MaxValue
 	)
 	{
-		return ruleBuilder.Must(predicate: file => file.Length >= minSize).WithMessage($"Размер файла не должен быть менее, чем {minSize} байт")
-						  .Must(predicate: file => file.Length <= maxSize).WithMessage($"Размер файла не должен быть более, чем {maxSize / 1024 / 1024} Мбайт");
+		return ruleBuilder.Must(predicate: file => file.Length >= minSize).WithMessage(errorMessage: $"Размер файла не должен быть менее, чем {minSize} байт.")
+			.Must(predicate: file => file.Length <= maxSize).WithMessage(errorMessage: $"Размер файла не должен быть более, чем {maxSize / 1024 / 1024} Мбайт.");
 	}
 }

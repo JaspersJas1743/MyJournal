@@ -154,7 +154,7 @@ public partial class MyJournalContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
 
             entity.HasOne(d => d.ChatType).WithMany(p => p.Chats)
                 .HasForeignKey(d => d.ChatTypeId)

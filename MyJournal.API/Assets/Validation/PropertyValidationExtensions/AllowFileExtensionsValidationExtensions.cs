@@ -10,7 +10,7 @@ public static class AllowFileExtensionsValidationExtensions
 	)
 	{
 		return ruleBuilder.Must(predicate: file => extensions.Contains(value: Path.GetExtension(path: file.FileName).Trim(trimChar: '.')))
-			.WithMessage("Файл имеет неподходящее расширение");
+			.WithMessage("Файл имеет неподходящее расширение.");
 	}
 
 	public static IRuleBuilderOptions<T, IFormFile> AllowFileExtensions<T>(
@@ -19,6 +19,24 @@ public static class AllowFileExtensionsValidationExtensions
 	)
 	{
 		return ruleBuilder.Must(predicate: file => extensions.Contains(value: Path.GetExtension(path: file.FileName).Trim(trimChar: '.')))
-			.WithMessage("Файл имеет неподходящее расширение");
+			.WithMessage("Файл имеет неподходящее расширение.");
+	}
+
+	public static IRuleBuilderOptions<T, string?> AllowFileExtensions<T>(
+		this IRuleBuilderOptions<T, string?> ruleBuilder,
+		params string[] extensions
+	)
+	{
+		return ruleBuilder.Must(predicate: file => extensions.Contains(value: Path.GetExtension(path: file)?.Trim(trimChar: '.')))
+			.WithMessage("Файл имеет неподходящее расширение.");
+	}
+
+	public static IRuleBuilderOptions<T, string?> AllowFileExtensions<T>(
+		this IRuleBuilderInitial<T, string?> ruleBuilder,
+		params string[] extensions
+	)
+	{
+		return ruleBuilder.Must(predicate: file => extensions.Contains(value: Path.GetExtension(path: file)?.Trim(trimChar: '.')))
+			.WithMessage("Файл имеет неподходящее расширение.");
 	}
 }

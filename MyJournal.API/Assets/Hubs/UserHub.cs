@@ -6,6 +6,7 @@ namespace MyJournal.API.Assets.Hubs;
 [Authorize]
 public class UserHub : Hub<IUserHub>
 {
+	// TODO: доработать (добавить группы), дабы не извещать тех, кого не нужно
 	public async Task SetOnline(int userId, DateTime onlineAt)
 		=> await Clients.All.SetOnline(userId: userId, onlineAt);
 
@@ -17,4 +18,7 @@ public class UserHub : Hub<IUserHub>
 
 	public async Task DeletedProfilePhoto(int userId)
 		=> await Clients.All.DeletedProfilePhoto(userId: userId);
+
+	public async Task CreateChat(int userId)
+		=> await Clients.All.CreateChat(userId: userId);
 }

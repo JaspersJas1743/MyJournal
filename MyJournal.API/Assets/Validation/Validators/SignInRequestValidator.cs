@@ -1,5 +1,6 @@
 using FluentValidation;
 using MyJournal.API.Assets.Controllers;
+using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
@@ -7,18 +8,17 @@ public sealed class SignInRequestValidator : AbstractValidator<AccountController
 {
 	public SignInRequestValidator()
 	{
-		string errorMessage = "Логин имеет некорректный формат.";
 		RuleFor(expression: request => request.Login)
 			.Cascade(cascadeMode: CascadeMode.Stop)
-			.Must(predicate: login => !String.IsNullOrWhiteSpace(value: login)).WithMessage(errorMessage: errorMessage)
-			.MinimumLength(minimumLength: 4).WithMessage(errorMessage: "Минимальная длина логина составляет 4 символа.")
-			.NotEmpty().WithMessage(errorMessage: errorMessage);
+			.HaveText(errorMessage: "Логин имеет некорректный формат.")
+			.MinimumLength(minimumLength: 4).WithMessage(errorMessage: "Минимальная длина логина составляет 4 символа.");
 
-		errorMessage = "Пароль имеет некорректный формат.";
 		RuleFor(expression: request => request.Password)
 			.Cascade(cascadeMode: CascadeMode.Stop)
-			.Must(predicate: password => !String.IsNullOrWhiteSpace(value: password)).WithMessage(errorMessage: errorMessage)
-			.MinimumLength(minimumLength: 6).WithMessage(errorMessage: "Минимальная длина пароля составляет 6 символов.")
-			.NotEmpty().WithMessage(errorMessage: errorMessage);
+			.HaveText(errorMessage: "Пароль имеет некорректный формат.")
+			.MinimumLength(minimumLength: 6).WithMessage(errorMessage: "Минимальная длина пароля составляет 6 символов.");
+
+		RuleFor(expression: request => request.Client)
+			.IsInEnum().WithMessage("Идентификатор клиента имеет некорректный формат.");
 	}
 }

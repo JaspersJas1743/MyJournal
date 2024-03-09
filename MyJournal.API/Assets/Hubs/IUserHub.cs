@@ -6,4 +6,5 @@ public interface IUserHub
 	Task SetOffline(int userId, DateTime? onlineAt);
 	Task UpdatedProfilePhoto(int userId);
 	Task DeletedProfilePhoto(int userId);
+	Task CreateChat(int userId);
 }

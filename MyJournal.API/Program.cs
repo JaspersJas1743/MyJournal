@@ -179,7 +179,7 @@ public class Program
 		builder.Services.AddProblemDetails();
 
 		builder.Services.Configure<FormOptions>(configureOptions: options =>
-			options.MultipartBodyLengthLimit = 31457280
+			options.MultipartBodyLengthLimit = 31457280 // 30Мбайт
 		);
 
 		builder.Services.AddScoped<IGoogleAuthenticatorService, GoogleAuthenticatorService>();

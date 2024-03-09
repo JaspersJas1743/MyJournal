@@ -23,7 +23,9 @@ public class AccountController(
     IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
 {
+    #region Fields
     private readonly MyJournalContext _context = context;
+    #endregion
 
     #region Records
     [Validator<VerifyRegistrationCodeRequestValidator>]

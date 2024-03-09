@@ -26,7 +26,9 @@ public class UserController(
 	IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
 {
+	#region Fields
 	private readonly MyJournalContext _context = context;
+	#endregion
 
 	#region Records
 	public record GetInformationResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
@@ -207,7 +209,7 @@ public class UserController(
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/security/code/verify")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(AccountController.VerifyGoogleAuthenticatorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyGoogleAuthenticatorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<VerifyGoogleAuthenticatorResponse>> VerifyGoogleAuthenticator(
 		[FromQuery] VerifyGoogleAuthenticatorRequest request,
@@ -220,7 +222,7 @@ public class UserController(
 			authCode: user.AuthorizationCode,
 			code: request.UserCode
 		);
-		return Ok(new AccountController.VerifyGoogleAuthenticatorResponse(IsVerified: isVerified));
+		return Ok(new VerifyGoogleAuthenticatorResponse(IsVerified: isVerified));
 	}
 	#endregion
 
