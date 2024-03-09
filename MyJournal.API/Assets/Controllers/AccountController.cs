@@ -89,10 +89,16 @@ public class AccountController(
     /// Проверка регистрационного кода на коррекность и принадлежность какому-либо пользователю
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     GET api/account/registration-code/verify?RegistrationCode=`your_code`
+    ///	GET api/account/registration-code/verify?RegistrationCode=1234567
     ///
+    /// Параметры:
+    ///
+    ///	RegistrationCode - регистрационный код, который выдается учебным заведением для дальнейшей регистрации пользователем в системе
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Возвращает статус переданного регистрационного кода: true - существует, false - не сушествует</response>
     /// <response code="404">Некорректный регистрационный код</response>
@@ -118,10 +124,16 @@ public class AccountController(
     /// Получение данных для дальнейшего использования Google Authenticator
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     GET api/account/sign-up/user/{id:int}/code/get
+    ///	GET api/account/sign-up/user/{id:int}/code/get
     ///
+    /// Параметры:
+    ///
+    ///	id - идентификатор пользователя, для которого необходимо получить данные от Google Authenticator
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Возвращает ссылку на QR-код в виде изображения и символьный код</response>
     /// <response code="404">Некорректный идентификатор пользователя</response>
@@ -149,13 +161,20 @@ public class AccountController(
     }
 
     /// <summary>
-    /// Возвращает значение, является ли код, введенный пользователем, верным
+    /// Возвращает значение, является ли код из Google Authenticator, введенный пользователем, верным
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     GET api/account/user/{id:int}/code/verify?UserCode=`your_code`
+    ///	GET api/account/user/{id:int}/code/verify?UserCode=123456
     ///
+    /// Параметры:
+    ///
+    ///	id - идентификатор пользователя, для которого необходимо проверить код из Google Authenticator
+    ///	UserCode - код из Google Authenticator, который необходимо проверить
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Возвращает статус кода от пользователя: true - верный, false - неверный</response>
     /// <response code="404">Некорректный идентификатор пользователя</response>
@@ -183,10 +202,16 @@ public class AccountController(
     /// Получение идентификатора пользователя, к которому привязан номер телефона
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     GET api/account/restoring-access/phone/user/id/get?Phone=%2B7%28###%29###-####
+    ///	GET api/account/restoring-access/phone/user/id/get?Phone=%2B7%28123%29456-7890`
     ///
+    /// Параметры:
+    ///
+    ///	Phone - номер телефона, который привязан к аккаунту пользователя в формате +7(###)###-####
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Возвращает идентификатор пользователя с указанным номером телефона</response>
     /// <response code="404">Некорректный номер телефона</response>
@@ -211,10 +236,16 @@ public class AccountController(
     /// Получение идентификатора пользователя, к которому привязан адрес электронной почты
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     GET api/account/restoring-access/email/user/id/get?Email=your_email%40your_email_domain
+    ///	GET api/account/restoring-access/email/user/id/get?Email=test%40mail.ru
     ///
+    /// Параметры:
+    ///
+    ///	Email - адрес электронной почты, который привязан к аккаунту пользователя в формате address@example.com
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Возвращает идентификатор пользователя с указанным адресом электронной почты</response>
     /// <response code="404">Некорректный номер телефона</response>
@@ -241,20 +272,29 @@ public class AccountController(
     /// Вход в аккаунт через логин и пароль
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-in/credentials
-    ///     {
-    ///        "Login": "your_login",
-    ///        "Password": "your_password",
-    ///        "Client": 0 - Windows
-    ///                  1 - Linux
-    ///                  2 - Chrome
-    ///                  3 - Opera
-    ///                  4 - Yandex
-    ///                  5 - Other
-    ///     }
+    ///	POST api/account/sign-in/credentials
+    ///	{
+    ///		"Login": "login",
+    ///		"Password": "password",
+    ///		"Client": 0
+    ///	}
     ///
+    /// Параметры:
+    ///
+    ///	Login - логин, под которым пользователь будет использоваться для идентификации при аутентификации в процессе авторизации
+    ///	Password - пароль, под которым пользователь будет авторизовываться в процессе авторизации
+    ///	Client - идентификатор клиента, в котором пользователь проходит процесс авторизации:
+    ///     0 - Windows
+    ///     1 - Linux
+    ///     2 - Chrome
+    ///     3 - Opera
+    ///     4 - Yandex
+    ///     5 - Другой браузер
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Возвращает авторизационный токен, содержащий информацию о пользователе и текущей сессии</response>
     /// <response code="404">Авторизационные данные неверны</response>
@@ -297,13 +337,20 @@ public class AccountController(
     /// Вход в аккаунт через авторизационный токен, указанный в заголовках авторизации
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-in/token
+    ///	POST api/account/sign-in/token
     ///
+    /// Параметры:
+    ///
+    ///	token - сохраненный авторизационный токен, помещенный в заголовок 'Authorization' http-запроса
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Возвращает статус текущей сессии: true, если сессия активна и false, если неактивна</response>
     /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+    [Authorize]
     [HttpPost(template: "sign-in/token")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignInWithTokenResponse))]
@@ -323,15 +370,23 @@ public class AccountController(
     /// Регистрация в системе через регистрационный код
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-up/
-    ///     {
-    ///        "RegistrationCode": "your_registration_code",
-    ///        "Login": "login_for_auth",
-    ///        "Password": "password_for_auth"
-    ///     }
+    ///	POST api/account/sign-up
+    ///	{
+    ///		"RegistrationCode": "1234567",
+    ///		"Login": "login",
+    ///		"Password": "password"
+    ///	}
     ///
+    /// Параметры:
+    ///
+    ///	RegistrationCode - регистрационный код, выданный учебной организацией, используемый для идентификации пользователя
+    ///	Login - логин, который будет использоваться в дальнейшем для идентификации в процессе авторизации
+    ///	Password - пароль, который будет использоваться в дальнейшем для аутентификации в процессе авторизации
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="204">Аккаунт успешно создан</response>
     /// <response code="400">Переданный логин занят другим пользователем</response>
@@ -370,15 +425,17 @@ public class AccountController(
     /// Завершение текущего сеанса
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-out/this
+    ///	POST api/account/sign-out/this
     ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Сессия успешно завершена</response>
     /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-    [HttpPost(template: "sign-out/this")]
     [Authorize]
+    [HttpPost(template: "sign-out/this")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
@@ -400,15 +457,17 @@ public class AccountController(
     /// Завершение всех сеансов
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-out/all
+    ///	POST api/account/sign-out/all
     ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Все сессии успешно завершены</response>
     /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-    [HttpPost(template: "sign-out/all")]
     [Authorize]
+    [HttpPost(template: "sign-out/all")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
@@ -429,15 +488,17 @@ public class AccountController(
     /// Завершение всех сеансов, кроме текущего
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-out/others
+    ///	POST api/account/sign-out/others
     ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Все сессии, кроме текущей, успешно завершены</response>
     /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-    [HttpPost(template: "sign-out/others")]
     [Authorize]
+    [HttpPost(template: "sign-out/others")]
     [Produces(contentType: MediaTypeNames.Application.Json)]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
     [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
@@ -459,13 +520,20 @@ public class AccountController(
     /// Устанавливает номер телефона пользователя
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-up/user/{id:int}/phone/set
-    ///     {
-    ///         "NewPhone": "your_phone"
-    ///     }
+    ///	POST api/account/sign-up/user/{id:int}/phone/set
+    ///	{
+    ///		"NewPhone": "+7(123)456-7890",
+    ///	}
     ///
+    /// Параметры:
+    ///
+    ///	id - идентификатор пользователя, к которому будет привязан номер телефона
+    ///	NewPhone - номер телефона, который будет привязан к аккаунту пользователя в формате +7(###)###-####
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Номер телефона успешно установлен</response>
     /// <response code="400">Указанный номер телефона не может быть занят</response>
@@ -496,13 +564,20 @@ public class AccountController(
     /// Устанавливает электронную почту пользователя
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/sign-up/user/{id:int}/email/set
-    ///     {
-    ///         "NewEmail": "your_email_address"
-    ///     }
+    ///	POST api/account/sign-up/user/{id:int}/email/set
+    ///	{
+    ///		"NewEmail": "test@mail.ru",
+    ///	}
     ///
+    /// Параметры:
+    ///
+    ///	id - идентификатор пользователя, к которому будет привязан адрес электронной почты
+    ///	NewEmail - новый адрес электронной почты, который будет привязан к аккаунту пользователя в формате address@example.com
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Электронная почта успешно установлена</response>
     /// <response code="400">Указанный адрес электронной почты не может быть занят</response>
@@ -533,13 +608,20 @@ public class AccountController(
     /// Устанавливает новый пароль для аутентификации пользователя
     /// </summary>
     /// <remarks>
+    /// <![CDATA[
     /// Пример запроса к API:
     ///
-    ///     POST /api/account/restoring-access/user/{id:int}/password/reset
-    ///     {
-    ///         "NewPassword": "your_new_password"
-    ///     }
+    ///	POST api/account/restoring-access/user/{id:int}/password/reset
+    ///	{
+    ///		"NewPassword": "password",
+    ///	}
     ///
+    /// Параметры:
+    ///
+    ///	id - идентификатор пользователя, для которого будет установлен новый пароль
+    ///	NewPassword - новый пароль от аккаунта пользователя, который будет использоваться для дальнейшей аутентификации в процессе авторизации
+    ///
+    /// ]]>
     /// </remarks>
     /// <response code="200">Смена пароля прошла успешно</response>
     /// <response code="400">Указанный пароль не может быть занят</response>

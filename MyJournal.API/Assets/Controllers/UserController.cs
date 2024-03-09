@@ -79,20 +79,22 @@ public class UserController(
 	/// Загрузка фотографии профиля
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     GET api/user/profile/photo/download
+	///	GET api/user/profile/photo/download
 	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает фотографию профиля пользователя</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
-	/// <response code="401">Пользователь не авторизован</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="404">Фотография пользователя не установлена</response>
 	[HttpGet(template: "profile/photo/download")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
 	public async Task<ActionResult> DownloadProfilePhoto(
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -114,19 +116,21 @@ public class UserController(
 	/// Получение основной информации
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     GET api/user/profile/info/me
+	///	GET api/user/profile/info/me
 	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает основную информацию об авторизованном пользователе</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
-	/// <response code="401">Пользователь не авторизован</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/info/me")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetInformationResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetInformationResponse>> GetInformation(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -147,19 +151,25 @@ public class UserController(
 	/// Получение основной информации о пользователе по его идентификатору
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     GET api/user/profile/info/{id:int}
+	///	GET api/user/profile/info/{id:int}
 	///
+	/// Параметры:
+	///
+	///	id - идентификатор пользователя, информацию о котором необходимо получить
+	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает основную информацию о пользователе</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
-	/// <response code="401">Пользователь не авторизован</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/info/{id:int}")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetUserInformationResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetUserInformationResponse>> GetUserInformation(
 		[FromRoute] int id,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -179,16 +189,22 @@ public class UserController(
 	}
 
 	/// <summary>
-	/// Возвращает значение, является ли код, введенный пользователем, верным
+	/// Возвращает значение, является ли код из Google Authenticator, введенный пользователем, верным
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     GET api/user/profile/security/code/verify?UserCode=`your_code`
+	///	GET api/user/profile/security/code/verify?UserCode=123456
 	///
+	/// Параметры:
+	///
+	///	UserCode - код из Google Authenticator, который необходимо проверить
+	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает статус кода от пользователя: true - верный, false - неверный</response>
-	/// <response code="404">Некорректный идентификатор пользователя</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/security/code/verify")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(AccountController.VerifyGoogleAuthenticatorResponse))]
@@ -213,10 +229,12 @@ public class UserController(
 	/// Изменяет статус активности на "В сети"
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     PUT api/user/profile/activity/online
+	///	PUT api/user/profile/activity/online
 	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Статус "В сети" установлен успешно</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
@@ -241,10 +259,12 @@ public class UserController(
 	/// Изменяет статус активности на "Не в сети"
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     PUT api/user/profile/activity/offline
+	///	PUT api/user/profile/activity/offline
 	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Статус "Не в сети" установлен успешно</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
@@ -269,10 +289,16 @@ public class UserController(
 	/// Установка фотографии профиля
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     PUT api/user/profile/photo/upload
+	///	PUT api/user/profile/photo/upload
 	///
+	/// Параметры:
+	///
+	///	Photo - фотография, которая будет установлена в качестве аватара пользователя
+	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает ссылку на фотографию профиля пользователя</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
@@ -288,10 +314,14 @@ public class UserController(
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		string fileExtension = Path.GetExtension(path: request.File.FileName);
+		string fileExtension = Path.GetExtension(path: request.Photo.FileName);
 		string fileKey = $"ProfilePhotos/id{user.Id}_profile-photo{fileExtension}";
 
-		string link = await fileStorageService.UploadFileAsync(key: fileKey, fileStream: request.File.OpenReadStream(), cancellationToken: cancellationToken);
+		string link = await fileStorageService.UploadFileAsync(
+			key: fileKey,
+			fileStream: request.Photo.OpenReadStream(),
+			cancellationToken: cancellationToken
+		);
 		_context.Entry(entity: user).State = EntityState.Modified;
 		user.LinkToPhoto = link;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
@@ -305,14 +335,21 @@ public class UserController(
 	/// Заменяет текущий пароль пользователя на новый и завершает все сессии, кроме текущей
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     PUT api/user/profile/security/password/change
-	///		{
-	///			"CurrentPassword": "your_current_password",
-	///			"NewPassword": "your_new_password"
-	///		}
+	///	PUT api/user/profile/security/password/change
+	///	{
+	///		"CurrentPassword": "currentPassword",
+	///		"NewPassword": "newPassword"
+	///	}
 	///
+	/// Параметры:
+	///
+	///	CurrentPassword - текущий пароль пользователя, который использовался для для аутентификации в процессе авторизации
+	///	NewPassword - новый пароль от аккаунта пользователя, который будет использоваться для дальнейшей аутентификации в процессе авторизации
+	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает сообщение об успешной смене пароля</response>
 	/// <response code="400">Текущий пароль пользователя указан неверно</response>
@@ -357,13 +394,19 @@ public class UserController(
 	/// Заменяет текущий адрес электронной почты пользователя на новый
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     PUT api/user/profile/security/email/change
-	///		{
-	///			"NewEmail": "your_new_email"
-	///		}
+	///	PUT api/user/profile/security/email/change
+	///	{
+	///		"NewEmail": "test@mail.ru"
+	///	}
 	///
+	/// Параметры:
+	///
+	///	NewEmail - новый адрес электронной почты, который будет привязан к аккаунту пользователя в формате address@example.com
+	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает сообщение об успешной смене адреса электронной почты</response>
 	/// <response code="400">Указанный адрес электронной почты занят другим пользователем</response>
@@ -393,13 +436,19 @@ public class UserController(
 	/// Заменяет текущий номер телефона пользователя на новый
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     PUT api/user/profile/security/phone/change
-	///		{
-	///			"NewPhone": "your_new_phone"
-	///		}
+	///	PUT api/user/profile/security/phone/change
+	///	{
+	///		"NewPhone": "+7(123)456-7890"
+	///	}
 	///
+	/// Параметры:
+	///
+	///	NewPhone - новый номер телефона, который будет привязан к аккаунту пользователя в формате +7(###)###-####
+	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Возвращает сообщение об успешной смене номера телефона</response>
 	/// <response code="400">Указанный номер телефона занят другим пользователем</response>
@@ -431,10 +480,12 @@ public class UserController(
 	/// Удаление фотографии профиля
 	/// </summary>
 	/// <remarks>
+	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     DELETE api/user/profile/photo/delete
+	///	DELETE api/user/profile/photo/delete
 	///
+	/// ]]>
 	/// </remarks>
 	/// <response code="200">Фотография профиля пользователя удалена успешна</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
@@ -448,12 +499,12 @@ public class UserController(
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		string? extension = Path.GetExtension(path: user.LinkToPhoto);
-		await fileStorageService.DeleteFileAsync(key: $"ProfilePhotos/id{user.Id}_profile-photo{extension}", cancellationToken: cancellationToken);
+		string? fileExtension = Path.GetExtension(path: user.LinkToPhoto);
+		string fileKey = $"ProfilePhotos/id{user.Id}_profile-photo{fileExtension}";
+		await fileStorageService.DeleteFileAsync(key: fileKey, cancellationToken: cancellationToken);
 		_context.Entry(entity: user).State = EntityState.Modified;
 		user.LinkToPhoto = null;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
-
 		await userActivityHub.Clients.All.DeletedProfilePhoto(userId: user.Id);
 
 		return Ok();
