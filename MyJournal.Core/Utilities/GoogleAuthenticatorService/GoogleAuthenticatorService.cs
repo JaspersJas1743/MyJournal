@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using MyJournal.Core.Utilities.Constants;
+using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
-public class GoogleAuthenticatorService(ApiClient client) : IGoogleAuthenticatorService
+public sealed class GoogleAuthenticatorService(ApiClient client) : IGoogleAuthenticatorService
 {
 	private record VerifyAuthenticationCodeRequest(string UserCode);
 	private record VerifyAuthenticationCodeResponse(bool IsVerified);

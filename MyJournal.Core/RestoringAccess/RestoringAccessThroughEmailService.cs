@@ -1,5 +1,5 @@
 using MyJournal.Core.Utilities;
-using MyJournal.Core.Utilities.Constants;
+using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.RestoringAccess;

@@ -1,17 +1,24 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Utilities;
-using MyJournal.Core.Utilities.Constants;
+using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core;
 
 public sealed class User
 {
-	private readonly HubConnection _userHubConnection;
+	#region Fields
 	private readonly ApiClient _client;
+	private readonly IGoogleAuthenticatorService _googleAuthenticatorService;
+	private readonly HubConnection _userHubConnection;
+	#endregion
 
+	#region Constructors
 	private User(
 		ApiClient client,
+		IGoogleAuthenticatorService googleAuthenticatorService,
 		HubConnection userHubConnection,
+		int id,
 		int sessionId,
 		string surname,
 		string name,
@@ -24,8 +31,10 @@ public sealed class User
 	)
 	{
 		_client = client;
+		_googleAuthenticatorService = googleAuthenticatorService;
 		_userHubConnection = userHubConnection;
 
+		Id = id;
 		SessionId = sessionId;
 
 		Surname = surname;
@@ -37,12 +46,13 @@ public sealed class User
 		OnlineAt = onlineAt;
 		Photo = photo;
 	}
+	#endregion
 
 	#region Records
-
 	private record SignOutResponse(string Message);
 
 	private record UserInformationResponse(
+		int Id,
 		string Surname,
 		string Name,
 		string? Patronymic,
@@ -58,6 +68,34 @@ public sealed class User
 
 	private record ChangeEmailRequest(string NewEmail);
 	private record ChangeEmailResponse(string Email, string Message);
+
+	public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+	public record ChangePasswordResponse(string Message);
+	#endregion
+
+	#region Properties
+	private int Id { get; init; }
+	private int SessionId { get; init; }
+	public string Surname { get; init; }
+	public string Name { get; init; }
+	public string? Patronymic { get; init; }
+	public string? Phone { get; private set; }
+	public string? Email { get; private set; }
+	public ActivityStatus? Activity { get; private set; }
+	public DateTime? OnlineAt { get; private set; }
+	public string? Photo { get; private set; }
+	#endregion
+
+	#region Classes
+	public sealed class InterlocutorOnlineEventArgs(int InterlocutorId, DateTime? OnlineAt) : EventArgs;
+	public sealed class InterlocutorOfflineEventArgs(int InterlocutorId, DateTime? OnlineAt) : EventArgs;
+	public sealed class InterlocutorUpdatedPhotoEventArgs(int InterlocutorId) : EventArgs;
+	public sealed class InterlocutorDeletedPhotoEventArgs(int InterlocutorId) : EventArgs;
+	public sealed class SignInEventArgs : EventArgs;
+	public sealed class SignOutEventArgs(IEnumerable<int> SessionIds) : EventArgs;
+	public sealed class JoinedInChatEventArgs(string? ChatName) : EventArgs;
+	public sealed class ChangedPhoneEventArgs(string? Phone) : EventArgs;
+	public sealed class ChangedEmailEventArgs(string? Email) : EventArgs;
 	#endregion
 
 	#region Enums
@@ -68,58 +106,34 @@ public sealed class User
 	}
 	#endregion
 
-	#region Properties
-
-	private int SessionId { get; init; }
-	public string Surname { get; init; }
-	public string Name { get; init; }
-	public string? Patronymic { get; init; }
-	public string? Phone { get; private set; }
-	public string? Email { get; private set; }
-	public ActivityStatus? Activity { get; private set; }
-	public DateTime? OnlineAt { get; private set; }
-	public string? Photo { get; private set; }
-
+	#region Delegates
+	public delegate void InterlocutorOnlineHandler(InterlocutorOnlineEventArgs e);
+	public delegate void InterlocutorOfflineHandler(InterlocutorOfflineEventArgs e);
+	public delegate void InterlocutorUpdatedPhotoHandler(InterlocutorUpdatedPhotoEventArgs e);
+	public delegate void InterlocutorDeletedPhotoHandler(InterlocutorDeletedPhotoEventArgs e);
+	public delegate void SignInHandler(SignInEventArgs e);
+	public delegate void SignOutHandler(SignOutEventArgs e);
+	public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
+	public delegate void ChangedPhoneHandler(ChangedPhoneEventArgs e);
+	public delegate void ChangedEmailHandler(ChangedEmailEventArgs e);
 	#endregion
 
-	public sealed class InterlocutorOnlineEventArgs(int InterlocutorId, DateTime? OnlineAt) : EventArgs;
-	public delegate void InterlocutorOnlineHandler(InterlocutorOnlineEventArgs e);
+	#region Events
 	public event InterlocutorOnlineHandler? OnInterlocutorOnline;
-
-	public sealed class InterlocutorOfflineEventArgs(int InterlocutorId, DateTime? OnlineAt) : EventArgs;
-	public delegate void InterlocutorOfflineHandler(InterlocutorOfflineEventArgs e);
 	public event InterlocutorOfflineHandler? OnInterlocutorOffline;
-
-	public sealed class InterlocutorUpdatedPhotoEventArgs(int InterlocutorId) : EventArgs;
-	public delegate void InterlocutorUpdatedPhotoHandler(InterlocutorUpdatedPhotoEventArgs e);
 	public event InterlocutorUpdatedPhotoHandler? OnInterlocutorUpdatedPhoto;
-
-	public sealed class InterlocutorDeletedPhotoEventArgs(int InterlocutorId) : EventArgs;
-	public delegate void InterlocutorDeletedPhotoHandler(InterlocutorDeletedPhotoEventArgs e);
 	public event InterlocutorDeletedPhotoHandler? OnInterlocutorDeletedPhoto;
-
-	public sealed class SignInEventArgs : EventArgs;
-	public delegate void SignInHandler(SignInEventArgs e);
 	public event SignInHandler? OnSignIn;
-
-	public sealed class SignOutEventArgs(IEnumerable<int> SessionIds) : EventArgs;
-	public delegate void SignOutHandler(SignOutEventArgs e);
 	public event SignOutHandler? OnSignOut;
-
-	public sealed class JoinedInChatEventArgs(string? ChatName) : EventArgs;
-	public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
 	public event JoinedInChatHandler? OnJoinedInChat;
-
-	public sealed class ChangedPhoneEventArgs(string? Phone) : EventArgs;
-	public delegate void ChangedPhoneHandler(ChangedPhoneEventArgs e);
 	public event ChangedPhoneHandler? OnChangedPhone;
-
-	public sealed class ChangedEmailEventArgs(string? Email) : EventArgs;
-	public delegate void ChangedEmailHandler(ChangedEmailEventArgs e);
 	public event ChangedEmailHandler? OnChangedEmail;
+	#endregion
 
+	#region Methods
 	public static async Task<User> Create(
 		ApiClient client,
+		IGoogleAuthenticatorService googleAuthenticatorService,
 		int sessionId,
 		string token,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -133,10 +147,12 @@ public sealed class User
 
 		User createdUser = new User(
 			client: client,
+			googleAuthenticatorService: googleAuthenticatorService,
 			userHubConnection: DefaultHubConnectionBuilder.CreateHubConnection(
 				url: "https://localhost:7267/hub/User",
 				token: client.Token
 			),
+			id: response.Id,
 			sessionId: sessionId,
 			surname: response.Surname,
 			name: response.Name,
@@ -213,28 +229,35 @@ public sealed class User
 		CancellationToken cancellationToken = default(CancellationToken)
 	) => await _client.PutAsync(apiMethod: method, cancellationToken: cancellationToken);
 
-	public async Task SetOffline(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SetActivityStatus(method: UserControllerMethods.SetOffline, cancellationToken: cancellationToken);
+	public async Task SetOffline(
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await SetActivityStatus(method: UserControllerMethods.SetOffline, cancellationToken: cancellationToken);
 
-	public async Task SetOnline(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SetActivityStatus(method: UserControllerMethods.SetOnline, cancellationToken: cancellationToken);
+	public async Task SetOnline(
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await SetActivityStatus(method: UserControllerMethods.SetOnline, cancellationToken: cancellationToken);
 
-	public async Task<string> SignOut(CancellationToken cancellationToken = default(CancellationToken))
+	public async Task<string> SignOut(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
 	{
 		string message = await SignOut(method: AccountControllerMethods.SignOutThis, cancellationToken: cancellationToken);
 		_client.Token = null;
 		return message;
 	}
 
-	public async Task<string> SignOutAll(CancellationToken cancellationToken = default(CancellationToken))
+	public async Task<string> SignOutAll(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
 	{
 		string message = await SignOut(method: AccountControllerMethods.SignOutAll, cancellationToken: cancellationToken);
 		_client.Token = null;
 		return message;
 	}
 
-	public async Task<string> SignOutAllExceptThis(CancellationToken cancellationToken = default(CancellationToken))
-		=> await SignOut(method: AccountControllerMethods.SignOutOthers, cancellationToken: cancellationToken);
+	public async Task<string> SignOutAllExceptThis(
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await SignOut(method: AccountControllerMethods.SignOutOthers, cancellationToken: cancellationToken);
 
 	public async Task UploadProfilePhoto(
 		string pathToPhoto,
@@ -274,29 +297,61 @@ public sealed class User
 		Photo = null;
 	}
 
-	public async Task ChangeEmail(
+	public async Task<string> ChangeEmail(
+		string code,
 		string email,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: Id, code: code, cancellationToken: cancellationToken);
+		if (!isVerified)
+			throw new ArgumentException(message: "Некорректный код подтверждения для смены адреса электронной почты.", paramName: nameof(code));
+
 		ChangeEmailResponse response = await _client.PutAsync<ChangeEmailResponse, ChangeEmailRequest>(
 			apiMethod: UserControllerMethods.ChangeEmail,
 			arg: new ChangeEmailRequest(NewEmail: email),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		Email = response.Email;
+		return response.Message;
 	}
 
-	public async Task ChangePhone(
+	public async Task<string> ChangePhone(
+		string code,
 		string phone,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: Id, code: code, cancellationToken: cancellationToken);
+		if (!isVerified)
+			throw new ArgumentException(message: "Некорректный код подтверждения для смены номера телефона.", paramName: nameof(code));
+
 		ChangePhoneResponse response = await _client.PutAsync<ChangePhoneResponse, ChangePhoneRequest>(
 			apiMethod: UserControllerMethods.ChangePhone,
 			arg: new ChangePhoneRequest(NewPhone: phone),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		Phone = response.Phone;
+		return response.Message;
 	}
+
+	public async Task<string> ChangePassword(
+		string code,
+		string currentPassword,
+		string newPassword,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: Id, code: code, cancellationToken: cancellationToken);
+		if (!isVerified)
+			throw new ArgumentException(message: "Некорректный код подтверждения для смены пароля.", paramName: nameof(code));
+
+		ChangePasswordResponse response = await _client.PutAsync<ChangePasswordResponse, ChangePasswordRequest>(
+			apiMethod: UserControllerMethods.ChangePassword,
+			arg: new ChangePasswordRequest(CurrentPassword: currentPassword, NewPassword: newPassword),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+		return response.Message;
+	}
+	#endregion
 }

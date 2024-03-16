@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Tests;
 
@@ -14,6 +15,7 @@ public class UserTests
 	{
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
+		serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
 		serviceCollection.AddTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>();
 		_serviceProvider = serviceCollection.BuildServiceProvider();
 	}
@@ -118,7 +120,9 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.ChangeEmail(email: "test@mail.ru");
+		string newEmail = "test@mail.ru";
+		await user.ChangeEmail(code: "103453", email: newEmail);
+		Assert.That(actual: user.Email, expression: Is.EqualTo(expected: newEmail));
 	}
 
 	[Test]
@@ -133,7 +137,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(email: "test@mail.ru");
+			await user.ChangeEmail(code: "980300", email: "test@mail.ru");
 		});
 	}
 
@@ -149,7 +153,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(email: "@mail.ru");
+			await user.ChangeEmail(code: "103453", email: "@mail.ru");
 		});
 	}
 
@@ -165,7 +169,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(email: "test@.ru");
+			await user.ChangeEmail(code: "103453", email: "test@.ru");
 		});
 	}
 
@@ -181,7 +185,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(email: "test@");
+			await user.ChangeEmail(code: "103453", email: "test@");
 		});
 	}
 
@@ -197,7 +201,225 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(email: "testmail.ru");
+			await user.ChangeEmail(code: "103453", email: "testmail.ru");
+		});
+	}
+
+	[Test]
+	public async Task UserChangeEmail_WithIncorrectCode_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ArgumentException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangeEmail(code: "000000", email: "testmail.ru");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePhone_WithCorrectPhone_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "Jaspers",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		User user = await service.SignIn(credentials: credentials);
+		await user.ChangePhone(code: "182348", phone: "+7(777)777-7777");
+	}
+
+	[Test]
+	public async Task UserChangePhone_WithUsedPhone_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePhone(code: "980300", phone: "+7(999)999-9999");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePhone_WithIncorrectPhone_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePhone(code: "980300", phone: "123453");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePhone_WithIncorrectFormat_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePhone(code: "980300", phone: "9999999999");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePhone_WithoutPlus_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePhone(code: "980300", phone: "7(999)999-9999");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePhone_WithIncorrectFormat2_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePhone(code: "980300", phone: "79999999999");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePhone_WithIncorrectCode_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ArgumentException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "Jaspers",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePhone(code: "000000", phone: "+7(999)999-9999");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePassword_WithCorrectData_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		User user = await service.SignIn(credentials: credentials);
+		await user.ChangePassword(code: "706574", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
+	}
+
+	[Test]
+	public async Task UserChangePassword_WithIncorrectCurrentPassword_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePassword(code: "706574", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePassword_WithEqualsCurrentAndNewPassword_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePassword(code: "706574", currentPassword: "Jaspers", newPassword: "Jaspers");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePassword_WithIncorrectFormatNewPassword_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePassword(code: "706574", currentPassword: "Jaspers", newPassword: "J");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePassword_WithShortNewPassword_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePassword(code: "706574", currentPassword: "Jaspers", newPassword: "Js");
+		});
+	}
+
+	[Test]
+	public async Task UserChangePassword_WithIncorrectCode_ShouldThrowError()
+	{
+		Assert.ThrowsAsync<ArgumentException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "Jaspers",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			await user.ChangePassword(code: "000000", currentPassword: "Jaspers", newPassword: "Js");
 		});
 	}
 }

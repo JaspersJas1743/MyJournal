@@ -1,9 +1,14 @@
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Constants;
+using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.Authorization;
 
-public class AuthorizationWithTokenService(ApiClient client) : IAuthorizationService<User>
+public class AuthorizationWithTokenService(
+	ApiClient client,
+	IGoogleAuthenticatorService googleAuthenticatorService
+) : IAuthorizationService<User>
 {
 	private record Response(int SessionId, bool SessionIsEnabled);
 
@@ -21,6 +26,7 @@ public class AuthorizationWithTokenService(ApiClient client) : IAuthorizationSer
 
 		return await User.Create(
 			client: client,
+			googleAuthenticatorService: googleAuthenticatorService,
 			sessionId: response.SessionId,
 			token: credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token)),
 			cancellationToken: cancellationToken

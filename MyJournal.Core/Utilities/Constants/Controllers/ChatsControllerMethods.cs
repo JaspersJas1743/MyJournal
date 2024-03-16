@@ -1,4 +1,4 @@
-namespace MyJournal.Core.Utilities.Constants;
+namespace MyJournal.Core.Utilities.Constants.Controllers;
 
 public static class ChatsControllerMethods
 {

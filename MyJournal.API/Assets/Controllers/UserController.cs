@@ -32,9 +32,9 @@ public class UserController(
 	#endregion
 
 	#region Records
-	public record GetInformationResponse(string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
+	public record GetInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
 
-	public record GetUserInformationResponse(string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
+	public record GetUserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
 
 	[Validator<UserControllerVerifyGoogleAuthenticatorRequest>]
 	public record VerifyGoogleAuthenticatorRequest(string UserCode);
@@ -154,6 +154,7 @@ public class UserController(
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
 		return Ok(value: new GetInformationResponse(
+			Id: user.Id,
 			Surname: user.Surname,
 			Name: user.Name,
 			Patronymic: user.Patronymic,
@@ -195,6 +196,7 @@ public class UserController(
 					 throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор пользователя.");
 
 		return Ok(value: new GetUserInformationResponse(
+			Id: user.Id,
 			Surname: user.Surname,
 			Name: user.Name,
 			Patronymic: user.Patronymic,
