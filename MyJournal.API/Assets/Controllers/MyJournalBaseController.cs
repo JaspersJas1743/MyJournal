@@ -63,7 +63,9 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole);
+        IQueryable<User> users = context.Users
+			.Include(navigationPropertyPath: u => u.UserRole)
+			.Include(navigationPropertyPath: u => u.UserActivityStatus);
 
         return await users.SingleOrDefaultAsync(
             predicate: user => user.Id.Equals(id),

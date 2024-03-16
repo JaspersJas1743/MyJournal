@@ -415,11 +415,59 @@ public class UserTests
 			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
-				password: "Jaspers",
+				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
 			await user.ChangePassword(code: "000000", currentPassword: "Jaspers", newPassword: "Js");
+		});
+	}
+
+	[Test]
+	public async Task UserGetGetInformationAbout_WithCorrectId_ShoutPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		User user = await service.SignIn(credentials: credentials);
+		User.UserInformation user2 = await user.GetInformationAbout(id: 8);
+		Assert.That(actual: user2.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: user2.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: user2.Patronymic, expression: Is.EqualTo(expected: "test3"));
+	}
+
+	[Test]
+	public async Task UserGetGetInformationAbout_WithIncorrectId_ShoutThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			User.UserInformation user2 = await user.GetInformationAbout(id: -1);
+		});
+	}
+
+	[Test]
+	public async Task UserGetGetInformationAbout_WithNotExistedId_ShoutThrowError()
+	{
+		Assert.ThrowsAsync<ApiException>(code: async () =>
+		{
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+				login: "Jaspers",
+				password: "JaspersJas1743",
+				client: UserAuthorizationCredentials.Clients.Windows
+			);
+			User user = await service.SignIn(credentials: credentials);
+			User.UserInformation user2 = await user.GetInformationAbout(id: 121435453);
 		});
 	}
 }

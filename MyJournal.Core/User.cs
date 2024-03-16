@@ -25,9 +25,7 @@ public sealed class User
 		string? patronymic,
 		string? phone = null,
 		string? email = null,
-		string? photo = null,
-		ActivityStatus? activity = null,
-		DateTime? onlineAt = null
+		string? photo = null
 	)
 	{
 		_client = client;
@@ -42,10 +40,19 @@ public sealed class User
 		Patronymic = patronymic;
 		Phone = phone;
 		Email = email;
-		Activity = activity;
-		OnlineAt = onlineAt;
 		Photo = photo;
 	}
+	#endregion
+
+	#region Properties
+	private int Id { get; init; }
+	private int SessionId { get; init; }
+	public string Surname { get; init; }
+	public string Name { get; init; }
+	public string? Patronymic { get; init; }
+	public string? Phone { get; private set; }
+	public string? Email { get; private set; }
+	public string? Photo { get; private set; }
 	#endregion
 
 	#region Records
@@ -69,21 +76,26 @@ public sealed class User
 	private record ChangeEmailRequest(string NewEmail);
 	private record ChangeEmailResponse(string Email, string Message);
 
-	public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
-	public record ChangePasswordResponse(string Message);
+	private record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+	private record ChangePasswordResponse(string Message);
+
+	public sealed record UserInformation(
+		int Id,
+		string Surname,
+		string Name,
+		string? Patronymic,
+		string? Photo,
+		ActivityStatus Activity,
+		DateTime? OnlineAt
+	);
 	#endregion
 
-	#region Properties
-	private int Id { get; init; }
-	private int SessionId { get; init; }
-	public string Surname { get; init; }
-	public string Name { get; init; }
-	public string? Patronymic { get; init; }
-	public string? Phone { get; private set; }
-	public string? Email { get; private set; }
-	public ActivityStatus? Activity { get; private set; }
-	public DateTime? OnlineAt { get; private set; }
-	public string? Photo { get; private set; }
+	#region Enums
+	public enum ActivityStatus
+	{
+		Online,
+		Offline
+	}
 	#endregion
 
 	#region Classes
@@ -96,14 +108,6 @@ public sealed class User
 	public sealed class JoinedInChatEventArgs(string? ChatName) : EventArgs;
 	public sealed class ChangedPhoneEventArgs(string? Phone) : EventArgs;
 	public sealed class ChangedEmailEventArgs(string? Email) : EventArgs;
-	#endregion
-
-	#region Enums
-	public enum ActivityStatus
-	{
-		Online,
-		Offline
-	}
 	#endregion
 
 	#region Delegates
@@ -210,6 +214,19 @@ public sealed class User
 		});
 
 		return createdUser;
+	}
+
+	public async Task<UserInformation> GetInformationAbout(
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		UserInformation response = await _client.GetAsync<UserInformation>(
+			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+		return response;
+
 	}
 
 	private async Task<string> SignOut(

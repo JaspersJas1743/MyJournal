@@ -165,7 +165,7 @@ public class AuthorizationTests
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: "AuthorizationWithTokenService");
 		UserTokenCredentials credentials = new UserTokenCredentials(
-			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjIzMTIiLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.xmKTGWxJ6srFfuBIJjGm3olCG2mmhUD8REPfxbPQm7A"
+			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjIzNjkiLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.D0ClEe16E9DkCNtF9ufynclW9URBFgU5EHiPeOXiyY4"
 		);
 		_ = await service.SignIn(credentials: credentials);
 		Assert.Pass();

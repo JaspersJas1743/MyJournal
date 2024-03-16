@@ -34,7 +34,7 @@ public class UserController(
 	#region Records
 	public record GetInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
 
-	public record GetUserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Photo, string Activity, DateTime? OnlineAt);
+	public record GetUserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Photo, UserActivityStatuses Activity, DateTime? OnlineAt);
 
 	[Validator<UserControllerVerifyGoogleAuthenticatorRequest>]
 	public record VerifyGoogleAuthenticatorRequest(string UserCode);
@@ -200,7 +200,7 @@ public class UserController(
 			Surname: user.Surname,
 			Name: user.Name,
 			Patronymic: user.Patronymic,
-			Activity: user.UserActivityStatus.ActivityStatus.ToString(),
+			Activity: user.UserActivityStatus.ActivityStatus,
 			OnlineAt: user.OnlineAt,
 			Photo: user.LinkToPhoto
 		));
