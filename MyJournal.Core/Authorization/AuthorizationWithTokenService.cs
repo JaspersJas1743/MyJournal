@@ -4,7 +4,7 @@ namespace MyJournal.Core.Authorization;
 
 public class AuthorizationWithTokenService(ApiClient client) : IAuthorizationService<User>
 {
-	private record Response(bool SessionIsEnabled);
+	private record Response(int SessionId, bool SessionIsEnabled);
 
 	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
@@ -20,6 +20,7 @@ public class AuthorizationWithTokenService(ApiClient client) : IAuthorizationSer
 
 		return await User.Create(
 			client: client,
+			sessionId: response.SessionId,
 			token: credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token)),
 			cancellationToken: cancellationToken
 		);

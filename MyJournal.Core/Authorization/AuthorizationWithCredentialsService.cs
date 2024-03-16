@@ -4,7 +4,7 @@ namespace MyJournal.Core.Authorization;
 
 public sealed class AuthorizationWithCredentialsService(ApiClient client) : IAuthorizationService<User>
 {
-	private record Response(string Token);
+	private record Response(int SessionId, string Token);
 
 	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
@@ -14,6 +14,11 @@ public sealed class AuthorizationWithCredentialsService(ApiClient client) : IAut
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 
-		return await User.Create(client: client, token: response.Token, cancellationToken: cancellationToken);
+		return await User.Create(
+			client: client,
+			sessionId: response.SessionId,
+			token: response.Token,
+			cancellationToken: cancellationToken
+		);
 	}
 }

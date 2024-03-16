@@ -11,6 +11,7 @@ public sealed class User
 	private User(
 		ApiClient client,
 		HubConnection userHubConnection,
+		int sessionId,
 		string surname,
 		string name,
 		string? patronymic,
@@ -23,6 +24,8 @@ public sealed class User
 	{
 		_client = client;
 		_userHubConnection = userHubConnection;
+
+		SessionId = sessionId;
 
 		Surname = surname;
 		Name = name;
@@ -70,11 +73,11 @@ public sealed class User
 		Online,
 		Offline
 	}
-
 	#endregion
 
 	#region Properties
 
+	private int SessionId { get; init; }
 	public string Surname { get; init; }
 	public string Name { get; init; }
 	public string? Patronymic { get; init; }
@@ -100,6 +103,7 @@ public sealed class User
 
 	public static async Task<User> Create(
 		ApiClient client,
+		int sessionId,
 		string token,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -116,6 +120,7 @@ public sealed class User
 				url: "https://localhost:7267/hub/User",
 				token: client.Token
 			),
+			sessionId: sessionId,
 			surname: response.Surname,
 			name: response.Name,
 			patronymic: response.Patronymic,

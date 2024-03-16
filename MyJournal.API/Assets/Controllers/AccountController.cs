@@ -37,9 +37,9 @@ public class AccountController(
 
     [Validator<SignInRequestValidator>]
     public record SignInRequest(string Login, string Password, Clients Client);
-    public record SignInResponse(string Token);
+    public record SignInResponse(int SessionId, string Token);
 
-    public record SignInWithTokenResponse(bool SessionIsEnabled);
+    public record SignInWithTokenResponse(int SessionId, bool SessionIsEnabled);
 
     [Validator<SignUpRequestValidator>]
     public record SignUpRequest(string RegistrationCode, string Login, string Password);
@@ -72,20 +72,23 @@ public class AccountController(
     [Validator<ResetPasswordRequestValidator>]
     public record ResetPasswordRequest(string NewPassword);
     public record ResetPasswordResponse(string Message);
+
+    public record GetSessionsResponse(string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
     #endregion
 
     #region Methods
     #region AuxiliaryMethods
-    private async Task DisableSession(
-        Session session,
+    private async Task DisableSessions(
+        IQueryable<Session> sessions,
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        _context.Entry(entity: session).State = EntityState.Modified;
-        session.SessionActivityStatus = await FindSessionActivityStatus(
+        SessionActivityStatus disableStatus = await FindSessionActivityStatus(
             activityStatus: SessionActivityStatuses.Disable,
             cancellationToken: cancellationToken
         );
+        foreach (Session session in sessions)
+            session.SessionActivityStatus = disableStatus;
     }
     #endregion
 
@@ -270,6 +273,42 @@ public class AccountController(
         ) ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный адрес электронной почты.");
         return Ok(value: new VerifyEmailResponse(UserId: user.Id));
     }
+
+    /// <summary>
+    /// Получение списка авторизованных сессий пользователя
+    /// </summary>
+    /// <remarks>
+    /// <![CDATA[
+    /// Пример запроса к API:
+    ///
+    ///	GET api/user/sessions/get
+    ///
+    /// ]]>
+    /// </remarks>
+    /// <response code="200">Информация по каждой авторизованной сессии пользователя</response>
+    /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+    [Authorize]
+    [HttpGet(template: "user/sessions/get")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetSessionsResponse>))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<IEnumerable<GetSessionsResponse>>> GetSessions(
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        int currentSessionId = GetCurrentSessionId();
+        int userId = GetAuthorizedUserId();
+        SessionActivityStatus enableSessionActivityStatus = await FindSessionActivityStatus(
+            activityStatus: SessionActivityStatuses.Enable,
+            cancellationToken: cancellationToken
+        );
+
+        IQueryable<GetSessionsResponse> sessions = _context.Sessions
+            .Where(predicate: s => s.UserId.Equals(userId) && s.SessionActivityStatus.Equals(enableSessionActivityStatus))
+            .Select(selector: s => new GetSessionsResponse(s.MyJournalClient.ClientName, s.MyJournalClient.LinkToLogo, s.Ip, s.Id.Equals(currentSessionId)));
+
+        return Ok(value: sessions);
+    }
     #endregion
 
     #region POST
@@ -335,10 +374,10 @@ public class AccountController(
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
         string token = jwt.Generate(tokenOwner: user, sessionId: currentSession.Id);
-        return Ok(value: new SignInResponse(Token: token));
 
         await userHubContext.Clients.User(userId: user.Id.ToString()).SignIn();
 
+        return Ok(value: new SignInResponse(SessionId: currentSession.Id, Token: token));
     }
 
     /// <summary>
@@ -370,6 +409,7 @@ public class AccountController(
         Session session = await GetCurrentSession(cancellationToken: cancellationToken);
 
         return Ok(value: new SignInWithTokenResponse(
+            SessionId: session.Id,
             SessionIsEnabled: session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Enable)
         ));
     }
