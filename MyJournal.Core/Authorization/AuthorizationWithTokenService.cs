@@ -1,4 +1,5 @@
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Constants;
 
 namespace MyJournal.Core.Authorization;
 
@@ -10,7 +11,7 @@ public class AuthorizationWithTokenService(ApiClient client) : IAuthorizationSer
 	{
 		client.Token = credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token));
 		Response response = await client.PostAsync<Response>(
-			apiMethod: "account/sign-in/token",
+			apiMethod: AccountControllerMethods.SignInWithToken,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		client.ResetToken();

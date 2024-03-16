@@ -1,4 +1,5 @@
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Constants;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.Registration;
@@ -28,7 +29,7 @@ public sealed class UserRegistrationService(
 		try
 		{
 			SignUpResponse response = await client.PostAsync<SignUpResponse, Credentials<User>>(
-				apiMethod: "account/sign-up",
+				apiMethod: AccountControllerMethods.SignUp,
 				arg: credentials,
 				cancellationToken: cancellationToken
 			) ?? throw new InvalidOperationException();
@@ -49,7 +50,7 @@ public sealed class UserRegistrationService(
 			throw new InvalidOperationException(message: "Перед созданием Google Authenticator необходимо зарегистрировать пользователя.");
 
 		IRegistrationService<User>.AuthenticationData data = await client.GetAsync<IRegistrationService<User>.AuthenticationData>(
-			apiMethod: $"account/sign-up/user/{_userId}/code/get",
+			apiMethod: AccountControllerMethods.GetGoogleAuthenticator(userId: _userId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		_googleAuthenticatorIsCreated = true;
@@ -78,7 +79,7 @@ public sealed class UserRegistrationService(
 			throw new InvalidOperationException(message: "Сначала необходимо проверить аутентификационный код.");
 
 		await client.PostAsync<SetEmailRequest>(
-			apiMethod: $"account/sign-up/user/{_userId}/email/set",
+			apiMethod: AccountControllerMethods.SetEmail(userId: _userId),
 			arg: new SetEmailRequest(NewEmail: email),
 			cancellationToken: cancellationToken
 		);
@@ -90,7 +91,7 @@ public sealed class UserRegistrationService(
 			throw new InvalidOperationException(message: "Сначала необходимо проверить аутентификационный код.");
 
 		await client.PostAsync<SetPhoneRequest>(
-			apiMethod: $"account/sign-up/user/{_userId}/phone/set",
+			apiMethod: AccountControllerMethods.SetPhone(userId: _userId),
 			arg: new SetPhoneRequest(NewPhone: phone),
 			cancellationToken: cancellationToken
 		);

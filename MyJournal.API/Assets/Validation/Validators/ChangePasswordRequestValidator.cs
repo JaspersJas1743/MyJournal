@@ -12,6 +12,6 @@ public sealed class ChangePasswordRequestValidator : AbstractValidator<UserContr
 			.Cascade(cascadeMode: CascadeMode.Stop)
 			.HaveText(errorMessage: "Пароль имеет некорректный формат.")
 			.MinimumLength(minimumLength: 6).WithMessage(errorMessage: "Минимальная длина пароля составляет 6 символов.")
-			.NotEqual(expression: request => request.CurrentPassword).WithMessage("Новый пароль должен отличаться от предыдущего.");
+			.NotEqual(expression: request => request.NewPassword).WithMessage("Новый пароль должен отличаться от предыдущего.");
 	}
 }

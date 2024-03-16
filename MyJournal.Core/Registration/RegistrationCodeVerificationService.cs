@@ -1,4 +1,5 @@
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Constants;
 
 namespace MyJournal.Core.Registration;
 
@@ -10,7 +11,7 @@ public sealed class RegistrationCodeVerificationService(ApiClient client) : IVer
 	public async Task<bool> Verify(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		Response response = await client.GetAsync<Response, Request>(
-			apiMethod: "account/registration-code/verify",
+			apiMethod: AccountControllerMethods.VerifyRegistrationCode,
 			argQuery: new Request(RegistrationCode: credentials.GetCredential<string>(name: nameof(Request.RegistrationCode))),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();

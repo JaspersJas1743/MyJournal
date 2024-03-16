@@ -1,5 +1,7 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -28,7 +30,7 @@ public class ApiClient
 	public ApiClient()
 	{
 		_client.DefaultRequestHeaders.Clear();
-		_client.DefaultRequestHeaders.Add(name: "Accept", value: "application/json");
+		_client.DefaultRequestHeaders.Add(name: nameof(HttpRequestHeader.Accept), value: MediaTypeNames.Application.Json);
 	}
 	#endregion
 

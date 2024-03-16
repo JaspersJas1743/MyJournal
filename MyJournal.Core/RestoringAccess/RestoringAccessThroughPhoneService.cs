@@ -1,4 +1,5 @@
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Constants;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.RestoringAccess;
@@ -23,9 +24,9 @@ public class RestoringAccessThroughPhoneService(
 		try
 		{
 			string phone = credentials.GetCredential<string>(name: nameof(VerifyCredentialRequest.Phone));
-			phone = phone.Replace("+", "%2B").Replace("(", "%28").Replace(")", "%29");
+			phone = phone.Replace(oldValue: "+", newValue: "%2B").Replace(oldValue: "(", newValue: "%28").Replace(oldValue: ")", newValue: "%29");
 			VerifyCredentialResponse response = await client.GetAsync<VerifyCredentialResponse, VerifyCredentialRequest>(
-				apiMethod: "account/restoring-access/phone/user/id/get",
+				apiMethod: AccountControllerMethods.GetPhoneOwner,
 				argQuery: new VerifyCredentialRequest(Phone: phone),
 				cancellationToken: cancellationToken
 			) ?? throw new InvalidOperationException();
@@ -62,7 +63,7 @@ public class RestoringAccessThroughPhoneService(
 			throw new InvalidOperationException(message: "Сначала необходимо проверить аутентификационный код.");
 
 		await client.PostAsync<ResetPasswordRequest>(
-			apiMethod: $"account/restoring-access/user/{_userId}/password/reset",
+			apiMethod: AccountControllerMethods.ResetPassword(userId: _userId),
 			arg: new ResetPasswordRequest(NewPassword: newPassword),
 			cancellationToken: cancellationToken
 		);

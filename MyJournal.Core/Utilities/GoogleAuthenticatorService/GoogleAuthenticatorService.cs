@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core.Utilities.Constants;
 
 namespace MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -14,7 +15,7 @@ public class GoogleAuthenticatorService(ApiClient client) : IGoogleAuthenticator
 	)
 	{
 		VerifyAuthenticationCodeResponse data = await client.GetAsync<VerifyAuthenticationCodeResponse, VerifyAuthenticationCodeRequest>(
-			apiMethod: $"account/user/{userId}/code/verify",
+			apiMethod: AccountControllerMethods.VerifyGoogleAuthenticator(userId: userId),
 			argQuery: new VerifyAuthenticationCodeRequest(UserCode: code),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();

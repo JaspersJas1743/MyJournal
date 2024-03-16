@@ -1,5 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Constants;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.RestoringAccess;
@@ -24,7 +24,7 @@ public class RestoringAccessThroughEmailService(
 		try
 		{
 			VerifyCredentialResponse response = await client.GetAsync<VerifyCredentialResponse, VerifyCredentialRequest>(
-				apiMethod: "account/restoring-access/email/user/id/get",
+				apiMethod: AccountControllerMethods.GetEmailOwner,
 				argQuery: new VerifyCredentialRequest(Email: credentials.GetCredential<string>(name: nameof(VerifyCredentialRequest.Email))),
 				cancellationToken: cancellationToken
 			) ?? throw new InvalidOperationException();
@@ -61,7 +61,7 @@ public class RestoringAccessThroughEmailService(
 			throw new InvalidOperationException(message: "Сначала необходимо проверить аутентификационный код.");
 
 		await client.PostAsync<ResetPasswordRequest>(
-			apiMethod: $"account/restoring-access/user/{_userId}/password/reset",
+			apiMethod: AccountControllerMethods.ResetPassword(userId: _userId),
 			arg: new ResetPasswordRequest(NewPassword: newPassword),
 			cancellationToken: cancellationToken
 		);
