@@ -82,17 +82,41 @@ public sealed class User
 
 	#endregion
 
-	public delegate void SignedInUserHandler(int userId, DateTime? onlineAt);
-	public event SignedInUserHandler? SignedInUser;
+	public sealed class InterlocutorOnlineEventArgs(int InterlocutorId, DateTime? OnlineAt) : EventArgs;
+	public delegate void InterlocutorOnlineHandler(InterlocutorOnlineEventArgs e);
+	public event InterlocutorOnlineHandler? OnInterlocutorOnline;
 
-	public delegate void SignedOutUserHandler(int userId, DateTime? onlineAt);
-	public event SignedOutUserHandler? SignedOutUser;
+	public sealed class InterlocutorOfflineEventArgs(int InterlocutorId, DateTime? OnlineAt) : EventArgs;
+	public delegate void InterlocutorOfflineHandler(InterlocutorOfflineEventArgs e);
+	public event InterlocutorOfflineHandler? OnInterlocutorOffline;
 
-	public delegate void UpdatedProfilePhotoHandler(int userId);
-	public event UpdatedProfilePhotoHandler? UpdatedProfilePhoto;
+	public sealed class InterlocutorUpdatedPhotoEventArgs(int InterlocutorId) : EventArgs;
+	public delegate void InterlocutorUpdatedPhotoHandler(InterlocutorUpdatedPhotoEventArgs e);
+	public event InterlocutorUpdatedPhotoHandler? OnInterlocutorUpdatedPhoto;
 
-	public delegate void DeletedProfilePhotoHandler(int userId);
-	public event DeletedProfilePhotoHandler? DeletedProfilePhoto;
+	public sealed class InterlocutorDeletedPhotoEventArgs(int InterlocutorId) : EventArgs;
+	public delegate void InterlocutorDeletedPhotoHandler(InterlocutorDeletedPhotoEventArgs e);
+	public event InterlocutorDeletedPhotoHandler? OnInterlocutorDeletedPhoto;
+
+	public sealed class SignInEventArgs : EventArgs;
+	public delegate void SignInHandler(SignInEventArgs e);
+	public event SignInHandler? OnSignIn;
+
+	public sealed class SignOutEventArgs(IEnumerable<int> SessionIds) : EventArgs;
+	public delegate void SignOutHandler(SignOutEventArgs e);
+	public event SignOutHandler? OnSignOut;
+
+	public sealed class JoinedInChatEventArgs(string? ChatName) : EventArgs;
+	public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
+	public event JoinedInChatHandler? OnJoinedInChat;
+
+	public sealed class ChangedPhoneEventArgs(string? Phone) : EventArgs;
+	public delegate void ChangedPhoneHandler(ChangedPhoneEventArgs e);
+	public event ChangedPhoneHandler? OnChangedPhone;
+
+	public sealed class ChangedEmailEventArgs(string? Email) : EventArgs;
+	public delegate void ChangedEmailHandler(ChangedEmailEventArgs e);
+	public event ChangedEmailHandler? OnChangedEmail;
 
 	public static async Task<User> Create(
 		ApiClient client,
@@ -123,22 +147,51 @@ public sealed class User
 		);
 
 		await createdUser._userHubConnection.StartAsync(cancellationToken: cancellationToken);
-		createdUser._userHubConnection.On<int, DateTime?>(
-			methodName: "SetOnline",
-			handler: (userId, onlineAt) => createdUser.SignedInUser?.Invoke(userId: userId, onlineAt: onlineAt)
-		);
-		createdUser._userHubConnection.On<int, DateTime?>(
-			methodName: "SetOffline",
-			handler: (userId, onlineAt) => createdUser.SignedOutUser?.Invoke(userId: userId, onlineAt: onlineAt)
-		);
-		createdUser._userHubConnection.On<int>(
-			methodName: "UpdatedProfilePhoto",
-			handler: userId => createdUser.UpdatedProfilePhoto?.Invoke(userId: userId)
-		);
-		createdUser._userHubConnection.On<int>(
-			methodName: "DeletedProfilePhoto",
-			handler: userId => createdUser.DeletedProfilePhoto?.Invoke(userId: userId)
-		);
+		createdUser._userHubConnection.On<int, DateTime?>(methodName: "SetOnline", handler: (userId, onlineAt) =>
+		{
+			InterlocutorOnlineEventArgs e = new InterlocutorOnlineEventArgs(InterlocutorId: userId, OnlineAt: onlineAt);
+			createdUser.OnInterlocutorOnline?.Invoke(e: e);
+		});
+		createdUser._userHubConnection.On<int, DateTime?>(methodName: "SetOffline", handler: (userId, onlineAt) =>
+		{
+			InterlocutorOfflineEventArgs e = new InterlocutorOfflineEventArgs(InterlocutorId: userId, OnlineAt: onlineAt);
+			createdUser.OnInterlocutorOffline?.Invoke(e: e);
+		});
+		createdUser._userHubConnection.On<int>(methodName: "UpdatedProfilePhoto", handler: userId =>
+		{
+			InterlocutorUpdatedPhotoEventArgs e = new InterlocutorUpdatedPhotoEventArgs(InterlocutorId: userId);
+			createdUser.OnInterlocutorUpdatedPhoto?.Invoke(e: e);
+		});
+		createdUser._userHubConnection.On<int>(methodName: "DeletedProfilePhoto", handler: userId =>
+		{
+			InterlocutorDeletedPhotoEventArgs e = new InterlocutorDeletedPhotoEventArgs(InterlocutorId: userId);
+			createdUser.OnInterlocutorDeletedPhoto?.Invoke(e: e);
+		});
+		createdUser._userHubConnection.On(methodName: "SignIn", handler: () =>
+		{
+			SignInEventArgs e = new SignInEventArgs();
+			createdUser.OnSignIn?.Invoke(e: e);
+		});
+			createdUser._userHubConnection.On<IEnumerable<int>>(methodName: "SignOut", handler: (sessionIds) =>
+		{
+			SignOutEventArgs e = new SignOutEventArgs(SessionIds: sessionIds);
+			createdUser.OnSignOut?.Invoke(e: e);
+		});
+		createdUser._userHubConnection.On<string?>(methodName: "JoinedInChat", handler: (chatName) =>
+		{
+			JoinedInChatEventArgs e = new JoinedInChatEventArgs(ChatName: chatName);
+			createdUser.OnJoinedInChat?.Invoke(e: e);
+		});
+		createdUser._userHubConnection.On<string?>(methodName: "SetPhone", handler: (phone) =>
+		{
+			ChangedPhoneEventArgs e = new ChangedPhoneEventArgs(Phone: phone);
+			createdUser.OnChangedPhone?.Invoke(e: e);
+		});
+		createdUser._userHubConnection.On<string?>(methodName: "SetEmail", handler: (email) =>
+		{
+			ChangedEmailEventArgs e = new ChangedEmailEventArgs(Email: email);
+			createdUser.OnChangedEmail?.Invoke(e: e);
+		});
 
 		return createdUser;
 	}
