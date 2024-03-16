@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Registration;
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Tests;
 
@@ -15,6 +16,7 @@ public class RegistrationTests
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
 		serviceCollection.AddTransient<IRegistrationService<User>, UserRegistrationService>();
+		serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
 		serviceCollection.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>();
 		_serviceProvider = serviceCollection.BuildServiceProvider();
 	}

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.RestoringAccess;
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Tests;
 
@@ -14,6 +15,7 @@ public class RestoringAccessTests
 	{
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
+		serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
 		serviceCollection.AddKeyedTransient<IRestoringAccessService<User>, RestoringAccessThroughEmailService>(serviceKey: "RestoringAccessThroughEmailService");
 		serviceCollection.AddKeyedTransient<IRestoringAccessService<User>, RestoringAccessThroughPhoneService>(serviceKey: "RestoringAccessThroughPhoneService");
 		_serviceProvider = serviceCollection.BuildServiceProvider();
@@ -31,10 +33,10 @@ public class RestoringAccessTests
 		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughEmailService");
 		EmailCredentials emailCredentials = new EmailCredentials()
 		{
-			Email = "lesha.smirnov@mail.ru"
+			Email = "lesha.smirnov2019@mail.ru"
 		};
 		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		await userRegistrationService.VerifyAuthenticationCode(code: "345015");
+		await userRegistrationService.VerifyAuthenticationCode(code: "614819");
 		await userRegistrationService.ResetPassword(newPassword: "bratbratubrat");
 		Assert.Pass();
 	}
@@ -47,10 +49,10 @@ public class RestoringAccessTests
 			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughEmailService");
 			EmailCredentials emailCredentials = new EmailCredentials()
 			{
-				Email = "lesha.smirnov@mail.ru"
+				Email = "lesha.smirnov2019@mail.ru"
 			};
 			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			await userRegistrationService.VerifyAuthenticationCode(code: "557944");
+			await userRegistrationService.VerifyAuthenticationCode(code: "156316");
 			await userRegistrationService.ResetPassword(newPassword: "JaspersJas1743");
 		});
 	}
@@ -63,7 +65,7 @@ public class RestoringAccessTests
 			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughEmailService");
 			EmailCredentials emailCredentials = new EmailCredentials()
 			{
-				Email = "lesha.smirnov@mail.ru"
+				Email = "lesha.smirnov2019@mail.ru"
 			};
 			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
 			bool isVerified = await userRegistrationService.VerifyAuthenticationCode(code: "123456");
@@ -94,7 +96,7 @@ public class RestoringAccessTests
 			Phone = "+7(910)952-0836"
 		};
 		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		await userRegistrationService.VerifyAuthenticationCode(code: "557944");
+		await userRegistrationService.VerifyAuthenticationCode(code: "768456");
 		await userRegistrationService.ResetPassword(newPassword: "bratbratubrat2");
 		Assert.Pass();
 	}
@@ -110,7 +112,7 @@ public class RestoringAccessTests
 				Phone = "+7(910)952-0836"
 			};
 			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			await userRegistrationService.VerifyAuthenticationCode(code: "557944");
+			await userRegistrationService.VerifyAuthenticationCode(code: "768456");
 			await userRegistrationService.ResetPassword(newPassword: "JaspersJas1743");
 		});
 	}
