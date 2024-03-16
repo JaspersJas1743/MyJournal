@@ -7,6 +7,7 @@ using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
@@ -166,7 +167,9 @@ public class Program
 
 		builder.Services.AddScoped<IHashService, BCryptHashService>();
 
+		builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 		builder.Services.AddSignalR();
+
 		builder.Services.AddCors(setupAction: options => options.AddPolicy(name: "CORSPolicy", configurePolicy: policyBuilder =>
 		{
 			policyBuilder.AllowAnyMethod();

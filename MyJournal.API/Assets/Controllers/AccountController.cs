@@ -1,10 +1,12 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.GoogleAuthenticator;
+using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
 using MyJournal.API.Assets.Utilities;
@@ -20,6 +22,7 @@ public class AccountController(
     MyJournalContext context,
     IHashService hash,
     IJwtService jwt,
+    IHubContext<UserHub, IUserHub> userHubContext,
     IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
 {
@@ -333,6 +336,9 @@ public class AccountController(
 
         string token = jwt.Generate(tokenOwner: user, sessionId: currentSession.Id);
         return Ok(value: new SignInResponse(Token: token));
+
+        await userHubContext.Clients.User(userId: user.Id.ToString()).SignIn();
+
     }
 
     /// <summary>
@@ -445,13 +451,21 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        Session session = await GetCurrentSession(cancellationToken: cancellationToken);
+        Session currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
 
-        if (session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Disable))
+        if (currentSession.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Disable))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанная сессия уже является неактивной.");
 
-        await DisableSession(session: session, cancellationToken: cancellationToken);
+        SessionActivityStatus disableStatus = await FindSessionActivityStatus(
+            activityStatus: SessionActivityStatuses.Disable,
+            cancellationToken: cancellationToken
+        );
+
+        currentSession.SessionActivityStatus = disableStatus;
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+        await userHubContext.Clients.User(userId: currentSession.UserId.ToString()).SignOut(sessionIds: new int[] { currentSession.Id });
+
         return Ok(value: new SignOutResponse(Result: "Текущая сессия успешно завершена."));
     }
 
@@ -477,12 +491,21 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+        int userId = GetAuthorizedUserId();
 
-        foreach (Session session in user.Sessions)
-            await DisableSession(session: session, cancellationToken: cancellationToken);
+        IQueryable<Session> sessionsToDisable = _context.Users
+            .Where(u => u.Id.Equals(userId))
+            .SelectMany(u => u.Sessions.Where(
+                s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable
+            ));
 
+        List<int> sessionIds = sessionsToDisable.Select(s => s.Id).ToList();
+
+        await DisableSessions(sessions: sessionsToDisable, cancellationToken: cancellationToken);
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+        await userHubContext.Clients.User(userId: userId.ToString()).SignOut(sessionIds: sessionIds);
+
         return Ok(value: new SignOutResponse(Result: "Все сессии успешно завершены."));
     }
 
@@ -508,13 +531,22 @@ public class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
-        Session currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
+        int userId = GetAuthorizedUserId();
+        int currentSessionId = GetCurrentSessionId();
 
-        foreach (Session session in user.Sessions.Except(second: new Session[] { currentSession }))
-            await DisableSession(session: session, cancellationToken: cancellationToken);
+        IQueryable<Session> sessionsToDisable = _context.Users
+            .Where(u => u.Id.Equals(userId))
+            .SelectMany(u => u.Sessions.Where(
+                s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable && !s.Id.Equals(currentSessionId)
+            ));
 
+        List<int> sessionIds = sessionsToDisable.Select(selector: s => s.Id).ToList();
+
+        await DisableSessions(sessions: sessionsToDisable, cancellationToken: cancellationToken);
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+        await userHubContext.Clients.User(userId: userId.ToString()).SignOut(sessionIds: sessionIds);
+
         return Ok(value: new SignOutResponse(Result: "Все сессии, кроме текущей, успешно завершены."));
     }
 
@@ -556,7 +588,6 @@ public class AccountController(
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
-        _context.Entry(entity: user).State = EntityState.Modified;
         user.Phone = request.NewPhone;
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SetPhoneResponse(Message: "Номер телефона успешно установлен!"));
@@ -600,7 +631,6 @@ public class AccountController(
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
-        _context.Entry(entity: user).State = EntityState.Modified;
         user.Email = request.NewEmail;
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SetPhoneResponse(Message: "Электронная почта успешно установлена!"));
@@ -645,7 +675,6 @@ public class AccountController(
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Некорректный идентификатор пользователя.");
 
-        _context.Entry(entity: user).State = EntityState.Modified;
         user.Password = hash.Generate(toHash: request.NewPassword);
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
         return Ok(value: new SetPhoneResponse(Message: "Новый пароль успешно установлен!"));

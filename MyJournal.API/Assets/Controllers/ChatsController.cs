@@ -18,7 +18,7 @@ namespace MyJournal.API.Assets.Controllers;
 [Route(template: "api/chats")]
 public sealed class ChatsController(
 	IFileStorageService fileStorageService,
-	IHubContext<UserHub, IUserHub> userActivityHub,
+	IHubContext<UserHub, IUserHub> userHubContext,
 	MyJournalContext context
 ) : MyJournalBaseController(context: context)
 {
@@ -117,7 +117,7 @@ public sealed class ChatsController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = await GetAuthorizedUserId(cancellationToken: cancellationToken);
+		int userId = GetAuthorizedUserId();
 		User user = await _context.Users
 			.AsSplitQuery()
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
@@ -142,7 +142,6 @@ public sealed class ChatsController(
 				CreatedAt: chat.LastMessageNavigation.CreatedAt,
 				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
 				IsRead: chat.LastMessageNavigation.ReadedAt is not null || chat.Users.Count == 1
-				// TODO: Сейчас корректно считается, если это личный диалог (либо убрать счетчик у мультидиалогов, либо добавить таблицу времени прочтения сообщения)
 			) : null,
 			CountOfUnreadMessages: chat.Messages.OrderByDescending(keySelector: m => m.CreatedAt)
 				.TakeWhile(predicate: m => m.ReadedAt is null && !m.Sender.Id.Equals(user.Id)).Count()
@@ -189,7 +188,7 @@ public sealed class ChatsController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = await GetAuthorizedUserId(cancellationToken: cancellationToken);
+		int userId = GetAuthorizedUserId();
 		User user = await _context.Users
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.ChatType)
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
@@ -255,7 +254,7 @@ public sealed class ChatsController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = await GetAuthorizedUserId(cancellationToken: cancellationToken);
+		int userId = GetAuthorizedUserId();
 		User user = await _context.Users
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.ChatType)
@@ -282,8 +281,8 @@ public sealed class ChatsController(
 		await _context.Chats.AddAsync(entity: createdChat, cancellationToken: cancellationToken);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		// TODO: доработать, дабы не извещать тех, кого не нужно
-		await userActivityHub.Clients.All.CreateChat(userId: userId);
+		await userHubContext.Clients.Users(userIds: createdChat.Users.Select(selector: c => c.Id.ToString()))
+			.JoinedInChat(chatName: createdChat.Name);
 
 		return RedirectToAction(
 			actionName: nameof(GetChats),
@@ -328,7 +327,7 @@ public sealed class ChatsController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = await GetAuthorizedUserId(cancellationToken: cancellationToken);
+		int userId = GetAuthorizedUserId();
 		User user = await _context.Users
 			.Include(user => user.Chats).ThenInclude(chat => chat.Users)
 			.SingleOrDefaultAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken)
@@ -348,8 +347,8 @@ public sealed class ChatsController(
 		await _context.Chats.AddAsync(entity: createdChat, cancellationToken: cancellationToken);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		// TODO: доработать, дабы не извещать тех, кого не нужно
-		await userActivityHub.Clients.All.CreateChat(userId: userId);
+		await userHubContext.Clients.Users(userIds: interlocutors.Select(selector: c => c.Id.ToString()))
+			.JoinedInChat(chatName: createdChat.Name);
 
 		return RedirectToAction(
 			actionName: nameof(GetChats),

@@ -9,6 +9,6 @@ public static class DefaultHubConnectionBuilder
 	{
 		return new HubConnectionBuilder().WithUrl(url: url, configureHttpConnection:
 			options => options.Headers.Add(key: nameof(HttpRequestHeader.Authorization), value: token)
-		).Build();
+		).WithAutomaticReconnect().Build();
 	}
 }

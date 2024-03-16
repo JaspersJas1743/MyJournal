@@ -12,13 +12,19 @@ public class MyJournalBaseController(
 	MyJournalContext context
 ) : ControllerBase
 {
+	protected int GetAuthorizedUserId()
+	{
+		return Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Identifier)
+							  ?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
+	}
+
 	protected async Task<User> GetAuthorizedUser(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Identifier)
-			?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
-		User user = await context.Users.Include(navigationPropertyPath: user => user.Sessions)
+		int userId = GetAuthorizedUserId();
+		User user = await context.Users
+			.Include(navigationPropertyPath: user => user.Sessions)
 			.ThenInclude(navigationPropertyPath: session => session.SessionActivityStatus)
 			.SingleOrDefaultAsync(
 				predicate: user => user.Id.Equals(userId),
@@ -27,11 +33,9 @@ public class MyJournalBaseController(
 		return user;
 	}
 
-	protected async Task<int> GetAuthorizedUserId(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
+	protected int GetCurrentSessionId()
 	{
-		return Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Identifier)
+		return Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Session)
 			?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
 	}
 
@@ -39,8 +43,7 @@ public class MyJournalBaseController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int sessionId = Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Session)
-			?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
+		int sessionId = GetCurrentSessionId();
 		Session session = await context.Sessions.Include(navigationPropertyPath: session => session.SessionActivityStatus)
 			.SingleOrDefaultAsync(
 				predicate: session => session.Id.Equals(sessionId),
@@ -127,5 +130,30 @@ public class MyJournalBaseController(
 			predicate: status => status.ActivityStatus.Equals(activityStatus),
 			cancellationToken: cancellationToken
 		);
+	}
+
+	protected async Task<IEnumerable<string>> GetUserInterlocutorIds(
+		int userId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await context.Users
+			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
+			.SingleAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken);
+		return user.Chats.SelectMany(selector: c => c.Users.Except(second: new User[] { user })).Select(selector: u => u.Id.ToString());
+	}
+
+	protected async Task<IEnumerable<Session>> GetOtherSessionIds(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+		Session currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
+
+		IEnumerable<Session> sessionsToDisable = user.Sessions
+			.Where(predicate: s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable)
+			.Except(second: new Session[] { currentSession });
+
+		return sessionsToDisable;
 	}
 }

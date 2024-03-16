@@ -12,6 +12,7 @@ using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Utilities;
 using MyJournal.API.Assets.Validation;
 using MyJournal.API.Assets.Validation.Validators;
+using Task = System.Threading.Tasks.Task;
 
 namespace MyJournal.API.Assets.Controllers;
 
@@ -20,7 +21,7 @@ namespace MyJournal.API.Assets.Controllers;
 [Route(template: "api/user")]
 public class UserController(
 	MyJournalContext context,
-	IHubContext<UserHub, IUserHub> userActivityHub,
+	IHubContext<UserHub, IUserHub> userHubContext,
 	IFileStorageService fileStorageService,
 	IHashService hashService,
 	IGoogleAuthenticatorService googleAuthenticatorService
@@ -37,7 +38,7 @@ public class UserController(
 
 	[Validator<UserControllerVerifyGoogleAuthenticatorRequest>]
 	public record VerifyGoogleAuthenticatorRequest(string UserCode);
-	public record VerifyGoogleAuthenticatorResponse(bool IsVerified);
+	public record UserControllerVerifyGoogleAuthenticatorResponse(bool IsVerified);
 
 	[Validator<UploadProfilePhotoRequestValidator>]
 	public record UploadProfilePhotoRequest(IFormFile Photo);
@@ -73,6 +74,19 @@ public class UserController(
 		user.OnlineAt = onlineAt;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 		return (user.Id, onlineAt);
+	}
+
+	private async Task DisableSessions(
+		IQueryable<Session> sessions,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		SessionActivityStatus disableStatus = await FindSessionActivityStatus(
+			activityStatus: SessionActivityStatuses.Disable,
+			cancellationToken: cancellationToken
+		);
+		foreach (Session session in sessions)
+			session.SessionActivityStatus = disableStatus;
 	}
 	#endregion
 
@@ -209,9 +223,9 @@ public class UserController(
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpGet(template: "profile/security/code/verify")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyGoogleAuthenticatorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(UserControllerVerifyGoogleAuthenticatorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<VerifyGoogleAuthenticatorResponse>> VerifyGoogleAuthenticator(
+	public async Task<ActionResult<UserControllerVerifyGoogleAuthenticatorResponse>> VerifyGoogleAuthenticator(
 		[FromQuery] VerifyGoogleAuthenticatorRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -222,7 +236,7 @@ public class UserController(
 			authCode: user.AuthorizationCode,
 			code: request.UserCode
 		);
-		return Ok(new VerifyGoogleAuthenticatorResponse(IsVerified: isVerified));
+		return Ok(new UserControllerVerifyGoogleAuthenticatorResponse(IsVerified: isVerified));
 	}
 	#endregion
 
@@ -253,7 +267,9 @@ public class UserController(
 			onlineAt: null,
 			cancellationToken: cancellationToken
 		);
-		await userActivityHub.Clients.All.SetOnline(userId: userId, onlineAt: onlineAt);
+		await userHubContext.Clients.Users(
+			userIds: await GetUserInterlocutorIds(userId: userId, cancellationToken: cancellationToken)
+		).SetOnline(userId: userId, onlineAt: onlineAt);
 		return Ok();
 	}
 
@@ -283,7 +299,9 @@ public class UserController(
 			onlineAt: DateTime.Now,
 			cancellationToken: cancellationToken
 		);
-		await userActivityHub.Clients.All.SetOffline(userId: userId, onlineAt: onlineAt);
+		await userHubContext.Clients.Users(
+			userIds: await GetUserInterlocutorIds(userId: userId, cancellationToken: cancellationToken)
+		).SetOffline(userId: userId, onlineAt: onlineAt);
 		return Ok();
 	}
 
@@ -324,11 +342,12 @@ public class UserController(
 			fileStream: request.Photo.OpenReadStream(),
 			cancellationToken: cancellationToken
 		);
-		_context.Entry(entity: user).State = EntityState.Modified;
 		user.LinkToPhoto = link;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		await userActivityHub.Clients.All.UpdatedProfilePhoto(userId: user.Id);
+		await userHubContext.Clients.Users(
+			userIds: await GetUserInterlocutorIds(userId: user.Id, cancellationToken: cancellationToken)
+		).UpdatedProfilePhoto(userId: user.Id);
 
 		return Ok(value: new UploadProfilePhotoResponse(Link: link));
 	}
@@ -372,22 +391,20 @@ public class UserController(
 		if (!isVerified)
 			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Текущий пароль указан неверно.");
 
-		Session currentSession = await GetCurrentSession(cancellationToken: cancellationToken);
-
-		_context.Entry(entity: user).State = EntityState.Modified;
 		user.Password = hashService.Generate(toHash: request.NewPassword);
-		SessionActivityStatus disableStatus = await FindSessionActivityStatus(
-			activityStatus: SessionActivityStatuses.Disable,
-			cancellationToken: cancellationToken
-		);
 
-		foreach (Session session in user.Sessions.Except(second: new Session[] { currentSession }))
-		{
-			_context.Entry(entity: session).State = EntityState.Modified;
-			session.SessionActivityStatus = disableStatus;
-		}
+		int currentSessionId = GetCurrentSessionId();
+		IQueryable<Session> sessionsToDisable = _context.Users
+			.Where(u => u.Id.Equals(user.Id))
+			.SelectMany(u => u.Sessions.Where(
+				s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable && !s.Id.Equals(currentSessionId)
+			));
 
+		List<int> sessionIds = sessionsToDisable.Select(s => s.Id).ToList();
+
+		await DisableSessions(sessions: sessionsToDisable, cancellationToken: cancellationToken);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+		await userHubContext.Clients.User(userId: user.Id.ToString()).SignOut(sessionIds: sessionIds);
 
 		return Ok(value: new ChangePasswordResponse(Message: "Текущий пароль изменен успешно!"));
 	}
@@ -428,9 +445,11 @@ public class UserController(
 		if (await _context.Users.AnyAsync(predicate: u => u.Email != null && u.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
 			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный адрес электронной почты не может быть занят.");
 
-		_context.Entry(entity: user).State = EntityState.Modified;
 		user.Email = request.NewEmail;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		await userHubContext.Clients.User(userId: user.Id.ToString()).SetEmail(email: user.Email);
+
 		return Ok(value: new ChangeEmailResponse(Email: user.Email, Message: "Текущий адрес электронной почты изменен успешно!"));
 	}
 
@@ -470,10 +489,12 @@ public class UserController(
 		if (await _context.Users.AnyAsync(predicate: u => u.Phone != null && u.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
 			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный номер телефона не может быть занят.");
 
-		_context.Entry(entity: user).State = EntityState.Modified;
 		user.Phone = request.NewPhone;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
-		return Ok(value: new ChangePhoneResponse(Phone: user.Phone, Message: "Текущий адрес электронной почты изменен успешно!"));
+
+		await userHubContext.Clients.User(userId: user.Id.ToString()).SetPhone(phone: user.Phone);
+
+		return Ok(value: new ChangePhoneResponse(Phone: user.Phone, Message: "Текущий номер телефона изменен успешно!"));
 	}
 	#endregion
 
@@ -504,10 +525,13 @@ public class UserController(
 		string? fileExtension = Path.GetExtension(path: user.LinkToPhoto);
 		string fileKey = $"ProfilePhotos/id{user.Id}_profile-photo{fileExtension}";
 		await fileStorageService.DeleteFileAsync(key: fileKey, cancellationToken: cancellationToken);
-		_context.Entry(entity: user).State = EntityState.Modified;
+
 		user.LinkToPhoto = null;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
-		await userActivityHub.Clients.All.DeletedProfilePhoto(userId: user.Id);
+
+		await userHubContext.Clients.Users(
+			userIds: await GetUserInterlocutorIds(userId: user.Id, cancellationToken: cancellationToken)
+		).DeletedProfilePhoto(userId: user.Id);
 
 		return Ok();
 	}
