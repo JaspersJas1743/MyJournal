@@ -42,7 +42,7 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowError()
+	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
@@ -58,7 +58,7 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowError()
+	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<Exception>(code: async () =>
 		{
@@ -102,7 +102,7 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowError()
+	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
@@ -118,7 +118,7 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowError()
+	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<Exception>(code: async () =>
 		{
