@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core;
@@ -129,7 +130,7 @@ public class User
 			client: client,
 			googleAuthenticatorService: googleAuthenticatorService,
 			userHubConnection: DefaultHubConnectionBuilder.CreateHubConnection(
-				url: "https://localhost:7267/hub/User",
+				url: UserHubMethods.HubEndpoint,
 				token: client.Token
 			),
 			id: response.Id,
@@ -145,52 +146,48 @@ public class User
 		);
 
 		await createdUser._userHubConnection.StartAsync(cancellationToken: cancellationToken);
-		createdUser._userHubConnection.On<int, DateTime?>(methodName: "SetOnline", handler: (userId, onlineAt) =>
+		createdUser._userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOnline, handler: (userId, onlineAt) =>
+			createdUser.OnInterlocutorOnline?.Invoke(e: new InterlocutorOnlineEventArgs(
+				InterlocutorId: userId,
+				OnlineAt: onlineAt
+			))
+		);
+		createdUser._userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOffline, handler: (userId, onlineAt) =>
+			createdUser.OnInterlocutorOffline?.Invoke(e: new InterlocutorOfflineEventArgs(
+				InterlocutorId: userId,
+				OnlineAt: onlineAt
+			))
+		);
+		createdUser._userHubConnection.On<int>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: userId =>
+			createdUser.OnInterlocutorUpdatedPhoto?.Invoke(e: new InterlocutorUpdatedPhotoEventArgs(
+				InterlocutorId: userId
+			))
+		);
+		createdUser._userHubConnection.On<int>(methodName: UserHubMethods.DeletedProfilePhoto, handler: userId =>
+			createdUser.OnInterlocutorDeletedPhoto?.Invoke(e: new InterlocutorDeletedPhotoEventArgs(
+				InterlocutorId: userId
+			))
+		);
+		createdUser._userHubConnection.On(methodName: UserHubMethods.SignIn, handler: () =>
+			createdUser.OnSignedIn?.Invoke(e: new SignedInEventArgs())
+		);
+		createdUser._userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: (sessionIds) =>
+			createdUser.OnSignedOut?.Invoke(e: new SignedOutEventArgs(
+				SessionIds: sessionIds,
+				CurrentSessionAreClosed: sessionIds.Contains(value: createdUser._sessionId)
+			))
+		);
+		createdUser._userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async (chatId) =>
 		{
-			InterlocutorOnlineEventArgs e = new InterlocutorOnlineEventArgs(InterlocutorId: userId, OnlineAt: onlineAt);
-			createdUser.OnInterlocutorOnline?.Invoke(e: e);
-		});
-		createdUser._userHubConnection.On<int, DateTime?>(methodName: "SetOffline", handler: (userId, onlineAt) =>
-		{
-			InterlocutorOfflineEventArgs e = new InterlocutorOfflineEventArgs(InterlocutorId: userId, OnlineAt: onlineAt);
-			createdUser.OnInterlocutorOffline?.Invoke(e: e);
-		});
-		createdUser._userHubConnection.On<int>(methodName: "UpdatedProfilePhoto", handler: userId =>
-		{
-			InterlocutorUpdatedPhotoEventArgs e = new InterlocutorUpdatedPhotoEventArgs(InterlocutorId: userId);
-			createdUser.OnInterlocutorUpdatedPhoto?.Invoke(e: e);
-		});
-		createdUser._userHubConnection.On<int>(methodName: "DeletedProfilePhoto", handler: userId =>
-		{
-			InterlocutorDeletedPhotoEventArgs e = new InterlocutorDeletedPhotoEventArgs(InterlocutorId: userId);
-			createdUser.OnInterlocutorDeletedPhoto?.Invoke(e: e);
-		});
-		createdUser._userHubConnection.On(methodName: "SignIn", handler: () =>
-		{
-			SignInEventArgs e = new SignInEventArgs();
-			createdUser.OnSignIn?.Invoke(e: e);
-		});
-			createdUser._userHubConnection.On<IEnumerable<int>>(methodName: "SignOut", handler: (sessionIds) =>
-		{
-			SignOutEventArgs e = new SignOutEventArgs(SessionIds: sessionIds);
-			createdUser.OnSignOut?.Invoke(e: e);
-		});
-		createdUser._userHubConnection.On<string?>(methodName: "JoinedInChat", handler: (chatName) =>
-		{
-			JoinedInChatEventArgs e = new JoinedInChatEventArgs(ChatName: chatName);
-			createdUser.OnJoinedInChat?.Invoke(e: e);
 			await createdUser.Chats.Append(chatId: chatId, cancellationToken: cancellationToken);
+			createdUser.OnJoinedInChat?.Invoke(e: new JoinedInChatEventArgs(ChatId: chatId));
 		});
-		createdUser._userHubConnection.On<string?>(methodName: "SetPhone", handler: (phone) =>
-		{
-			ChangedPhoneEventArgs e = new ChangedPhoneEventArgs(Phone: phone);
-			createdUser.OnChangedPhone?.Invoke(e: e);
-		});
-		createdUser._userHubConnection.On<string?>(methodName: "SetEmail", handler: (email) =>
-		{
-			ChangedEmailEventArgs e = new ChangedEmailEventArgs(Email: email);
-			createdUser.OnChangedEmail?.Invoke(e: e);
-		});
+		createdUser._userHubConnection.On<string?>(methodName: UserHubMethods.SetPhone, handler: (phone) =>
+			createdUser.OnUpdatedPhone?.Invoke(e: new UpdatedPhoneEventArgs(Phone: phone))
+		);
+		createdUser._userHubConnection.On<string?>(methodName: UserHubMethods.SetEmail, handler: (email) =>
+			createdUser.OnUpdatedEmail?.Invoke(e: new UpdatedEmailEventArgs(Email: email))
+		);
 
 		return createdUser;
 	}
