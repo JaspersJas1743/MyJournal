@@ -93,7 +93,7 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			User user2 = await service2.SignIn(credentials: credentials);
-			await user.SignOutAllExceptThis();
+			await user.SignOutOthers();
 			await user2.DownloadProfilePhoto(folderToSave: @"C:\Users\JaspersJas1743\Downloads");
 		});
 	}
@@ -108,7 +108,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.SignOutAllExceptThis();
+		await user.SignOutOthers();
 		await user.DownloadProfilePhoto(folderToSave: @"C:\Users\JaspersJas1743\Downloads");
 	}
 	#endregion
@@ -526,7 +526,7 @@ public class UserTests
 	}
 	#endregion
 
-	#region GetInterlocutors
+	#region Interlocutors
 	[Test]
 	public async Task UserGetInterlocutors_WithNullFilter_ShouldPassed()
 	{
@@ -537,7 +537,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		IEnumerable<Interlocutor> interlocutors = await user.GetInterlocutors(offset: 0, count: 20, filter: null);
+		await user.Interlocutors.SetFilter(filter: null);
 	}
 
 	[Test]
@@ -550,7 +550,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		IEnumerable<Interlocutor> interlocutors = await user.GetInterlocutors(offset: 0, count: 20, filter: String.Empty);
+		await user.Interlocutors.SetFilter(filter: String.Empty);
 	}
 
 	[Test]
@@ -563,39 +563,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		IEnumerable<Interlocutor> interlocutors = await user.GetInterlocutors(offset: 0, count: 20, filter: "   ");
-	}
-
-	[Test]
-	public async Task UserGetInterlocutors_WithNegativeOffset_ShouldThrowException()
-	{
-		Assert.ThrowsAsync<ApiException>(code: async () =>
-		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
-				login: "Jaspers",
-				password: "JaspersJas1743",
-				client: UserAuthorizationCredentials.Clients.Windows
-			);
-			User user = await service.SignIn(credentials: credentials);
-			IEnumerable<Interlocutor> interlocutors = await user.GetInterlocutors(offset: -1, count: 20, filter: String.Empty);
-		});
-	}
-
-	[Test]
-	public async Task UserGetInterlocutors_WithNegativeCount_ShouldThrowException()
-	{
-		Assert.ThrowsAsync<ApiException>(code: async () =>
-		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
-				login: "Jaspers",
-				password: "JaspersJas1743",
-				client: UserAuthorizationCredentials.Clients.Windows
-			);
-			User user = await service.SignIn(credentials: credentials);
-			IEnumerable<Interlocutor> interlocutors = await user.GetInterlocutors(offset: 0, count: -1, filter: String.Empty);
-		});
+		await user.Interlocutors.SetFilter(filter: "   ");
 	}
 	#endregion
 }

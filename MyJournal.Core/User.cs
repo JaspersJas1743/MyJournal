@@ -26,6 +26,7 @@ public class User
 		string name,
 		string? patronymic,
 		ChatCollection chats,
+		InterlocutorCollection interlocutors,
 		string? phone = null,
 		string? email = null,
 		string? photo = null
@@ -43,6 +44,7 @@ public class User
 		Patronymic = patronymic;
 		Chats = chats;
 		Interlocutors = interlocutors;
+
 		Phone = phone;
 		Email = email;
 		Photo = photo;
@@ -50,15 +52,11 @@ public class User
 	#endregion
 
 	#region Properties
-	private int Id { get; init; }
-	private int SessionId { get; init; }
-	public string Surname { get; init; }
-	public string Name { get; init; }
-	public string? Patronymic { get; init; }
 	public string Surname { get; }
 	public string Name { get; }
 	public string? Patronymic { get; }
 	public ChatCollection Chats { get; }
+	public InterlocutorCollection Interlocutors { get; }
 	public string? Phone { get; private set; }
 	public string? Email { get; private set; }
 	public string? Photo { get; private set; }
@@ -74,7 +72,6 @@ public class User
 	private sealed record ChangeEmailResponse(string Email, string Message);
 	private sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 	private sealed record ChangePasswordResponse(string Message);
-	private sealed record GetInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
 	#endregion
 
 	#region Classes
@@ -141,6 +138,7 @@ public class User
 			name: response.Name,
 			patronymic: response.Patronymic,
 			chats: await ChatCollection.Create(client: client, cancellationToken: cancellationToken),
+			interlocutors: await InterlocutorCollection.Create(client: client, cancellationToken: cancellationToken),
 			phone: response.Phone,
 			email: response.Email,
 			photo: response.Photo
@@ -351,26 +349,5 @@ public class User
 		) ?? throw new InvalidOperationException();
 		return response.Message;
 	}
-
-	public async Task<IEnumerable<Interlocutor>> GetInterlocutors(
-		int offset,
-		int count,
-		bool includeExistedInterlocutors = true,
-		string? filter = null,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		return await _client.GetAsync<IEnumerable<Interlocutor>, GetInterlocutorsRequest>(
-			apiMethod: ChatsControllerMethods.GetInterlocutors,
-			argQuery: new GetInterlocutorsRequest(
-				IsFiltered: !String.IsNullOrWhiteSpace(filter),
-				Filter: filter,
-				Offset: offset,
-				Count: count,
-				IncludeExistedInterlocutors: includeExistedInterlocutors
-			), cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-	}
-
 	#endregion
 }
