@@ -11,7 +11,7 @@ public interface IUserHub
 	Task SignIn();
 	Task SignOut(IEnumerable<int> sessionIds);
 
-	Task JoinedInChat(string? chatName);
+	Task JoinedInChat(int id);
 
 	Task SetPhone(string? phone);
 	Task SetEmail(string? email);

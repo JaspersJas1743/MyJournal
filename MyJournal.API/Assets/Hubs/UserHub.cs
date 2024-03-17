@@ -24,8 +24,8 @@ public class UserHub : Hub<IUserHub>
 	public async Task DeletedProfilePhoto(int userId, IEnumerable<string> interlocutorIds)
 		=> await Clients.Users(userIds: interlocutorIds).DeletedProfilePhoto(userId: userId);
 
-	public async Task CreatedChat(string? chatName, IEnumerable<string> interlocutorIds)
-		=> await Clients.Users(userIds: interlocutorIds).JoinedInChat(chatName: chatName);
+	public async Task CreatedChat(int chatId, IEnumerable<string> interlocutorIds)
+		=> await Clients.Users(userIds: interlocutorIds).JoinedInChat(id: chatId);
 
 	public async Task SetPhone(string phone, IEnumerable<string> interlocutorIds)
 		=> await Clients.Users(userIds: interlocutorIds).SetPhone(phone: phone);

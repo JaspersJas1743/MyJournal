@@ -11,6 +11,8 @@ public sealed class User
 	private readonly ApiClient _client;
 	private readonly IGoogleAuthenticatorService _googleAuthenticatorService;
 	private readonly HubConnection _userHubConnection;
+	private readonly int _id;
+	private readonly int _sessionId;
 	#endregion
 
 	#region Constructors
@@ -32,8 +34,8 @@ public sealed class User
 		_googleAuthenticatorService = googleAuthenticatorService;
 		_userHubConnection = userHubConnection;
 
-		Id = id;
-		SessionId = sessionId;
+		_id = id;
+		_sessionId = sessionId;
 
 		Surname = surname;
 		Name = name;
@@ -57,17 +59,12 @@ public sealed class User
 
 	#region Records
 	private sealed record SignOutResponse(string Message);
-
 	private sealed record UserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
-
 	private sealed record UploadProfilePhotoResponse(string Link);
-
 	private sealed record ChangePhoneRequest(string NewPhone);
 	private sealed record ChangePhoneResponse(string Phone, string Message);
-
 	private sealed record ChangeEmailRequest(string NewEmail);
 	private sealed record ChangeEmailResponse(string Email, string Message);
-
 	private sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 	private sealed record ChangePasswordResponse(string Message);
 
@@ -89,11 +86,11 @@ public sealed class User
 	public sealed class InterlocutorOfflineEventArgs(int InterlocutorId, DateTime? OnlineAt) : EventArgs;
 	public sealed class InterlocutorUpdatedPhotoEventArgs(int InterlocutorId) : EventArgs;
 	public sealed class InterlocutorDeletedPhotoEventArgs(int InterlocutorId) : EventArgs;
-	public sealed class SignInEventArgs : EventArgs;
-	public sealed class SignOutEventArgs(IEnumerable<int> SessionIds) : EventArgs;
-	public sealed class JoinedInChatEventArgs(string? ChatName) : EventArgs;
-	public sealed class ChangedPhoneEventArgs(string? Phone) : EventArgs;
-	public sealed class ChangedEmailEventArgs(string? Email) : EventArgs;
+	public sealed class SignedInEventArgs : EventArgs;
+	public sealed class SignedOutEventArgs(IEnumerable<int> SessionIds, bool CurrentSessionAreClosed) : EventArgs;
+	public sealed class JoinedInChatEventArgs(int ChatId) : EventArgs;
+	public sealed class UpdatedPhoneEventArgs(string? Phone) : EventArgs;
+	public sealed class UpdatedEmailEventArgs(string? Email) : EventArgs;
 	#endregion
 
 	#region Delegates
@@ -101,11 +98,11 @@ public sealed class User
 	public delegate void InterlocutorOfflineHandler(InterlocutorOfflineEventArgs e);
 	public delegate void InterlocutorUpdatedPhotoHandler(InterlocutorUpdatedPhotoEventArgs e);
 	public delegate void InterlocutorDeletedPhotoHandler(InterlocutorDeletedPhotoEventArgs e);
-	public delegate void SignInHandler(SignInEventArgs e);
-	public delegate void SignOutHandler(SignOutEventArgs e);
+	public delegate void SignedInHandler(SignedInEventArgs e);
+	public delegate void SignedOutHandler(SignedOutEventArgs e);
 	public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
-	public delegate void ChangedPhoneHandler(ChangedPhoneEventArgs e);
-	public delegate void ChangedEmailHandler(ChangedEmailEventArgs e);
+	public delegate void UpdatedPhoneHandler(UpdatedPhoneEventArgs e);
+	public delegate void UpdatedEmailHandler(UpdatedEmailEventArgs e);
 	#endregion
 
 	#region Events
@@ -113,11 +110,11 @@ public sealed class User
 	public event InterlocutorOfflineHandler? OnInterlocutorOffline;
 	public event InterlocutorUpdatedPhotoHandler? OnInterlocutorUpdatedPhoto;
 	public event InterlocutorDeletedPhotoHandler? OnInterlocutorDeletedPhoto;
-	public event SignInHandler? OnSignIn;
-	public event SignOutHandler? OnSignOut;
+	public event SignedInHandler? OnSignedIn;
+	public event SignedOutHandler? OnSignedOut;
 	public event JoinedInChatHandler? OnJoinedInChat;
-	public event ChangedPhoneHandler? OnChangedPhone;
-	public event ChangedEmailHandler? OnChangedEmail;
+	public event UpdatedPhoneHandler? OnUpdatedPhone;
+	public event UpdatedEmailHandler? OnUpdatedEmail;
 	#endregion
 
 	#region Methods
@@ -306,7 +303,7 @@ public sealed class User
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: Id, code: code, cancellationToken: cancellationToken);
+		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: _id, code: code, cancellationToken: cancellationToken);
 		if (!isVerified)
 			throw new ArgumentException(message: "Некорректный код подтверждения для смены адреса электронной почты.", paramName: nameof(code));
 
@@ -325,7 +322,7 @@ public sealed class User
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: Id, code: code, cancellationToken: cancellationToken);
+		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: _id, code: code, cancellationToken: cancellationToken);
 		if (!isVerified)
 			throw new ArgumentException(message: "Некорректный код подтверждения для смены номера телефона.", paramName: nameof(code));
 
@@ -345,7 +342,7 @@ public sealed class User
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: Id, code: code, cancellationToken: cancellationToken);
+		bool isVerified = await _googleAuthenticatorService.VerifyAuthenticationCode(userId: _id, code: code, cancellationToken: cancellationToken);
 		if (!isVerified)
 			throw new ArgumentException(message: "Некорректный код подтверждения для смены пароля.", paramName: nameof(code));
 

@@ -8,4 +8,6 @@ public static class ChatsControllerMethods
 	public const string CreateMultiChat = "chats/multi/create";
 	public const string UploadChatPhoto = "chats/photo/upload";
 	public const string DeleteChatPhoto = "chats/photo/delete";
+
+	public static string GetChat(int chatId) => $"chats/{chatId}/get";
 }

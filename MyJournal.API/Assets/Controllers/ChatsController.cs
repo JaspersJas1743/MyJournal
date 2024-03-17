@@ -157,6 +157,50 @@ public sealed class ChatsController(
 	}
 
 	/// <summary>
+	/// Получение данных диалога по идентификатору
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///     GET api/chats/{id:int}/get
+	///
+	/// Параметры:
+	///
+	///	id - идентификатор диалога, информацию о котором необходимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Информация о диалоге</response>
+	/// <response code="400">Некорректный авторизационный токен</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	[HttpGet(template: "{id:int}/get")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetChatsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetChatsResponse>> GetChat(
+		[FromRoute] int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
+		Chat chat = await _context.Chats
+			.Include(navigationPropertyPath: c => c.ChatType)
+			.Include(navigationPropertyPath: c => c.Users)
+			.Where(predicate: c => c.Users.Contains(user))
+			.SingleOrDefaultAsync(predicate: c => c.Id.Equals(id), cancellationToken: cancellationToken)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: $"Диалог с идентификатором {id} не найден.");
+		return Ok(value: new GetChatsResponse(
+			Id: chat.Id,
+			ChatName: GetChatName(chat: chat, currentUser: user),
+			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
+			LastMessage: null,
+			CountOfUnreadMessages: 0
+		));
+	}
+
+	/// <summary>
 	/// Получение списка потенциальных собеседников пользователя
 	/// </summary>
 	/// <remarks>
@@ -282,7 +326,7 @@ public sealed class ChatsController(
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		await userHubContext.Clients.Users(userIds: createdChat.Users.Select(selector: c => c.Id.ToString()))
-			.JoinedInChat(chatName: createdChat.Name);
+			.JoinedInChat(id: createdChat.Id);
 
 		return RedirectToAction(
 			actionName: nameof(GetChats),
@@ -348,7 +392,7 @@ public sealed class ChatsController(
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		await userHubContext.Clients.Users(userIds: interlocutors.Select(selector: c => c.Id.ToString()))
-			.JoinedInChat(chatName: createdChat.Name);
+			.JoinedInChat(id: createdChat.Id);
 
 		return RedirectToAction(
 			actionName: nameof(GetChats),
