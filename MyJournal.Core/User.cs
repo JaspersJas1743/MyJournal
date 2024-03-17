@@ -5,7 +5,7 @@ using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core;
 
-public sealed class User
+public class User
 {
 	#region Fields
 	private readonly ApiClient _client;
@@ -25,6 +25,7 @@ public sealed class User
 		string surname,
 		string name,
 		string? patronymic,
+		ChatCollection chats,
 		string? phone = null,
 		string? email = null,
 		string? photo = null
@@ -40,6 +41,8 @@ public sealed class User
 		Surname = surname;
 		Name = name;
 		Patronymic = patronymic;
+		Chats = chats;
+		Interlocutors = interlocutors;
 		Phone = phone;
 		Email = email;
 		Photo = photo;
@@ -52,6 +55,10 @@ public sealed class User
 	public string Surname { get; init; }
 	public string Name { get; init; }
 	public string? Patronymic { get; init; }
+	public string Surname { get; }
+	public string Name { get; }
+	public string? Patronymic { get; }
+	public ChatCollection Chats { get; }
 	public string? Phone { get; private set; }
 	public string? Email { get; private set; }
 	public string? Photo { get; private set; }
@@ -67,18 +74,7 @@ public sealed class User
 	private sealed record ChangeEmailResponse(string Email, string Message);
 	private sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 	private sealed record ChangePasswordResponse(string Message);
-
-	private sealed record GetChatsRequest(bool IsFiltered, string? Filter, int Offset, int Count);
-
 	private sealed record GetInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
-
-	private sealed record CreateSingleChatRequest(int InterlocutorId);
-
-	private sealed record CreateMultiChatRequest(IEnumerable<int> InterlocutorIds, string? ChatName, string? LinkToPhoto);
-
-	private sealed record UploadChatPhotoResponse(string Link);
-
-	private sealed record DeleteChatPhotoRequest(string Link);
 	#endregion
 
 	#region Classes
@@ -144,6 +140,7 @@ public sealed class User
 			surname: response.Surname,
 			name: response.Name,
 			patronymic: response.Patronymic,
+			chats: await ChatCollection.Create(client: client, cancellationToken: cancellationToken),
 			phone: response.Phone,
 			email: response.Email,
 			photo: response.Photo
@@ -184,6 +181,7 @@ public sealed class User
 		{
 			JoinedInChatEventArgs e = new JoinedInChatEventArgs(ChatName: chatName);
 			createdUser.OnJoinedInChat?.Invoke(e: e);
+			await createdUser.Chats.Append(chatId: chatId, cancellationToken: cancellationToken);
 		});
 		createdUser._userHubConnection.On<string?>(methodName: "SetPhone", handler: (phone) =>
 		{
@@ -255,7 +253,7 @@ public sealed class User
 		return message;
 	}
 
-	public async Task<string> SignOutAllExceptThis(
+	public async Task<string> SignOutOthers(
 		CancellationToken cancellationToken = default(CancellationToken)
 	) => await SignOut(method: AccountControllerMethods.SignOutOthers, cancellationToken: cancellationToken);
 
@@ -354,24 +352,6 @@ public sealed class User
 		return response.Message;
 	}
 
-	public async Task<IEnumerable<Chat>> GetChats(
-		int offset,
-		int count,
-		string? filter = null,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		return await _client.GetAsync<IEnumerable<Chat>, GetChatsRequest>(
-			apiMethod: ChatsControllerMethods.GetChats,
-			argQuery: new GetChatsRequest(
-				IsFiltered: !String.IsNullOrWhiteSpace(filter),
-				Filter: filter,
-				Offset: offset,
-				Count: count
-			), cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-	}
-
 	public async Task<IEnumerable<Interlocutor>> GetInterlocutors(
 		int offset,
 		int count,
@@ -392,57 +372,5 @@ public sealed class User
 		) ?? throw new InvalidOperationException();
 	}
 
-	public async Task<IEnumerable<Chat>> CreateSingleChat(
-		int interlocutorId,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		return await _client.PostAsync<IEnumerable<Chat>, CreateSingleChatRequest>(
-			apiMethod: ChatsControllerMethods.CreateSingleChat,
-			arg: new CreateSingleChatRequest(InterlocutorId: interlocutorId),
-			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-	}
-
-	public async Task<IEnumerable<Chat>> CreateMultiChat(
-		IEnumerable<int> interlocutorIds,
-		string chatName,
-		string linkToPhoto,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		IEnumerable<Chat> result = await _client.PostAsync<IEnumerable<Chat>, CreateMultiChatRequest>(
-			apiMethod: ChatsControllerMethods.CreateMultiChat,
-			arg: new CreateMultiChatRequest(InterlocutorIds: interlocutorIds, ChatName: chatName, LinkToPhoto: linkToPhoto),
-			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-
-		return result;
-	}
-
-	public async Task<string> UploadMultiChatPhoto(
-		string pathToPhoto,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		UploadChatPhotoResponse? response = await _client.PutFileAsync<UploadChatPhotoResponse>(
-			apiMethod: ChatsControllerMethods.UploadChatPhoto,
-			path: pathToPhoto,
-			cancellationToken: cancellationToken
-		);
-		return response!.Link;
-	}
-
-	public async Task DeleteMultiChatPhoto(
-		string link,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.DeleteAsync<DeleteChatPhotoRequest>(
-			apiMethod: ChatsControllerMethods.DeleteChatPhoto,
-			arg: new DeleteChatPhotoRequest(Link: link),
-			cancellationToken: cancellationToken
-		);
-	}
 	#endregion
 }

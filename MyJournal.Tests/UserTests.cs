@@ -485,7 +485,7 @@ public class UserTests
 	}
 	#endregion
 
-	#region GetChats
+	#region Chats
 	[Test]
 	public async Task UserGetChats_WithNullFilter_ShouldPassed()
 	{
@@ -496,7 +496,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		IEnumerable<Chat> chats = await user.GetChats(offset: 0, count: 20, filter: null);
+		await user.Chats.SetFilter(filter: null);
 	}
 
 	[Test]
@@ -509,7 +509,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		IEnumerable<Chat> chats = await user.GetChats(offset: 0, count: 20, filter: String.Empty);
+		await user.Chats.SetFilter(filter: String.Empty);
 	}
 
 	[Test]
@@ -522,39 +522,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		IEnumerable<Chat> chats = await user.GetChats(offset: 0, count: 20, filter: "   ");
-	}
-
-	[Test]
-	public async Task UserGetChats_WithNegativeOffset_ShouldThrowException()
-	{
-		Assert.ThrowsAsync<ApiException>(code: async () =>
-		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
-				login: "Jaspers",
-				password: "JaspersJas1743",
-				client: UserAuthorizationCredentials.Clients.Windows
-			);
-			User user = await service.SignIn(credentials: credentials);
-			IEnumerable<Chat> chats = await user.GetChats(offset: -1, count: 20, filter: String.Empty);
-		});
-	}
-
-	[Test]
-	public async Task UserGetChats_WithNegativeCount_ShouldThrowException()
-	{
-		Assert.ThrowsAsync<ApiException>(code: async () =>
-		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
-				login: "Jaspers",
-				password: "JaspersJas1743",
-				client: UserAuthorizationCredentials.Clients.Windows
-			);
-			User user = await service.SignIn(credentials: credentials);
-			IEnumerable<Chat> chats = await user.GetChats(offset: 0, count: -1, filter: String.Empty);
-		});
+		await user.Chats.SetFilter(filter: "    ");
 	}
 	#endregion
 
