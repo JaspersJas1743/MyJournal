@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MyJournal.Core.Utilities;
 
-public class ApiClient
+public sealed class ApiClient : IDisposable
 {
 	#region Fields
 	private const string ServerAddress = "https://localhost:7267/api/";
@@ -35,7 +35,8 @@ public class ApiClient
 	#endregion
 
 	#region Properties
-	public string ContentType { get; set; }
+	public string ContentType { get; private set; }
+	public int SessionId { get; set; }
 
 	public string? Token
 	{
@@ -45,6 +46,9 @@ public class ApiClient
 	#endregion
 
 	#region Methods
+	public void ResetToken()
+		=> _client.DefaultRequestHeaders.Authorization = null;
+
 	#region GET
 	private async Task<HttpResponseMessage> HelperForGetAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
     {
@@ -227,9 +231,7 @@ public class ApiClient
 	}
     #endregion DELETE
 
-	public void ResetToken()
-		=> _client.DefaultRequestHeaders.Authorization = null;
-
+	#region Helpers
 	private async Task<HttpResponseMessage> HelperFileAsync(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, string path, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		using MultipartFormDataContent data = new MultipartFormDataContent();
@@ -262,10 +264,10 @@ public class ApiClient
 		return responseMessage;
 	}
 
-	public Uri CreateUri(string apiMethod)
+	private Uri CreateUri(string apiMethod)
 		=> new Uri(uriString: ServerAddress + apiMethod);
 
-	public Uri CreateUri(string apiMethod, Dictionary<string, string> arg)
+	private Uri CreateUri(string apiMethod, Dictionary<string, string> arg)
 	{
 		StringBuilder uri = new StringBuilder(value: ServerAddress + apiMethod + '?');
 		foreach (KeyValuePair<string, string> pair in arg)
@@ -275,7 +277,7 @@ public class ApiClient
 		return new Uri(uriString: uri.ToString());
 	}
 
-	public Uri CreateUri<T>(string apiMethod, T arg)
+	private Uri CreateUri<T>(string apiMethod, T arg)
 	{
 		StringBuilder uri = new StringBuilder(value: ServerAddress + apiMethod + '?');
 		foreach (PropertyInfo pair in typeof(T).GetProperties())
@@ -284,6 +286,12 @@ public class ApiClient
 		uri.Remove(startIndex: uri.Length - 1, length: 1);
 		return new Uri(uriString: uri.ToString());
 	}
+	#endregion
+
+	#region IDisposable
+	public void Dispose()
+		=> _client.Dispose();
+	#endregion
 	#endregion
 }
 

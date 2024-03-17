@@ -10,46 +10,43 @@ public class User
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly IGoogleAuthenticatorService _googleAuthenticatorService;
 	private readonly HubConnection _userHubConnection;
+	private readonly IGoogleAuthenticatorService _googleAuthenticatorService;
 	private readonly int _id;
 	private readonly int _sessionId;
 	#endregion
 
 	#region Constructors
-	private User(
+	protected User(
 		ApiClient client,
 		IGoogleAuthenticatorService googleAuthenticatorService,
-		HubConnection userHubConnection,
-		int id,
-		int sessionId,
-		string surname,
-		string name,
-		string? patronymic,
+		UserInformationResponse information,
 		ChatCollection chats,
-		InterlocutorCollection interlocutors,
-		string? phone = null,
-		string? email = null,
-		string? photo = null
+		InterlocutorCollection interlocutors
 	)
 	{
 		_client = client;
 		_googleAuthenticatorService = googleAuthenticatorService;
-		_userHubConnection = userHubConnection;
+		_userHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
+			url: UserHubMethods.HubEndpoint,
+			token: client.Token!
+		);
 
-		_id = id;
-		_sessionId = sessionId;
+		_id = information.Id;
+		_sessionId = client.SessionId;
 
-		Surname = surname;
-		Name = name;
-		Patronymic = patronymic;
+		Surname = information.Surname;
+		Name = information.Name;
+		Patronymic = information.Patronymic;
+		Phone = information.Phone;
+		Email = information.Email;
+		Photo = information.Photo;
+
 		Chats = chats;
 		Interlocutors = interlocutors;
-
-		Phone = phone;
-		Email = email;
-		Photo = photo;
 	}
+
+	~User() => _client.Dispose();
 	#endregion
 
 	#region Properties
@@ -64,8 +61,9 @@ public class User
 	#endregion
 
 	#region Records
+	protected sealed record UserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
+
 	private sealed record SignOutResponse(string Message);
-	private sealed record UserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
 	private sealed record UploadProfilePhotoResponse(string Link);
 	private sealed record ChangePhoneRequest(string NewPhone);
 	private sealed record ChangePhoneResponse(string Phone, string Message);
@@ -112,84 +110,64 @@ public class User
 	#endregion
 
 	#region Methods
-	public static async Task<User> Create(
+	protected static async Task<UserInformationResponse> GetUserInformation(
 		ApiClient client,
-		IGoogleAuthenticatorService googleAuthenticatorService,
-		int sessionId,
-		string token,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		client.Token = token;
-		UserInformationResponse response = await client.GetAsync<UserInformationResponse>(
+		return await client.GetAsync<UserInformationResponse>(
 			apiMethod: UserControllerMethods.GetInformation,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+	}
 
-		User createdUser = new User(
-			client: client,
-			googleAuthenticatorService: googleAuthenticatorService,
-			userHubConnection: DefaultHubConnectionBuilder.CreateHubConnection(
-				url: UserHubMethods.HubEndpoint,
-				token: client.Token
-			),
-			id: response.Id,
-			sessionId: sessionId,
-			surname: response.Surname,
-			name: response.Name,
-			patronymic: response.Patronymic,
-			chats: await ChatCollection.Create(client: client, cancellationToken: cancellationToken),
-			interlocutors: await InterlocutorCollection.Create(client: client, cancellationToken: cancellationToken),
-			phone: response.Phone,
-			email: response.Email,
-			photo: response.Photo
-		);
-
-		await createdUser._userHubConnection.StartAsync(cancellationToken: cancellationToken);
-		createdUser._userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOnline, handler: (userId, onlineAt) =>
-			createdUser.OnInterlocutorOnline?.Invoke(e: new InterlocutorOnlineEventArgs(
+	protected async Task ConnectToUserHub(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _userHubConnection.StartAsync(cancellationToken: cancellationToken);
+		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOnline, handler: (userId, onlineAt) =>
+			OnInterlocutorOnline?.Invoke(e: new InterlocutorOnlineEventArgs(
 				InterlocutorId: userId,
 				OnlineAt: onlineAt
 			))
 		);
-		createdUser._userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOffline, handler: (userId, onlineAt) =>
-			createdUser.OnInterlocutorOffline?.Invoke(e: new InterlocutorOfflineEventArgs(
+		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOffline, handler: (userId, onlineAt) =>
+			OnInterlocutorOffline?.Invoke(e: new InterlocutorOfflineEventArgs(
 				InterlocutorId: userId,
 				OnlineAt: onlineAt
 			))
 		);
-		createdUser._userHubConnection.On<int>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: userId =>
-			createdUser.OnInterlocutorUpdatedPhoto?.Invoke(e: new InterlocutorUpdatedPhotoEventArgs(
+		_userHubConnection.On<int>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: userId =>
+			OnInterlocutorUpdatedPhoto?.Invoke(e: new InterlocutorUpdatedPhotoEventArgs(
 				InterlocutorId: userId
 			))
 		);
-		createdUser._userHubConnection.On<int>(methodName: UserHubMethods.DeletedProfilePhoto, handler: userId =>
-			createdUser.OnInterlocutorDeletedPhoto?.Invoke(e: new InterlocutorDeletedPhotoEventArgs(
+		_userHubConnection.On<int>(methodName: UserHubMethods.DeletedProfilePhoto, handler: userId =>
+			OnInterlocutorDeletedPhoto?.Invoke(e: new InterlocutorDeletedPhotoEventArgs(
 				InterlocutorId: userId
 			))
 		);
-		createdUser._userHubConnection.On(methodName: UserHubMethods.SignIn, handler: () =>
-			createdUser.OnSignedIn?.Invoke(e: new SignedInEventArgs())
+		_userHubConnection.On(methodName: UserHubMethods.SignIn, handler: () =>
+			OnSignedIn?.Invoke(e: new SignedInEventArgs())
 		);
-		createdUser._userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: (sessionIds) =>
-			createdUser.OnSignedOut?.Invoke(e: new SignedOutEventArgs(
+		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: (sessionIds) =>
+			OnSignedOut?.Invoke(e: new SignedOutEventArgs(
 				SessionIds: sessionIds,
-				CurrentSessionAreClosed: sessionIds.Contains(value: createdUser._sessionId)
+				CurrentSessionAreClosed: sessionIds.Contains(value: _sessionId)
 			))
 		);
-		createdUser._userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async (chatId) =>
+		_userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async (chatId) =>
 		{
-			await createdUser.Chats.Append(chatId: chatId, cancellationToken: cancellationToken);
-			createdUser.OnJoinedInChat?.Invoke(e: new JoinedInChatEventArgs(ChatId: chatId));
+			await Chats.Append(chatId: chatId, cancellationToken: cancellationToken);
+			OnJoinedInChat?.Invoke(e: new JoinedInChatEventArgs(ChatId: chatId));
 		});
-		createdUser._userHubConnection.On<string?>(methodName: UserHubMethods.SetPhone, handler: (phone) =>
-			createdUser.OnUpdatedPhone?.Invoke(e: new UpdatedPhoneEventArgs(Phone: phone))
+		_userHubConnection.On<string?>(methodName: UserHubMethods.SetPhone, handler: (phone) =>
+			OnUpdatedPhone?.Invoke(e: new UpdatedPhoneEventArgs(Phone: phone))
 		);
-		createdUser._userHubConnection.On<string?>(methodName: UserHubMethods.SetEmail, handler: (email) =>
-			createdUser.OnUpdatedEmail?.Invoke(e: new UpdatedEmailEventArgs(Email: email))
+		_userHubConnection.On<string?>(methodName: UserHubMethods.SetEmail, handler: (email) =>
+			OnUpdatedEmail?.Invoke(e: new UpdatedEmailEventArgs(Email: email))
 		);
-
-		return createdUser;
 	}
 
 	public async Task<UserInformation> GetInformationAbout(
@@ -202,7 +180,6 @@ public class User
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return response;
-
 	}
 
 	private async Task<string> SignOut(

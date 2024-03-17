@@ -44,7 +44,9 @@ public class MyJournalBaseController(
 	)
 	{
 		int sessionId = GetCurrentSessionId();
-		Session session = await context.Sessions.Include(navigationPropertyPath: session => session.SessionActivityStatus)
+		Session session = await context.Sessions
+			.Include(navigationPropertyPath: s => s.SessionActivityStatus)
+			.Include(navigationPropertyPath: s => s.User.UserRole)
 			.SingleOrDefaultAsync(
 				predicate: session => session.Id.Equals(sessionId),
 				cancellationToken: cancellationToken
@@ -78,8 +80,9 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole)
-                                        .Where(predicate: user => !String.IsNullOrEmpty(user.Login));
+        IQueryable<User> users = context.Users
+			.Include(navigationPropertyPath: user => user.UserRole)
+            .Where(predicate: user => !String.IsNullOrEmpty(user.Login));
 
         return await users.SingleOrDefaultAsync(
             predicate: user => user.Login!.Equals(login),
@@ -92,8 +95,9 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users.Include(navigationPropertyPath: user => user.UserRole)
-                                        .Where(predicate: user => !String.IsNullOrEmpty(user.RegistrationCode));
+        IQueryable<User> users = context.Users
+			.Include(navigationPropertyPath: user => user.UserRole)
+			.Where(predicate: user => !String.IsNullOrEmpty(user.RegistrationCode));
 
         return await users.SingleOrDefaultAsync(
             predicate: user => user.RegistrationCode!.Equals(registrationCode),

@@ -37,9 +37,9 @@ public class AccountController(
 
     [Validator<SignInRequestValidator>]
     public record SignInRequest(string Login, string Password, Clients Client);
-    public record SignInResponse(int SessionId, string Token);
+    public record SignInResponse(int SessionId, string Token, UserRoles Role);
 
-    public record SignInWithTokenResponse(int SessionId, bool SessionIsEnabled);
+    public record SignInWithTokenResponse(int SessionId, bool SessionIsEnabled, UserRoles Role);
 
     [Validator<SignUpRequestValidator>]
     public record SignUpRequest(string RegistrationCode, string Login, string Password);
@@ -377,7 +377,7 @@ public class AccountController(
 
         await userHubContext.Clients.User(userId: user.Id.ToString()).SignIn();
 
-        return Ok(value: new SignInResponse(SessionId: currentSession.Id, Token: token));
+        return Ok(value: new SignInResponse(SessionId: currentSession.Id, Token: token, Role: user.UserRole.Role));
     }
 
     /// <summary>
@@ -410,7 +410,8 @@ public class AccountController(
 
         return Ok(value: new SignInWithTokenResponse(
             SessionId: session.Id,
-            SessionIsEnabled: session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Enable)
+            SessionIsEnabled: session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Enable),
+            Role: session.User.UserRole.Role
         ));
     }
 

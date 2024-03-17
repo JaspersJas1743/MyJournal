@@ -10,7 +10,15 @@ public sealed class AuthorizationWithCredentialsService(
 	IGoogleAuthenticatorService googleAuthenticatorService
 ) : IAuthorizationService<User>
 {
-	private record Response(int SessionId, string Token);
+	private record Response(int SessionId, string Token, UserRoles Role);
+
+	private enum UserRoles
+	{
+		Student,
+		Teacher,
+		Administrator,
+		Parent
+	}
 
 	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
@@ -20,12 +28,14 @@ public sealed class AuthorizationWithCredentialsService(
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 
-		return await User.Create(
-			client: client,
-			googleAuthenticatorService: googleAuthenticatorService,
-			sessionId: response.SessionId,
-			token: response.Token,
-			cancellationToken: cancellationToken
-		);
+		client.Token = response.Token;
+		client.SessionId = response.SessionId;
+		return response.Role switch
+		{
+			UserRoles.Teacher => await Teacher.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+			UserRoles.Student => await Student.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+			UserRoles.Administrator => await Administrator.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+			UserRoles.Parent => await Parent.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+		};
 	}
 }

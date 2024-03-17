@@ -10,7 +10,15 @@ public class AuthorizationWithTokenService(
 	IGoogleAuthenticatorService googleAuthenticatorService
 ) : IAuthorizationService<User>
 {
-	private record Response(int SessionId, bool SessionIsEnabled);
+	private record Response(int SessionId, bool SessionIsEnabled, UserRoles Role);
+
+	private enum UserRoles
+	{
+		Student,
+		Teacher,
+		Administrator,
+		Parent
+	}
 
 	public async Task<User> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
@@ -19,17 +27,17 @@ public class AuthorizationWithTokenService(
 			apiMethod: AccountControllerMethods.SignInWithToken,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		client.ResetToken();
 
 		if (!response.SessionIsEnabled)
-			throw new InvalidTokenException(message: "Переданный токен не является корректным.");
+			throw new InvalidTokenException(message: "Данная сессия завершена.");
 
-		return await User.Create(
-			client: client,
-			googleAuthenticatorService: googleAuthenticatorService,
-			sessionId: response.SessionId,
-			token: credentials.GetCredential<string>(name: nameof(UserTokenCredentials.Token)),
-			cancellationToken: cancellationToken
-		);
+		client.SessionId = response.SessionId;
+		return response.Role switch
+		{
+			UserRoles.Teacher => await Teacher.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+			UserRoles.Student => await Student.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+			UserRoles.Administrator => await Administrator.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+			UserRoles.Parent => await Parent.Create(client: client, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
+		};
 	}
 }
