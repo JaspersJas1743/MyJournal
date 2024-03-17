@@ -337,7 +337,7 @@ public class UserController(
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
 		string fileExtension = Path.GetExtension(path: request.Photo.FileName);
-		string fileKey = $"ProfilePhotos/id{user.Id}_profile-photo{fileExtension}";
+		string fileKey = $"ProfilePhotos/{Guid.NewGuid()}{fileExtension}";
 
 		string link = await fileStorageService.UploadFileAsync(
 			key: fileKey,
@@ -524,8 +524,8 @@ public class UserController(
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		string? fileExtension = Path.GetExtension(path: user.LinkToPhoto);
-		string fileKey = $"ProfilePhotos/id{user.Id}_profile-photo{fileExtension}";
+		string? fileName = Path.GetFileName(path: user.LinkToPhoto);
+		string fileKey = $"ProfilePhotos/{fileName}";
 		await fileStorageService.DeleteFileAsync(key: fileKey, cancellationToken: cancellationToken);
 
 		user.LinkToPhoto = null;
