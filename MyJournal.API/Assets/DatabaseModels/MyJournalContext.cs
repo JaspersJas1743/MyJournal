@@ -125,8 +125,6 @@ public partial class MyJournalContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Attachme__3214EC076993C8A8");
 
-            entity.Property(e => e.AttachmentName).HasDefaultValueSql("(getdate())");
-
             entity.HasOne(d => d.AttachmentType).WithMany(p => p.Attachments)
                 .HasForeignKey(d => d.AttachmentTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

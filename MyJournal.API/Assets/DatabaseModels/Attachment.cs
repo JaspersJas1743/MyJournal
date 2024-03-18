@@ -11,8 +11,6 @@ public partial class Attachment
 
     public int AttachmentTypeId { get; set; }
 
-    public string AttachmentName { get; set; } = null!;
-
     public virtual AttachmentType AttachmentType { get; set; } = null!;
 
     public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
