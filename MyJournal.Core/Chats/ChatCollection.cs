@@ -146,31 +146,6 @@ public sealed class ChatCollection : IEnumerable<Chat>
 		_chats.AddRange(collection: chats);
 		_offset = _chats.Count;
 	}
-
-	public async Task<string> UploadMultiChatPhoto(
-		string pathToPhoto,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		UploadChatPhotoResponse? response = await _client.PutFileAsync<UploadChatPhotoResponse>(
-			apiMethod: ChatsControllerMethods.UploadChatPhoto,
-			path: pathToPhoto,
-			cancellationToken: cancellationToken
-		);
-		return response!.Link;
-	}
-
-	public async Task DeleteMultiChatPhoto(
-		string link,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.DeleteAsync<DeleteChatPhotoRequest>(
-			apiMethod: ChatsControllerMethods.DeleteChatPhoto,
-			arg: new DeleteChatPhotoRequest(Link: link),
-			cancellationToken: cancellationToken
-		);
-	}
 	#endregion
 
 	#region IEnumerable<Chat>

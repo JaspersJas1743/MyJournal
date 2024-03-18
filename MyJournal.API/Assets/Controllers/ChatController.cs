@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Hubs;
-using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Utilities;
 using MyJournal.API.Assets.Validation;
 using MyJournal.API.Assets.Validation.Validators;
@@ -17,7 +16,6 @@ namespace MyJournal.API.Assets.Controllers;
 [ApiController]
 [Route(template: "api/chat")]
 public sealed class ChatController(
-	IFileStorageService fileStorageService,
 	IHubContext<UserHub, IUserHub> userHubContext,
 	MyJournalContext context
 ) : MyJournalBaseController(context: context)
@@ -35,13 +33,6 @@ public sealed class ChatController(
 
 	[Validator<CreateMultiChatRequestValidator>]
 	public record CreateMultiChatRequest(IEnumerable<int> InterlocutorIds, string? ChatName, string? LinkToPhoto);
-
-	[Validator<UploadChatPhotoRequestValidator>]
-	public record UploadChatPhotoRequest(IFormFile Photo);
-	public record UploadChatPhotoResponse(string Link);
-
-	[Validator<DeleteChatPhotoRequestValidator>]
-	public record DeleteChatPhotoRequest(string Link);
 
 	[Validator<GetInterlocutorsRequestValidator>]
 	public record GetInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
@@ -92,7 +83,7 @@ public sealed class ChatController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     GET api/chats/get?IsFiltered=true&Filter=%D0%B8&Offset=0&Count=20
+	///     GET api/chat/get?IsFiltered=true&Filter=%D0%B8&Offset=0&Count=20
 	///
 	/// Параметры:
 	///
@@ -164,7 +155,7 @@ public sealed class ChatController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///     GET api/chats/{id:int}/get
+	///     GET api/chat/{id:int}/get
 	///
 	/// Параметры:
 	///
@@ -208,7 +199,7 @@ public sealed class ChatController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	GET api/chats/interlocutors/get?IncludeExistedInterlocutors=true&IsFiltered=true&Filter=%D0%B8&Offset=0&Count=20
+	///	GET api/chat/interlocutors/get?IncludeExistedInterlocutors=true&IsFiltered=true&Filter=%D0%B8&Offset=0&Count=20
 	///
 	/// Параметры:
 	///
@@ -274,7 +265,7 @@ public sealed class ChatController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	POST api/chats/single/create
+	///	POST api/chat/single/create
 	///	{
 	///		"InterlocutorId": 0
 	///	}
@@ -342,7 +333,7 @@ public sealed class ChatController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	POST api/chats/multi/create
+	///	POST api/chat/multi/create
 	///	{
 	///		"InterlocutorIds": [
 	///			1, 2, 3...
@@ -400,80 +391,6 @@ public sealed class ChatController(
 			routeValues: new GetChatsRequest(IsFiltered: false, Filter: null, Offset: 0, Count: 20)
 		);
 	}
-	#endregion
-
-	#region PUT
-	// /// <summary>
-	// /// Загрузка фотографии для нового мультидиалога
-	// /// </summary>
-	// /// <remarks>
-	// /// <![CDATA[
-	// /// Пример запроса к API:
-	// ///
-	// ///	PUT api/chats/photo/upload
-	// ///
-	// /// Параметры:
-	// ///
-	// ///	Photo - фотография, которая будет использоваться в качестве аватара мультидиалога
-	// ///
-	// /// ]]>
-	// /// </remarks>
-	// /// <response code="200">Ссылка на загруженную фотографию мультидиалога</response>
-	// /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	// [HttpPut(template: "photo/upload")]
-	// [Produces(contentType: MediaTypeNames.Application.Json)]
-	// [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(UploadChatPhotoResponse))]
-	// [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-	// [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	// public async Task<ActionResult<UploadChatPhotoResponse>> UploadChatPhoto(
-	// 	[FromForm] UploadChatPhotoRequest request,
-	// 	CancellationToken cancellationToken = default(CancellationToken)
-	// )
-	// {
-	// 	string fileExtension = Path.GetExtension(path: request.Photo.FileName);
-	// 	string fileKey = $"ChatPhotos/{Guid.NewGuid()}{fileExtension}";
-	// 	string link = await fileStorageService.UploadFileAsync(
-	// 		key: fileKey,
-	// 		fileStream: request.Photo.OpenReadStream(),
-	// 		cancellationToken: cancellationToken
-	// 	);
-	//
-	// 	return Ok(value: new UploadChatPhotoResponse(Link: link));
-	// }
-	#endregion
-
-	#region DELETE
-	// /// <summary>
-	// /// Удаление фотографии для несозданного мультидиалога
-	// /// </summary>
-	// /// <remarks>
-	// /// <![CDATA[
-	// /// Пример запроса к API:
-	// ///
-	// ///	DELETE api/chats/photo/delete?Link=https://myjournal_assets.hb.ru-msk.vkcs.cloud/ChatPhotos/filename.extension
-	// ///
-	// /// Параметры:
-	// ///
-	// ///	Link - ссылка на фотографию, которая должна была использоваться в качестве аватара для мультидиалога
-	// ///
-	// /// ]]>
-	// /// </remarks>
-	// /// <response code="200">Фотография удалена успешно</response>
-	// /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	// [HttpDelete(template: "photo/delete")]
-	// [Produces(contentType: MediaTypeNames.Application.Json)]
-	// [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
-	// [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	// public async Task<ActionResult> DeleteChatPhoto(
-	// 	[FromQuery] DeleteChatPhotoRequest request,
-	// 	CancellationToken cancellationToken = default(CancellationToken)
-	// )
-	// {
-	// 	string fileName = Path.GetFileName(path: request.Link);
-	// 	string fileKey = $"ChatPhotos/{fileName}";
-	// 	await fileStorageService.DeleteFileAsync(key: fileKey, cancellationToken: cancellationToken);
-	// 	return Ok();
-	// }
 	#endregion
 	#endregion
 }
