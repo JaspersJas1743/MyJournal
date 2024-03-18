@@ -14,7 +14,6 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="8.0.0" />
-        <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.SignalR" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.0" />
@@ -35,7 +34,6 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0-preview.1.24081.5" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.2" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
