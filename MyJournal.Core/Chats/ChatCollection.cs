@@ -2,7 +2,7 @@ using System.Collections;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
-namespace MyJournal.Core;
+namespace MyJournal.Core.Chats;
 
 public sealed class ChatCollection : IEnumerable<Chat>
 {

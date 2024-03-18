@@ -13,8 +13,8 @@ public sealed class UserRegistrationService(
 	private bool _googleAuthenticatorIsCreated = false;
 	private bool _googleAuthenticatorIsVerified = false;
 
-	public record SetPhoneRequest(string NewPhone);
-	public record SetEmailRequest(string NewEmail);
+	private record SetPhoneRequest(string NewPhone);
+	private record SetEmailRequest(string NewEmail);
 	private record SignUpResponse(int Id);
 
 	public async Task<bool> Register(

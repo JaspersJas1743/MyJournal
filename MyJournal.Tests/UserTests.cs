@@ -39,7 +39,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		_ = await user.SignOut();
+		_ = await user.Security.SignOutThisSession();
 		Assert.Pass();
 	}
 
@@ -55,8 +55,8 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			_ = await user.SignOut();
-			_ = await user.SignOut();
+			_ = await user.Security.SignOutThisSession();
+			_ = await user.Security.SignOutThisSession();
 		});
 	}
 
@@ -74,8 +74,8 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			User user2 = await service2.SignIn(credentials: credentials);
-			await user.SignOutAll();
-			await user2.DownloadProfilePhoto(folderToSave: @"C:\Users\JaspersJas1743\Downloads");
+			await user.Security.SignOutAllSessions();
+			await user2.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 		});
 	}
 
@@ -93,8 +93,8 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			User user2 = await service2.SignIn(credentials: credentials);
-			await user.SignOutOthers();
-			await user2.DownloadProfilePhoto(folderToSave: @"C:\Users\JaspersJas1743\Downloads");
+			await user.Security.SignOutOthersSessions();
+			await user2.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 		});
 	}
 
@@ -108,8 +108,8 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.SignOutOthers();
-		await user.DownloadProfilePhoto(folderToSave: @"C:\Users\JaspersJas1743\Downloads");
+		await user.Security.SignOutOthersSessions();
+		await user.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 	}
 	#endregion
 
@@ -125,8 +125,8 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		string newEmail = "test@mail.ru";
-		await user.ChangeEmail(code: "291900", email: newEmail);
-		Assert.That(actual: user.Email, expression: Is.EqualTo(expected: newEmail));
+		await user.Security.Email!.Change(confirmationCode: "785177", newEmail: newEmail);
+		Assert.That(actual: user.Security.Email.Address, expression: Is.EqualTo(expected: newEmail));
 	}
 
 	[Test]
@@ -141,7 +141,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(code: "291900", email: "test@mail.ru");
+			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "test@mail.ru");
 		});
 	}
 
@@ -157,7 +157,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(code: "291900", email: "@mail.ru");
+			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "@mail.ru");
 		});
 	}
 
@@ -173,7 +173,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(code: "291900", email: "test@.ru");
+			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "test@.ru");
 		});
 	}
 
@@ -189,7 +189,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(code: "291900", email: "test@");
+			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "test@");
 		});
 	}
 
@@ -205,7 +205,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(code: "291900", email: "testmail.ru");
+			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "testmail.ru");
 		});
 	}
 
@@ -221,7 +221,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangeEmail(code: "000000", email: "testmail.ru");
+			await user.Security.Email!.Change(confirmationCode: "000000", newEmail: "testmail.ru");
 		});
 	}
 	#endregion
@@ -233,11 +233,11 @@ public class UserTests
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
-			password: "Jaspers",
+			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.ChangePhone(code: "291900", phone: "+7(777)777-7777");
+		await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "+7(777)777-7777");
 	}
 
 	[Test]
@@ -252,7 +252,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePhone(code: "291900", phone: "+7(777)777-7777");
+			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "+7(777)777-7777");
 		});
 	}
 
@@ -268,7 +268,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePhone(code: "291900", phone: "123453");
+			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "123453");
 		});
 	}
 
@@ -284,7 +284,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePhone(code: "291900", phone: "9999999999");
+			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "9999999999");
 		});
 	}
 
@@ -300,7 +300,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePhone(code: "291900", phone: "7(999)999-9999");
+			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "7(999)999-9999");
 		});
 	}
 
@@ -316,7 +316,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePhone(code: "291900", phone: "79999999999");
+			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "79999999999");
 		});
 	}
 
@@ -328,11 +328,11 @@ public class UserTests
 			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
-				password: "Jaspers",
+				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePhone(code: "000000", phone: "+7(999)999-9999");
+			await user.Security.Phone!.Change(confirmationCode: "000000", newPhone: "+7(999)999-9999");
 		});
 	}
 	#endregion
@@ -348,7 +348,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.ChangePassword(code: "291900", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
+		await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
 	}
 
 	[Test]
@@ -363,7 +363,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePassword(code: "291900", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
+			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
 		});
 	}
 
@@ -379,7 +379,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePassword(code: "291900", currentPassword: "Jaspers", newPassword: "Jaspers");
+			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "Jaspers");
 		});
 	}
 
@@ -395,7 +395,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePassword(code: "291900", currentPassword: "Jaspers", newPassword: "J");
+			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "J");
 		});
 	}
 
@@ -411,7 +411,7 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePassword(code: "291900", currentPassword: "Jaspers", newPassword: "Js");
+			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "Js");
 		});
 	}
 
@@ -427,63 +427,10 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.ChangePassword(code: "000000", currentPassword: "JaspersJas1743", newPassword: "Js");
+			await user.Security.Password!.Change(confirmationCode: "000000", currentPassword: "JaspersJas1743", newPassword: "Js");
 		});
 	}
 	#endregion
-
-	// #region GetInformationAbout
-	// [Test]
-	// public async Task UserGetInformationAbout_WithCorrectId_ShoutPassed()
-	// {
-	// 	IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-	// 	UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
-	// 		login: "Jaspers",
-	// 		password: "JaspersJas1743",
-	// 		client: UserAuthorizationCredentials.Clients.Windows
-	// 	);
-	// 	User user = await service.SignIn(credentials: credentials);
-	// 	UserInformation user2 = await user.GetInformationAbout(id: 8);
- //        Assert.Multiple(testDelegate: () =>
- //        {
- //            Assert.That(actual: user2.Surname, expression: Is.EqualTo(expected: "test3"));
- //            Assert.That(actual: user2.Name, expression: Is.EqualTo(expected: "test3"));
- //            Assert.That(actual: user2.Patronymic, expression: Is.EqualTo(expected: "test3"));
- //        });
- //    }
- //
-	// [Test]
-	// public async Task UserGetInformationAbout_WithIncorrectId_ShoutThrowError()
-	// {
-	// 	Assert.ThrowsAsync<ApiException>(code: async () =>
-	// 	{
-	// 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-	// 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
-	// 			login: "Jaspers",
-	// 			password: "JaspersJas1743",
-	// 			client: UserAuthorizationCredentials.Clients.Windows
-	// 		);
-	// 		User user = await service.SignIn(credentials: credentials);
-	// 		UserInformation user2 = await user.GetInformationAbout(id: -1);
-	// 	});
-	// }
- //
-	// [Test]
-	// public async Task UserGetInformationAbout_WithNotExistedId_ShoutThrowError()
-	// {
-	// 	Assert.ThrowsAsync<ApiException>(code: async () =>
-	// 	{
-	// 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-	// 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
-	// 			login: "Jaspers",
-	// 			password: "JaspersJas1743",
-	// 			client: UserAuthorizationCredentials.Clients.Windows
-	// 		);
-	// 		User user = await service.SignIn(credentials: credentials);
-	// 		UserInformation user2 = await user.GetInformationAbout(id: 121435453);
-	// 	});
-	// }
-	// #endregion
 
 	#region Chats
 	[Test]
@@ -538,7 +485,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: null);
-	}
+		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "test"));
+		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "test"));
+		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "test"));	}
 
 	[Test]
 	public async Task UserGetInterlocutors_WithEmptyFilter_ShouldPassed()
@@ -551,7 +500,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: String.Empty);
-	}
+		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "test"));
+		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "test"));
+		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "test"));	}
 
 	[Test]
 	public async Task UserGetInterlocutors_WithFilterIsWhiteSpace_ShouldPassed()
@@ -564,6 +515,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: "   ");
+		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "test"));
+		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "test"));
+		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "test"));
 	}
 	#endregion
 }

@@ -2,7 +2,7 @@ using System.Collections;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
-namespace MyJournal.Core;
+namespace MyJournal.Core.Interlocutors;
 
 public class InterlocutorCollection : IEnumerable<Interlocutor>
 {
@@ -42,6 +42,8 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 
 	#region Records
 	private sealed record GetInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
+
+	private sealed record GetInterlocutorsResponse(int UserId, string? Photo, string? Name);
 	#endregion
 
 	#region Methods
@@ -54,7 +56,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	{
 		const int basedOffset = 0;
 		const int basedCount = 20;
-		IEnumerable<Interlocutor> interlocutors = await client.GetAsync<IEnumerable<Interlocutor>, GetInterlocutorsRequest>(
+		IEnumerable<GetInterlocutorsResponse> interlocutors = await client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatsControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				IsFiltered: false,
@@ -66,7 +68,9 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		) ?? throw new InvalidOperationException();
 		return new InterlocutorCollection(
 			client: client,
-			interlocutors: interlocutors.ToList(),
+			interlocutors: interlocutors.Select(selector: i =>
+				Interlocutor.Create(client: client, id: i.UserId, cancellationToken: cancellationToken).GetAwaiter().GetResult()
+			),
 			count: basedCount,
 			includeExistedInterlocutors: includeExistedInterlocutors
 		);
@@ -78,7 +82,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<Interlocutor> interlocutors = await _client.GetAsync<IEnumerable<Interlocutor>, GetInterlocutorsRequest>(
+		IEnumerable<GetInterlocutorsResponse> interlocutors = await _client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatsControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: _filter),
@@ -88,7 +92,9 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 				IncludeExistedInterlocutors: IncludeExistedInterlocutors
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_interlocutors.AddRange(collection: interlocutors);
+		_interlocutors.AddRange(collection: interlocutors.Select(selector: i =>
+			Interlocutor.Create(client: _client, id: i.UserId, cancellationToken: cancellationToken).GetAwaiter().GetResult()
+		));
 		_offset = _interlocutors.Count;
 	}
 

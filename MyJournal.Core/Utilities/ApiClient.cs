@@ -36,7 +36,9 @@ public sealed class ApiClient : IDisposable
 
 	#region Properties
 	public string ContentType { get; private set; }
+	public string FileName { get; private set; }
 	public int SessionId { get; set; }
+	public int ClientId { get; set; }
 
 	public string? Token
 	{
@@ -57,6 +59,9 @@ public sealed class ApiClient : IDisposable
 
 		if (responseMessage.Content.Headers.ContentType?.MediaType != null)
 			ContentType = responseMessage.Content.Headers.ContentType.MediaType;
+
+		if (responseMessage.Content.Headers.ContentDisposition?.FileNameStar != null)
+			FileName = responseMessage.Content.Headers.ContentDisposition.FileNameStar;
 
 		return responseMessage;
     }

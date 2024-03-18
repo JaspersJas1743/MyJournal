@@ -1,3 +1,5 @@
+using MyJournal.Core.Chats;
+using MyJournal.Core.Interlocutors;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -25,10 +27,11 @@ public sealed class Parent : User
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		UserInformationResponse information = await GetUserInformation(client: client, cancellationToken: cancellationToken);
 		Parent parent = new Parent(
 			client: client,
 			googleAuthenticatorService: googleAuthenticatorService,
-			information: await GetUserInformation(client: client, cancellationToken: cancellationToken),
+			information: information,
 			chats: await ChatCollection.Create(client: client, cancellationToken: cancellationToken),
 			interlocutors: await InterlocutorCollection.Create(client: client, cancellationToken: cancellationToken)
 		);
