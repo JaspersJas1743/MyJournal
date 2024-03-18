@@ -24,6 +24,6 @@ public sealed class GetInterlocutorsRequestValidator : AbstractValidator<ChatCon
 			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Смещение для выборки потенциальных собеседников не может быть отрицательным.");
 
 		RuleFor(expression: request => request.Count)
-			.GreaterThan(valueToCompare: 0).WithMessage(errorMessage: "Количество возвращаемых сообщений должно быть больше 0.");
+			.GreaterThan(valueToCompare: 0).WithMessage(errorMessage: "Количество возвращаемых сообщений не может быть отрицательным.");
 	}
 }

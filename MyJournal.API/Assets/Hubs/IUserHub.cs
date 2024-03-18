@@ -15,4 +15,6 @@ public interface IUserHub
 
 	Task SetPhone(string? phone);
 	Task SetEmail(string? email);
+
+	Task SendMessage(int messageId);
 }

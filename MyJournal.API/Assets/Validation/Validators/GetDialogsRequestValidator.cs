@@ -24,6 +24,6 @@ public sealed class GetDialogsRequestValidator : AbstractValidator<ChatControlle
 			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Смещение для выборки диалогов не может быть отрицательным.");
 
 		RuleFor(expression: request => request.Count)
-			.GreaterThan(valueToCompare: 0).WithMessage(errorMessage: "Количество возвращаемых диалогов должно быть больше 0.");
+			.GreaterThan(valueToCompare: 0).WithMessage(errorMessage: "Количество возвращаемых диалогов не может быть отрицательным.");
 	}
 }
