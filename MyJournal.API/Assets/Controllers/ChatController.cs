@@ -392,5 +392,46 @@ public sealed class ChatController(
 		);
 	}
 	#endregion
+
+	#region PUT
+	/// <summary>
+	/// Пометить сообщения в чате как прочитанные
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	PUT api/chat/{id:int}/read
+	///
+	/// Параметры:
+	///
+	///	Id - идентификатор чата, который необходимо пометить как прочитанный
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Чат отмечен как прочитанный</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	[HttpPut(template: "{id:int}/read")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult> ReadChat(
+		[FromRoute] int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		await _context.Messages
+					  .Where(predicate: m => m.ChatId.Equals(id))
+					  .OrderByDescending(keySelector: m => m.CreatedAt)
+					  .Where(m => !m.SenderId.Equals(userId) && m.ReadedAt == null)
+					  .ForEachAsync(
+						  action: m => m.ReadedAt = DateTime.Now,
+						  cancellationToken: cancellationToken
+					  );
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+		return Ok();
+	}
+	#endregion
 	#endregion
 }
