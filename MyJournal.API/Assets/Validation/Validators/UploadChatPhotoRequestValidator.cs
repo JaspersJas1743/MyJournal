@@ -4,7 +4,7 @@ using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public sealed class UploadChatPhotoRequestValidator : AbstractValidator<ChatsController.UploadChatPhotoRequest>
+public sealed class UploadChatPhotoRequestValidator : AbstractValidator<ChatController.UploadChatPhotoRequest>
 {
 	public UploadChatPhotoRequestValidator()
 	{

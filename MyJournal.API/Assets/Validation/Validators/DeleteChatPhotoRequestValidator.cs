@@ -4,7 +4,7 @@ using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public sealed class DeleteChatPhotoRequestValidator : AbstractValidator<ChatsController.DeleteChatPhotoRequest>
+public sealed class DeleteChatPhotoRequestValidator : AbstractValidator<ChatController.DeleteChatPhotoRequest>
 {
 	public DeleteChatPhotoRequestValidator()
 	{

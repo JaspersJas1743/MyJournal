@@ -4,7 +4,7 @@ using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public sealed class CreateMultiChatRequestValidator : AbstractValidator<ChatsController.CreateMultiChatRequest>
+public sealed class CreateMultiChatRequestValidator : AbstractValidator<ChatController.CreateMultiChatRequest>
 {
 	public CreateMultiChatRequestValidator()
 	{

@@ -15,8 +15,8 @@ namespace MyJournal.API.Assets.Controllers;
 
 [Authorize]
 [ApiController]
-[Route(template: "api/chats")]
-public sealed class ChatsController(
+[Route(template: "api/chat")]
+public sealed class ChatController(
 	IFileStorageService fileStorageService,
 	IHubContext<UserHub, IUserHub> userHubContext,
 	MyJournalContext context
@@ -49,7 +49,6 @@ public sealed class ChatsController(
 	#endregion
 
 	#region Methods
-
 	private string GetChatName(Chat chat, User currentUser)
 	{
 		if (chat.ChatType.Type == ChatTypes.Multi)
@@ -132,20 +131,22 @@ public sealed class ChatsController(
 				.ThenInclude(navigationPropertyPath: m => m.Attachments)
 			.SingleOrDefaultAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken)
 		?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
-		IEnumerable<GetChatsResponse> result = user.Chats.Skip(count: request.Offset).Take(count: request.Count).Select(chat => new GetChatsResponse(
-			Id: chat.Id,
-			ChatName: GetChatName(chat: chat, currentUser: user),
-			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
-			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
-				Content: chat.LastMessageNavigation?.Text,
-				IsFile: chat.LastMessageNavigation?.Text is null && chat.LastMessageNavigation.Attachments.Any(),
-				CreatedAt: chat.LastMessageNavigation.CreatedAt,
-				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
-				IsRead: chat.LastMessageNavigation.ReadedAt is not null || chat.Users.Count == 1
-			) : null,
-			CountOfUnreadMessages: chat.Messages.OrderByDescending(keySelector: m => m.CreatedAt)
-				.TakeWhile(predicate: m => m.ReadedAt is null && !m.Sender.Id.Equals(user.Id)).Count()
-		));
+		IEnumerable<GetChatsResponse> result = user.Chats
+			.OrderByDescending(keySelector: c => c.CreatedAt)
+			.Skip(count: request.Offset).Take(count: request.Count).Select(chat => new GetChatsResponse(
+				Id: chat.Id,
+				ChatName: GetChatName(chat: chat, currentUser: user),
+				ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
+				LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
+					Content: chat.LastMessageNavigation?.Text,
+					IsFile: chat.LastMessageNavigation?.Text is null && chat.LastMessageNavigation.Attachments.Any(),
+					CreatedAt: chat.LastMessageNavigation.CreatedAt,
+					FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
+					IsRead: chat.LastMessageNavigation.ReadedAt is not null || chat.Users.Count == 1
+				) : null,
+				CountOfUnreadMessages: chat.Messages.OrderByDescending(keySelector: m => m.CreatedAt)
+					.TakeWhile(predicate: m => m.ReadedAt is null && !m.Sender.Id.Equals(user.Id)).Count()
+			));
 
 		if (request.IsFiltered)
 		{
@@ -306,7 +307,7 @@ public sealed class ChatsController(
 		?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
 
 		ChatType singleChatType = await FindChatType(type: ChatTypes.Single, cancellationToken: cancellationToken);
-		if (user.Chats.Any(predicate: c => c.Users.Any(predicate: u => u.Id.Equals(request.InterlocutorId)) && c.ChatType.Equals(singleChatType)))
+		if (user.Chats.Any(predicate: c => c.Users.Any(predicate: u => u.Id.Equals(request.InterlocutorId)) && c.ChatType.Type == ChatTypes.Single))
 			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Данный диалог уже существует!");
 
 		Chat createdChat = new Chat()
@@ -402,77 +403,77 @@ public sealed class ChatsController(
 	#endregion
 
 	#region PUT
-	/// <summary>
-	/// Загрузка фотографии для нового мультидиалога
-	/// </summary>
-	/// <remarks>
-	/// <![CDATA[
-	/// Пример запроса к API:
-	///
-	///	PUT api/chats/photo/upload
-	///
-	/// Параметры:
-	///
-	///	Photo - фотография, которая будет использоваться в качестве аватара мультидиалога
-	///
-	/// ]]>
-	/// </remarks>
-	/// <response code="200">Ссылка на загруженную фотографию мультидиалога</response>
-	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	[HttpPut(template: "photo/upload")]
-	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(UploadChatPhotoResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<UploadChatPhotoResponse>> UploadChatPhoto(
-		[FromForm] UploadChatPhotoRequest request,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		string fileExtension = Path.GetExtension(path: request.Photo.FileName);
-		string fileKey = $"ChatPhotos/{Guid.NewGuid()}{fileExtension}";
-		string link = await fileStorageService.UploadFileAsync(
-			key: fileKey,
-			fileStream: request.Photo.OpenReadStream(),
-			cancellationToken: cancellationToken
-		);
-
-		return Ok(value: new UploadChatPhotoResponse(Link: link));
-	}
+	// /// <summary>
+	// /// Загрузка фотографии для нового мультидиалога
+	// /// </summary>
+	// /// <remarks>
+	// /// <![CDATA[
+	// /// Пример запроса к API:
+	// ///
+	// ///	PUT api/chats/photo/upload
+	// ///
+	// /// Параметры:
+	// ///
+	// ///	Photo - фотография, которая будет использоваться в качестве аватара мультидиалога
+	// ///
+	// /// ]]>
+	// /// </remarks>
+	// /// <response code="200">Ссылка на загруженную фотографию мультидиалога</response>
+	// /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	// [HttpPut(template: "photo/upload")]
+	// [Produces(contentType: MediaTypeNames.Application.Json)]
+	// [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(UploadChatPhotoResponse))]
+	// [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	// [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	// public async Task<ActionResult<UploadChatPhotoResponse>> UploadChatPhoto(
+	// 	[FromForm] UploadChatPhotoRequest request,
+	// 	CancellationToken cancellationToken = default(CancellationToken)
+	// )
+	// {
+	// 	string fileExtension = Path.GetExtension(path: request.Photo.FileName);
+	// 	string fileKey = $"ChatPhotos/{Guid.NewGuid()}{fileExtension}";
+	// 	string link = await fileStorageService.UploadFileAsync(
+	// 		key: fileKey,
+	// 		fileStream: request.Photo.OpenReadStream(),
+	// 		cancellationToken: cancellationToken
+	// 	);
+	//
+	// 	return Ok(value: new UploadChatPhotoResponse(Link: link));
+	// }
 	#endregion
 
 	#region DELETE
-	/// <summary>
-	/// Удаление фотографии для несозданного мультидиалога
-	/// </summary>
-	/// <remarks>
-	/// <![CDATA[
-	/// Пример запроса к API:
-	///
-	///	DELETE api/chats/photo/delete?Link=https://myjournal_assets.hb.ru-msk.vkcs.cloud/ChatPhotos/filename.extension
-	///
-	/// Параметры:
-	///
-	///	Link - ссылка на фотографию, которая должна была использоваться в качестве аватара для мультидиалога
-	///
-	/// ]]>
-	/// </remarks>
-	/// <response code="200">Фотография удалена успешно</response>
-	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	[HttpDelete(template: "photo/delete")]
-	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	public async Task<ActionResult> DeleteChatPhoto(
-		[FromQuery] DeleteChatPhotoRequest request,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		string fileName = Path.GetFileName(path: request.Link);
-		string fileKey = $"ChatPhotos/{fileName}";
-		await fileStorageService.DeleteFileAsync(key: fileKey, cancellationToken: cancellationToken);
-		return Ok();
-	}
+	// /// <summary>
+	// /// Удаление фотографии для несозданного мультидиалога
+	// /// </summary>
+	// /// <remarks>
+	// /// <![CDATA[
+	// /// Пример запроса к API:
+	// ///
+	// ///	DELETE api/chats/photo/delete?Link=https://myjournal_assets.hb.ru-msk.vkcs.cloud/ChatPhotos/filename.extension
+	// ///
+	// /// Параметры:
+	// ///
+	// ///	Link - ссылка на фотографию, которая должна была использоваться в качестве аватара для мультидиалога
+	// ///
+	// /// ]]>
+	// /// </remarks>
+	// /// <response code="200">Фотография удалена успешно</response>
+	// /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	// [HttpDelete(template: "photo/delete")]
+	// [Produces(contentType: MediaTypeNames.Application.Json)]
+	// [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	// [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	// public async Task<ActionResult> DeleteChatPhoto(
+	// 	[FromQuery] DeleteChatPhotoRequest request,
+	// 	CancellationToken cancellationToken = default(CancellationToken)
+	// )
+	// {
+	// 	string fileName = Path.GetFileName(path: request.Link);
+	// 	string fileKey = $"ChatPhotos/{fileName}";
+	// 	await fileStorageService.DeleteFileAsync(key: fileKey, cancellationToken: cancellationToken);
+	// 	return Ok();
+	// }
 	#endregion
 	#endregion
 }

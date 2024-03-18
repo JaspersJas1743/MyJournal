@@ -3,7 +3,7 @@ using MyJournal.API.Assets.Controllers;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public sealed class CreateSingleChatRequestValidator : AbstractValidator<ChatsController.CreateSingleChatRequest>
+public sealed class CreateSingleChatRequestValidator : AbstractValidator<ChatController.CreateSingleChatRequest>
 {
 	public CreateSingleChatRequestValidator()
 	{

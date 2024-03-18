@@ -4,7 +4,7 @@ using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public sealed class GetInterlocutorsRequestValidator : AbstractValidator<ChatsController.GetInterlocutorsRequest>
+public sealed class GetInterlocutorsRequestValidator : AbstractValidator<ChatController.GetInterlocutorsRequest>
 {
 	public GetInterlocutorsRequestValidator()
 	{
