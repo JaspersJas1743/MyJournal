@@ -49,7 +49,9 @@ public class Program
 		builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 		builder.Services.AddControllers(configure: options =>
-			options.AddValidateModeFilter().AddDisabledTokenFilter().AddAutoValidation()
+			options.AddValidateModeFilter()
+				   .AddDisabledTokenFilter()
+				   .AddAutoValidation()
 		).ConfigureApiBehaviorOptions(
 			setupAction: options => options.InvalidModelStateResponseFactory = context => new ValidationFailedResult(modelState: context.ModelState)
 		).AddJsonOptions(configure: options =>

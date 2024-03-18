@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,15 @@ using MyJournal.API.Assets.Security.JWT;
 
 namespace MyJournal.API.Assets.Utilities.DisabledTokenFilter;
 
-public sealed class DisabledTokenFilter(MyJournalContext dbContext) : IActionFilter
+public sealed class DisabledTokenFilter(MyJournalContext dbContext) : IAuthorizationFilter
 {
-	public void OnActionExecuting(ActionExecutingContext context)
+	public void OnActionExecuted(ActionExecutedContext context) { }
+
+	public void OnAuthorization(AuthorizationFilterContext context)
 	{
+		if (!context.ActionDescriptor.EndpointMetadata.Any(predicate: o => o.GetType().IsEquivalentTo(other: typeof(AuthorizeAttribute))))
+			return;
+
 		string token = context.HttpContext.Request.Headers.Authorization.ToString();
 		if (!token.Contains(value: JwtBearerDefaults.AuthenticationScheme))
 			return;
@@ -26,8 +32,6 @@ public sealed class DisabledTokenFilter(MyJournalContext dbContext) : IActionFil
 
 		context.Result = new DisabledTokenResult(message: "Данная сессия была завершена.");
 	}
-
-	public void OnActionExecuted(ActionExecutedContext context) { }
 }
 
 public static class DisabledTokenFilterExtension
