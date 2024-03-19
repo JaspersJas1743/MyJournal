@@ -76,9 +76,9 @@ public class RegistrationTests
 		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
-			Login = "Ivan",
-			Password = "IvanIvanovich",
-			RegistrationCode = "1234567"
+			Login = "test",
+			Password = "testtest",
+			RegistrationCode = "testtes"
 		};
 		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, verifier: registrationCodeVerificationService);

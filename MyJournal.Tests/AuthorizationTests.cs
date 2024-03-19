@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Tests;
@@ -16,6 +17,7 @@ public class AuthorizationTests
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
 		serviceCollection.AddGoogleAuthenticator();
+		serviceCollection.AddFileService();
 		serviceCollection.AddKeyedTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: nameof(AuthorizationWithCredentialsService));
 		serviceCollection.AddKeyedTransient<IAuthorizationService<User>, AuthorizationWithTokenService>(serviceKey: nameof(AuthorizationWithTokenService));
 		_serviceProvider = serviceCollection.BuildServiceProvider();
@@ -169,7 +171,7 @@ public class AuthorizationTests
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: nameof(AuthorizationWithTokenService))!;
 		UserTokenCredentials credentials = new UserTokenCredentials(
-			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjI0NjQiLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.rkWcftJyRTgZf7vGBO7EHMqnH_O7uYEusgw38A2F9TE"
+			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjI2ODciLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.TTexj2HMar_2RDsSdqZ5xVyDRCLe0gCO5mAvctOcNFY"
 		);
 		_ = await service.SignIn(credentials: credentials);
 		Assert.Pass();
