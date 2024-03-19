@@ -1,5 +1,5 @@
 using System.Collections;
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Chats;
@@ -12,7 +12,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	private readonly int _count;
 
 	private int _offset;
-	private string _filter = String.Empty;
+	private string? _filter = String.Empty;
 	#endregion
 
 	#region Constructors
@@ -28,7 +28,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	#region Properties
 	public int Length => _chats.Count;
 
-	public string Filter => _filter;
+	public string? Filter => _filter;
 
 	public Chat this[int index]
 		=> _chats.ElementAtOrDefault(index: index)
@@ -91,7 +91,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	}
 
 	public async Task SetFilter(
-		string filter,
+		string? filter,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{

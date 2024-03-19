@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Chats;
 using MyJournal.Core.Interlocutors;
 using MyJournal.Core.UserData;
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.Constants.Hubs;
+using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core;
@@ -22,6 +23,7 @@ public class User
 	protected User(
 		ApiClient client,
 		IGoogleAuthenticatorService googleAuthenticatorService,
+		IFileService fileService,
 		UserInformationResponse information,
 		ChatCollection chats,
 		InterlocutorCollection interlocutors
@@ -36,21 +38,35 @@ public class User
 			token: client.Token!
 		);
 
-		PersonalData = new PersonalData()
-		{
-			Surname = information.Surname,
-			Name = information.Name,
-			Patronymic = information.Patronymic
-		};
+		PersonalData = new PersonalData(
+			surname: information.Surname,
+			name: information.Name,
+			patronymic: information.Patronymic
+		);
 		Chats = chats;
 		Interlocutors = interlocutors;
-		Security = new Security(client: client)
-		{
-			Email = new Email(client: client, googleAuthenticatorService: googleAuthenticatorService, email: information.Email),
-			Password = new Password(client: client, googleAuthenticatorService: googleAuthenticatorService),
-			Phone = new Phone(client: client, googleAuthenticatorService: googleAuthenticatorService, phone: information.Phone)
-		};
-		Photo = new ProfilePhoto(client: client, link: information.Photo);
+		Security = new Security(
+			client: client,
+			phone: new Phone(
+				client: client,
+				googleAuthenticatorService: googleAuthenticatorService,
+				phone: information.Phone
+			),
+			email: new Email(
+				client: client,
+				googleAuthenticatorService: googleAuthenticatorService,
+				email: information.Email
+			),
+			password: new Password(
+				client: client,
+				googleAuthenticatorService: googleAuthenticatorService
+			)
+		);
+		Photo = new ProfilePhoto(
+			client: client,
+			fileService: fileService,
+			link: information.Photo
+		);
 		Activity = new Activity(client: client);
 	}
 

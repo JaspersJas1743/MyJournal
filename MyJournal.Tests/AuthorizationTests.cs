@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Tests;

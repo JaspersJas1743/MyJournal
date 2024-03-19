@@ -7,7 +7,7 @@ namespace MyJournal.Tests;
 
 public class VerificationTests
 {
-	private ServiceProvider _serviceProvider;
+	private ServiceProvider _serviceProvider = null!;
 
 	[SetUp]
 	public void Setup()

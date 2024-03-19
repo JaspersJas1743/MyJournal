@@ -1,4 +1,4 @@
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -58,7 +58,7 @@ public sealed class Phone(
 	public override string? ToString()
 		=> Number;
 
-	public void OnUpdated(UpdatedPhoneEventArgs e)
+	internal void OnUpdated(UpdatedPhoneEventArgs e)
 		=> Updated?.Invoke(e: e);
 	#endregion
 }

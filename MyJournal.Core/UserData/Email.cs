@@ -1,4 +1,4 @@
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -58,7 +58,7 @@ public sealed class Email(
 	public override string? ToString()
 		=> Address;
 
-	public void OnUpdated(UpdatedEmailEventArgs e)
+	internal void OnUpdated(UpdatedEmailEventArgs e)
 		=> Updated?.Invoke(e: e);
 	#endregion
 }

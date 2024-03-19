@@ -1,6 +1,7 @@
 using System.Collections;
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Interlocutors;
 
@@ -8,18 +9,26 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 {
 	#region Fields
 	private readonly ApiClient _client;
+	private readonly IFileService _fileService;
 	private readonly List<Interlocutor> _interlocutors = new List<Interlocutor>();
 	private readonly int _count;
 
 	private int _offset;
-	private string _filter = String.Empty;
+	private string? _filter = String.Empty;
 	private bool _includeExistedInterlocutors = false;
 	#endregion
 
 	#region Constructors
-	private InterlocutorCollection(ApiClient client, IEnumerable<Interlocutor> interlocutors, int count, bool includeExistedInterlocutors)
+	private InterlocutorCollection(
+		ApiClient client,
+		IFileService fileService,
+		IEnumerable<Interlocutor> interlocutors,
+		int count,
+		bool includeExistedInterlocutors
+	)
 	{
 		_client = client;
+		_fileService = fileService;
 		_interlocutors.AddRange(collection: interlocutors);
 		_offset = _interlocutors.Count;
 		_count = count;
@@ -31,7 +40,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	#region Properties
 	public bool IncludeExistedInterlocutors => _includeExistedInterlocutors;
 
-	public string Filter => _filter;
+	public string? Filter => _filter;
 
 	public int Length => _interlocutors.Count;
 
@@ -50,6 +59,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	#region Static
 	internal static async Task<InterlocutorCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		bool includeExistedInterlocutors = false,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -68,6 +78,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		) ?? throw new InvalidOperationException();
 		return new InterlocutorCollection(
 			client: client,
+			fileService: fileService,
 			interlocutors: interlocutors.Select(selector: i =>
 				Interlocutor.Create(client: client, id: i.UserId, cancellationToken: cancellationToken).GetAwaiter().GetResult()
 			),
@@ -93,7 +104,12 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		_interlocutors.AddRange(collection: interlocutors.Select(selector: i =>
-			Interlocutor.Create(client: _client, id: i.UserId, cancellationToken: cancellationToken).GetAwaiter().GetResult()
+			Interlocutor.Create(
+				client: _client,
+				fileService: _fileService,
+				id: i.UserId,
+				cancellationToken: cancellationToken
+			).GetAwaiter().GetResult()
 		));
 		_offset = _interlocutors.Count;
 	}
@@ -113,7 +129,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	}
 
 	public async Task SetFilter(
-		string filter,
+		string? filter,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{

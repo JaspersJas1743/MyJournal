@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Tests;
@@ -17,6 +18,8 @@ public class UserTests
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
 		serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
+		serviceCollection.AddGoogleAuthenticator();
+		serviceCollection.AddFileService();
 		serviceCollection.AddTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>();
 		_serviceProvider = serviceCollection.BuildServiceProvider();
 	}

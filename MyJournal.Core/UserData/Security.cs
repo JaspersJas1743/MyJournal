@@ -1,16 +1,20 @@
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.UserData;
 
 public sealed class Security(
-	ApiClient client
+	ApiClient client,
+	Phone phone,
+	Email email,
+	Password password
 )
 {
 	#region Properties
-	public Phone? Phone { get; init; }
-	public Email? Email { get; init; }
-	public Password? Password { get; init; }
+	public Phone Phone { get; init; } = phone;
+	public Email Email { get; init; } = email;
+	public Password Password { get; init; } = password;
+
 	#endregion
 
 	#region Records

@@ -1,6 +1,7 @@
 using MyJournal.Core.UserData;
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Interlocutors;
 
@@ -17,6 +18,7 @@ public sealed class Interlocutor
 	public static async Task<Interlocutor> Create(
 	internal static async Task<Interlocutor> Create(
 		ApiClient client,
+		IFileService fileService,
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)

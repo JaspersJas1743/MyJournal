@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace MyJournal.Core.Utilities;
+namespace MyJournal.Core.Utilities.Api;
 
 internal static class DefaultHubConnectionBuilder
 {

@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MyJournal.Core.Utilities;
+namespace MyJournal.Core.Utilities.Api;
 
 public sealed class ApiClient : IDisposable
 {

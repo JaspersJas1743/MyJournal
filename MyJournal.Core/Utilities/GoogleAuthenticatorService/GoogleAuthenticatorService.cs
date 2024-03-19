@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Utilities.GoogleAuthenticatorService;

@@ -1,4 +1,5 @@
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 

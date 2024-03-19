@@ -22,7 +22,6 @@ namespace MyJournal.API.Assets.Controllers;
 public sealed class UserController(
 	MyJournalContext context,
 	IHubContext<UserHub, IUserHub> userHubContext,
-	IFileStorageService fileStorageService,
 	IHashService hashService,
 	IGoogleAuthenticatorService googleAuthenticatorService
 ) : MyJournalBaseController(context: context)
@@ -41,8 +40,8 @@ public sealed class UserController(
 	public record UserControllerVerifyGoogleAuthenticatorResponse(bool IsVerified);
 
 	[Validator<UploadProfilePhotoRequestValidator>]
-	public record UploadProfilePhotoRequest(IFormFile Photo);
-	public record UploadProfilePhotoResponse(string Link);
+	public record UploadProfilePhotoRequest(string Link);
+	public record UploadProfilePhotoResponse(string Message);
 
 	[Validator<ChangePasswordRequestValidator>]
 	public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
@@ -91,43 +90,6 @@ public sealed class UserController(
 	#endregion
 
 	#region GET
-	/// <summary>
-	/// Загрузка фотографии профиля
-	/// </summary>
-	/// <remarks>
-	/// <![CDATA[
-	/// Пример запроса к API:
-	///
-	///	GET api/user/profile/photo/download
-	///
-	/// ]]>
-	/// </remarks>
-	/// <response code="200">Фотография профиля пользователя</response>
-	/// <response code="400">Некорректный авторизационный токен</response>
-	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	/// <response code="404">Фотография пользователя не установлена</response>
-	[HttpGet(template: "profile/photo/download")]
-	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
-	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
-	public async Task<ActionResult> DownloadProfilePhoto(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
-
-		if (String.IsNullOrEmpty(user.LinkToPhoto))
-			throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Фотография пользователя не установлена");
-
-		FileInfo fileInfo = new FileInfo(fileName: user.LinkToPhoto);
-		Stream file = await fileStorageService.GetFileAsync(key: $"{fileInfo.Directory?.Name}/{fileInfo.Name}", cancellationToken: cancellationToken);
-		string fileExtension = fileInfo.Extension.Trim(trimChar: '.');
-
-		return File(fileStream: file, contentType: $"image/{fileExtension}", fileDownloadName: $"{user.Surname} {user.Name} {user.Patronymic}.{fileExtension}");
-	}
-
 	/// <summary>
 	/// Получение основной информации
 	/// </summary>
@@ -330,28 +292,20 @@ public sealed class UserController(
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(UploadProfilePhotoResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<UploadProfilePhotoResponse>> UploadProfilePhoto(
-		[FromForm] UploadProfilePhotoRequest request,
+		[FromQuery] UploadProfilePhotoRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
 
-		string fileExtension = Path.GetExtension(path: request.Photo.FileName);
-		string fileKey = $"ProfilePhotos/{Guid.NewGuid()}{fileExtension}";
-
-		string link = await fileStorageService.UploadFileAsync(
-			key: fileKey,
-			fileStream: request.Photo.OpenReadStream(),
-			cancellationToken: cancellationToken
-		);
-		user.LinkToPhoto = link;
+		user.LinkToPhoto = request.Link;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		await userHubContext.Clients.Users(
 			userIds: await GetUserInterlocutorIds(userId: user.Id, cancellationToken: cancellationToken)
 		).UpdatedProfilePhoto(userId: user.Id);
 
-		return Ok(value: new UploadProfilePhotoResponse(Link: link));
+		return Ok(value: new UploadProfilePhotoResponse(Message: "Фотография изменена успешно!"));
 	}
 
 	/// <summary>
@@ -523,10 +477,6 @@ public sealed class UserController(
 	)
 	{
 		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
-
-		string? fileName = Path.GetFileName(path: user.LinkToPhoto);
-		string fileKey = $"ProfilePhotos/{fileName}";
-		await fileStorageService.DeleteFileAsync(key: fileKey, cancellationToken: cancellationToken);
 
 		user.LinkToPhoto = null;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);

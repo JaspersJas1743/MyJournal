@@ -1,10 +1,12 @@
-using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.UserData;
 
 public sealed class ProfilePhoto(
 	ApiClient client,
+	IFileService fileService,
 	string? link
 )
 {
@@ -13,7 +15,8 @@ public sealed class ProfilePhoto(
 	#endregion
 
 	#region Records
-	private sealed record UploadProfilePhotoResponse(string Link);
+	private sealed record UploadProfilePhotoRequest(string Link);
+	private sealed record UploadProfilePhotoResponse(string Message);
 	#endregion
 
 	#region Methods
@@ -22,18 +25,23 @@ public sealed class ProfilePhoto(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		UploadProfilePhotoResponse? response = await client.PutFileAsync<UploadProfilePhotoResponse>(
+		Link = await fileService.Upload(folderToSave: "profile_photos", pathToFile: pathToPhoto, cancellationToken: cancellationToken);
+
+		UploadProfilePhotoResponse? response = await client.PutAsync<UploadProfilePhotoResponse, UploadProfilePhotoRequest>(
 			apiMethod: UserControllerMethods.UploadProfilePhoto,
-			path: pathToPhoto,
+			arg: new UploadProfilePhotoRequest(Link: Link),
 			cancellationToken: cancellationToken
 		);
-		Link = response?.Link;
 	}
 
 	public async Task Delete(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (Link is null)
+			throw new ArgumentNullException(message: "Фотография пользователя отсутствует.", paramName: nameof(Link));
+
+		await fileService.Delete(link: Link, cancellationToken: cancellationToken);
 		await client.DeleteAsync(apiMethod: UserControllerMethods.DeleteProfilePhoto, cancellationToken: cancellationToken);
 		Link = null;
 	}
@@ -43,15 +51,11 @@ public sealed class ProfilePhoto(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		byte[] response = await client.GetBytesAsync(
-			apiMethod: UserControllerMethods.DownloadProfilePhoto,
-			cancellationToken: cancellationToken
-		);
-		await File.WriteAllBytesAsync(
-			path: Path.Combine(path1: folder, path2: client.FileName),
-			bytes: response,
-			cancellationToken: cancellationToken
-		);
+		if (Link is null)
+			throw new ArgumentNullException(message: "Фотография пользователя отсутствует.", paramName: nameof(Link));
+
+		await fileService.Download(link: Link, pathToSave: folder, cancellationToken: cancellationToken);
 	}
+
 	#endregion
 }
