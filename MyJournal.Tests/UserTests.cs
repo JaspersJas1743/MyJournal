@@ -485,9 +485,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: null);
-		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "test"));
-		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "test"));
-		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "test"));	}
+		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "Игоревич"));	}
 
 	[Test]
 	public async Task UserGetInterlocutors_WithEmptyFilter_ShouldPassed()
@@ -500,9 +500,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: String.Empty);
-		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "test"));
-		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "test"));
-		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "test"));	}
+		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "Игоревич"));	}
 
 	[Test]
 	public async Task UserGetInterlocutors_WithFilterIsWhiteSpace_ShouldPassed()
@@ -515,9 +515,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: "   ");
-		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "test"));
-		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "test"));
-		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "test"));
+		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
 	}
 	#endregion
 }
