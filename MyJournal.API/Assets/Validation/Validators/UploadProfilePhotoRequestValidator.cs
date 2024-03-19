@@ -8,10 +8,10 @@ public sealed class UploadProfilePhotoRequestValidator : AbstractValidator<UserC
 {
 	public UploadProfilePhotoRequestValidator()
 	{
-		RuleFor(expression: request => request.Photo)
+		RuleFor(expression: request => request.Link)
 			.Cascade(cascadeMode: CascadeMode.Stop)
-			.HaveContent(errorMessage: "Файл поврежден.")
-			.WithSizeBetween(minSize: 1, maxSize: 2097153)
-			.AllowFileExtensions(extensions: new string[] { "jpg", "png", "jpeg" });
+			.HaveText(errorMessage: "Ссылка на файл имеет некорректный формат.")
+			.AllowFileExtensions(extensions: new string[] { "jpg", "png", "jpeg" })
+			.IsValidImageUrl().WithMessage(errorMessage: "Некорректная ссылка на файл.");
 	}
 }
