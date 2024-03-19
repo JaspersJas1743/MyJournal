@@ -195,7 +195,8 @@ public sealed class MessageController(
 			ChatId = chat.Id,
 			Text = request.Content.Text,
 			SenderId = GetAuthorizedUserId(),
-			Attachments = (attachments ?? Enumerable.Empty<Attachment>()).ToList()
+			Attachments = (attachments ?? Enumerable.Empty<Attachment>()).ToList(),
+			ReadedAt = chat.Users.Count == 1 ? DateTime.Now : null
 		};
 
 		await _context.Messages.AddAsync(entity: sentMessage, cancellationToken: cancellationToken);
