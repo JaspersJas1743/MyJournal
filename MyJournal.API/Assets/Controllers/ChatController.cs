@@ -55,13 +55,13 @@ public sealed class ChatController(
 	private string GetChatPhoto(Chat chat, User currentUser)
 	{
 		if (chat.ChatType.Type == ChatTypes.Multi)
-			return chat.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/Defaults/group_default.png";
+			return chat.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/group_default.png";
 
 		if (chat.Users.Count == 1)
-			return "https://myjournal_assets.hb.ru-msk.vkcs.cloud/Defaults/favourites.png";
+			return "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/favourites.png";
 
 		User interlocutor = chat.Users.Except(second: new User[1] { currentUser }).Single();
-		return interlocutor.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/Defaults/user_default.png";
+		return interlocutor.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/user_default.png";
 	}
 
 	private async Task<ChatType> FindChatType(
@@ -259,8 +259,8 @@ public sealed class ChatController(
 
 		return Ok(value: interlocutors.Skip(count: request.Offset).Take(count: request.Count).Select(selector: u => new GetInterlocutorsResponse(
 			u.Id,
-			u.Id.Equals(userId) ? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/Defaults/favourites.png"
-				: u.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/Defaults/user_default.png",
+			u.Id.Equals(userId) ? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/favourites.png"
+				: u.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/user_default.png",
 			u.Id.Equals(userId) ? "Избранное" : $"{u.Surname} {u.Name}"
 		)));
 	}
