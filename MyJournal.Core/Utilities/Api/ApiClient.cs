@@ -304,4 +304,7 @@ public static class ApiClientExtension
 {
 	public static void AddApiClient(this IServiceCollection serviceCollection)
 		=> serviceCollection.AddTransient<ApiClient>();
+
+	public static void AddKeyedApiClient(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedTransient<ApiClient>(serviceKey: key);
 }

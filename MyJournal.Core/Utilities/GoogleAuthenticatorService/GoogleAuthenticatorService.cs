@@ -28,4 +28,7 @@ public static class GoogleAuthenticatorServiceExtensions
 {
 	public static void AddGoogleAuthenticator(this IServiceCollection serviceCollection)
 		=> serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
+
+	public static void AddKeyedGoogleAuthenticator(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>(serviceKey: key);
 }
