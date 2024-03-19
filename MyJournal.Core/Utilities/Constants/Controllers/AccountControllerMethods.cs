@@ -13,6 +13,8 @@ internal static class AccountControllerMethods
 	internal const string SignOutOthers = "account/sign-out/others";
 	internal const string GetSessions = "account/user/sessions/get";
 
+	internal static string GetSession(int sessionId) => $"account/user/sessions/{sessionId}/get";
+	internal static string SignOutSession(int sessionId) => $"account/sign-out/{sessionId}";
 	internal static string GetGoogleAuthenticator(int userId) => $"account/sign-up/user/{userId}/code/get";
 	internal static string VerifyGoogleAuthenticator(int userId) => $"account/user/{userId}/code/verify";
 	internal static string SetEmail(int userId) => $"account/sign-up/user/{userId}/email/set";

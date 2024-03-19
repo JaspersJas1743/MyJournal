@@ -73,7 +73,7 @@ public sealed class AccountController(
     public record ResetPasswordRequest(string NewPassword);
     public record ResetPasswordResponse(string Message);
 
-    public record GetSessionsResponse(string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
+    public record GetSessionsResponse(int Id, string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
     #endregion
 
     #region Methods
@@ -305,7 +305,48 @@ public sealed class AccountController(
 
         IQueryable<GetSessionsResponse> sessions = _context.Sessions
             .Where(predicate: s => s.UserId.Equals(userId) && s.SessionActivityStatus.Equals(enableSessionActivityStatus))
-            .Select(selector: s => new GetSessionsResponse(s.MyJournalClient.ClientName, s.MyJournalClient.LinkToLogo, s.Ip, s.Id.Equals(currentSessionId)));
+            .Select(selector: s => new GetSessionsResponse(s.Id, s.MyJournalClient.ClientName, s.MyJournalClient.LinkToLogo, s.Ip, s.Id.Equals(currentSessionId)));
+
+        return Ok(value: sessions);
+    }
+
+    /// <summary>
+    /// Получение информации об указанной сессии
+    /// </summary>
+    /// <remarks>
+    /// <![CDATA[
+    /// Пример запроса к API:
+    ///
+    ///	GET api/user/sessions/{id:int}/get
+    ///
+    /// Параметры:
+    ///
+    ///	id - идентификатор пользователя, к которому будет привязан номер телефона
+    ///
+    /// ]]>
+    /// </remarks>
+    /// <response code="200">Информация по каждой авторизованной сессии пользователя</response>
+    /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+    [Authorize]
+    [HttpGet(template: "user/sessions/{id:int}/get")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetSessionsResponse>))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<GetSessionsResponse>> GetSession(
+        [FromRoute] int id,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        int currentSessionId = GetCurrentSessionId();
+        int userId = GetAuthorizedUserId();
+        SessionActivityStatus enableSessionActivityStatus = await FindSessionActivityStatus(
+            activityStatus: SessionActivityStatuses.Enable,
+            cancellationToken: cancellationToken
+        );
+
+        IQueryable<GetSessionsResponse> sessions = _context.Sessions
+            .Where(predicate: s => s.UserId == userId && s.SessionActivityStatus.Equals(enableSessionActivityStatus) && s.Id == id)
+            .Select(selector: s => new GetSessionsResponse(s.Id, s.MyJournalClient.ClientName, s.MyJournalClient.LinkToLogo, s.Ip, s.Id.Equals(currentSessionId)));
 
         return Ok(value: sessions);
     }
@@ -508,6 +549,53 @@ public sealed class AccountController(
         await userHubContext.Clients.User(userId: currentSession.UserId.ToString()).SignOut(sessionIds: new int[] { currentSession.Id });
 
         return Ok(value: new SignOutResponse(Result: "Текущая сессия успешно завершена."));
+    }
+
+    /// <summary>
+    /// Завершение сеанса с указанными идентификатором
+    /// </summary>
+    /// <remarks>
+    /// <![CDATA[
+    /// Пример запроса к API:
+    ///
+    ///	POST api/account/sign-out/{id:int}
+    /// Параметры:
+    ///
+    ///	id - идентификатор сессии, которую необходимо завершить
+    ///
+    /// ]]>
+    /// </remarks>
+    /// <response code="200">Сессия успешно завершена</response>
+    /// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+    [Authorize]
+    [HttpPost(template: "sign-out/{id:int}")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SignOutResponse))]
+    [ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+    public async Task<ActionResult<SignOutResponse>> SignOutById(
+        [FromRoute] int id,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        int userId = GetAuthorizedUserId();
+        Session session = await _context.Sessions.Where(predicate: s => s.Id == id && s.UserId == userId)
+            .SingleOrDefaultAsync(cancellationToken: cancellationToken)
+            ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Указанная сессия не найдена.");
+
+        if (session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Disable))
+            throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанная сессия уже является неактивной.");
+
+        SessionActivityStatus disableStatus = await FindSessionActivityStatus(
+            activityStatus: SessionActivityStatuses.Disable,
+            cancellationToken: cancellationToken
+        );
+
+        session.SessionActivityStatus = disableStatus;
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+        await userHubContext.Clients.User(userId: session.UserId.ToString()).SignOut(sessionIds: new int[] { session.Id });
+
+        return Ok(value: new SignOutResponse(Result: "Указанная сессия успешно завершена."));
     }
 
     /// <summary>
