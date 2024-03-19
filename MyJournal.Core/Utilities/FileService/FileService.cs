@@ -8,6 +8,8 @@ public sealed class FileService(
 	ApiClient client
 ) : IFileService
 {
+	public ApiClient ApiClient { get; set; } = client;
+
 	private sealed record FileLink(string Link);
 
 	public async Task Download(
@@ -19,13 +21,13 @@ public sealed class FileService(
 		if (link is null)
 			throw new ArgumentNullException(message: "Ссылка на файл не может быть null.", paramName: nameof(link));
 
-		byte[] file = await client.GetBytesAsync<FileLink>(
+		byte[] file = await ApiClient.GetBytesAsync<FileLink>(
 			apiMethod: FileControllerMethods.DownloadFile,
 			argQuery: new FileLink(Link: link),
 			cancellationToken: cancellationToken
 		);
 		await File.WriteAllBytesAsync(
-			path: Path.Combine(path1: pathToSave, path2: client.FileName),
+			path: Path.Combine(path1: pathToSave, path2: ApiClient.FileName),
 			bytes: file,
 			cancellationToken: cancellationToken
 		);
@@ -37,7 +39,7 @@ public sealed class FileService(
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		FileLink? response = await client.PutFileAsync<FileLink>(
+		FileLink? response = await ApiClient.PutFileAsync<FileLink>(
 			apiMethod: FileControllerMethods.UploadFile(bucket: folderToSave),
 			path: pathToFile,
 			cancellationToken: cancellationToken
@@ -53,7 +55,7 @@ public sealed class FileService(
 		if (link is null)
 			throw new ArgumentNullException(message: "Ссылка на файл не может быть null.", paramName: nameof(link));
 
-		await client.DeleteAsync<FileLink>(
+		await ApiClient.DeleteAsync<FileLink>(
 			apiMethod: FileControllerMethods.DeleteFile,
 			arg: new FileLink(Link: link),
 			cancellationToken: cancellationToken

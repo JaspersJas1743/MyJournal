@@ -1,7 +1,11 @@
+using MyJournal.Core.Utilities.Api;
+
 namespace MyJournal.Core.Utilities.FileService;
 
 public interface IFileService
 {
+	ApiClient ApiClient { get; set; }
+
 	Task Download(
 		string? link,
 		string pathToSave,

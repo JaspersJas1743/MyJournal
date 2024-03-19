@@ -28,6 +28,7 @@ public class User
 	)
 	{
 		client.ClientId = information.Id;
+		fileService.ApiClient = client;
 		_client = client;
 		_userHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
 			url: UserHubMethods.HubEndpoint,
