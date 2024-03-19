@@ -103,7 +103,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<Chat> loadedChats = await _client.GetAsync<IEnumerable<Chat>, GetChatsRequest>(
+		IEnumerable<ChatResponse> loadedChats = await _client.GetAsync<IEnumerable<ChatResponse>, GetChatsRequest>(
 			apiMethod: ChatControllerMethods.GetChats,
 			argQuery: new GetChatsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: Filter),
@@ -112,7 +112,13 @@ public sealed class ChatCollection : LazyCollection<Chat>
 				Count: _count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.AddRange(collection: loadedChats);
+		_collection.AddRange(collection: loadedChats.Select(selector: c =>
+			Chat.Create(
+				client: _client,
+				id: c.Id,
+				cancellationToken: cancellationToken
+			).GetAwaiter().GetResult()
+		));
 		_offset = _collection.Count;
 	}
 
