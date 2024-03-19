@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.SignalR.Client;
-using MyJournal.Core.Chats;
-using MyJournal.Core.Interlocutors;
+using MyJournal.Core.Collections;
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
+using Activity = MyJournal.Core.UserData.Activity;
 
 namespace MyJournal.Core;
 
@@ -24,7 +24,8 @@ public class User
 		IFileService fileService,
 		UserInformationResponse information,
 		ChatCollection chats,
-		InterlocutorCollection interlocutors
+		InterlocutorCollection interlocutors,
+		IntendedInterlocutorCollection intendedInterlocutors
 	)
 	{
 		client.ClientId = information.Id;
@@ -42,6 +43,7 @@ public class User
 		);
 		Chats = chats;
 		Interlocutors = interlocutors;
+		IntendedInterlocutors = intendedInterlocutors;
 		Security = new Security(
 			client: client,
 			phone: new Phone(
@@ -74,6 +76,7 @@ public class User
 	public PersonalData PersonalData { get; }
 	public ChatCollection Chats { get; }
 	public InterlocutorCollection Interlocutors { get; }
+	public IntendedInterlocutorCollection IntendedInterlocutors { get; }
 	public Security Security { get; }
 	public ProfilePhoto Photo { get; }
 	public Activity Activity { get; }
