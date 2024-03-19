@@ -202,6 +202,7 @@ public sealed class MessageController(
 		await _context.Messages.AddAsync(entity: sentMessage, cancellationToken: cancellationToken);
 
 		chat.LastMessageNavigation = sentMessage;
+		chat.Attachments = sentMessage.Attachments;
 
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
