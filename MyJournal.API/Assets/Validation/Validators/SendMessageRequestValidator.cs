@@ -1,5 +1,6 @@
 using FluentValidation;
 using MyJournal.API.Assets.Controllers;
+using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
@@ -17,8 +18,14 @@ public sealed class SendMessageRequestValidator : AbstractValidator<MessageContr
 			{
 				r.RuleFor(expression: a => a.LinkToFile)
 				 .HaveText(errorMessage: "Ссылка на фотографию имеет некорректный формат.")
-				 .AllowFileExtensions(extensions: new string[] { "jpg", "png", "jpeg" })
-				 .IsValidImageUrl().WithMessage(errorMessage: "Некорректная ссылка на изображение.");
+				 .IsValidUrl().WithMessage(errorMessage: "Некорректная ссылка на вложение.");
+
+				r.When(predicate: a => a.AttachmentType == AttachmentTypes.Photo, action: () =>
+				{
+					r.RuleFor(expression: a => a.LinkToFile)
+					 .AllowFileExtensions(extensions: new string[] { "jpg", "png", "jpeg" })
+					 .IsValidImageUrl().WithMessage(errorMessage: "Некорректная ссылка на изображение.");
+				});
 
 				r.RuleFor(expression: a => a.AttachmentType).IsInEnum();
 			});

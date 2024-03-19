@@ -11,7 +11,6 @@ public sealed class FileRequestValidator : AbstractValidator<FileController.File
 		RuleFor(expression: request => request.File)
 			.Cascade(cascadeMode: CascadeMode.Stop)
 			.HaveContent(errorMessage: "Файл поврежден.")
-			.WithSizeBetween(minSize: 1, maxSize: 2097153)
-			.AllowFileExtensions(extensions: new string[] { "jpg", "png", "jpeg" });
+			.WithSizeBetween(minSize: 1, maxSize: 2097153);
 	}
 }
