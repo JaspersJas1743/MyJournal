@@ -10,6 +10,10 @@ public sealed class ProfilePhoto(
 	string? link
 )
 {
+	#region Fields
+	private const string DefaultBucket = "profile_photos";
+	#endregion
+
 	#region Properties
 	public string? Link { get; private set; } = link;
 	#endregion
@@ -25,7 +29,7 @@ public sealed class ProfilePhoto(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Link = await fileService.Upload(folderToSave: "profile_photos", pathToFile: pathToPhoto, cancellationToken: cancellationToken);
+		Link = await fileService.Upload(folderToSave: DefaultBucket, pathToFile: pathToPhoto, cancellationToken: cancellationToken);
 
 		UploadProfilePhotoResponse? response = await client.PutAsync<UploadProfilePhotoResponse, UploadProfilePhotoRequest>(
 			apiMethod: UserControllerMethods.UploadProfilePhoto,
