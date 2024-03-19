@@ -206,7 +206,7 @@ public sealed class MessageController(
 
 		await userHubContext.Clients.Users(
 			userIds: chat.Users.Select(selector: u => u.Id.ToString())
-		).SendMessage(messageId: sentMessage.Id);
+		).SendMessage(chatId: chat.Id, messageId: sentMessage.Id);
 
 		return Ok();
 	}

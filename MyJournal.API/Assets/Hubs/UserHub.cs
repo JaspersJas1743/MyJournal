@@ -33,6 +33,6 @@ public class UserHub : Hub<IUserHub>
 	public async Task SetEmail(string email, IEnumerable<string> interlocutorIds)
 		=> await Clients.Users(userIds: interlocutorIds).SetEmail(email: email);
 
-	public async Task SendMessage(int messageId, IEnumerable<string> interlocutorIds)
-		=> await Clients.Users(userIds: interlocutorIds).SendMessage(messageId: messageId);
+	public async Task SendMessage(int chatId, int messageId, IEnumerable<string> interlocutorIds)
+		=> await Clients.Users(userIds: interlocutorIds).SendMessage(chatId: chatId, messageId: messageId);
 }
