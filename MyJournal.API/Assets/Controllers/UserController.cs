@@ -7,7 +7,6 @@ using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.GoogleAuthenticator;
 using MyJournal.API.Assets.Hubs;
-using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Utilities;
 using MyJournal.API.Assets.Validation;

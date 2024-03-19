@@ -20,9 +20,26 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	#endregion
 
 	#region Records
+	private sealed record ChatResponse(int Id, string? ChatName, string? ChatPhoto, LastMessage? LastMessage, int CountOfUnreadMessages);
 	private sealed record GetChatsRequest(bool IsFiltered, string? Filter, int Offset, int Count);
 	private sealed record CreateSingleChatRequest(int InterlocutorId);
 	private sealed record CreateMultiChatRequest(IEnumerable<int> InterlocutorIds, string? ChatName, string? LinkToPhoto);
+	#endregion
+
+	#region Classes
+	public sealed class ReceivedMessageInChatEventArgs(int chatId, int messageId) : EventArgs
+	{
+		public int ChatId { get; } = chatId;
+		public int MessageId { get; } = messageId;
+	}
+	#endregion
+
+	#region Delegates
+	public delegate void ReceivedMessageInChatHandler(ReceivedMessageInChatEventArgs e);
+	#endregion
+
+	#region Events
+	public event ReceivedMessageInChatHandler? ReceivedMessageInChat;
 	#endregion
 
 	#region Methods
@@ -34,12 +51,22 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	{
 		const int basedOffset = 0;
 		const int basedCount = 20;
-		IEnumerable<Chat> chats = await client.GetAsync<IEnumerable<Chat>, GetChatsRequest>(
+		IEnumerable<ChatResponse> chats = await client.GetAsync<IEnumerable<ChatResponse>, GetChatsRequest>(
 			apiMethod: ChatControllerMethods.GetChats,
 			argQuery: new GetChatsRequest(IsFiltered: false, Filter: String.Empty, Offset: basedOffset, Count: basedCount),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		return new ChatCollection(client: client, chats: chats.ToList(), count: basedCount);
+		return new ChatCollection(
+			client: client,
+			chats: chats.Select(selector: c =>
+				Chat.Create(
+					client: client,
+					id: c.Id,
+					cancellationToken: cancellationToken
+				).GetAwaiter().GetResult()
+			),
+			count: basedCount
+		);
 	}
 	#endregion
 
@@ -129,6 +156,12 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		) ?? throw new InvalidOperationException();
 		_collection.AddRange(collection: chats);
 		_offset = _collection.Count;
+	}
+
+	internal void OnReceivedMessage(ReceivedMessageInChatEventArgs e)
+	{
+		ReceivedMessageInChat?.Invoke(e: e);
+		this[id: e.ChatId].OnReceivedMessage(e: new Chat.ReceivedMessageEventArgs(messageId: e.MessageId));
 	}
 	#endregion
 	#endregion

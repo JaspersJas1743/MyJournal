@@ -476,13 +476,13 @@ public sealed class ChatController(
 	{
 		int userId = GetAuthorizedUserId();
 		await _context.Messages
-					  .Where(predicate: m => m.ChatId.Equals(id))
-					  .OrderByDescending(keySelector: m => m.CreatedAt)
-					  .Where(m => !m.SenderId.Equals(userId) && m.ReadedAt == null)
-					  .ForEachAsync(
-						  action: m => m.ReadedAt = DateTime.Now,
-						  cancellationToken: cancellationToken
-					  );
+			.Where(predicate: m => m.ChatId.Equals(id))
+			.OrderByDescending(keySelector: m => m.CreatedAt)
+			.Where(m => !m.SenderId.Equals(userId) && m.ReadedAt == null)
+			.ForEachAsync(
+				action: m => m.ReadedAt = DateTime.Now,
+				cancellationToken: cancellationToken
+			);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 		return Ok();
 	}
