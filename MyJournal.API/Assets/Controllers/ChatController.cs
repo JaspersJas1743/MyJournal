@@ -298,7 +298,10 @@ public sealed class ChatController(
 		?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
 
 		ChatType singleChatType = await FindChatType(type: ChatTypes.Single, cancellationToken: cancellationToken);
-		if (user.Chats.Any(predicate: c => c.Users.Any(predicate: u => u.Id.Equals(request.InterlocutorId)) && c.ChatType.Type == ChatTypes.Single))
+		if (user.Chats.Any(predicate: c => c.Users.Any(predicate: u => u.Id == request.InterlocutorId && request.InterlocutorId != userId) && c.ChatType.Type == ChatTypes.Single))
+			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Данный диалог уже существует!");
+
+		if (user.Chats.Any(predicate: c => c.Users.Count == 1) && request.InterlocutorId == userId)
 			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Данный диалог уже существует!");
 
 		Chat createdChat = new Chat()
