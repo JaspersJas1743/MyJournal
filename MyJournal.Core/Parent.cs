@@ -21,7 +21,7 @@ public sealed class Parent : User
 		interlocutors: interlocutors
 	) { }
 
-	public static async Task<Parent> Create(
+	internal static async Task<Parent> Create(
 		ApiClient client,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		CancellationToken cancellationToken = default(CancellationToken)

@@ -21,7 +21,7 @@ public sealed class Administrator : User
 		interlocutors: interlocutors
 	) { }
 
-	public static async Task<Administrator> Create(
+	internal static async Task<Administrator> Create(
 		ApiClient client,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		CancellationToken cancellationToken = default(CancellationToken)

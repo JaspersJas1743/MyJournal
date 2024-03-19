@@ -48,7 +48,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 
 	#region Methods
 	#region Static
-	public static async Task<InterlocutorCollection> Create(
+	internal static async Task<InterlocutorCollection> Create(
 		ApiClient client,
 		bool includeExistedInterlocutors = false,
 		CancellationToken cancellationToken = default(CancellationToken)

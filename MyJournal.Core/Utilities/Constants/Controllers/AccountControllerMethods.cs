@@ -1,21 +1,21 @@
 namespace MyJournal.Core.Utilities.Constants.Controllers;
 
-public static class AccountControllerMethods
+internal static class AccountControllerMethods
 {
-	public const string VerifyRegistrationCode = "account/registration-code/verify";
-	public const string SignInWithCredentials = "account/sign-in/credentials";
-	public const string SignInWithToken = "account/sign-in/token";
-	public const string SignUp = "account/sign-up";
-	public const string GetEmailOwner = "account/restoring-access/email/user/id/get";
-	public const string GetPhoneOwner = "account/restoring-access/phone/user/id/get";
-	public const string SignOutThis = "account/sign-out/this";
-	public const string SignOutAll = "account/sign-out/all";
-	public const string SignOutOthers = "account/sign-out/others";
-	public const string GetSessions = "account/user/sessions/get";
+	internal const string VerifyRegistrationCode = "account/registration-code/verify";
+	internal const string SignInWithCredentials = "account/sign-in/credentials";
+	internal const string SignInWithToken = "account/sign-in/token";
+	internal const string SignUp = "account/sign-up";
+	internal const string GetEmailOwner = "account/restoring-access/email/user/id/get";
+	internal const string GetPhoneOwner = "account/restoring-access/phone/user/id/get";
+	internal const string SignOutThis = "account/sign-out/this";
+	internal const string SignOutAll = "account/sign-out/all";
+	internal const string SignOutOthers = "account/sign-out/others";
+	internal const string GetSessions = "account/user/sessions/get";
 
-	public static string GetGoogleAuthenticator(int userId) => $"account/sign-up/user/{userId}/code/get";
-	public static string VerifyGoogleAuthenticator(int userId) => $"account/user/{userId}/code/verify";
-	public static string SetEmail(int userId) => $"account/sign-up/user/{userId}/email/set";
-	public static string SetPhone(int userId) => $"account/sign-up/user/{userId}/phone/set";
-	public static string ResetPassword(int userId) => $"account/restoring-access/user/{userId}/password/reset";
+	internal static string GetGoogleAuthenticator(int userId) => $"account/sign-up/user/{userId}/code/get";
+	internal static string VerifyGoogleAuthenticator(int userId) => $"account/user/{userId}/code/verify";
+	internal static string SetEmail(int userId) => $"account/sign-up/user/{userId}/email/set";
+	internal static string SetPhone(int userId) => $"account/sign-up/user/{userId}/phone/set";
+	internal static string ResetPassword(int userId) => $"account/restoring-access/user/{userId}/password/reset";
 }

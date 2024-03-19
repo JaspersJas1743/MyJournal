@@ -1,12 +1,12 @@
 namespace MyJournal.Core.Utilities.Constants.Controllers;
 
-public static class ChatControllerMethods
+internal static class ChatControllerMethods
 {
-	public const string GetChats = "chat/get";
-	public const string GetInterlocutors = "chat/interlocutors/get";
-	public const string CreateSingleChat = "chat/single/create";
-	public const string CreateMultiChat = "chat/multi/create";
+	internal const string GetChats = "chat/get";
+	internal const string GetInterlocutors = "chat/interlocutors/get";
+	internal const string CreateSingleChat = "chat/single/create";
+	internal const string CreateMultiChat = "chat/multi/create";
 
-	public static string GetChat(int chatId) => $"chat/{chatId}/get";
-	public static string ReadChat(int chatId) => $"chat/{chatId}/read";
+	internal static string GetChat(int chatId) => $"chat/{chatId}/get";
+	internal static string ReadChat(int chatId) => $"chat/{chatId}/read";
 }

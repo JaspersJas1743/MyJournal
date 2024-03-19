@@ -15,6 +15,7 @@ public sealed class Interlocutor
 	public DateTime? OnlineAt { get; init; }
 
 	public static async Task<Interlocutor> Create(
+	internal static async Task<Interlocutor> Create(
 		ApiClient client,
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)

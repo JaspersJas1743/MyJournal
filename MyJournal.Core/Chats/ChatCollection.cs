@@ -43,7 +43,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 
 	#region Methods
 	#region Static
-	public static async Task<ChatCollection> Create(
+	internal static async Task<ChatCollection> Create(
 		ApiClient client,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)

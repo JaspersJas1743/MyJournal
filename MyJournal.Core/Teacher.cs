@@ -21,7 +21,7 @@ public sealed class Teacher : User
 		interlocutors: interlocutors
 	) { }
 
-	public static async Task<Teacher> Create(
+	internal static async Task<Teacher> Create(
 		ApiClient client,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		CancellationToken cancellationToken = default(CancellationToken)
