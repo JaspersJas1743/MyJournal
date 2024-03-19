@@ -30,9 +30,9 @@ public sealed class ChatCollection : IEnumerable<Chat>
 
 	public string? Filter => _filter;
 
-	public Chat this[int index]
-		=> _chats.ElementAtOrDefault(index: index)
-		?? throw new ArgumentOutOfRangeException(message: $"{index} элемент отсутствует или не загружен.", paramName: nameof(index));
+	public Chat this[int id]
+		=> _chats.Find(match: i => i.Id.Equals(id))
+		   ?? throw new ArgumentOutOfRangeException(message: $"Чат с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
 	#endregion
 
 	#region Records

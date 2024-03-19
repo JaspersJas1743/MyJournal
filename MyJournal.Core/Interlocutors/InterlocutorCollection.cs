@@ -44,9 +44,9 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 
 	public int Length => _interlocutors.Count;
 
-	public Interlocutor this[int index]
-		=> _interlocutors.ElementAtOrDefault(index: index)
-		?? throw new ArgumentOutOfRangeException(message: $"{index} элемент отсутствует или не загружен.", paramName: nameof(index));
+	public Interlocutor this[int id]
+		=> _interlocutors.Find(match: i => i.Id.Equals(id))
+		?? throw new ArgumentOutOfRangeException(message: $"Собеседник с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
 	#endregion
 
 	#region Records
@@ -80,7 +80,12 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 			client: client,
 			fileService: fileService,
 			interlocutors: interlocutors.Select(selector: i =>
-				Interlocutor.Create(client: client, id: i.UserId, cancellationToken: cancellationToken).GetAwaiter().GetResult()
+				Interlocutor.Create(
+					client: client,
+					fileService: fileService,
+					id: i.UserId,
+					cancellationToken: cancellationToken
+				).GetAwaiter().GetResult()
 			),
 			count: basedCount,
 			includeExistedInterlocutors: includeExistedInterlocutors
