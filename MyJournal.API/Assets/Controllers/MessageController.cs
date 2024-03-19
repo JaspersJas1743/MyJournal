@@ -15,7 +15,7 @@ namespace MyJournal.API.Assets.Controllers;
 [Authorize]
 [ApiController]
 [Route(template: "api/message")]
-public class MessageController(
+public sealed class MessageController(
 	MyJournalContext context,
 	IHubContext<UserHub, IUserHub> userHubContext
 ) : MyJournalBaseController(context: context)

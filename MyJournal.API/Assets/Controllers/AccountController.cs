@@ -18,7 +18,7 @@ namespace MyJournal.API.Assets.Controllers;
 
 [ApiController]
 [Route(template: "api/account")]
-public class AccountController(
+public sealed class AccountController(
     MyJournalContext context,
     IHashService hash,
     IJwtService jwt,

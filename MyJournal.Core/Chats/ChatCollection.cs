@@ -37,8 +37,6 @@ public sealed class ChatCollection : IEnumerable<Chat>
 
 	#region Records
 	private sealed record GetChatsRequest(bool IsFiltered, string? Filter, int Offset, int Count);
-	private sealed record UploadChatPhotoResponse(string Link);
-	private sealed record DeleteChatPhotoRequest(string Link);
 	private sealed record CreateSingleChatRequest(int InterlocutorId);
 	private sealed record CreateMultiChatRequest(IEnumerable<int> InterlocutorIds, string? ChatName, string? LinkToPhoto);
 	#endregion

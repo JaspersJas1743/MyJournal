@@ -19,7 +19,7 @@ namespace MyJournal.API.Assets.Controllers;
 [Authorize]
 [ApiController]
 [Route(template: "api/user")]
-public class UserController(
+public sealed class UserController(
 	MyJournalContext context,
 	IHubContext<UserHub, IUserHub> userHubContext,
 	IFileStorageService fileStorageService,
