@@ -344,11 +344,18 @@ public sealed class AccountController(
             cancellationToken: cancellationToken
         );
 
-        IQueryable<GetSessionsResponse> sessions = _context.Sessions
+        GetSessionsResponse session = await _context.Sessions
             .Where(predicate: s => s.UserId == userId && s.SessionActivityStatus.Equals(enableSessionActivityStatus) && s.Id == id)
-            .Select(selector: s => new GetSessionsResponse(s.Id, s.MyJournalClient.ClientName, s.MyJournalClient.LinkToLogo, s.Ip, s.Id.Equals(currentSessionId)));
+            .Select(selector: s => new GetSessionsResponse(
+                s.Id,
+                s.MyJournalClient.ClientName,
+                s.MyJournalClient.LinkToLogo,
+                s.Ip,
+                s.Id.Equals(currentSessionId))
+            ).SingleOrDefaultAsync(cancellationToken: cancellationToken)
+            ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: $"Сессия с идентификатором {id} не найдена.");
 
-        return Ok(value: sessions);
+        return Ok(value: session);
     }
     #endregion
 
