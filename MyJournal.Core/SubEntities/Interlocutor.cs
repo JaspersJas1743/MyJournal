@@ -3,10 +3,11 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
-namespace MyJournal.Core.Interlocutors;
+namespace MyJournal.Core.SubEntities;
 
-public sealed class Interlocutor
+public sealed class Interlocutor : ISubEntity
 {
+	#region Constructor
 	private Interlocutor(
 		int id,
 		PersonalData personalData,
@@ -21,15 +22,18 @@ public sealed class Interlocutor
 		Activity = activity;
 		OnlineAt = onlineAt;
 	}
+	#endregion
 
+	#region Properties
 	public int Id { get; init; }
 	public PersonalData PersonalData { get; init; }
 	public ProfilePhoto? Photo { get; init; }
 	public Activity.Statuses Activity { get; init; }
 	public DateTime? OnlineAt { get; init; }
+	#endregion
 
 	#region Records
-	private sealed record InterlocutorResponse(int Id, string? Surname, string? Name, string Patronymic, string Photo, Activity.Statuses Activity, DateTime? OnlineAt);
+	private sealed record InterlocutorResponse(int Id, string Surname, string Name, string? Patronymic, string Photo, Activity.Statuses Activity, DateTime? OnlineAt);
 	#endregion
 
 	#region Classes
@@ -62,6 +66,8 @@ public sealed class Interlocutor
 	public event DeletedPhotoHandler? DeletedPhoto;
 	#endregion
 
+	#region Methods
+	#region Static
 	internal static async Task<Interlocutor> Create(
 		ApiClient client,
 		IFileService fileService,
@@ -90,7 +96,9 @@ public sealed class Interlocutor
 		);
 		return interlocutor;
 	}
+	#endregion
 
+	#region Instance
 	internal void OnAppearedOnline(AppearedOnlineEventArgs e)
 		=> AppearedOnline?.Invoke(e: e);
 
@@ -102,4 +110,6 @@ public sealed class Interlocutor
 
 	internal void OnDeletedPhoto(DeletedPhotoEventArgs e)
 		=> DeletedPhoto?.Invoke(e: e);
+	#endregion
+	#endregion
 }

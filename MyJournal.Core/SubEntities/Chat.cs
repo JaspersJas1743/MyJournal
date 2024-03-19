@@ -1,4 +1,4 @@
-namespace MyJournal.Core.Chats;
+namespace MyJournal.Core.SubEntities;
 
 public sealed class LastMessage
 {
@@ -9,7 +9,7 @@ public sealed class LastMessage
 	public bool IsRead { get; init; }
 }
 
-public sealed class Chat
+public sealed class Chat : ISubEntity
 {
 	public int Id { get; init; }
 	public string? ChatName { get; init; }

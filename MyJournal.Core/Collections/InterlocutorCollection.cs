@@ -1,21 +1,14 @@
-using System.Collections;
+using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
-namespace MyJournal.Core.Interlocutors;
+namespace MyJournal.Core.Collections;
 
-public class InterlocutorCollection : IEnumerable<Interlocutor>
+public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 {
 	#region Fields
-	private readonly ApiClient _client;
 	private readonly IFileService _fileService;
-	private readonly List<Interlocutor> _interlocutors = new List<Interlocutor>();
-	private readonly int _count;
-
-	private int _offset;
-	private string? _filter = String.Empty;
-	private bool _includeExistedInterlocutors = false;
 	#endregion
 
 	#region Constructors
@@ -23,36 +16,16 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		ApiClient client,
 		IFileService fileService,
 		IEnumerable<Interlocutor> interlocutors,
-		int count,
-		bool includeExistedInterlocutors
-	)
+		int count
+	) : base(client: client, collection: interlocutors, count: count)
 	{
-		_client = client;
 		_fileService = fileService;
-		_interlocutors.AddRange(collection: interlocutors);
-		_offset = _interlocutors.Count;
-		_count = count;
-
-		_includeExistedInterlocutors = includeExistedInterlocutors;
 	}
 	#endregion
 
-	#region Properties
-	public bool IncludeExistedInterlocutors => _includeExistedInterlocutors;
-
-	public string? Filter => _filter;
-
-	public int Length => _interlocutors.Count;
-
-	public Interlocutor this[int id]
-		=> _interlocutors.Find(match: i => i.Id.Equals(id))
-		?? throw new ArgumentOutOfRangeException(message: $"Собеседник с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
-	#endregion
-
 	#region Records
-	private sealed record GetInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
-
-	private sealed record GetInterlocutorsResponse(int UserId, string? Photo, string? Name);
+	private sealed record GetInterlocutorsRequest(int Offset, int Count);
+	private sealed record GetInterlocutorsResponse(int UserId);
 	#endregion
 
 	#region Classes
@@ -98,7 +71,6 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	internal static async Task<InterlocutorCollection> Create(
 		ApiClient client,
 		IFileService fileService,
-		bool includeExistedInterlocutors = false,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -107,11 +79,8 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		IEnumerable<GetInterlocutorsResponse> interlocutors = await client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
-				IsFiltered: false,
-				Filter: String.Empty,
 				Offset: basedOffset,
-				Count: basedCount,
-				IncludeExistedInterlocutors: includeExistedInterlocutors
+				Count: basedCount
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new InterlocutorCollection(
@@ -125,9 +94,35 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 					cancellationToken: cancellationToken
 				).GetAwaiter().GetResult()
 			),
-			count: basedCount,
-			includeExistedInterlocutors: includeExistedInterlocutors
+			count: basedCount
 		);
+	}
+	#endregion
+
+	#region LazyCollection<Interlocutor>
+	public override async Task LoadNext(
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await LoadInterlocutors(cancellationToken: cancellationToken);
+
+	public override async Task Clear(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		_collection.Clear();
+		_offset = _collection.Count;
+	}
+
+	public override async Task Append(
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		Interlocutor interlocutor = await _client.GetAsync<Interlocutor>(
+			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+		_collection.Insert(index: 0, item: interlocutor);
+		_offset = _collection.Count;
 	}
 	#endregion
 
@@ -139,14 +134,11 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		IEnumerable<GetInterlocutorsResponse> interlocutors = await _client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
-				IsFiltered: !String.IsNullOrWhiteSpace(value: _filter),
-				Filter: _filter,
 				Offset: _offset,
-				Count: _count,
-				IncludeExistedInterlocutors: IncludeExistedInterlocutors
+				Count: _count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_interlocutors.AddRange(collection: interlocutors.Select(selector: i =>
+		_collection.AddRange(collection: interlocutors.Select(selector: i =>
 			Interlocutor.Create(
 				client: _client,
 				fileService: _fileService,
@@ -154,41 +146,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 				cancellationToken: cancellationToken
 			).GetAwaiter().GetResult()
 		));
-		_offset = _interlocutors.Count;
-	}
-
-	public async Task LoadNext(
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => await LoadInterlocutors(cancellationToken: cancellationToken);
-
-	public async Task Clear(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		_interlocutors.Clear();
-		_offset = _interlocutors.Count;
-		_filter = String.Empty;
-		_includeExistedInterlocutors = false;
-	}
-
-	public async Task SetFilter(
-		string? filter,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await Clear(cancellationToken: cancellationToken);
-		_filter = filter;
-		await LoadInterlocutors(cancellationToken: cancellationToken);
-	}
-
-	public async Task SetIncludeExistedInterlocutors(
-		bool includeExistedInterlocutors,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await Clear(cancellationToken: cancellationToken);
-		_includeExistedInterlocutors = includeExistedInterlocutors;
-		await LoadInterlocutors(cancellationToken: cancellationToken);
+		_offset = _collection.Count;
 	}
 
 	internal void OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
@@ -217,23 +175,6 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	{
 		InterlocutorDeletedPhoto?.Invoke(e: e);
 		this[id: e.InterlocutorId].OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs());
-	}
-	#endregion
-
-	#region IEnumerable<Interlocutor>
-	public IEnumerator<Interlocutor> GetEnumerator()
-		=> _interlocutors.GetEnumerator();
-
-	IEnumerator IEnumerable.GetEnumerator()
-		=> GetEnumerator();
-	#endregion
-
-	#region Overriden
-	public override bool Equals(object? obj)
-	{
-		if (obj is InterlocutorCollection collection)
-			return this.SequenceEqual(second: collection);
-		return false;
 	}
 	#endregion
 	#endregion

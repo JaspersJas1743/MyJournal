@@ -1,38 +1,22 @@
-using System.Collections;
+using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
-namespace MyJournal.Core.Chats;
+namespace MyJournal.Core.Collections;
 
-public sealed class ChatCollection : IEnumerable<Chat>
+public sealed class ChatCollection : LazyCollection<Chat>
 {
-	#region Fields
-	private readonly ApiClient _client;
-	private readonly List<Chat> _chats = new List<Chat>();
-	private readonly int _count;
-
-	private int _offset;
-	private string? _filter = String.Empty;
-	#endregion
-
 	#region Constructors
-	private ChatCollection(ApiClient client, IEnumerable<Chat> chats, int count)
-	{
-		_client = client;
-		_chats.AddRange(collection: chats);
-		_offset = _chats.Count;
-		_count = count;
-	}
+	private ChatCollection(
+		ApiClient client,
+		IEnumerable<Chat> chats,
+		int count
+	) : base(client: client, collection: chats, count: count)
+	{ }
 	#endregion
 
 	#region Properties
-	public int Length => _chats.Count;
-
-	public string? Filter => _filter;
-
-	public Chat this[int id]
-		=> _chats.Find(match: i => i.Id.Equals(id))
-		   ?? throw new ArgumentOutOfRangeException(message: $"Чат с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
+	public string? Filter { get; private set; } = String.Empty;
 	#endregion
 
 	#region Records
@@ -59,48 +43,21 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	}
 	#endregion
 
-	#region Instance
-	private async Task LoadChats(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		IEnumerable<Chat> loadedChats = await _client.GetAsync<IEnumerable<Chat>, GetChatsRequest>(
-			apiMethod: ChatControllerMethods.GetChats,
-			argQuery: new GetChatsRequest(
-				IsFiltered: !String.IsNullOrWhiteSpace(value: _filter),
-				Filter: _filter,
-				Offset: _offset,
-				Count: _count
-			), cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		_chats.AddRange(collection: loadedChats);
-		_offset = _chats.Count;
-	}
-
-	public async Task LoadNext(
+	#region LazyCollection<Chat>
+	public override async Task LoadNext(
 		CancellationToken cancellationToken = default(CancellationToken)
 	) => await LoadChats(cancellationToken: cancellationToken);
 
-	public async Task Clear(
+	public override async Task Clear(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_chats.Clear();
-		_offset = _chats.Count;
-		_filter = String.Empty;
+		_collection.Clear();
+		_offset = _collection.Count;
+		Filter = String.Empty;
 	}
 
-	public async Task SetFilter(
-		string? filter,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await Clear(cancellationToken: cancellationToken);
-		_filter = filter;
-		await LoadChats(cancellationToken: cancellationToken);
-	}
-
-	public async Task Append(
+	public override async Task Append(
 		int chatId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -109,8 +66,37 @@ public sealed class ChatCollection : IEnumerable<Chat>
 			apiMethod: ChatControllerMethods.GetChat(chatId: chatId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_chats.Insert(index: 0, item: chat);
-		_offset = _chats.Count;
+		_collection.Insert(index: 0, item: chat);
+		_offset = _collection.Count;
+	}
+	#endregion
+
+	#region Instance
+	private async Task LoadChats(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		IEnumerable<Chat> loadedChats = await _client.GetAsync<IEnumerable<Chat>, GetChatsRequest>(
+			apiMethod: ChatControllerMethods.GetChats,
+			argQuery: new GetChatsRequest(
+				IsFiltered: !String.IsNullOrWhiteSpace(value: Filter),
+				Filter: Filter,
+				Offset: _offset,
+				Count: _count
+			), cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+		_collection.AddRange(collection: loadedChats);
+		_offset = _collection.Count;
+	}
+
+	public async Task SetFilter(
+		string? filter,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await Clear(cancellationToken: cancellationToken);
+		Filter = filter;
+		await LoadChats(cancellationToken: cancellationToken);
 	}
 
 	public async Task AddSingleChat(
@@ -124,8 +110,8 @@ public sealed class ChatCollection : IEnumerable<Chat>
 			arg: new CreateSingleChatRequest(InterlocutorId: interlocutorId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_chats.AddRange(collection: chats);
-		_offset = _chats.Count;
+		_collection.AddRange(collection: chats);
+		_offset = _collection.Count;
 	}
 
 	public async Task AddMultiChat(
@@ -141,25 +127,8 @@ public sealed class ChatCollection : IEnumerable<Chat>
 			arg: new CreateMultiChatRequest(InterlocutorIds: interlocutorIds, ChatName: chatName, LinkToPhoto: linkToPhoto),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_chats.AddRange(collection: chats);
-		_offset = _chats.Count;
-	}
-	#endregion
-
-	#region IEnumerable<Chat>
-	public IEnumerator<Chat> GetEnumerator()
-		=> _chats.GetEnumerator();
-
-	IEnumerator IEnumerable.GetEnumerator()
-		=> GetEnumerator();
-	#endregion
-
-	#region Overriden
-	public override bool Equals(object? obj)
-	{
-		if (obj is ChatCollection collection)
-			return this.SequenceEqual(second: collection);
-		return false;
+		_collection.AddRange(collection: chats);
+		_offset = _collection.Count;
 	}
 	#endregion
 	#endregion
