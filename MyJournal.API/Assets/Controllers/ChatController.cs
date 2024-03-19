@@ -34,9 +34,13 @@ public sealed class ChatController(
 	[Validator<CreateMultiChatRequestValidator>]
 	public record CreateMultiChatRequest(IEnumerable<int> InterlocutorIds, string? ChatName, string? LinkToPhoto);
 
+	[Validator<GetIntendedInterlocutorsRequestValidator>]
+	public record GetIntendedInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
+	public record GetIntendedInterlocutorsResponse(int UserId);
+
 	[Validator<GetInterlocutorsRequestValidator>]
-	public record GetInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
-	public record GetInterlocutorsResponse(int UserId, string Photo, string Name);
+	public record GetInterlocutorsRequest(int Offset, int Count);
+	public record GetInterlocutorsResponse(int UserId);
 	#endregion
 
 	#region Methods
@@ -201,6 +205,47 @@ public sealed class ChatController(
 	}
 
 	/// <summary>
+	/// Получение списка собеседников пользователя
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/chat/interlocutors/get?Offset=0&Count=20
+	///
+	/// Параметры:
+	///
+	///	Offset - смещение, начиная с которого будет происходить выборка потенциальных собеседников
+	///	Count - максимальное количество возвращаемых потенциальных собеседников
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Список потенциальных собеседников пользователя</response>
+	/// <response code="400">Некорректный авторизационный токен</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	[HttpGet(template: "interlocutors/get")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetInterlocutorsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<IEnumerable<GetInterlocutorsResponse>>> GetInterlocutors(
+		[FromQuery] GetInterlocutorsRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		IQueryable<User> interlocutors = _context.Users
+			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.ChatType)
+			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
+			.Where(predicate: u => u.Id == userId)
+			.SelectMany(selector: u => u.Chats.SelectMany(
+				c => c.Users.Where(i => i.Id != userId || c.Users.Count == 1)
+			)).Skip(count: request.Offset).Take(count: request.Count);
+
+		return Ok(interlocutors.Select(u => new GetInterlocutorsResponse(u.Id)));
+	}
+
+	/// <summary>
 	/// Получение списка потенциальных собеседников пользователя
 	/// </summary>
 	/// <remarks>
@@ -222,13 +267,13 @@ public sealed class ChatController(
 	/// <response code="200">Список потенциальных собеседников пользователя</response>
 	/// <response code="400">Некорректный авторизационный токен</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	[HttpGet(template: "interlocutors/get")]
+	[HttpGet(template: "intended-interlocutors/get")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetInterlocutorsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetIntendedInterlocutorsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetInterlocutorsResponse>>> GetInterlocutors(
-		[FromQuery] GetInterlocutorsRequest request,
+	public async Task<ActionResult<IEnumerable<GetIntendedInterlocutorsResponse>>> GetIntendedInterlocutors(
+		[FromQuery] GetIntendedInterlocutorsRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -257,11 +302,8 @@ public sealed class ChatController(
 			);
 		}
 
-		return Ok(value: interlocutors.Skip(count: request.Offset).Take(count: request.Count).Select(selector: u => new GetInterlocutorsResponse(
-			u.Id,
-			u.Id.Equals(userId) ? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/favourites.png"
-				: u.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/user_default.png",
-			u.Id.Equals(userId) ? "Избранное" : $"{u.Surname} {u.Name}"
+		return Ok(value: interlocutors.Skip(count: request.Offset).Take(count: request.Count).Select(selector: u => new GetIntendedInterlocutorsResponse(
+			u.Id
 		)));
 	}
 	#endregion
