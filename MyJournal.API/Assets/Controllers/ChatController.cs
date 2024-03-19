@@ -133,7 +133,7 @@ public sealed class ChatController(
 					IsFile: chat.LastMessageNavigation?.Text is null && chat.LastMessageNavigation.Attachments.Any(),
 					CreatedAt: chat.LastMessageNavigation.CreatedAt,
 					FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
-					IsRead: chat.LastMessageNavigation.ReadedAt is not null || chat.Users.Count == 1
+					IsRead: chat.LastMessageNavigation.ReadedAt is not null
 				) : null,
 				CountOfUnreadMessages: chat.Messages.OrderByDescending(keySelector: m => m.CreatedAt)
 					.TakeWhile(predicate: m => m.ReadedAt is null && !m.Sender.Id.Equals(user.Id)).Count()
@@ -180,6 +180,8 @@ public sealed class ChatController(
 		Chat chat = await _context.Chats
 			.Include(navigationPropertyPath: c => c.ChatType)
 			.Include(navigationPropertyPath: c => c.Users)
+			.Include(navigationPropertyPath: c => c.LastMessageNavigation).ThenInclude(navigationPropertyPath: m => m.Attachments)
+			.Include(navigationPropertyPath: c => c.LastMessageNavigation).ThenInclude(navigationPropertyPath: m => m.Sender)
 			.Where(predicate: c => c.Users.Contains(user))
 			.SingleOrDefaultAsync(predicate: c => c.Id.Equals(id), cancellationToken: cancellationToken)
 			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: $"Диалог с идентификатором {id} не найден.");
@@ -187,7 +189,13 @@ public sealed class ChatController(
 			Id: chat.Id,
 			ChatName: GetChatName(chat: chat, currentUser: user),
 			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
-			LastMessage: null,
+			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
+				Content: chat.LastMessageNavigation?.Text,
+				IsFile: chat.LastMessageNavigation?.Text is null && chat.LastMessageNavigation.Attachments.Any(),
+				CreatedAt: chat.LastMessageNavigation.CreatedAt,
+				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
+				IsRead: chat.LastMessageNavigation.ReadedAt is not null
+			) : null,
 			CountOfUnreadMessages: 0
 		));
 	}
