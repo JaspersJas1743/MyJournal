@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Registration;
 using MyJournal.Core.Utilities;
+using MyJournal.Core.Utilities.Api;
 
 namespace MyJournal.Tests;
 
@@ -28,7 +29,7 @@ public class VerificationTests
 	[Test]
 	public async Task RegistrationCodeVerification_WithCorrectVerificationCode_ShouldReturnTrue()
 	{
-		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			RegistrationCode = "testtes"
@@ -40,7 +41,7 @@ public class VerificationTests
 	[Test]
 	public async Task RegistrationCodeVerification_WithIncorrectVerificationCode_ShouldReturnFalse()
 	{
-		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			RegistrationCode = "testttt"
@@ -50,11 +51,11 @@ public class VerificationTests
 	}
 
 	[Test]
-	public async Task RegistrationCodeVerification_WithEmptyVerificationCode_ShouldThrowException()
+	public void RegistrationCodeVerification_WithEmptyVerificationCode_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = String.Empty
@@ -64,11 +65,11 @@ public class VerificationTests
 	}
 
 	[Test]
-	public async Task RegistrationCodeVerification_WithVerificationCodeIsNull_ShouldThrowException()
+	public void RegistrationCodeVerification_WithVerificationCodeIsNull_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = null
@@ -78,11 +79,11 @@ public class VerificationTests
 	}
 
 	[Test]
-	public async Task RegistrationCodeVerification_WithShortVerificationCode_ShouldThrowException()
+	public void RegistrationCodeVerification_WithShortVerificationCode_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = "123"
@@ -92,11 +93,11 @@ public class VerificationTests
 	}
 
 	[Test]
-	public async Task RegistrationCodeVerification_WithLongVerificationCode_ShouldThrowException()
+	public void RegistrationCodeVerification_WithLongVerificationCode_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+			IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 			UserCredentials userCredentials = new UserCredentials()
 			{
 				RegistrationCode = "testtest"

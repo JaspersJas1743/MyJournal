@@ -9,15 +9,15 @@ namespace MyJournal.Tests;
 
 public class RegistrationTests
 {
-	private ServiceProvider _serviceProvider;
+	private ServiceProvider _serviceProvider = null!;
 
 	[SetUp]
 	public void Setup()
 	{
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
+		serviceCollection.AddGoogleAuthenticator();
 		serviceCollection.AddTransient<IRegistrationService<User>, UserRegistrationService>();
-		serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
 		serviceCollection.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>();
 		_serviceProvider = serviceCollection.BuildServiceProvider();
 	}
@@ -31,7 +31,7 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithCorrectData_ShouldReturnTrue()
 	{
-		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Ivan",
@@ -45,7 +45,7 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithIncorrectRegistrationCode_ShouldReturnFalse()
 	{
-		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Jaspers",
@@ -59,7 +59,7 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithUsedLogin_ShouldReturnFalse()
 	{
-		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Jaspers",
@@ -73,14 +73,14 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithVerificationAndCorrectData_ShouldReturnTrue()
 	{
-		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Ivan",
 			Password = "IvanIvanovich",
 			RegistrationCode = "1234567"
 		};
-		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, verifier: registrationCodeVerificationService);
 		Assert.That(actual: isRegistered, expression: Is.True);
 	}
@@ -88,14 +88,14 @@ public class RegistrationTests
 	[Test]
 	public async Task UserRegistration_WithVerificationAndIncorrectRegistrationCode_ShouldReturnFalse()
 	{
-		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>();
+		IRegistrationService<User> userRegistrationService = _serviceProvider.GetService<IRegistrationService<User>>()!;
 		UserCredentials userCredentials = new UserCredentials()
 		{
 			Login = "Jaspers",
 			Password = "IvanIvanovich",
 			RegistrationCode = "1111111"
 		};
-		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>();
+		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
 		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, verifier: registrationCodeVerificationService);
 		Assert.That(actual: isRegistered, expression: Is.False);
 	}

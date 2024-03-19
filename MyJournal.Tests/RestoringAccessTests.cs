@@ -8,16 +8,16 @@ namespace MyJournal.Tests;
 
 public class RestoringAccessTests
 {
-	private ServiceProvider _serviceProvider;
+	private ServiceProvider _serviceProvider = null!;
 
 	[SetUp]
 	public void Setup()
 	{
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
-		serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
-		serviceCollection.AddKeyedTransient<IRestoringAccessService<User>, RestoringAccessThroughEmailService>(serviceKey: "RestoringAccessThroughEmailService");
-		serviceCollection.AddKeyedTransient<IRestoringAccessService<User>, RestoringAccessThroughPhoneService>(serviceKey: "RestoringAccessThroughPhoneService");
+		serviceCollection.AddGoogleAuthenticator();
+		serviceCollection.AddKeyedTransient<IRestoringAccessService<User>, RestoringAccessThroughEmailService>(serviceKey: nameof(RestoringAccessThroughEmailService));
+		serviceCollection.AddKeyedTransient<IRestoringAccessService<User>, RestoringAccessThroughPhoneService>(serviceKey: nameof(RestoringAccessThroughPhoneService));
 		_serviceProvider = serviceCollection.BuildServiceProvider();
 	}
 
@@ -30,7 +30,7 @@ public class RestoringAccessTests
 	[Test]
 	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentials_ShouldReturnTrue()
 	{
-		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughEmailService");
+		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughEmailService))!;
 		EmailCredentials emailCredentials = new EmailCredentials()
 		{
 			Email = "lesha.smirnov2019@mail.ru"
@@ -42,11 +42,11 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowException()
+	public void UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughEmailService");
+			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughEmailService))!;
 			EmailCredentials emailCredentials = new EmailCredentials()
 			{
 				Email = "lesha.smirnov2019@mail.ru"
@@ -58,11 +58,11 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
+	public void UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<Exception>(code: async () =>
 		{
-			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughEmailService");
+			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughEmailService))!;
 			EmailCredentials emailCredentials = new EmailCredentials()
 			{
 				Email = "lesha.smirnov2019@mail.ru"
@@ -78,7 +78,7 @@ public class RestoringAccessTests
 	[Test]
 	public async Task UserRestoringAccessThroughEmailService_WithIncorrectCredentials_ShouldReturnFalse()
 	{
-		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughEmailService");
+		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughEmailService))!;
 		PhoneCredentials emailCredentials = new PhoneCredentials()
 		{
 			Phone = "ivanivanovich@mail.ru"
@@ -90,7 +90,7 @@ public class RestoringAccessTests
 	[Test]
 	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentials_ShouldReturnTrue()
 	{
-		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughPhoneService");
+		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughPhoneService))!;
 		PhoneCredentials emailCredentials = new PhoneCredentials()
 		{
 			Phone = "+7(910)952-0836"
@@ -102,11 +102,11 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowException()
+	public void UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndUsedNewPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughPhoneService");
+			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughPhoneService))!;
 			PhoneCredentials emailCredentials = new PhoneCredentials()
 			{
 				Phone = "+7(910)952-0836"
@@ -118,11 +118,11 @@ public class RestoringAccessTests
 	}
 
 	[Test]
-	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
+	public void UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<Exception>(code: async () =>
 		{
-			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughPhoneService");
+			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughPhoneService))!;
 			PhoneCredentials emailCredentials = new PhoneCredentials()
 			{
 				Phone = "+7(910)952-0836"
@@ -138,7 +138,7 @@ public class RestoringAccessTests
 	[Test]
 	public async Task UserRestoringAccessThroughPhoneService_WithIncorrectCredentials_ShouldReturnFalse()
 	{
-		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>("RestoringAccessThroughPhoneService");
+		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughPhoneService))!;
 		PhoneCredentials emailCredentials = new PhoneCredentials()
 		{
 			Phone = "+7(910)952-0835"

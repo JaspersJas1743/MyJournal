@@ -10,14 +10,13 @@ namespace MyJournal.Tests;
 public class UserTests
 {
 	#region SetUp
-	private ServiceProvider _serviceProvider;
+	private ServiceProvider _serviceProvider = null!;
 
 	[SetUp]
 	public void Setup()
 	{
 		ServiceCollection serviceCollection = new ServiceCollection();
 		serviceCollection.AddApiClient();
-		serviceCollection.AddTransient<IGoogleAuthenticatorService, GoogleAuthenticatorService>();
 		serviceCollection.AddGoogleAuthenticator();
 		serviceCollection.AddFileService();
 		serviceCollection.AddTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>();
@@ -35,7 +34,7 @@ public class UserTests
 	[Test]
 	public async Task UserSignOutThisSession_WithOneTry_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -47,11 +46,11 @@ public class UserTests
 	}
 
 	[Test]
-	public async Task UserSignOutThisSession_WithTwoTry_ShouldThrowException()
+	public void UserSignOutThisSession_WithTwoTry_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<UnauthorizedAccessException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
@@ -64,12 +63,12 @@ public class UserTests
 	}
 
 	[Test]
-	public async Task UserSignOutAllSession_WithTryingGetDataFromAnySession_ShouldThrowException()
+	public void UserSignOutAllSession_WithTryingGetDataFromAnySession_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<UnauthorizedAccessException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-			IAuthorizationService<User> service2 = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+			IAuthorizationService<User> service2 = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
@@ -83,12 +82,12 @@ public class UserTests
 	}
 
 	[Test]
-	public async Task UserSignOutOthersSession_WithTryingGetDataFromOtherSession_ShouldThrowException()
+	public void UserSignOutOthersSession_WithTryingGetDataFromOtherSession_ShouldThrowException()
 	{
 		_ = Assert.ThrowsAsync<UnauthorizedAccessException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
-			IAuthorizationService<User> service2 = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+			IAuthorizationService<User> service2 = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
@@ -104,7 +103,7 @@ public class UserTests
 	[Test]
 	public async Task UserSignOutOthersSession_WithTryingGetDataFromThisSession_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -120,7 +119,7 @@ public class UserTests
 	[Test]
 	public async Task UserChangeEmail_WithCorrectEmail_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -128,103 +127,103 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		string newEmail = "test@mail.ru";
-		await user.Security.Email!.Change(confirmationCode: "785177", newEmail: newEmail);
+		await user.Security.Email.Change(confirmationCode: "785177", newEmail: newEmail);
 		Assert.That(actual: user.Security.Email.Address, expression: Is.EqualTo(expected: newEmail));
 	}
 
 	[Test]
-	public async Task UserChangeEmail_WithUsedEmail_ShouldThrowException()
+	public void UserChangeEmail_WithUsedEmail_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "test@mail.ru");
+			await user.Security.Email.Change(confirmationCode: "785177", newEmail: "test@mail.ru");
 		});
 	}
 
 	[Test]
-	public async Task UserChangeEmail_WithIncorrectEmailName_ShouldThrowException()
+	public void UserChangeEmail_WithIncorrectEmailName_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "@mail.ru");
+			await user.Security.Email.Change(confirmationCode: "785177", newEmail: "@mail.ru");
 		});
 	}
 
 	[Test]
-	public async Task UserChangeEmail_WithIncorrectEmailDomain_ShouldThrowException()
+	public void UserChangeEmail_WithIncorrectEmailDomain_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "test@.ru");
+			await user.Security.Email.Change(confirmationCode: "785177", newEmail: "test@.ru");
 		});
 	}
 
 	[Test]
-	public async Task UserChangeEmail_WithoutEmailDomain_ShouldThrowException()
+	public void UserChangeEmail_WithoutEmailDomain_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "test@");
+			await user.Security.Email.Change(confirmationCode: "785177", newEmail: "test@");
 		});
 	}
 
 	[Test]
-	public async Task UserChangeEmail_WithoutAt_ShouldThrowException()
+	public void UserChangeEmail_WithoutAt_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email!.Change(confirmationCode: "785177", newEmail: "testmail.ru");
+			await user.Security.Email.Change(confirmationCode: "785177", newEmail: "testmail.ru");
 		});
 	}
 
 	[Test]
-	public async Task UserChangeEmail_WithIncorrectCode_ShouldThrowException()
+	public void UserChangeEmail_WithIncorrectCode_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ArgumentException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email!.Change(confirmationCode: "000000", newEmail: "testmail.ru");
+			await user.Security.Email.Change(confirmationCode: "000000", newEmail: "testmail.ru");
 		});
 	}
 	#endregion
@@ -233,109 +232,109 @@ public class UserTests
 	[Test]
 	public async Task UserChangePhone_WithCorrectPhone_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "+7(777)777-7777");
+		await user.Security.Phone.Change(confirmationCode: "006366", newPhone: "+7(777)777-7777");
 	}
 
 	[Test]
-	public async Task UserChangePhone_WithUsedPhone_ShouldThrowException()
+	public void UserChangePhone_WithUsedPhone_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "+7(777)777-7777");
+			await user.Security.Phone.Change(confirmationCode: "006366", newPhone: "+7(777)777-7777");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePhone_WithIncorrectPhone_ShouldThrowException()
+	public void UserChangePhone_WithIncorrectPhone_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "123453");
+			await user.Security.Phone.Change(confirmationCode: "006366", newPhone: "123453");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePhone_WithIncorrectFormat_ShouldThrowException()
+	public void UserChangePhone_WithIncorrectFormat_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "9999999999");
+			await user.Security.Phone.Change(confirmationCode: "006366", newPhone: "9999999999");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePhone_WithoutPlus_ShouldThrowException()
+	public void UserChangePhone_WithoutPlus_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "7(999)999-9999");
+			await user.Security.Phone.Change(confirmationCode: "006366", newPhone: "7(999)999-9999");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePhone_WithIncorrectFormat2_ShouldThrowException()
+	public void UserChangePhone_WithIncorrectFormat2_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone!.Change(confirmationCode: "006366", newPhone: "79999999999");
+			await user.Security.Phone.Change(confirmationCode: "006366", newPhone: "79999999999");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePhone_WithIncorrectCode_ShouldThrowException()
+	public void UserChangePhone_WithIncorrectCode_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ArgumentException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone!.Change(confirmationCode: "000000", newPhone: "+7(999)999-9999");
+			await user.Security.Phone.Change(confirmationCode: "000000", newPhone: "+7(999)999-9999");
 		});
 	}
 	#endregion
@@ -344,93 +343,93 @@ public class UserTests
 	[Test]
 	public async Task UserChangePassword_WithCorrectData_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
+		await user.Security.Password.Change(confirmationCode: "269088", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
 	}
 
 	[Test]
-	public async Task UserChangePassword_WithIncorrectCurrentPassword_ShouldThrowException()
+	public void UserChangePassword_WithIncorrectCurrentPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
+			await user.Security.Password.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePassword_WithEqualsCurrentAndNewPassword_ShouldThrowException()
+	public void UserChangePassword_WithEqualsCurrentAndNewPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "Jaspers");
+			await user.Security.Password.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "Jaspers");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePassword_WithIncorrectFormatNewPassword_ShouldThrowException()
+	public void UserChangePassword_WithIncorrectFormatNewPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "J");
+			await user.Security.Password.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "J");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePassword_WithShortNewPassword_ShouldThrowException()
+	public void UserChangePassword_WithShortNewPassword_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ApiException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password!.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "Js");
+			await user.Security.Password.Change(confirmationCode: "269088", currentPassword: "Jaspers", newPassword: "Js");
 		});
 	}
 
 	[Test]
-	public async Task UserChangePassword_WithIncorrectCode_ShouldThrowException()
+	public void UserChangePassword_WithIncorrectCode_ShouldThrowException()
 	{
 		Assert.ThrowsAsync<ArgumentException>(code: async () =>
 		{
-			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+			IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 			UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 				login: "Jaspers",
 				password: "Jaspers",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password!.Change(confirmationCode: "000000", currentPassword: "JaspersJas1743", newPassword: "Js");
+			await user.Security.Password.Change(confirmationCode: "000000", currentPassword: "JaspersJas1743", newPassword: "Js");
 		});
 	}
 	#endregion
@@ -439,7 +438,7 @@ public class UserTests
 	[Test]
 	public async Task UserGetChats_WithNullFilter_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -452,7 +451,7 @@ public class UserTests
 	[Test]
 	public async Task UserGetChats_WithEmptyFilter_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -465,7 +464,7 @@ public class UserTests
 	[Test]
 	public async Task UserGetChats_WithFilterIsWhiteSpace_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -480,7 +479,7 @@ public class UserTests
 	[Test]
 	public async Task UserGetInterlocutors_WithNullFilter_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -488,14 +487,14 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: null);
-		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "Смирнов"));
-		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "Игоревич"));	}
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));	}
 
 	[Test]
 	public async Task UserGetInterlocutors_WithEmptyFilter_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -503,14 +502,14 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: String.Empty);
-		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "Смирнов"));
-		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "Игоревич"));	}
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));	}
 
 	[Test]
 	public async Task UserGetInterlocutors_WithFilterIsWhiteSpace_ShouldPassed()
 	{
-		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>();
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
 			login: "Jaspers",
 			password: "JaspersJas1743",
@@ -518,9 +517,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		await user.Interlocutors.SetFilter(filter: "   ");
-		Assert.That(actual: user.Interlocutors[0].Surname, expression: Is.EqualTo(expected: "Смирнов"));
-		Assert.That(actual: user.Interlocutors[0].Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: user.Interlocutors[0].Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: user.Interlocutors[0].PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
 	}
 	#endregion
 }
