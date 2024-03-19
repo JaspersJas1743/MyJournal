@@ -12,4 +12,5 @@ public static class UserHubMethods
 	public const string JoinedInChat = nameof(JoinedInChat);
 	public const string SetPhone = nameof(SetPhone);
 	public const string SetEmail = nameof(SetEmail);
+	public const string SendMessage = nameof(SendMessage);
 }

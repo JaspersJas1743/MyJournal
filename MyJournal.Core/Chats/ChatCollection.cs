@@ -51,7 +51,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 		const int basedOffset = 0;
 		const int basedCount = 20;
 		IEnumerable<Chat> chats = await client.GetAsync<IEnumerable<Chat>, GetChatsRequest>(
-			apiMethod: ChatsControllerMethods.GetChats,
+			apiMethod: ChatControllerMethods.GetChats,
 			argQuery: new GetChatsRequest(IsFiltered: false, Filter: String.Empty, Offset: basedOffset, Count: basedCount),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
@@ -65,7 +65,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	)
 	{
 		IEnumerable<Chat> loadedChats = await _client.GetAsync<IEnumerable<Chat>, GetChatsRequest>(
-			apiMethod: ChatsControllerMethods.GetChats,
+			apiMethod: ChatControllerMethods.GetChats,
 			argQuery: new GetChatsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: _filter),
 				Filter: _filter,
@@ -106,7 +106,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	)
 	{
 		Chat chat = await _client.GetAsync<Chat>(
-			apiMethod: ChatsControllerMethods.GetChat(chatId: chatId),
+			apiMethod: ChatControllerMethods.GetChat(chatId: chatId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		_chats.Insert(index: 0, item: chat);
@@ -120,7 +120,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	{
 		await Clear(cancellationToken: cancellationToken);
 		IEnumerable<Chat> chats = await _client.PostAsync<IEnumerable<Chat>, CreateSingleChatRequest>(
-			apiMethod: ChatsControllerMethods.CreateSingleChat,
+			apiMethod: ChatControllerMethods.CreateSingleChat,
 			arg: new CreateSingleChatRequest(InterlocutorId: interlocutorId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
@@ -137,7 +137,7 @@ public sealed class ChatCollection : IEnumerable<Chat>
 	{
 		await Clear(cancellationToken: cancellationToken);
 		IEnumerable<Chat> chats = await _client.PostAsync<IEnumerable<Chat>, CreateMultiChatRequest>(
-			apiMethod: ChatsControllerMethods.CreateMultiChat,
+			apiMethod: ChatControllerMethods.CreateMultiChat,
 			arg: new CreateMultiChatRequest(InterlocutorIds: interlocutorIds, ChatName: chatName, LinkToPhoto: linkToPhoto),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();

@@ -57,7 +57,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		const int basedOffset = 0;
 		const int basedCount = 20;
 		IEnumerable<GetInterlocutorsResponse> interlocutors = await client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
-			apiMethod: ChatsControllerMethods.GetInterlocutors,
+			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				IsFiltered: false,
 				Filter: String.Empty,
@@ -83,7 +83,7 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	)
 	{
 		IEnumerable<GetInterlocutorsResponse> interlocutors = await _client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
-			apiMethod: ChatsControllerMethods.GetInterlocutors,
+			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: _filter),
 				Filter: _filter,
