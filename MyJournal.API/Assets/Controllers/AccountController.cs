@@ -423,7 +423,7 @@ public sealed class AccountController(
 
         string token = jwt.Generate(tokenOwner: user, sessionId: currentSession.Id);
 
-        await userHubContext.Clients.User(userId: user.Id.ToString()).SignIn();
+        await userHubContext.Clients.User(userId: user.Id.ToString()).SignIn(sessionId: currentSession.Id);
 
         return Ok(value: new SignInResponse(SessionId: currentSession.Id, Token: token, Role: user.UserRole.Role));
     }

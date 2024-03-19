@@ -25,7 +25,8 @@ public class User
 		UserInformationResponse information,
 		ChatCollection chats,
 		InterlocutorCollection interlocutors,
-		IntendedInterlocutorCollection intendedInterlocutors
+		IntendedInterlocutorCollection intendedInterlocutors,
+		SessionCollection sessions
 	)
 	{
 		client.ClientId = information.Id;
@@ -45,7 +46,6 @@ public class User
 		Interlocutors = interlocutors;
 		IntendedInterlocutors = intendedInterlocutors;
 		Security = new Security(
-			client: client,
 			phone: new Phone(
 				client: client,
 				googleAuthenticatorService: googleAuthenticatorService,
@@ -59,7 +59,8 @@ public class User
 			password: new Password(
 				client: client,
 				googleAuthenticatorService: googleAuthenticatorService
-			)
+			),
+			sessions: sessions
 		);
 		Photo = new ProfilePhoto(
 			client: client,
@@ -87,14 +88,6 @@ public class User
 	#endregion
 
 	#region Classes
-	public sealed class SignedInEventArgs : EventArgs;
-
-	public sealed class SignedOutEventArgs(IEnumerable<int> sessionIds, bool currentSessionAreClosed) : EventArgs
-	{
-		public IEnumerable<int> SessionIds { get; } = sessionIds;
-		public bool CurrentSessionAreClosed { get; } = currentSessionAreClosed;
-	}
-
 	public sealed class JoinedInChatEventArgs(int chatId) : EventArgs
 	{
 		public int ChatId { get; } = chatId;
@@ -102,14 +95,10 @@ public class User
 	#endregion
 
 	#region Delegates
-	public delegate void SignedInHandler(SignedInEventArgs e);
-	public delegate void SignedOutHandler(SignedOutEventArgs e);
 	public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
 	#endregion
 
 	#region Events
-	public event SignedInHandler? SignedIn;
-	public event SignedOutHandler? SignedOut;
 	public event JoinedInChatHandler? JoinedInChat;
 	#endregion
 
@@ -152,14 +141,19 @@ public class User
 				interlocutorId: userId
 			))
 		);
-		_userHubConnection.On(methodName: UserHubMethods.SignIn, handler: () =>
-			SignedIn?.Invoke(e: new SignedInEventArgs())
-		);
-		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: (sessionIds) =>
-			SignedOut?.Invoke(e: new SignedOutEventArgs(
+		_userHubConnection.On<int>(methodName: UserHubMethods.SignIn, handler: async sessionId=>
+		{
+			await Security.Sessions.Append(id: sessionId, cancellationToken: cancellationToken);
+			Security.Sessions.OnCreatedSession(e: new SessionCollection.CreatedSessionEventArgs(sessionId: sessionId));
+		});
+		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: async (sessionIds) =>
+		{
+			await Security.Sessions.RemoveRange(ids: sessionIds, cancellationToken: cancellationToken);
+			Security.Sessions.OnClosedSession(e: new SessionCollection.ClosedSessionEventArgs(
 				sessionIds: sessionIds,
 				currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)
-			))
+			));
+		}
 		);
 		_userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async (chatId) =>
 		{

@@ -42,7 +42,7 @@ public sealed class ApiClient : IDisposable
 
 	public string? Token
 	{
-		get => _client.DefaultRequestHeaders.Authorization?.Parameter;
+		get => _client.DefaultRequestHeaders.Authorization?.ToString();
 		set => _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme: "Bearer", parameter: value);
 	}
 	#endregion

@@ -34,7 +34,7 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 
 	public T this[int id]
 		=> _collection.Find(match: i => i.Id.Equals(id))
-		   ?? throw new ArgumentOutOfRangeException(message: $"Чат с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
+		   ?? throw new ArgumentOutOfRangeException(message: $"Объект с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
 	#endregion
 
 	#region Methods

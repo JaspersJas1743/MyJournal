@@ -14,7 +14,8 @@ public sealed class Teacher : User
 		UserInformationResponse information,
 		ChatCollection chats,
 		InterlocutorCollection interlocutors,
-		IntendedInterlocutorCollection intendedInterlocutors
+		IntendedInterlocutorCollection intendedInterlocutors,
+		SessionCollection sessions
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -22,7 +23,8 @@ public sealed class Teacher : User
 		information: information,
 		chats: chats,
 		interlocutors: interlocutors,
-		intendedInterlocutors: intendedInterlocutors
+		intendedInterlocutors: intendedInterlocutors,
+		sessions: sessions
 	) { }
 
 	internal static async Task<Teacher> Create(
@@ -47,6 +49,10 @@ public sealed class Teacher : User
 			intendedInterlocutors: await IntendedInterlocutorCollection.Create(
 				client: client,
 				fileService: fileService,
+				cancellationToken: cancellationToken
+			),
+			sessions: await SessionCollection.Create(
+				client: client,
 				cancellationToken: cancellationToken
 			)
 		);

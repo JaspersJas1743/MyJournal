@@ -8,7 +8,7 @@ public interface IUserHub
 	Task UpdatedProfilePhoto(int userId);
 	Task DeletedProfilePhoto(int userId);
 
-	Task SignIn();
+	Task SignIn(int sessionId);
 	Task SignOut(IEnumerable<int> sessionIds);
 
 	Task JoinedInChat(int id);

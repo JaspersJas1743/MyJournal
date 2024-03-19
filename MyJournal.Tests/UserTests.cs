@@ -41,7 +41,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		_ = await user.Security.SignOutThisSession();
+		_ = await user.Security.Sessions.CloseThis();
 		Assert.Pass();
 	}
 
@@ -57,8 +57,8 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			_ = await user.Security.SignOutThisSession();
-			_ = await user.Security.SignOutThisSession();
+			_ = await user.Security.Sessions.CloseThis();
+			_ = await user.Security.Sessions.CloseThis();
 		});
 	}
 
@@ -76,7 +76,7 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			User user2 = await service2.SignIn(credentials: credentials);
-			await user.Security.SignOutAllSessions();
+			await user.Security.Sessions.CloseAll();
 			await user2.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 		});
 	}
@@ -95,7 +95,7 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			User user2 = await service2.SignIn(credentials: credentials);
-			await user.Security.SignOutOthersSessions();
+			await user.Security.Sessions.CloseOthers();
 			await user2.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 		});
 	}
@@ -110,7 +110,7 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.Security.SignOutOthersSessions();
+		await user.Security.Sessions.CloseOthers();
 		await user.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 	}
 	#endregion

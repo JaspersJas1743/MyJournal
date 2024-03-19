@@ -12,8 +12,8 @@ public class UserHub : Hub<IUserHub>
 	public async Task SetOffline(int userId, DateTime onlineAt, IEnumerable<string> interlocutorIds)
 		=> await Clients.Users(userIds: interlocutorIds).SetOffline(userId: userId, onlineAt);
 
-	public async Task SignIn()
-		=> await Clients.Caller.SignIn();
+	public async Task SignIn(int sessionId)
+		=> await Clients.Caller.SignIn(sessionId: sessionId);
 
 	public async Task SignOut(IEnumerable<int> sessionIds)
 		=> await Clients.Caller.SignOut(sessionIds: sessionIds);
