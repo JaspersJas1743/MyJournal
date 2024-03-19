@@ -55,6 +55,44 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 	private sealed record GetInterlocutorsResponse(int UserId, string? Photo, string? Name);
 	#endregion
 
+	#region Classes
+	public sealed class InterlocutorAppearedOnlineEventArgs(int interlocutorId, DateTime? onlineAt) : EventArgs
+	{
+		public int InterlocutorId { get; } = interlocutorId;
+		public DateTime? OnlineAt { get; } = onlineAt;
+	}
+
+	public sealed class InterlocutorAppearedOfflineEventArgs(int interlocutorId, DateTime? onlineAt) : EventArgs
+	{
+		public int InterlocutorId { get; } = interlocutorId;
+		public DateTime? OnlineAt { get; } = onlineAt;
+	}
+
+	public sealed class InterlocutorUpdatedPhotoEventArgs(int interlocutorId) : EventArgs
+	{
+		public int InterlocutorId { get; } = interlocutorId;
+	}
+
+	public sealed class InterlocutorDeletedPhotoEventArgs(int interlocutorId) : EventArgs
+	{
+		public int InterlocutorId { get; } = interlocutorId;
+	}
+	#endregion
+
+	#region Delegates
+	public delegate void InterlocutorAppearedOnlineHandler(InterlocutorAppearedOnlineEventArgs e);
+	public delegate void InterlocutorAppearedOfflineHandler(InterlocutorAppearedOfflineEventArgs e);
+	public delegate void InterlocutorUpdatedPhotoHandler(InterlocutorUpdatedPhotoEventArgs e);
+	public delegate void InterlocutorDeletedPhotoHandler(InterlocutorDeletedPhotoEventArgs e);
+	#endregion
+
+	#region Events
+	public event InterlocutorAppearedOnlineHandler? InterlocutorAppearedOnline;
+	public event InterlocutorAppearedOfflineHandler? InterlocutorAppearedOffline;
+	public event InterlocutorUpdatedPhotoHandler? InterlocutorUpdatedPhoto;
+	public event InterlocutorDeletedPhotoHandler? InterlocutorDeletedPhoto;
+	#endregion
+
 	#region Methods
 	#region Static
 	internal static async Task<InterlocutorCollection> Create(
@@ -151,6 +189,34 @@ public class InterlocutorCollection : IEnumerable<Interlocutor>
 		await Clear(cancellationToken: cancellationToken);
 		_includeExistedInterlocutors = includeExistedInterlocutors;
 		await LoadInterlocutors(cancellationToken: cancellationToken);
+	}
+
+	internal void OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
+	{
+		InterlocutorAppearedOnline?.Invoke(e: e);
+		this[id: e.InterlocutorId].OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(
+			onlineAt: e.OnlineAt
+		));
+	}
+
+	internal void OnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
+	{
+		InterlocutorAppearedOffline?.Invoke(e: e);
+		this[id: e.InterlocutorId].OnAppearedOffline(e: new Interlocutor.AppearedOfflineEventArgs(
+			onlineAt: e.OnlineAt
+		));
+	}
+
+	internal void OnUpdatedPhoto(InterlocutorUpdatedPhotoEventArgs e)
+	{
+		InterlocutorUpdatedPhoto?.Invoke(e: e);
+		this[id: e.InterlocutorId].OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs());
+	}
+
+	internal void OnDeletedPhoto(InterlocutorDeletedPhotoEventArgs e)
+	{
+		InterlocutorDeletedPhoto?.Invoke(e: e);
+		this[id: e.InterlocutorId].OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs());
 	}
 	#endregion
 

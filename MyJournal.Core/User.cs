@@ -15,8 +15,6 @@ public class User
 	#region Fields
 	private readonly ApiClient _client;
 	private readonly HubConnection _userHubConnection;
-	private readonly IGoogleAuthenticatorService _googleAuthenticatorService;
-	private readonly int _sessionId;
 	#endregion
 
 	#region Constructors
@@ -31,8 +29,6 @@ public class User
 	{
 		client.ClientId = information.Id;
 		_client = client;
-		_googleAuthenticatorService = googleAuthenticatorService;
-		_sessionId = client.SessionId;
 		_userHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
 			url: UserHubMethods.HubEndpoint,
 			token: client.Token!
@@ -87,28 +83,6 @@ public class User
 	#endregion
 
 	#region Classes
-	public sealed class InterlocutorOnlineEventArgs(int interlocutorId, DateTime? onlineAt) : EventArgs
-	{
-		public int InterlocutorId { get; } = interlocutorId;
-		public DateTime? OnlineAt { get; } = onlineAt;
-	}
-
-	public sealed class InterlocutorOfflineEventArgs(int interlocutorId, DateTime? onlineAt) : EventArgs
-	{
-		public int InterlocutorId { get; } = interlocutorId;
-		public DateTime? OnlineAt { get; } = onlineAt;
-	}
-
-	public sealed class InterlocutorUpdatedPhotoEventArgs(int interlocutorId) : EventArgs
-	{
-		public int InterlocutorId { get; } = interlocutorId;
-	}
-
-	public sealed class InterlocutorDeletedPhotoEventArgs(int interlocutorId) : EventArgs
-    {
-		public int InterlocutorId { get; } = interlocutorId;
-	}
-
 	public sealed class SignedInEventArgs : EventArgs;
 
 	public sealed class SignedOutEventArgs(IEnumerable<int> sessionIds, bool currentSessionAreClosed) : EventArgs
@@ -124,20 +98,12 @@ public class User
 	#endregion
 
 	#region Delegates
-	public delegate void InterlocutorOnlineHandler(InterlocutorOnlineEventArgs e);
-	public delegate void InterlocutorOfflineHandler(InterlocutorOfflineEventArgs e);
-	public delegate void InterlocutorUpdatedPhotoHandler(InterlocutorUpdatedPhotoEventArgs e);
-	public delegate void InterlocutorDeletedPhotoHandler(InterlocutorDeletedPhotoEventArgs e);
 	public delegate void SignedInHandler(SignedInEventArgs e);
 	public delegate void SignedOutHandler(SignedOutEventArgs e);
 	public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
 	#endregion
 
 	#region Events
-	public event InterlocutorOnlineHandler? InterlocutorAppearedOnline;
-	public event InterlocutorOfflineHandler? InterlocutorAppearedOffline;
-	public event InterlocutorUpdatedPhotoHandler? InterlocutorUpdatedPhoto;
-	public event InterlocutorDeletedPhotoHandler? InterlocutorDeletedPhoto;
 	public event SignedInHandler? SignedIn;
 	public event SignedOutHandler? SignedOut;
 	public event JoinedInChatHandler? JoinedInChat;
@@ -161,24 +127,24 @@ public class User
 	{
 		await _userHubConnection.StartAsync(cancellationToken: cancellationToken);
 		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOnline, handler: (userId, onlineAt) =>
-			InterlocutorAppearedOnline?.Invoke(e: new InterlocutorOnlineEventArgs(
+			Interlocutors.OnAppearedOnline(e: new InterlocutorCollection.InterlocutorAppearedOnlineEventArgs(
 				interlocutorId: userId,
 				onlineAt: onlineAt
 			))
 		);
 		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOffline, handler: (userId, onlineAt) =>
-			InterlocutorAppearedOffline?.Invoke(e: new InterlocutorOfflineEventArgs(
+			Interlocutors.OnAppearedOffline(e: new InterlocutorCollection.InterlocutorAppearedOfflineEventArgs(
 				interlocutorId: userId,
 				onlineAt: onlineAt
 			))
 		);
 		_userHubConnection.On<int>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: userId =>
-			InterlocutorUpdatedPhoto?.Invoke(e: new InterlocutorUpdatedPhotoEventArgs(
+			Interlocutors.OnUpdatedPhoto(e: new InterlocutorCollection.InterlocutorUpdatedPhotoEventArgs(
 				interlocutorId: userId
 			))
 		);
 		_userHubConnection.On<int>(methodName: UserHubMethods.DeletedProfilePhoto, handler: userId =>
-			InterlocutorDeletedPhoto?.Invoke(e: new InterlocutorDeletedPhotoEventArgs(
+			Interlocutors.OnDeletedPhoto(e: new InterlocutorCollection.InterlocutorDeletedPhotoEventArgs(
 				interlocutorId: userId
 			))
 		);
@@ -188,7 +154,7 @@ public class User
 		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: (sessionIds) =>
 			SignedOut?.Invoke(e: new SignedOutEventArgs(
 				sessionIds: sessionIds,
-				currentSessionAreClosed: sessionIds.Contains(value: _sessionId)
+				currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)
 			))
 		);
 		_userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async (chatId) =>
