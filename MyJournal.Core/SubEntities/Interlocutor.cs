@@ -9,14 +9,14 @@ public sealed class Interlocutor : ISubEntity
 {
 	#region Fields
 	private readonly Lazy<PersonalData> _personalData;
-	private readonly Lazy<ProfilePhoto?> _photo;
+	private readonly Lazy<ProfilePhoto> _photo;
 	#endregion
 
 	#region Constructor
 	private Interlocutor(
 		int id,
 		Lazy<PersonalData> personalData,
-		Lazy<ProfilePhoto?> photo,
+		Lazy<ProfilePhoto> photo,
 		Activity.Statuses activity,
 		DateTime? onlineAt
 	)
@@ -33,9 +33,9 @@ public sealed class Interlocutor : ISubEntity
 	#region Properties
 	public int Id { get; init; }
 	public PersonalData PersonalData => _personalData.Value;
-	public ProfilePhoto? Photo => _photo.Value;
-	public Activity.Statuses Activity { get; init; }
-	public DateTime? OnlineAt { get; init; }
+	public ProfilePhoto Photo => _photo.Value;
+	public Activity.Statuses Activity { get; private set; }
+	public DateTime? OnlineAt { get; private set; }
 	#endregion
 
 	#region Records
@@ -53,7 +53,10 @@ public sealed class Interlocutor : ISubEntity
 		public DateTime? OnlineAt { get; } = onlineAt;
 	}
 
-	public sealed class UpdatedPhotoEventArgs : EventArgs;
+	public sealed class UpdatedPhotoEventArgs(string link) : EventArgs
+	{
+		public string Link { get; } = link;
+	}
 
 	public sealed class DeletedPhotoEventArgs : EventArgs;
 	#endregion
@@ -92,7 +95,7 @@ public sealed class Interlocutor : ISubEntity
 				surname: response.Surname,
 				patronymic: response.Patronymic
 			)),
-			photo: new Lazy<ProfilePhoto?>(value: new ProfilePhoto(
+			photo: new Lazy<ProfilePhoto>(value: new ProfilePhoto(
 				client: client,
 				fileService: fileService,
 				link: response.Photo
@@ -106,16 +109,30 @@ public sealed class Interlocutor : ISubEntity
 
 	#region Instance
 	internal void OnAppearedOnline(AppearedOnlineEventArgs e)
-		=> AppearedOnline?.Invoke(e: e);
+	{
+		Activity = UserData.Activity.Statuses.Online;
+		OnlineAt = e.OnlineAt;
+		AppearedOnline?.Invoke(e: e);
+	}
 
 	internal void OnAppearedOffline(AppearedOfflineEventArgs e)
-		=> AppearedOffline?.Invoke(e: e);
+	{
+		Activity = UserData.Activity.Statuses.Offline;
+		OnlineAt = e.OnlineAt;
+		AppearedOffline?.Invoke(e: e);
+	}
 
 	internal void OnUpdatedPhoto(UpdatedPhotoEventArgs e)
-		=> UpdatedPhoto?.Invoke(e: e);
+	{
+		Photo.UpdatePhoto(link: e.Link);
+		UpdatedPhoto?.Invoke(e: e);
+	}
 
 	internal void OnDeletedPhoto(DeletedPhotoEventArgs e)
-		=> DeletedPhoto?.Invoke(e: e);
+	{
+		Photo.UpdatePhoto(link: null);
+		DeletedPhoto?.Invoke(e: e);
+	}
 	#endregion
 	#endregion
 }

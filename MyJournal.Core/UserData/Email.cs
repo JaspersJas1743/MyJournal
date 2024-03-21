@@ -59,6 +59,9 @@ public sealed class Email(
 		=> Address;
 
 	internal void OnUpdated(UpdatedEmailEventArgs e)
-		=> Updated?.Invoke(e: e);
+	{
+		Address = e.Email;
+		Updated?.Invoke(e: e);
+	}
 	#endregion
 }

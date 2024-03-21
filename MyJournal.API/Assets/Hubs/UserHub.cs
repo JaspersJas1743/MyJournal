@@ -18,8 +18,8 @@ public class UserHub : Hub<IUserHub>
 	public async Task SignOut(IEnumerable<int> sessionIds)
 		=> await Clients.Caller.SignOut(sessionIds: sessionIds);
 
-	public async Task UpdatedProfilePhoto(int userId, IEnumerable<string> interlocutorIds)
-		=> await Clients.Users(userIds: interlocutorIds).UpdatedProfilePhoto(userId: userId);
+	public async Task UpdatedProfilePhoto(int userId, string link, IEnumerable<string> interlocutorIds)
+		=> await Clients.Users(userIds: interlocutorIds).UpdatedProfilePhoto(userId: userId, link: link);
 
 	public async Task DeletedProfilePhoto(int userId, IEnumerable<string> interlocutorIds)
 		=> await Clients.Users(userIds: interlocutorIds).DeletedProfilePhoto(userId: userId);

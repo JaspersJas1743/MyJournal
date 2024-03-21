@@ -164,10 +164,14 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		_offset = _collection.Value.Count;
 	}
 
-	internal void OnReceivedMessage(ReceivedMessageInChatEventArgs e)
+	internal async Task OnReceivedMessage(
+		ReceivedMessageInChatEventArgs e,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
 	{
-		ReceivedMessageInChat?.Invoke(e: e);
+		await this[id: e.ChatId].Messages.Append(id: e.MessageId, cancellationToken: cancellationToken);
 		this[id: e.ChatId].OnReceivedMessage(e: new Chat.ReceivedMessageEventArgs(messageId: e.MessageId));
+		ReceivedMessageInChat?.Invoke(e: e);
 	}
 	#endregion
 	#endregion

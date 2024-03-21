@@ -153,17 +153,25 @@ public sealed class SessionCollection : IEnumerable<Session>
 		CancellationToken cancellationToken = default(CancellationToken)
 	) => await SignOut(method: AccountControllerMethods.SignOutOthers, cancellationToken: cancellationToken);
 
-	internal void OnCreatedSession(CreatedSessionEventArgs e)
+	internal async Task OnCreatedSession(
+		CreatedSessionEventArgs e,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
 	{
-		CreatedSession?.Invoke(e: e);
+		await Insert(index: 0, id: e.SessionId, cancellationToken: cancellationToken);
 		this[id: e.SessionId].OnCreated(e: new Session.CreatedEventArgs());
+		CreatedSession?.Invoke(e: e);
 	}
 
-	internal void OnClosedSession(ClosedSessionEventArgs e)
+	internal async Task OnClosedSession(
+		ClosedSessionEventArgs e,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
 	{
-		ClosedSession?.Invoke(e: e);
 		foreach (int sessionId in e.SessionIds)
 			this[id: sessionId].OnClosed(e: new Session.ClosedEventArgs());
+		await RemoveRange(ids: e.SessionIds, cancellationToken: cancellationToken);
+		ClosedSession?.Invoke(e: e);
 	}
 	#endregion
 

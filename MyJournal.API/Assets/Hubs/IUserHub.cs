@@ -5,7 +5,7 @@ public interface IUserHub
 	Task SetOnline(int userId, DateTime? onlineAt);
 	Task SetOffline(int userId, DateTime? onlineAt);
 
-	Task UpdatedProfilePhoto(int userId);
+	Task UpdatedProfilePhoto(int userId, string link);
 	Task DeletedProfilePhoto(int userId);
 
 	Task SignIn(int sessionId);

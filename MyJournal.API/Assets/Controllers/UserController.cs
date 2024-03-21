@@ -302,7 +302,7 @@ public sealed class UserController(
 
 		await userHubContext.Clients.Users(
 			userIds: await GetUserInterlocutorIds(userId: user.Id, cancellationToken: cancellationToken)
-		).UpdatedProfilePhoto(userId: user.Id);
+		).UpdatedProfilePhoto(userId: user.Id, link: request.Link);
 
 		return Ok(value: new UploadProfilePhotoResponse(Message: "Фотография изменена успешно!"));
 	}

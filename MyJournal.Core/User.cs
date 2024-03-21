@@ -142,9 +142,10 @@ public class User
 				onlineAt: onlineAt
 			))
 		);
-		_userHubConnection.On<int>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: userId =>
+		_userHubConnection.On<int, string>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: (userId, link) =>
 			Interlocutors.OnUpdatedPhoto(e: new InterlocutorCollection.InterlocutorUpdatedPhotoEventArgs(
-				interlocutorId: userId
+				interlocutorId: userId,
+				link: link
 			))
 		);
 		_userHubConnection.On<int>(methodName: UserHubMethods.DeletedProfilePhoto, handler: userId =>
@@ -153,17 +154,19 @@ public class User
 			))
 		);
 		_userHubConnection.On<int>(methodName: UserHubMethods.SignIn, handler: async sessionId=>
-		{
-			await Security.Sessions.Append(id: sessionId, cancellationToken: cancellationToken);
-			Security.Sessions.OnCreatedSession(e: new SessionCollection.CreatedSessionEventArgs(sessionId: sessionId));
-		});
+			await Security.Sessions.OnCreatedSession(
+				e: new SessionCollection.CreatedSessionEventArgs(sessionId: sessionId),
+				cancellationToken: cancellationToken
+			)
+		);
 		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: async (sessionIds) =>
 		{
-			await Security.Sessions.RemoveRange(ids: sessionIds, cancellationToken: cancellationToken);
-			Security.Sessions.OnClosedSession(e: new SessionCollection.ClosedSessionEventArgs(
-				sessionIds: sessionIds,
-				currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)
-			));
+			await Security.Sessions.OnClosedSession(
+				e: new SessionCollection.ClosedSessionEventArgs(
+					sessionIds: sessionIds,
+					currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)
+				), cancellationToken: cancellationToken
+			);
 		}
 		);
 		_userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async (chatId) =>
@@ -177,8 +180,11 @@ public class User
 		_userHubConnection.On<string?>(methodName: UserHubMethods.SetEmail, handler: (email) =>
 			Security.Email?.OnUpdated(e: new Email.UpdatedEmailEventArgs(email: email))
 		);
-		_userHubConnection.On<int, int>(methodName: UserHubMethods.SetEmail, handler: (chatId, messageId) =>
-			Chats.OnReceivedMessage(e: new ChatCollection.ReceivedMessageInChatEventArgs(chatId: chatId, messageId: messageId))
+		_userHubConnection.On<int, int>(methodName: UserHubMethods.SetEmail, handler: async (chatId, messageId) =>
+			await Chats.OnReceivedMessage(
+				e: new ChatCollection.ReceivedMessageInChatEventArgs(chatId: chatId, messageId: messageId),
+				cancellationToken: cancellationToken
+			)
 		);
 	}
 	#endregion

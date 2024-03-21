@@ -41,9 +41,10 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 		public DateTime? OnlineAt { get; } = onlineAt;
 	}
 
-	public sealed class InterlocutorUpdatedPhotoEventArgs(int interlocutorId) : EventArgs
+	public sealed class InterlocutorUpdatedPhotoEventArgs(int interlocutorId, string link) : EventArgs
 	{
 		public int InterlocutorId { get; } = interlocutorId;
+		public string Link { get; } = link;
 	}
 
 	public sealed class InterlocutorDeletedPhotoEventArgs(int interlocutorId) : EventArgs
@@ -151,30 +152,30 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 
 	internal void OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
 	{
-		InterlocutorAppearedOnline?.Invoke(e: e);
 		this[id: e.InterlocutorId].OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(
 			onlineAt: e.OnlineAt
 		));
+		InterlocutorAppearedOnline?.Invoke(e: e);
 	}
 
 	internal void OnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
 	{
-		InterlocutorAppearedOffline?.Invoke(e: e);
 		this[id: e.InterlocutorId].OnAppearedOffline(e: new Interlocutor.AppearedOfflineEventArgs(
 			onlineAt: e.OnlineAt
 		));
+		InterlocutorAppearedOffline?.Invoke(e: e);
 	}
 
 	internal void OnUpdatedPhoto(InterlocutorUpdatedPhotoEventArgs e)
 	{
+		this[id: e.InterlocutorId].OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs(link: e.Link));
 		InterlocutorUpdatedPhoto?.Invoke(e: e);
-		this[id: e.InterlocutorId].OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs());
 	}
 
 	internal void OnDeletedPhoto(InterlocutorDeletedPhotoEventArgs e)
 	{
-		InterlocutorDeletedPhoto?.Invoke(e: e);
 		this[id: e.InterlocutorId].OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs());
+		InterlocutorDeletedPhoto?.Invoke(e: e);
 	}
 	#endregion
 	#endregion

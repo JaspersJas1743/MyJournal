@@ -59,6 +59,9 @@ public sealed class Phone(
 		=> Number;
 
 	internal void OnUpdated(UpdatedPhoneEventArgs e)
-		=> Updated?.Invoke(e: e);
+	{
+		Number = e.Phone;
+		Updated?.Invoke(e: e);
+	}
 	#endregion
 }

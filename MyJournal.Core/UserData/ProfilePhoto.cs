@@ -61,5 +61,7 @@ public sealed class ProfilePhoto(
 		await fileService.Download(link: Link, pathToSave: folder, cancellationToken: cancellationToken);
 	}
 
+	internal void UpdatePhoto(string? link)
+		=> Link = link;
 	#endregion
 }
