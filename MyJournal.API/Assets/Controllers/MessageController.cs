@@ -28,7 +28,7 @@ public sealed class MessageController(
 	public record Sender(int Id, string Surname, string Name, string? Patronymic);
 	public record MessageAttachment(string LinkToFile, AttachmentTypes AttachmentType);
 	public record MessageContent(string? Text, IEnumerable<MessageAttachment>? Attachments);
-	public record GetMessageResponse(MessageContent Content, DateTime CreatedAt, Sender Sender, bool FromMe, bool IsRead);
+	public record GetMessageResponse(int MessageId, MessageContent Content, DateTime CreatedAt, Sender Sender, bool FromMe, bool IsRead);
 
 	[Validator<SendMessageRequestValidator>]
 	public record SendMessageRequest(int ChatId, MessageContent Content);
@@ -73,6 +73,7 @@ public sealed class MessageController(
 		IQueryable<GetMessageResponse> messages = messagesFromChat
 			.Skip(count: request.Offset).Take(count: request.Count)
 			.Select(selector: m => new GetMessageResponse(
+				m.Id,
 				new MessageContent(
 					m.Text,
 					m.Attachments.Select(a => new MessageAttachment(a.Link, a.AttachmentType.Type))
@@ -118,6 +119,7 @@ public sealed class MessageController(
 			.AsNoTracking().AsSplitQuery()
 			.Where(predicate: m => m.Id == id && m.SenderId == userId)
 			.Select(selector: m => new GetMessageResponse(
+				m.Id,
 				new MessageContent(
 					m.Text,
 					m.Attachments.Select(a => new MessageAttachment(a.Link, a.AttachmentType.Type))

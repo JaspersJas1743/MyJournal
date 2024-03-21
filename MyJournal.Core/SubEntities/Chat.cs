@@ -1,3 +1,4 @@
+using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
@@ -16,12 +17,14 @@ public sealed class Chat : ISubEntity
 {
 	#region Fields
 	private readonly ApiClient _client;
+	private readonly Lazy<MessageCollection> _messages;
 	#endregion
 
 	#region Constructor
 	private Chat(
 		ApiClient client,
-		ChatResponse response
+		ChatResponse response,
+		Lazy<MessageCollection> messages
 	)
 	{
 		_client = client;
@@ -31,6 +34,7 @@ public sealed class Chat : ISubEntity
 		ChatPhoto = response.ChatPhoto;
 		LastMessage = response.LastMessage;
 		CountOfUnreadMessages = response.CountOfUnreadMessages;
+		_messages = messages;
 	}
 	#endregion
 
@@ -40,10 +44,11 @@ public sealed class Chat : ISubEntity
 	public string? ChatPhoto { get; init; }
 	public LastMessage? LastMessage { get; init; }
 	public int CountOfUnreadMessages { get; init; }
+	public MessageCollection Messages => _messages.Value;
 	#endregion
 
 	#region Records
-	private sealed record ChatResponse(int Id, string? ChatName, string? ChatPhoto, LastMessage? LastMessage, int CountOfUnreadMessages);
+	internal sealed record ChatResponse(int Id, string? ChatName, string? ChatPhoto, LastMessage? LastMessage, int CountOfUnreadMessages);
 	#endregion
 
 	#region Classes
@@ -72,7 +77,15 @@ public sealed class Chat : ISubEntity
 			apiMethod: ChatControllerMethods.GetChat(chatId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		return new Chat(client: client, response: response);
+		return new Chat(
+			client: client,
+			response: response,
+			messages: new Lazy<MessageCollection>(value: await MessageCollection.Create(
+				client: client,
+				chatId: id,
+				cancellationToken: cancellationToken
+			))
+		);
 	}
 
 	public async Task Read(
@@ -81,6 +94,26 @@ public sealed class Chat : ISubEntity
 	{
 		await _client.PutAsync(
 			apiMethod: ChatControllerMethods.ReadChat(chatId: Id),
+			cancellationToken: cancellationToken
+		);
+	}
+
+	public async Task SendMessage(
+		string? text = null,
+		IEnumerable<Attachment>? attachments = null,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _client.PostAsync<MessageCollection.SendMessageRequest>(
+			apiMethod: MessageControllerMethods.SendMessage,
+			arg: new MessageCollection.SendMessageRequest(
+				ChatId: Id,
+				Content: new Message.MessageContent(
+					Text: text,
+					Attachments: attachments?.Select(
+						selector: a => new Message.MessageAttachment(LinkToFile: a.LinkToFile, Type: a.Type)
+					))
+			),
 			cancellationToken: cancellationToken
 		);
 	}
