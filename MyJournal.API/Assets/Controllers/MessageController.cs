@@ -163,8 +163,8 @@ public sealed class MessageController(
 	///	Content.Attachments - файлы, прикрепленные к сообщению
 	///	Content.Attachments.LinkToFile - ссылка на файл
 	///	Content.Attachments.AttachmentType - тип файла:
-	///		0 - Photo
-	///		1 - Document
+	///		0 - Document
+	///		1 - Photo
 	///
 	/// ]]>
 	/// </remarks>

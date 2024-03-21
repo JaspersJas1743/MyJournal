@@ -88,6 +88,7 @@ public sealed class Chat : ISubEntity
 			response: response,
 			messages: new Lazy<MessageCollection>(value: await MessageCollection.Create(
 				client: client,
+				fileService: fileService,
 				chatId: id,
 				cancellationToken: cancellationToken
 			))
@@ -102,56 +103,6 @@ public sealed class Chat : ISubEntity
 			apiMethod: ChatControllerMethods.ReadChat(chatId: Id),
 			cancellationToken: cancellationToken
 		);
-	}
-
-	private async Task Send(
-		Message.MessageContent content,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.PostAsync<MessageCollection.SendMessageRequest>(
-			apiMethod: MessageControllerMethods.SendMessage,
-			arg: new MessageCollection.SendMessageRequest(
-				ChatId: Id,
-				Content: content
-			),
-			cancellationToken: cancellationToken
-		);
-	}
-
-	public async Task Send(
-		ITextContent content,
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => await Send(content: new Message.MessageContent(Text: content.Text, Attachments: null), cancellationToken: cancellationToken);
-
-	public async Task Send(
-		IFileContent content,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		List<Message.MessageAttachment> attachments = new List<Message.MessageAttachment>();
-		foreach (Attachment contentFile in content.Attachments!)
-			attachments.Add(await contentFile.Load(fileService: _fileService, cancellationToken: cancellationToken));
-
-		await Send(content: new Message.MessageContent(
-			Text: null,
-			Attachments: attachments
-		), cancellationToken: cancellationToken);
-	}
-
-	public async Task Send<T>(
-		T content,
-		CancellationToken cancellationToken = default(CancellationToken)
-	) where T: IFileContent, ITextContent
-	{
-		List<Message.MessageAttachment> attachments = new List<Message.MessageAttachment>();
-		foreach (Attachment contentFile in content.Attachments!)
-			attachments.Add(await contentFile.Load(fileService: _fileService, cancellationToken: cancellationToken));
-
-		await Send(new Message.MessageContent(
-			Text: content.Text,
-			Attachments: attachments
-		), cancellationToken: cancellationToken);
 	}
 
 	internal void OnReceivedMessage(ReceivedMessageEventArgs e)

@@ -8,58 +8,45 @@ public sealed class Attachment
 
 	private static readonly string[] PhotoExtension = new string[] { ".png", ".jpg", ".jpeg" };
 
-	private string _pathToFile { get; }
-
 	private Attachment(
 		string? linkToFile,
-		AttachmentTypes type
+		AttachmentType type
 	)
 	{
 		LinkToFile = linkToFile;
 		Type = type;
 	}
 
-	private Attachment(
-		string pathToFile
-	)
-	{
-		_pathToFile = pathToFile;
-	}
-
 	public string? LinkToFile { get; set; }
-	public AttachmentTypes Type { get; set; }
+	public AttachmentType Type { get; set; }
 
-	public enum AttachmentTypes
+	public enum AttachmentType
 	{
 		Document,
 		Photo
 	}
 
-	internal async Task<Message.MessageAttachment> Load(
+	internal static async Task<Attachment> Create(
 		IFileService fileService,
+		string pathToFile,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		string link = await fileService.Upload(
 			folderToSave: DefaultBucket,
-			pathToFile: _pathToFile,
+			pathToFile: pathToFile,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 
-		AttachmentTypes type = AttachmentTypes.Photo;
-		if (!PhotoExtension.Contains(Path.GetExtension(path: link)))
-			type = AttachmentTypes.Document;
+		AttachmentType type = AttachmentType.Document;
+		if (PhotoExtension.Contains(Path.GetExtension(path: pathToFile)))
+			type = AttachmentType.Photo;
 
-		return new Message.MessageAttachment(LinkToFile: link, Type: type);
+		return new Attachment(linkToFile: link, type: type);
 	}
-
-	public static async Task<Attachment> Create(
-		string pathToFile,
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => new Attachment(pathToFile);
 
 	internal static Attachment Create(
 		string? linkToFile,
-		AttachmentTypes type
+		AttachmentType type
 	) => new Attachment(linkToFile: linkToFile, type: type);
 }
