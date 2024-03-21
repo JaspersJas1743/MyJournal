@@ -30,7 +30,7 @@ public sealed class Session : ISubEntity
 	#endregion
 
 	#region Records
-	public record GetSessionsResponse(int Id, string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
+	internal sealed record GetSessionsResponse(int Id, string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
 	private sealed record SignOutResponse(string Message);
 	#endregion
 
@@ -57,9 +57,8 @@ public sealed class Session : ISubEntity
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		string apiMethod = AccountControllerMethods.GetSession(sessionId: id);
 		GetSessionsResponse response = await client.GetAsync<GetSessionsResponse>(
-			apiMethod: apiMethod,
+			apiMethod: AccountControllerMethods.GetSession(sessionId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new Session(client: client, response: response);

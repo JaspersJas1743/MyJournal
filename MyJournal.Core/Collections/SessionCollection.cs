@@ -30,12 +30,10 @@ public sealed class SessionCollection : IEnumerable<Session>
 	#endregion
 
 	#region Records
-	private record GetSessionsResponse(int Id, string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
 	private sealed record SignOutResponse(string Message);
 	#endregion
 
 	#region Classes
-
 	public sealed class CreatedSessionEventArgs(int sessionId) : EventArgs
 	{
 		public int SessionId { get; } = sessionId;
@@ -65,7 +63,7 @@ public sealed class SessionCollection : IEnumerable<Session>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<GetSessionsResponse> sessions = await client.GetAsync<IEnumerable<GetSessionsResponse>>(
+		IEnumerable<Session.GetSessionsResponse> sessions = await client.GetAsync<IEnumerable<Session.GetSessionsResponse>>(
 			apiMethod: AccountControllerMethods.GetSessions,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
@@ -95,38 +93,35 @@ public sealed class SessionCollection : IEnumerable<Session>
 		return response.Message;
 	}
 
-	public async Task Clear(CancellationToken cancellationToken = default(CancellationToken))
+	internal async Task Clear(CancellationToken cancellationToken = default(CancellationToken))
 		=> _sessions.Value.Clear();
 
-	public async Task Append(
+	internal async Task Append(
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Session.GetSessionsResponse session = await _client.GetAsync<Session.GetSessionsResponse>(
-			apiMethod: AccountControllerMethods.GetSession(sessionId: id),
-			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
 		_sessions.Value.Add(item: await Session.Create(
 			client: _client,
-			id: session.Id,
+			id: id,
 			cancellationToken: cancellationToken
 		));
 	}
 
-	public async Task Remove(
+	internal async Task Insert(
+		int index,
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Session? session = _sessions.Value.Find(match: s => s.Id == id);
-		if (session is null)
-			throw new ArgumentOutOfRangeException(message: $"Сессия с идентификатором {id} не найдена.", paramName: nameof(id));
-
-		_sessions.Value.Remove(item: session);
+		_sessions.Value.Insert(index: index, item: await Session.Create(
+			client: _client,
+			id: id,
+			cancellationToken: cancellationToken
+		));
 	}
 
-	public async Task RemoveRange(
+	internal async Task RemoveRange(
 		IEnumerable<int> ids,
 		CancellationToken cancellationToken = default(CancellationToken)
 	) => _sessions.Value.RemoveAll(match: s => ids.Contains(value: s.Id));

@@ -20,7 +20,6 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	#endregion
 
 	#region Records
-	private sealed record ChatResponse(int Id, string? ChatName, string? ChatPhoto, LastMessage? LastMessage, int CountOfUnreadMessages);
 	private sealed record GetChatsRequest(bool IsFiltered, string? Filter, int Offset, int Count);
 	private sealed record CreateSingleChatRequest(int InterlocutorId);
 	private sealed record CreateMultiChatRequest(IEnumerable<int> InterlocutorIds, string? ChatName, string? LinkToPhoto);
@@ -51,9 +50,14 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	{
 		const int basedOffset = 0;
 		const int basedCount = 20;
-		IEnumerable<ChatResponse> chats = await client.GetAsync<IEnumerable<ChatResponse>, GetChatsRequest>(
+		IEnumerable<Chat.ChatResponse> chats = await client.GetAsync<IEnumerable<Chat.ChatResponse>, GetChatsRequest>(
 			apiMethod: ChatControllerMethods.GetChats,
-			argQuery: new GetChatsRequest(IsFiltered: false, Filter: String.Empty, Offset: basedOffset, Count: basedCount),
+			argQuery: new GetChatsRequest(
+				IsFiltered: false,
+				Filter: String.Empty,
+				Offset: basedOffset,
+				Count: basedCount
+			),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new ChatCollection(
@@ -71,39 +75,11 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	#endregion
 
 	#region LazyCollection<Chat>
-	public override async Task LoadNext(
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => await LoadChats(cancellationToken: cancellationToken);
-
-	public override async Task Clear(
+	protected override async Task Load(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Value.Clear();
-		_offset = _collection.Value.Count;
-		Filter = String.Empty;
-	}
-
-	public override async Task Append(
-		int chatId,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		Chat chat = await _client.GetAsync<Chat>(
-			apiMethod: ChatControllerMethods.GetChat(chatId: chatId),
-			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		_collection.Value.Insert(index: 0, item: chat);
-		_offset = _collection.Value.Count;
-	}
-	#endregion
-
-	#region Instance
-	private async Task LoadChats(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		IEnumerable<ChatResponse> loadedChats = await _client.GetAsync<IEnumerable<ChatResponse>, GetChatsRequest>(
+		IEnumerable<Chat.ChatResponse> loadedChats = await _client.GetAsync<IEnumerable<Chat.ChatResponse>, GetChatsRequest>(
 			apiMethod: ChatControllerMethods.GetChats,
 			argQuery: new GetChatsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: Filter),
@@ -122,6 +98,42 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		_offset = _collection.Value.Count;
 	}
 
+	internal override async Task Clear(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		Filter = String.Empty;
+		await base.Clear(cancellationToken: cancellationToken);
+	}
+
+	internal override async Task Append(
+		int chatId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await base.Append(instance: await Chat.Create(
+			client: _client,
+			id: chatId,
+			cancellationToken: cancellationToken
+		), cancellationToken: cancellationToken);
+	}
+
+	internal override async Task Insert(
+		int index,
+		int chatId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await base.Insert(index: index, instance: await Chat.Create(
+			client: _client,
+			id: chatId,
+			cancellationToken: cancellationToken
+		), cancellationToken: cancellationToken);
+	}
+	#endregion
+
+	#region Instanc
+
 	public async Task SetFilter(
 		string? filter,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -129,7 +141,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	{
 		await Clear(cancellationToken: cancellationToken);
 		Filter = filter;
-		await LoadChats(cancellationToken: cancellationToken);
+		await Load(cancellationToken: cancellationToken);
 	}
 
 	public async Task AddSingleChat(

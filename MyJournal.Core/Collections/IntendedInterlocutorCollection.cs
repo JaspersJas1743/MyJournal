@@ -73,8 +73,8 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	}
 	#endregion
 
-	#region Instance
-	private async Task LoadIntendedInterlocutors(
+	#region LazyCollection<IntendedInterlocutor>
+	protected override async Task Load(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -99,33 +99,44 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		_offset = _collection.Value.Count;
 	}
 
-	public override async Task LoadNext(
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => await LoadIntendedInterlocutors(cancellationToken: cancellationToken);
-
-	public override async Task Clear(
+	internal override async Task Clear(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Value.Clear();
-		_offset = _collection.Value.Count;
 		Filter = String.Empty;
 		IncludeExistedInterlocutors = false;
+		await base.Clear(cancellationToken: cancellationToken);
 	}
 
-	public override async Task Append(
+	internal override async Task Append(
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IntendedInterlocutor intendedInterlocutor = await _client.GetAsync<IntendedInterlocutor>(
-			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
+		await base.Append(instance: await IntendedInterlocutor.Create(
+			client: _client,
+			fileService: _fileService,
+			id: id,
 			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		_collection.Value.Insert(index: 0, item: intendedInterlocutor);
-		_offset = _collection.Value.Count;
+		), cancellationToken: cancellationToken);
 	}
 
+	internal override async Task Insert(
+		int index,
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await base.Insert(index: index, instance: await IntendedInterlocutor.Create(
+			client: _client,
+			fileService: _fileService,
+			id: id,
+			cancellationToken: cancellationToken
+		), cancellationToken: cancellationToken);
+	}
+	#endregion
+
+	#region Instance
 	public async Task SetFilter(
 		string? filter,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -133,7 +144,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	{
 		await Clear(cancellationToken: cancellationToken);
 		Filter = filter;
-		await LoadIntendedInterlocutors(cancellationToken: cancellationToken);
+		await Load(cancellationToken: cancellationToken);
 	}
 
 	public async Task SetIncludeExistedInterlocutors(
@@ -143,7 +154,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	{
 		await Clear(cancellationToken: cancellationToken);
 		IncludeExistedInterlocutors = includeExistedInterlocutors;
-		await LoadIntendedInterlocutors(cancellationToken: cancellationToken);
+		await Load(cancellationToken: cancellationToken);
 	}
 	#endregion
 	#endregion

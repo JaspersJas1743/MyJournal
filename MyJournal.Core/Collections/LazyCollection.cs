@@ -38,17 +38,54 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 	#endregion
 
 	#region Methods
-	#region Abstract
-	public abstract Task LoadNext(
+	#region Instance
+	internal virtual async Task LoadNext(
 		CancellationToken cancellationToken = default(CancellationToken)
-	);
+	) => await Load(cancellationToken: cancellationToken);
+	#endregion
 
-	public abstract Task Clear(
+	#region Virtual
+	internal virtual async Task Clear(
 		CancellationToken cancellationToken = default(CancellationToken)
-	);
+	)
+	{
+		_collection.Value.Clear();
+		_offset = _collection.Value.Count;
+	}
 
-	public abstract Task Append(
+	internal abstract Task Append(
 		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	);
+
+	internal async Task Append(
+		T instance,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		_collection.Value.Add(item: instance);
+		_offset = _collection.Value.Count;
+	}
+
+	internal abstract Task Insert(
+		int index,
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	);
+
+	internal async Task Insert(
+		int index,
+		T instance,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		_collection.Value.Insert(index: index, item: instance);
+		_offset = _collection.Value.Count;
+	}
+	#endregion
+
+	#region Abstract
+	protected abstract Task Load(
 		CancellationToken cancellationToken = default(CancellationToken)
 	);
 	#endregion

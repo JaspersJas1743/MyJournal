@@ -101,34 +101,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	#endregion
 
 	#region LazyCollection<Interlocutor>
-	public override async Task LoadNext(
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => await LoadInterlocutors(cancellationToken: cancellationToken);
-
-	public override async Task Clear(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		_collection.Value.Clear();
-		_offset = _collection.Value.Count;
-	}
-
-	public override async Task Append(
-		int id,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		Interlocutor interlocutor = await _client.GetAsync<Interlocutor>(
-			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
-			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		_collection.Value.Insert(index: 0, item: interlocutor);
-		_offset = _collection.Value.Count;
-	}
-	#endregion
-
-	#region Instance
-	private async Task LoadInterlocutors(
+		protected override async Task Load(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -150,6 +123,35 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 		_offset = _collection.Value.Count;
 	}
 
+	internal override async Task Append(
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await base.Append(instance: await Interlocutor.Create(
+			client: _client,
+			fileService: _fileService,
+			id: id,
+			cancellationToken: cancellationToken
+		), cancellationToken: cancellationToken);
+	}
+
+	internal override async Task Insert(
+		int index,
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await base.Insert(index: index, instance: await Interlocutor.Create(
+			client: _client,
+			fileService: _fileService,
+			id: id,
+			cancellationToken: cancellationToken
+		), cancellationToken: cancellationToken);
+	}
+	#endregion
+
+	#region Instance
 	internal void OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
 	{
 		this[id: e.InterlocutorId].OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(
