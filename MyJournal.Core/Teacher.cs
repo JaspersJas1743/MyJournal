@@ -42,6 +42,7 @@ public sealed class Teacher : User
 			information: information,
 			chats: new Lazy<ChatCollection>(value: await ChatCollection.Create(
 				client: client,
+				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
 			interlocutors: new Lazy<InterlocutorCollection>(value: await InterlocutorCollection.Create(

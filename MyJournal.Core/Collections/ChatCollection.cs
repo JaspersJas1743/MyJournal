@@ -1,18 +1,24 @@
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
 public sealed class ChatCollection : LazyCollection<Chat>
 {
+	private readonly IFileService _fileService;
+
 	#region Constructors
 	private ChatCollection(
 		ApiClient client,
+		IFileService fileService,
 		IEnumerable<Chat> chats,
 		int count
 	) : base(client: client, collection: chats, count: count)
-	{ }
+	{
+		_fileService = fileService;
+	}
 	#endregion
 
 	#region Properties
@@ -45,6 +51,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	#region Static
 	internal static async Task<ChatCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -62,9 +69,11 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		) ?? throw new InvalidOperationException();
 		return new ChatCollection(
 			client: client,
+			fileService: fileService,
 			chats: chats.Select(selector: c =>
 				Chat.Create(
 					client: client,
+					fileService: fileService,
 					id: c.Id,
 					cancellationToken: cancellationToken
 				).GetAwaiter().GetResult()
@@ -91,6 +100,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		_collection.Value.AddRange(collection: loadedChats.Select(selector: c =>
 			Chat.Create(
 				client: _client,
+				fileService: _fileService,
 				id: c.Id,
 				cancellationToken: cancellationToken
 			).GetAwaiter().GetResult()
@@ -98,7 +108,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		_offset = _collection.Value.Count;
 	}
 
-	internal override async Task Clear(
+	public override async Task Clear(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -113,6 +123,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	{
 		await base.Append(instance: await Chat.Create(
 			client: _client,
+			fileService: _fileService,
 			id: chatId,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -126,6 +137,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	{
 		await base.Insert(index: index, instance: await Chat.Create(
 			client: _client,
+			fileService: _fileService,
 			id: chatId,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);

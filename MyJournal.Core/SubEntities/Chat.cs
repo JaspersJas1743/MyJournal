@@ -1,6 +1,7 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -17,17 +18,20 @@ public sealed class Chat : ISubEntity
 {
 	#region Fields
 	private readonly ApiClient _client;
+	private readonly IFileService _fileService;
 	private readonly Lazy<MessageCollection> _messages;
 	#endregion
 
 	#region Constructor
 	private Chat(
 		ApiClient client,
+		IFileService fileService,
 		ChatResponse response,
 		Lazy<MessageCollection> messages
 	)
 	{
 		_client = client;
+		_fileService = fileService;
 
 		Id = response.Id;
 		ChatName = response.ChatName;
@@ -69,6 +73,7 @@ public sealed class Chat : ISubEntity
 	#region Methods
 	internal static async Task<Chat> Create(
 		ApiClient client,
+		IFileService fileService,
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -79,6 +84,7 @@ public sealed class Chat : ISubEntity
 		) ?? throw new InvalidOperationException();
 		return new Chat(
 			client: client,
+			fileService: fileService,
 			response: response,
 			messages: new Lazy<MessageCollection>(value: await MessageCollection.Create(
 				client: client,
@@ -98,9 +104,8 @@ public sealed class Chat : ISubEntity
 		);
 	}
 
-	public async Task SendMessage(
-		string? text = null,
-		IEnumerable<Attachment>? attachments = null,
+	private async Task Send(
+		Message.MessageContent content,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -108,14 +113,45 @@ public sealed class Chat : ISubEntity
 			apiMethod: MessageControllerMethods.SendMessage,
 			arg: new MessageCollection.SendMessageRequest(
 				ChatId: Id,
-				Content: new Message.MessageContent(
-					Text: text,
-					Attachments: attachments?.Select(
-						selector: a => new Message.MessageAttachment(LinkToFile: a.LinkToFile, Type: a.Type)
-					))
+				Content: content
 			),
 			cancellationToken: cancellationToken
 		);
+	}
+
+	public async Task Send(
+		ITextContent content,
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await Send(content: new Message.MessageContent(Text: content.Text, Attachments: null), cancellationToken: cancellationToken);
+
+	public async Task Send(
+		IFileContent content,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		List<Message.MessageAttachment> attachments = new List<Message.MessageAttachment>();
+		foreach (Attachment contentFile in content.Attachments!)
+			attachments.Add(await contentFile.Load(fileService: _fileService, cancellationToken: cancellationToken));
+
+		await Send(content: new Message.MessageContent(
+			Text: null,
+			Attachments: attachments
+		), cancellationToken: cancellationToken);
+	}
+
+	public async Task Send<T>(
+		T content,
+		CancellationToken cancellationToken = default(CancellationToken)
+	) where T: IFileContent, ITextContent
+	{
+		List<Message.MessageAttachment> attachments = new List<Message.MessageAttachment>();
+		foreach (Attachment contentFile in content.Attachments!)
+			attachments.Add(await contentFile.Load(fileService: _fileService, cancellationToken: cancellationToken));
+
+		await Send(new Message.MessageContent(
+			Text: content.Text,
+			Attachments: attachments
+		), cancellationToken: cancellationToken);
 	}
 
 	internal void OnReceivedMessage(ReceivedMessageEventArgs e)

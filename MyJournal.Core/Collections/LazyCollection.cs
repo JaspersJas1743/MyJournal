@@ -39,13 +39,13 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 
 	#region Methods
 	#region Instance
-	internal virtual async Task LoadNext(
+	public virtual async Task LoadNext(
 		CancellationToken cancellationToken = default(CancellationToken)
 	) => await Load(cancellationToken: cancellationToken);
 	#endregion
 
 	#region Virtual
-	internal virtual async Task Clear(
+	public virtual async Task Clear(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{

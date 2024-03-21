@@ -110,27 +110,5 @@ public sealed class MessageCollection : LazyCollection<Message>
 		), cancellationToken: cancellationToken);
 	}
 	#endregion
-
-	#region Instance
-	public async Task Send(
-		string? text = null,
-		IEnumerable<Attachment>? attachments = null,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.PostAsync<SendMessageRequest>(
-			apiMethod: MessageControllerMethods.SendMessage,
-			arg: new SendMessageRequest(
-				ChatId: _chatId,
-				Content: new Message.MessageContent(
-					Text: text,
-					Attachments: attachments?.Select(
-						selector: a => new Message.MessageAttachment(LinkToFile: a.LinkToFile, Type: a.Type)
-				))
-			),
-			cancellationToken: cancellationToken
-		);
-	}
-	#endregion
 	#endregion
 }

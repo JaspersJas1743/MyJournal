@@ -489,7 +489,8 @@ public class UserTests
 		await user.IntendedInterlocutors.SetFilter(filter: null);
 		Assert.That(actual: user.IntendedInterlocutors[5].PersonalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
 		Assert.That(actual: user.IntendedInterlocutors[5].PersonalData.Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: user.IntendedInterlocutors[5].PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));	}
+		Assert.That(actual: user.IntendedInterlocutors[5].PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+	}
 
 	[Test]
 	public async Task UserGetInterlocutors_WithEmptyFilter_ShouldPassed()

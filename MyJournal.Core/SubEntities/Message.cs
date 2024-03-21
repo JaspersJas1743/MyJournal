@@ -29,7 +29,7 @@ public sealed class Message : ISubEntity
 	public bool FromMe { get; init; }
 	public bool IsRead { get; init; }
 
-	internal sealed record MessageAttachment(string? LinkToFile, SubEntities.Attachment.AttachmentType Type);
+	internal sealed record MessageAttachment(string? LinkToFile, SubEntities.Attachment.AttachmentTypes Type);
 	internal sealed record MessageContent(string? Text, IEnumerable<MessageAttachment>? Attachments);
 	internal sealed record GetMessageResponse(int MessageId, MessageContent Content, DateTime CreatedAt, Sender Sender, bool FromMe, bool IsRead);
 
@@ -46,10 +46,8 @@ public sealed class Message : ISubEntity
 		return new Message(
 			response: response,
 			attachments: response.Content.Attachments?.Select(selector: a =>
-				Attachment.Create(
-					linkToFile: a.LinkToFile,
-					type: a.Type
-				).GetAwaiter().GetResult()
-			));
+				Attachment.Create(linkToFile: a.LinkToFile, type: a.Type)
+			)
+		);
 	}
 }

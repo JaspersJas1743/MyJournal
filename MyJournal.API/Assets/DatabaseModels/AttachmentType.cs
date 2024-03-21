@@ -5,8 +5,8 @@ namespace MyJournal.API.Assets.DatabaseModels;
 
 public enum AttachmentTypes
 {
-    Photo,
-    Document
+    Document,
+    Photo
 }
 
 public partial class AttachmentType
