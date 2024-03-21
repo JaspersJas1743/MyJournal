@@ -108,8 +108,8 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Clear();
-		_offset = _collection.Count;
+		_collection.Value.Clear();
+		_offset = _collection.Value.Count;
 	}
 
 	public override async Task Append(
@@ -121,8 +121,8 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Insert(index: 0, item: interlocutor);
-		_offset = _collection.Count;
+		_collection.Value.Insert(index: 0, item: interlocutor);
+		_offset = _collection.Value.Count;
 	}
 	#endregion
 
@@ -138,7 +138,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 				Count: _count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.AddRange(collection: interlocutors.Select(selector: i =>
+		_collection.Value.AddRange(collection: interlocutors.Select(selector: i =>
 			Interlocutor.Create(
 				client: _client,
 				fileService: _fileService,
@@ -146,7 +146,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 				cancellationToken: cancellationToken
 			).GetAwaiter().GetResult()
 		));
-		_offset = _collection.Count;
+		_offset = _collection.Value.Count;
 	}
 
 	internal void OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)

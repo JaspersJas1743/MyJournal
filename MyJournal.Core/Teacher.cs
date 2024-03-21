@@ -12,10 +12,10 @@ public sealed class Teacher : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		ChatCollection chats,
-		InterlocutorCollection interlocutors,
-		IntendedInterlocutorCollection intendedInterlocutors,
-		SessionCollection sessions
+		Lazy<ChatCollection> chats,
+		Lazy<InterlocutorCollection> interlocutors,
+		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
+		Lazy<SessionCollection> sessions
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -40,21 +40,24 @@ public sealed class Teacher : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
-			chats: await ChatCollection.Create(client: client, cancellationToken: cancellationToken),
-			interlocutors: await InterlocutorCollection.Create(
+			chats: new Lazy<ChatCollection>(value: await ChatCollection.Create(
+				client: client,
+				cancellationToken: cancellationToken
+			)),
+			interlocutors: new Lazy<InterlocutorCollection>(value: await InterlocutorCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
-			),
-			intendedInterlocutors: await IntendedInterlocutorCollection.Create(
+			)),
+			intendedInterlocutors: new Lazy<IntendedInterlocutorCollection>(value: await IntendedInterlocutorCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
-			),
-			sessions: await SessionCollection.Create(
+			)),
+			sessions: new Lazy<SessionCollection>(value: await SessionCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
-			)
+			))
 		);
 		await teacher.ConnectToUserHub(cancellationToken: cancellationToken);
 		return teacher;

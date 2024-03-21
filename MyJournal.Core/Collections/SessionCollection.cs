@@ -9,7 +9,7 @@ public sealed class SessionCollection : IEnumerable<Session>
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly List<Session> _sessions = new List<Session>();
+	private readonly Lazy<List<Session>> _sessions = new Lazy<List<Session>>(value: new List<Session>());
 	#endregion
 
 	#region Constructor
@@ -19,18 +19,18 @@ public sealed class SessionCollection : IEnumerable<Session>
 	)
 	{
 		_client = client;
-		_sessions.AddRange(collection: sessions);
+		_sessions.Value.AddRange(collection: sessions);
 	}
 	#endregion
 
 	#region Properties
 	public Session this[int id]
-		=> _sessions.Find(match: i => i.Id.Equals(id))
+		=> _sessions.Value.Find(match: i => i.Id.Equals(id))
 		   ?? throw new ArgumentOutOfRangeException(message: $"Сессия с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
 	#endregion
 
 	#region Records
-	public record GetSessionsResponse(int Id, string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
+	private record GetSessionsResponse(int Id, string ClientName, string ClientLogoLink, string Ip, bool IsCurrentSession);
 	private sealed record SignOutResponse(string Message);
 	#endregion
 
@@ -96,7 +96,7 @@ public sealed class SessionCollection : IEnumerable<Session>
 	}
 
 	public async Task Clear(CancellationToken cancellationToken = default(CancellationToken))
-		=> _sessions.Clear();
+		=> _sessions.Value.Clear();
 
 	public async Task Append(
 		int id,
@@ -107,11 +107,11 @@ public sealed class SessionCollection : IEnumerable<Session>
 			apiMethod: AccountControllerMethods.GetSession(sessionId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_sessions.Add(item: await Session.Create(
-						  client: _client,
-						  id: session.Id,
-						  cancellationToken: cancellationToken
-					  ));
+		_sessions.Value.Add(item: await Session.Create(
+			client: _client,
+			id: session.Id,
+			cancellationToken: cancellationToken
+		));
 	}
 
 	public async Task Remove(
@@ -119,17 +119,17 @@ public sealed class SessionCollection : IEnumerable<Session>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Session? session = _sessions.Find(match: s => s.Id == id);
+		Session? session = _sessions.Value.Find(match: s => s.Id == id);
 		if (session is null)
 			throw new ArgumentOutOfRangeException(message: $"Сессия с идентификатором {id} не найдена.", paramName: nameof(id));
 
-		_sessions.Remove(item: session);
+		_sessions.Value.Remove(item: session);
 	}
 
 	public async Task RemoveRange(
 		IEnumerable<int> ids,
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => _sessions.RemoveAll(match: s => ids.Contains(value: s.Id));
+	) => _sessions.Value.RemoveAll(match: s => ids.Contains(value: s.Id));
 
 	public async Task<string> CloseThis(
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -169,7 +169,7 @@ public sealed class SessionCollection : IEnumerable<Session>
 
 	#region IEnumerable<Session>
 	public IEnumerator<Session> GetEnumerator()
-		=> _sessions.GetEnumerator();
+		=> _sessions.Value.GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() =>
 		GetEnumerator();

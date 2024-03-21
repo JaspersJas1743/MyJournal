@@ -88,7 +88,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 				IncludeExistedInterlocutors: IncludeExistedInterlocutors
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.AddRange(collection: interlocutors.Select(selector: i =>
+		_collection.Value.AddRange(collection: interlocutors.Select(selector: i =>
 			IntendedInterlocutor.Create(
 				client: _client,
 				fileService: _fileService,
@@ -96,7 +96,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 				cancellationToken: cancellationToken
 			).GetAwaiter().GetResult()
 		));
-		_offset = _collection.Count;
+		_offset = _collection.Value.Count;
 	}
 
 	public override async Task LoadNext(
@@ -107,8 +107,8 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Clear();
-		_offset = _collection.Count;
+		_collection.Value.Clear();
+		_offset = _collection.Value.Count;
 		Filter = String.Empty;
 		IncludeExistedInterlocutors = false;
 	}
@@ -122,8 +122,8 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Insert(index: 0, item: intendedInterlocutor);
-		_offset = _collection.Count;
+		_collection.Value.Insert(index: 0, item: intendedInterlocutor);
+		_offset = _collection.Value.Count;
 	}
 
 	public async Task SetFilter(

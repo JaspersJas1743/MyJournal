@@ -9,7 +9,7 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 {
 	#region Fields
 	protected readonly ApiClient _client;
-	protected readonly List<T> _collection = new List<T>();
+	protected readonly Lazy<List<T>> _collection = new Lazy<List<T>>(value: new List<T>());
 	protected readonly int _count;
 
 	protected int _offset;
@@ -23,17 +23,17 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 	)
 	{
 		_client = client;
-		_collection.AddRange(collection: collection);
-		_offset = _collection.Count;
+		_collection.Value.AddRange(collection: collection);
+		_offset = _collection.Value.Count;
 		_count = count;
 	}
 	#endregion
 
 	#region Properties
-	public int Length => _collection.Count;
+	public int Length => _collection.Value.Count;
 
 	public T this[int id]
-		=> _collection.Find(match: i => i.Id.Equals(id))
+		=> _collection.Value.Find(match: i => i.Id.Equals(id))
 		   ?? throw new ArgumentOutOfRangeException(message: $"Объект с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
 	#endregion
 
@@ -55,7 +55,7 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 
 	#region IEnumerable<T>
 	public IEnumerator<T> GetEnumerator()
-		=> _collection.GetEnumerator();
+		=> _collection.Value.GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() =>
 		GetEnumerator();
@@ -65,7 +65,7 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 	public override bool Equals(object? obj)
 	{
 		if (obj is LazyCollection<T> collection)
-			return _collection.SequenceEqual(second: collection);
+			return _collection.Value.SequenceEqual(second: collection);
 		return false;
 	}
 	#endregion

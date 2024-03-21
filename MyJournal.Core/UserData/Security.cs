@@ -3,16 +3,16 @@ using MyJournal.Core.Collections;
 namespace MyJournal.Core.UserData;
 
 public sealed class Security(
-	Phone phone,
-	Email email,
-	Password password,
-	SessionCollection sessions
+	Lazy<Phone> phone,
+	Lazy<Email> email,
+	Lazy<Password> password,
+	Lazy<SessionCollection> sessions
 )
 {
 	#region Properties
-	public Phone Phone { get; init; } = phone;
-	public Email Email { get; init; } = email;
-	public Password Password { get; init; } = password;
-	public SessionCollection Sessions { get; init; } = sessions;
+	public Phone Phone => phone.Value;
+	public Email Email => email.Value;
+	public Password Password => password.Value;
+	public SessionCollection Sessions => sessions.Value;
 	#endregion
 }

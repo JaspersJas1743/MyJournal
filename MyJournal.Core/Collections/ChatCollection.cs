@@ -79,8 +79,8 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Clear();
-		_offset = _collection.Count;
+		_collection.Value.Clear();
+		_offset = _collection.Value.Count;
 		Filter = String.Empty;
 	}
 
@@ -93,8 +93,8 @@ public sealed class ChatCollection : LazyCollection<Chat>
 			apiMethod: ChatControllerMethods.GetChat(chatId: chatId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Insert(index: 0, item: chat);
-		_offset = _collection.Count;
+		_collection.Value.Insert(index: 0, item: chat);
+		_offset = _collection.Value.Count;
 	}
 	#endregion
 
@@ -112,14 +112,14 @@ public sealed class ChatCollection : LazyCollection<Chat>
 				Count: _count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.AddRange(collection: loadedChats.Select(selector: c =>
+		_collection.Value.AddRange(collection: loadedChats.Select(selector: c =>
 			Chat.Create(
 				client: _client,
 				id: c.Id,
 				cancellationToken: cancellationToken
 			).GetAwaiter().GetResult()
 		));
-		_offset = _collection.Count;
+		_offset = _collection.Value.Count;
 	}
 
 	public async Task SetFilter(
@@ -143,8 +143,8 @@ public sealed class ChatCollection : LazyCollection<Chat>
 			arg: new CreateSingleChatRequest(InterlocutorId: interlocutorId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.AddRange(collection: chats);
-		_offset = _collection.Count;
+		_collection.Value.AddRange(collection: chats);
+		_offset = _collection.Value.Count;
 	}
 
 	public async Task AddMultiChat(
@@ -160,8 +160,8 @@ public sealed class ChatCollection : LazyCollection<Chat>
 			arg: new CreateMultiChatRequest(InterlocutorIds: interlocutorIds, ChatName: chatName, LinkToPhoto: linkToPhoto),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.AddRange(collection: chats);
-		_offset = _collection.Count;
+		_collection.Value.AddRange(collection: chats);
+		_offset = _collection.Value.Count;
 	}
 
 	internal void OnReceivedMessage(ReceivedMessageInChatEventArgs e)

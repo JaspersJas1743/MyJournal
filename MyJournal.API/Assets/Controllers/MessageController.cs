@@ -28,7 +28,7 @@ public sealed class MessageController(
 	public record Sender(int Id, string Surname, string Name, string? Patronymic);
 	public record MessageAttachment(string LinkToFile, AttachmentTypes AttachmentType);
 	public record MessageContent(string? Text, IEnumerable<MessageAttachment>? Attachments);
-	public record GetMessageResponse(MessageContent Content, DateTime CreatedAt, Sender Sender, bool FromMe, bool IsReaded);
+	public record GetMessageResponse(MessageContent Content, DateTime CreatedAt, Sender Sender, bool FromMe, bool IsRead);
 
 	[Validator<SendMessageRequestValidator>]
 	public record SendMessageRequest(int ChatId, MessageContent Content);

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 

@@ -15,6 +15,14 @@ public class User
 	#region Fields
 	private readonly ApiClient _client;
 	private readonly HubConnection _userHubConnection;
+
+	private readonly Lazy<PersonalData> _personalData;
+	private readonly Lazy<ChatCollection> _chats;
+	private readonly Lazy<InterlocutorCollection> _interlocutors;
+	private readonly Lazy<IntendedInterlocutorCollection> _intendedInterlocutors;
+	private readonly Lazy<Security> _security;
+	private readonly Lazy<ProfilePhoto> _photo;
+	private readonly Lazy<Activity> _activity;
 	#endregion
 
 	#region Constructors
@@ -23,10 +31,10 @@ public class User
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		IFileService fileService,
 		UserInformationResponse information,
-		ChatCollection chats,
-		InterlocutorCollection interlocutors,
-		IntendedInterlocutorCollection intendedInterlocutors,
-		SessionCollection sessions
+		Lazy<ChatCollection> chats,
+		Lazy<InterlocutorCollection> interlocutors,
+		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
+		Lazy<SessionCollection> sessions
 	)
 	{
 		client.ClientId = information.Id;
@@ -37,50 +45,53 @@ public class User
 			token: client.Token!
 		);
 
-		PersonalData = new PersonalData(
+		_personalData = new Lazy<PersonalData>(value: new PersonalData(
 			surname: information.Surname,
 			name: information.Name,
 			patronymic: information.Patronymic
-		);
-		Chats = chats;
-		Interlocutors = interlocutors;
-		IntendedInterlocutors = intendedInterlocutors;
-		Security = new Security(
-			phone: new Phone(
+		));
+
+		_chats = chats;
+		_interlocutors = interlocutors;
+		_intendedInterlocutors = intendedInterlocutors;
+		_security = new Lazy<Security>(value: new Security(
+			phone: new Lazy<Phone>(value: new Phone(
 				client: client,
 				googleAuthenticatorService: googleAuthenticatorService,
 				phone: information.Phone
-			),
-			email: new Email(
+			)),
+			email: new Lazy<Email>(value: new Email(
 				client: client,
 				googleAuthenticatorService: googleAuthenticatorService,
 				email: information.Email
-			),
-			password: new Password(
+			)),
+			password: new Lazy<Password>(value: new Password(
 				client: client,
 				googleAuthenticatorService: googleAuthenticatorService
-			),
+			)),
 			sessions: sessions
-		);
-		Photo = new ProfilePhoto(
+		));
+		_photo = new Lazy<ProfilePhoto>(value: new ProfilePhoto(
 			client: client,
 			fileService: fileService,
 			link: information.Photo
-		);
-		Activity = new Activity(client: client);
+		));
+		_activity = new Lazy<Activity>(value: new Activity(
+			client: client
+		));
 	}
 
 	~User() => _client.Dispose();
 	#endregion
 
 	#region Properties
-	public PersonalData PersonalData { get; }
-	public ChatCollection Chats { get; }
-	public InterlocutorCollection Interlocutors { get; }
-	public IntendedInterlocutorCollection IntendedInterlocutors { get; }
-	public Security Security { get; }
-	public ProfilePhoto Photo { get; }
-	public Activity Activity { get; }
+	public PersonalData PersonalData => _personalData.Value;
+	public ChatCollection Chats => _chats.Value;
+	public InterlocutorCollection Interlocutors => _interlocutors.Value;
+	public IntendedInterlocutorCollection IntendedInterlocutors => _intendedInterlocutors.Value;
+	public Security Security => _security.Value;
+	public ProfilePhoto Photo => _photo.Value;
+	public Activity Activity => _activity.Value;
 	#endregion
 
 	#region Records
