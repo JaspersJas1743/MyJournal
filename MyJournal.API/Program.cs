@@ -150,7 +150,21 @@ public class Program
 		builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 		builder.Services.AddInMemoryRateLimiting();
 
-		builder.Services.AddAuthorization();
+		builder.Services.AddAuthorization(configure: options =>
+		{
+			options.AddPolicy(name: nameof(UserRoles.Student), configurePolicy: policyBuilder =>
+				policyBuilder.RequireClaim(claimType: MyJournalClaimTypes.Role, allowedValues: nameof(UserRoles.Student))
+			);
+			options.AddPolicy(name: nameof(UserRoles.Teacher), configurePolicy: policyBuilder =>
+				policyBuilder.RequireClaim(claimType: MyJournalClaimTypes.Role, allowedValues: nameof(UserRoles.Teacher))
+			);
+			options.AddPolicy(name: nameof(UserRoles.Administrator), configurePolicy: policyBuilder =>
+				policyBuilder.RequireClaim(claimType: MyJournalClaimTypes.Role, allowedValues: nameof(UserRoles.Administrator))
+			);
+			options.AddPolicy(name: nameof(UserRoles.Parent), configurePolicy: policyBuilder =>
+				policyBuilder.RequireClaim(claimType: MyJournalClaimTypes.Role, allowedValues: nameof(UserRoles.Parent))
+			);
+		});
 
 		builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
 			.AddJwtBearer(configureOptions: options =>
