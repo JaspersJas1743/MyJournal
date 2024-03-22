@@ -16,11 +16,10 @@ public sealed class LessonController(
 	private readonly MyJournalContext _context = context;
 
 	#region Records
-	public sealed record Teacher(int UserId, string Surname, string Name, string? Patronymic);
-	public sealed record Subject(int Id, string Name);
-	public sealed record GetStudyingSubjectsResponse(Subject Subject, Teacher Teacher);
+	public sealed record Teacher(int Id, string Surname, string Name, string? Patronymic);
+	public sealed record GetStudyingSubjectsResponse(int Id, string Name, Teacher Teacher);
 	public sealed record Class(int Id, string Name);
-	public sealed record GetTaughtSubjectsResponse(Subject Subject, Class Class);
+	public sealed record GetTaughtSubjectsResponse(int Id, string Name, Class Class);
 	#endregion
 
 	#region Methods
@@ -59,8 +58,7 @@ public sealed class LessonController(
 				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
 			).SelectMany(epfc => epfc.Lessons)
 			.SelectMany(l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
-				new Subject(l.Id, l.Name),
-				new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
+				l.Id, l.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
 			)));
 
 		return Ok(value: learnedSubjects);
@@ -73,7 +71,7 @@ public sealed class LessonController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	GET api/lessons/taught/get
+	///	GET api/subjects/taught/get
 	///
 	/// ]]>
 	/// </remarks>
@@ -99,8 +97,7 @@ public sealed class LessonController(
 				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
 				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
 			))).SelectMany(tl => tl.Classes.Select(c => new GetTaughtSubjectsResponse(
-				new Subject(tl.LessonId, tl.Lesson.Name),
-				new Class(c.Id, c.Name)
+				tl.LessonId, tl.Lesson.Name, new Class(c.Id, c.Name)
 			)));
 
 		return Ok(value: taughtSubjects);
@@ -113,11 +110,11 @@ public sealed class LessonController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	GET api/lessons/children/studying/get
+	///	GET api/subjects/children/studying/get
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Список дисциплин, изучаемых подопечным в текущем году</response>
+	/// <response code="200">Список дисциплин, преподаваемых подопечному в текущем году</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Parent</response>
 	[HttpGet(template: "children/studying/get")]
@@ -126,7 +123,7 @@ public sealed class LessonController(
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetStudyingSubjectsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetStudyingSubjectsResponse>>> GetLearningLessons(
+	public async Task<ActionResult<IEnumerable<GetStudyingSubjectsResponse>>> GetSubjectsStudiedByWard(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -140,8 +137,7 @@ public sealed class LessonController(
 				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
 			).SelectMany(epfc => epfc.Lessons)
 			.SelectMany(l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
-				new Subject(l.Id, l.Name),
-				new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
+				l.Id, l.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
 			)));
 
 		return Ok(value: learnedSubjects);
@@ -154,7 +150,7 @@ public sealed class LessonController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	GET api/lessons/{classId}/get
+	///	GET api/subjects/{classId}/get
 	///
 	/// Параметры:
 	///
@@ -162,7 +158,7 @@ public sealed class LessonController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Список дисциплин, изучаемых подопечным в текущем году</response>
+	/// <response code="200">Список дисциплин, преподаваемых указанному классу в текущем году</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Administrator</response>
 	[HttpGet(template: "{classId:int}/get")]
@@ -171,7 +167,7 @@ public sealed class LessonController(
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetStudyingSubjectsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetStudyingSubjectsResponse>>> GetLearningLessons(
+	public async Task<ActionResult<IEnumerable<GetStudyingSubjectsResponse>>> GetSubjectsStudiedInClass(
 		[FromRoute] int classId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -180,8 +176,7 @@ public sealed class LessonController(
 			.Where(c => c.Id == classId)
 			.SelectMany(c => c.TeachersLessons)
 			.Select(tl => new GetStudyingSubjectsResponse(
-				new Subject(tl.LessonId, tl.Lesson.Name),
-				new Teacher(tl.Teacher.UserId, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
+				tl.LessonId, tl.Lesson.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
 			));
 
 		return Ok(value: studyingSubjects);

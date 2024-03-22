@@ -7,6 +7,8 @@ namespace MyJournal.Core;
 
 public sealed class Administrator : User
 {
+	private readonly Lazy<ClassCollection> _classes;
+
 	private Administrator(
 		ApiClient client,
 		IFileService fileService,
@@ -15,7 +17,8 @@ public sealed class Administrator : User
 		Lazy<ChatCollection> chats,
 		Lazy<InterlocutorCollection> interlocutors,
 		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		Lazy<SessionCollection> sessions
+		Lazy<SessionCollection> sessions,
+		Lazy<ClassCollection> classes
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -25,7 +28,12 @@ public sealed class Administrator : User
 		interlocutors: interlocutors,
 		intendedInterlocutors: intendedInterlocutors,
 		sessions: sessions
-	) { }
+	)
+	{
+		_classes = classes;
+	}
+
+	public ClassCollection Classes => _classes.Value;
 
 	internal static async Task<Administrator> Create(
 		ApiClient client,
@@ -56,6 +64,10 @@ public sealed class Administrator : User
 				cancellationToken: cancellationToken
 			)),
 			sessions: new Lazy<SessionCollection>(value: await SessionCollection.Create(
+				client: client,
+				cancellationToken: cancellationToken
+			)),
+			classes: new Lazy<ClassCollection>(value: await ClassCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			))

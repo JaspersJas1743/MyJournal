@@ -1,5 +1,6 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -7,6 +8,8 @@ namespace MyJournal.Core;
 
 public sealed class Parent : User
 {
+	private readonly Lazy<StudyingSubjectCollection> _studyingSubjects;
+
 	private Parent(
 		ApiClient client,
 		IFileService fileService,
@@ -15,7 +18,8 @@ public sealed class Parent : User
 		Lazy<ChatCollection> chats,
 		Lazy<InterlocutorCollection> interlocutors,
 		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		Lazy<SessionCollection> sessions
+		Lazy<SessionCollection> sessions,
+		Lazy<StudyingSubjectCollection> studyingSubjects
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -25,7 +29,12 @@ public sealed class Parent : User
 		interlocutors: interlocutors,
 		intendedInterlocutors: intendedInterlocutors,
 		sessions: sessions
-	) { }
+	)
+	{
+		_studyingSubjects = studyingSubjects;
+	}
+
+	public StudyingSubjectCollection StudyingSubjects => _studyingSubjects.Value;
 
 	internal static async Task<Parent> Create(
 		ApiClient client,
@@ -57,6 +66,11 @@ public sealed class Parent : User
 			)),
 			sessions: new Lazy<SessionCollection>(value: await SessionCollection.Create(
 				client: client,
+				cancellationToken: cancellationToken
+			)),
+			studyingSubjects: new Lazy<StudyingSubjectCollection>(value: await StudyingSubjectCollection.Create(
+				client: client,
+				apiMethod: LessonControllerMethods.GetSubjectsStudiedByWard,
 				cancellationToken: cancellationToken
 			))
 		);

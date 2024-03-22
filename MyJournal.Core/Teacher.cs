@@ -7,6 +7,8 @@ namespace MyJournal.Core;
 
 public sealed class Teacher : User
 {
+	private readonly Lazy<TaughtSubjectCollection> _toughtSubjectCollection;
+
 	private Teacher(
 		ApiClient client,
 		IFileService fileService,
@@ -15,7 +17,8 @@ public sealed class Teacher : User
 		Lazy<ChatCollection> chats,
 		Lazy<InterlocutorCollection> interlocutors,
 		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		Lazy<SessionCollection> sessions
+		Lazy<SessionCollection> sessions,
+		Lazy<TaughtSubjectCollection> taughtSubjects
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -25,7 +28,12 @@ public sealed class Teacher : User
 		interlocutors: interlocutors,
 		intendedInterlocutors: intendedInterlocutors,
 		sessions: sessions
-	) { }
+	)
+	{
+		_toughtSubjectCollection = taughtSubjects;
+	}
+
+	public TaughtSubjectCollection TaughtSubjects => _toughtSubjectCollection.Value;
 
 	internal static async Task<Teacher> Create(
 		ApiClient client,
@@ -56,6 +64,10 @@ public sealed class Teacher : User
 				cancellationToken: cancellationToken
 			)),
 			sessions: new Lazy<SessionCollection>(value: await SessionCollection.Create(
+				client: client,
+				cancellationToken: cancellationToken
+			)),
+			taughtSubjects: new Lazy<TaughtSubjectCollection>(value: await TaughtSubjectCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			))
