@@ -180,7 +180,7 @@ public class User
 		_userHubConnection.On<string?>(methodName: UserHubMethods.SetEmail, handler: (email) =>
 			Security.Email?.OnUpdated(e: new Email.UpdatedEmailEventArgs(email: email))
 		);
-		_userHubConnection.On<int, int>(methodName: UserHubMethods.SetEmail, handler: async (chatId, messageId) =>
+		_userHubConnection.On<int, int>(methodName: UserHubMethods.SendMessage, handler: async (chatId, messageId) =>
 			await Chats.OnReceivedMessage(
 				e: new ChatCollection.ReceivedMessageInChatEventArgs(chatId: chatId, messageId: messageId),
 				cancellationToken: cancellationToken

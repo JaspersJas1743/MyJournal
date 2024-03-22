@@ -52,22 +52,6 @@ public sealed class MessageBuilder : IMessageBuilder
 		return this;
 	}
 
-	public IMessageBuilder ToChat(
-		int chatId
-	)
-	{
-		_chatId = chatId;
-		return this;
-	}
-
-	public IMessageBuilder ToChat(
-		Chat chat
-	)
-	{
-		_chatId = chat.Id;
-		return this;
-	}
-
 	public IMessageSender Build()
 	{
 		return MessageSender.Create(

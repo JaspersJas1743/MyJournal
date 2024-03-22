@@ -144,8 +144,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	}
 	#endregion
 
-	#region Instanc
-
+	#region Instance
 	public async Task SetFilter(
 		string? filter,
 		CancellationToken cancellationToken = default(CancellationToken)

@@ -7,14 +7,21 @@ namespace MyJournal.Core.MessageBuilder;
 public sealed class InitMessageBuilder : IInitMessageBuilder
 {
 	private readonly IFileService _fileService;
+	private readonly int _chatId;
 
 	private InitMessageBuilder(
-		IFileService fileService
-	) => _fileService = fileService;
+		IFileService fileService,
+		int chatId
+	)
+	{
+		_fileService = fileService;
+		_chatId = chatId;
+	}
 
 	internal static InitMessageBuilder Create(
-		IFileService fileService
-	) => new InitMessageBuilder(fileService: fileService);
+		IFileService fileService,
+		int chatId
+	) => new InitMessageBuilder(fileService: fileService, chatId: chatId);
 
 	public IMessageBuilder WithText(
 		string text
@@ -24,7 +31,7 @@ public sealed class InitMessageBuilder : IInitMessageBuilder
 			fileService: _fileService,
 			builder: new StringBuilder(value: text),
 			attachments: Enumerable.Empty<Attachment>(),
-			chatId: -1
+			chatId: _chatId
 		);
 	}
 
@@ -42,31 +49,7 @@ public sealed class InitMessageBuilder : IInitMessageBuilder
 			fileService: _fileService,
 			builder: new StringBuilder(),
 			attachments: new Attachment[] { attachment },
-			chatId: -1
-		);
-	}
-
-	public IMessageBuilder ToChat(
-		int chatId
-	)
-	{
-		return MessageBuilder.Create(
-			fileService: _fileService,
-			builder: new StringBuilder(),
-			attachments: Enumerable.Empty<Attachment>(),
-			chatId: chatId
-		);
-	}
-
-	public IMessageBuilder ToChat(
-		Chat chat
-	)
-	{
-		return MessageBuilder.Create(
-			fileService: _fileService,
-			builder: new StringBuilder(),
-			attachments: Enumerable.Empty<Attachment>(),
-			chatId: chat.Id
+			chatId: _chatId
 		);
 	}
 }
