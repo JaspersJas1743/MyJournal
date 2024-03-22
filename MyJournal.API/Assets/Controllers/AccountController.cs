@@ -485,7 +485,7 @@ public sealed class AccountController(
     ///
     /// ]]>
     /// </remarks>
-    /// <response code="204">Аккаунт успешно создан</response>
+    /// <response code="200">Аккаунт успешно создан</response>
     /// <response code="400">Переданный логин занят другим пользователем</response>
     /// <response code="404">Неверный регистрационный код</response>
     [HttpPost(template: "sign-up")]
