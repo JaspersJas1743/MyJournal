@@ -244,9 +244,16 @@ public sealed class ApiClient : IDisposable
 		ByteArrayContent content = new ByteArrayContent(content: fileBytes);
 		data.Add(content: content, name: "file", fileName: Path.GetFileName(path: path));
 
-		HttpResponseMessage responseMessage = await func(uri, data, cancellationToken);
-		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: _options);
-		return responseMessage;
+		try
+		{
+			HttpResponseMessage responseMessage = await func(uri, data, cancellationToken);
+			await ApiException.ThrowIfErrorAsync(message: responseMessage, options: _options);
+			return responseMessage;
+		}
+		catch (HttpRequestException e)
+		{
+			throw new ApiException(message: "Файл слишком большой. Максимальый размер - 30Мбайт.");
+		}
 	}
 
 	private async Task HelperAsync(Func<Uri, HttpContent, CancellationToken, Task<HttpResponseMessage>> func, Uri uri, CancellationToken cancellationToken = default(CancellationToken))

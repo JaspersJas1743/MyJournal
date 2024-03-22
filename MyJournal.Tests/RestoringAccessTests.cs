@@ -36,7 +36,7 @@ public class RestoringAccessTests
 			Email = "lesha.smirnov2019@mail.ru"
 		};
 		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		await userRegistrationService.VerifyAuthenticationCode(code: "369480");
+		await userRegistrationService.VerifyAuthenticationCode(code: "499980");
 		await userRegistrationService.ResetPassword(newPassword: "bratbratubrat");
 		Assert.Pass();
 	}
@@ -52,7 +52,7 @@ public class RestoringAccessTests
 				Email = "lesha.smirnov2019@mail.ru"
 			};
 			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			await userRegistrationService.VerifyAuthenticationCode(code: "548778");
+			await userRegistrationService.VerifyAuthenticationCode(code: "499980");
 			await userRegistrationService.ResetPassword(newPassword: "JaspersJas1743");
 		});
 	}
@@ -96,7 +96,7 @@ public class RestoringAccessTests
 			Phone = "+7(910)952-0836"
 		};
 		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		await userRegistrationService.VerifyAuthenticationCode(code: "822575");
+		await userRegistrationService.VerifyAuthenticationCode(code: "499980");
 		await userRegistrationService.ResetPassword(newPassword: "bratbratubrat2");
 		Assert.Pass();
 	}
@@ -112,7 +112,7 @@ public class RestoringAccessTests
 				Phone = "+7(910)952-0836"
 			};
 			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			await userRegistrationService.VerifyAuthenticationCode(code: "989083");
+			await userRegistrationService.VerifyAuthenticationCode(code: "499980");
 			await userRegistrationService.ResetPassword(newPassword: "JaspersJas1743");
 		});
 	}

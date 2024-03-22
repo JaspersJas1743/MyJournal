@@ -75,19 +75,19 @@ public sealed class MessageCollection : LazyCollection<Message>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<Message.GetMessageResponse> loadedMessages =
-			await _client.GetAsync<IEnumerable<Message.GetMessageResponse>, GetMessagesRequest>(
-				apiMethod: ChatControllerMethods.GetChats,
-				argQuery: new GetMessagesRequest(ChatId: _chatId, Offset: _offset, Count: _count),
-				cancellationToken: cancellationToken
-			) ??
-			throw new InvalidOperationException();
+		IEnumerable<Message.GetMessageResponse> loadedMessages = await _client.GetAsync<IEnumerable<Message.GetMessageResponse>, GetMessagesRequest>(
+			apiMethod: ChatControllerMethods.GetChats,
+			argQuery: new GetMessagesRequest(ChatId: _chatId, Offset: _offset, Count: _count),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
 		_collection.Value.InsertRange(
 			index: 0,
 			collection: loadedMessages.Select(
-				selector: m =>
-					Message.Create(client: _client, messageId: m.MessageId, cancellationToken: cancellationToken)
-						   .GetAwaiter().GetResult()
+				selector: m => Message.Create(
+					client: _client,
+					messageId: m.MessageId,
+					cancellationToken: cancellationToken
+				).GetAwaiter().GetResult()
 			)
 		);
 		_offset = _collection.Value.Count;
@@ -98,8 +98,7 @@ public sealed class MessageCollection : LazyCollection<Message>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await base.Insert(
-			index: 0,
+		await base.Append(
 			instance: await Message.Create(client: _client, messageId: id, cancellationToken: cancellationToken),
 			cancellationToken: cancellationToken
 		);
