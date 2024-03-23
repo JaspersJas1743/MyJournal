@@ -6,7 +6,7 @@ public sealed class TaughtClass : ISubEntity
 	public string Name { get; init; }
 }
 
-public class TaughtSubject : ISubEntity
+public sealed class TaughtSubject : ISubEntity
 {
 	public int Id { get; init; }
 	public string Name { get; init; }

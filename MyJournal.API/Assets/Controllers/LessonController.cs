@@ -50,14 +50,14 @@ public sealed class LessonController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Students
-			.Where(s => s.UserId == userId)
-			.SelectMany(s => s.Class.EducationPeriodForClasses)
-			.Where(epfc =>
+		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Students.AsNoTracking().AsSplitQuery()
+			.Where(predicate: s => s.UserId == userId)
+			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
+			.Where(predicate: epfc =>
 				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
 				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
-			).SelectMany(epfc => epfc.Lessons)
-			.SelectMany(l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
+			).SelectMany(selector: epfc => epfc.Lessons)
+			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
 				l.Id, l.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
 			)));
 
@@ -90,13 +90,13 @@ public sealed class LessonController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers
-			.Where(t => t.UserId == userId)
-			.SelectMany(t => t.TeachersLessons)
-			.Where(tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
+		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking().AsSplitQuery()
+			.Where(predicate: t => t.UserId == userId)
+			.SelectMany(selector: t => t.TeachersLessons)
+			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
 				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
 				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
-			))).SelectMany(tl => tl.Classes.Select(c => new GetTaughtSubjectsResponse(
+			))).SelectMany(selector: tl => tl.Classes.Select(c => new GetTaughtSubjectsResponse(
 				tl.LessonId, tl.Lesson.Name, new Class(c.Id, c.Name)
 			)));
 
@@ -129,16 +129,20 @@ public sealed class LessonController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Parents
-			.Where(p => p.UserId == userId)
-			.SelectMany(p => p.Children.Class.EducationPeriodForClasses)
-			.Where(epfc =>
+		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Parents.AsNoTracking().AsSplitQuery()
+			.Where(predicate: p => p.UserId == userId)
+			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
+			.Where(predicate: epfc =>
 				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
 				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
-			).SelectMany(epfc => epfc.Lessons)
-			.SelectMany(l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
-				l.Id, l.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
-			)));
+			).SelectMany(selector: epfc => epfc.Lessons)
+			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id)
+				.Select(tl => new GetStudyingSubjectsResponse(
+					l.Id,
+					l.Name,
+					new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
+				)
+			));
 
 		return Ok(value: learnedSubjects);
 	}
@@ -172,11 +176,13 @@ public sealed class LessonController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes
-			.Where(c => c.Id == classId)
-			.SelectMany(c => c.TeachersLessons)
-			.Select(tl => new GetStudyingSubjectsResponse(
-				tl.LessonId, tl.Lesson.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
+		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes.AsNoTracking().AsSplitQuery()
+			.Where(predicate: c => c.Id == classId)
+			.SelectMany(selector: c => c.TeachersLessons)
+			.Select(selector: tl => new GetStudyingSubjectsResponse(
+				tl.LessonId,
+				tl.Lesson.Name,
+				new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
 			));
 
 		return Ok(value: studyingSubjects);

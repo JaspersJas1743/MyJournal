@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 
@@ -38,5 +39,5 @@ public class ClassController(
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<IEnumerable<GetClassResponse>>> GetClasses(
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => Ok(value: _context.Classes.Select(c => new GetClassResponse(c.Id, c.Name)));
+	) => Ok(value: _context.Classes.AsNoTracking().Select(selector: c => new GetClassResponse(c.Id, c.Name)));
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace MyJournal.API.Assets.Hubs;
 
 [Authorize]
-public class UserHub : Hub<IUserHub>
+public sealed class UserHub : Hub<IUserHub>
 {
 	public async Task SetOnline(int userId, DateTime onlineAt, IEnumerable<string> interlocutorIds)
 		=> await Clients.Users(userIds: interlocutorIds).SetOnline(userId: userId, onlineAt);
