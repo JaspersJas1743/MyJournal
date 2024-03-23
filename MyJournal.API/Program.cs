@@ -231,6 +231,8 @@ public class Program
 
 		app.UseCors(policyName: "CORSPolicy");
 		app.MapHub<UserHub>(pattern: "/hub/User");
+		app.MapHub<UserHub>(pattern: "/hub/user");
+		app.MapHub<StudentHub>(pattern: "/hub/student");
 
 		app.UseExceptionHandler();
 
