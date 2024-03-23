@@ -13,6 +13,7 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 	protected readonly int _count;
 
 	protected int _offset;
+	protected bool _allItemsAreUploaded;
 	#endregion
 
 	#region Constructor
@@ -26,6 +27,7 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 		_collection.Value.AddRange(collection: collection);
 		_offset = _collection.Value.Count;
 		_count = count;
+		_allItemsAreUploaded = _collection.Value.Count < _count;
 	}
 	#endregion
 
@@ -41,7 +43,15 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 	#region Instance
 	public virtual async Task LoadNext(
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => await Load(cancellationToken: cancellationToken);
+	)
+	{
+		if (_allItemsAreUploaded)
+			return;
+
+		int lengthBeforeLoading = Length;
+		await Load(cancellationToken: cancellationToken);
+		_allItemsAreUploaded = Length == lengthBeforeLoading;
+	}
 	#endregion
 
 	#region Virtual
@@ -51,6 +61,7 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 	{
 		_collection.Value.Clear();
 		_offset = _collection.Value.Count;
+		_allItemsAreUploaded = false;
 	}
 
 	internal abstract Task Append(
