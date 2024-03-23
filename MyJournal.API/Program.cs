@@ -230,8 +230,8 @@ public class Program
 		app.MapControllers();
 
 		app.UseCors(policyName: "CORSPolicy");
-		app.MapHub<UserHub>(pattern: "/hub/User");
 		app.MapHub<UserHub>(pattern: "/hub/user");
+		app.MapHub<TeacherHub>(pattern: "/hub/teacher");
 		app.MapHub<StudentHub>(pattern: "/hub/student");
 
 		app.UseExceptionHandler();
