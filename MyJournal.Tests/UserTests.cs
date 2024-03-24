@@ -609,28 +609,31 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Student? student = await service.SignIn(credentials: credentials) as Student;
-		Assert.That(actual: student.StudyingSubjects.Length, expression: Is.EqualTo(expected: 3));
-		StudyingSubject firstStudyingSubject = student.StudyingSubjects[index: 0];
-		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
-		Assert.That(actual: firstStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
-		Assert.That(actual: firstStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
-		Assert.That(actual: firstStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
-		Assert.That(actual: firstStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
-		Assert.That(actual: firstStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
-		StudyingSubject secondStudyingSubject = student.StudyingSubjects[index: 1];
-		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
-		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
-		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
-		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
-		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
-		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
-		StudyingSubject thirdStudyingSubject = student.StudyingSubjects[index: 2];
-		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
-		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+		StudyingSubjectCollection studyingSubjects = student.StudyingSubjects;
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 4));
+		StudyingSubject firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
+		StudyingSubject secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		StudyingSubject thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		StudyingSubject fourStudyingSubject = studyingSubjects[index: 3];
+		Assert.That(actual: fourStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: fourStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: fourStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: fourStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
 	}
 
 	[Test]
@@ -643,13 +646,15 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		Debug.WriteLine(String.Join("\n", teacher.TaughtSubjects.Select(x => $"{x.Id}: {x.Name} в {x.Class.Name}")));
-		Assert.That(actual: teacher.TaughtSubjects.Length, expression: Is.EqualTo(expected: 1));
-		TaughtSubject studentTaughtSubject = teacher.TaughtSubjects[index: 0];
-		Assert.That(actual: studentTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
-		Assert.That(actual: studentTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
-		Assert.That(actual: studentTaughtSubject.Class.Id, expression: Is.EqualTo(expected: 11));
-		Assert.That(actual: studentTaughtSubject.Class.Name, expression: Is.EqualTo(expected: "11 класс"));
+		TaughtSubjectCollection studyingSubjects = teacher.TaughtSubjects;
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
+		TaughtSubject secondTaughtSubject = teacher.TaughtSubjects[index: 1];
+		Assert.That(actual: secondTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: secondTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondTaughtSubject.Class.Id, expression: Is.EqualTo(expected: 11));
+		Assert.That(actual: secondTaughtSubject.Class.Name, expression: Is.EqualTo(expected: "11 класс"));
 	}
 
 	[Test]
@@ -661,30 +666,32 @@ public class UserTests
 			password: "test4test4",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		Administrator? student = await service.SignIn(credentials: credentials) as Administrator;
-		StudyingSubjectCollection studyingSubjects = student.Classes[index: 10].StudyingSubjects;
-		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 3));
+		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
+		StudyingSubjectCollection studyingSubjects = administrator.Classes[index: 10].StudyingSubjects;
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 4));
 		StudyingSubject firstStudyingSubject = studyingSubjects[index: 0];
-		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
-		Assert.That(actual: firstStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
-		Assert.That(actual: firstStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
-		Assert.That(actual: firstStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
-		Assert.That(actual: firstStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
-		Assert.That(actual: firstStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		StudyingSubject secondStudyingSubject = studyingSubjects[index: 1];
-		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
-		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
-		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
-		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
-		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
-		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
 		StudyingSubject thirdStudyingSubject = studyingSubjects[index: 2];
-		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
-		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
-		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		StudyingSubject fourStudyingSubject = studyingSubjects[index: 3];
+		Assert.That(actual: fourStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: fourStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: fourStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: fourStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
 	}
 
 	[Test]
@@ -697,28 +704,31 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Parent? parent = await service.SignIn(credentials: credentials) as Parent;
-		Assert.That(actual: parent?.StudyingSubjects.Length, expression: Is.EqualTo(expected: 3));
-		StudyingSubject? firstStudyingSubject = parent?.StudyingSubjects[index: 0];
-		Assert.That(actual: firstStudyingSubject?.Name, expression: Is.EqualTo(expected: "Русский язык"));
-		Assert.That(actual: firstStudyingSubject?.Id, expression: Is.EqualTo(expected: 37));
-		Assert.That(actual: firstStudyingSubject?.Teacher.Id, expression: Is.EqualTo(expected: 1));
-		Assert.That(actual: firstStudyingSubject?.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
-		Assert.That(actual: firstStudyingSubject?.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
-		Assert.That(actual: firstStudyingSubject?.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
-		StudyingSubject? secondStudyingSubject = parent?.StudyingSubjects[index: 1];
-		Assert.That(actual: secondStudyingSubject?.Name, expression: Is.EqualTo(expected: "Физическая культура"));
-		Assert.That(actual: secondStudyingSubject?.Id, expression: Is.EqualTo(expected: 47));
-		Assert.That(actual: secondStudyingSubject?.Teacher.Id, expression: Is.EqualTo(expected: 2));
-		Assert.That(actual: secondStudyingSubject?.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
-		Assert.That(actual: secondStudyingSubject?.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
-		Assert.That(actual: secondStudyingSubject?.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
-		StudyingSubject? thirdStudyingSubject = parent?.StudyingSubjects[index: 2];
-		Assert.That(actual: thirdStudyingSubject?.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
-		Assert.That(actual: thirdStudyingSubject?.Id, expression: Is.EqualTo(expected: 72));
-		Assert.That(actual: thirdStudyingSubject?.Teacher.Id, expression: Is.EqualTo(expected: 3));
-		Assert.That(actual: thirdStudyingSubject?.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
-		Assert.That(actual: thirdStudyingSubject?.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
-		Assert.That(actual: thirdStudyingSubject?.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+		StudyingSubjectCollection studyingSubjects = parent.StudyingSubjects;
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 4));
+		StudyingSubject firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
+		StudyingSubject secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		StudyingSubject thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		StudyingSubject fourStudyingSubject = studyingSubjects[index: 3];
+		Assert.That(actual: fourStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: fourStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: fourStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: fourStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
 	}
 	#endregion
 }

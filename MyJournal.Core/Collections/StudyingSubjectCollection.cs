@@ -18,7 +18,12 @@ public class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 	)
 	{
 		_client = client;
-		_subjects = new Lazy<List<StudyingSubject>>(value: new List<StudyingSubject>(collection: studyingSubjects));
+		List<StudyingSubject> subjects = new List<StudyingSubject>(collection: studyingSubjects);
+		subjects.Insert(index: 0, item: StudyingSubject.Create(
+			client: client,
+			name: "Все дисциплины"
+		));
+		_subjects = new Lazy<List<StudyingSubject>>(value: subjects);
 	}
 	#endregion
 
@@ -38,13 +43,16 @@ public class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<StudyingSubject> subjects = await client.GetAsync<IEnumerable<StudyingSubject>>(
+		IEnumerable<StudyingSubject.StudyingSubjectResponse> subjects = await client.GetAsync<IEnumerable<StudyingSubject.StudyingSubjectResponse>>(
 			apiMethod: apiMethod,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new StudyingSubjectCollection(
 			client: client,
-			studyingSubjects: subjects
+			studyingSubjects: subjects.Select(selector: s => StudyingSubject.Create(
+				client: client,
+				response: s
+			))
 		);
 	}
 	#endregion
