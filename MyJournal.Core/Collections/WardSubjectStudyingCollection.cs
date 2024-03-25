@@ -5,51 +5,51 @@ using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
 
-public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
+public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudying>
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly Lazy<List<StudyingSubject>> _subjects;
+	private readonly Lazy<List<WardSubjectStudying>> _subjects;
 	#endregion
 
 	#region Constructor
-	private StudyingSubjectCollection(
+	private WardSubjectStudyingCollection(
 		ApiClient client,
-		IEnumerable<StudyingSubject> studyingSubjects
+		IEnumerable<WardSubjectStudying> studyingSubjects
 	)
 	{
 		_client = client;
-		List<StudyingSubject> subjects = new List<StudyingSubject>(collection: studyingSubjects);
-		subjects.Insert(index: 0, item: StudyingSubject.Create(
+		List<WardSubjectStudying> subjects = new List<WardSubjectStudying>(collection: studyingSubjects);
+		subjects.Insert(index: 0, item: WardSubjectStudying.Create(
 			client: client,
 			name: "Все дисциплины"
 		));
-		_subjects = new Lazy<List<StudyingSubject>>(value: subjects);
+		_subjects = new Lazy<List<WardSubjectStudying>>(value: subjects);
 	}
 	#endregion
 
 	#region Properties
 	public int Length => _subjects.Value.Count;
 
-	public StudyingSubject this[int index]
+	public WardSubjectStudying this[int index]
 		=> _subjects.Value.ElementAtOrDefault(index: index)
 		   ?? throw new ArgumentOutOfRangeException(message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index));
 	#endregion
 
 	#region Methods
 	#region Instance
-	public static async Task<StudyingSubjectCollection> Create(
+	public static async Task<WardSubjectStudyingCollection> Create(
 		ApiClient client,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<StudyingSubject.StudyingSubjectResponse> subjects = await client.GetAsync<IEnumerable<StudyingSubject.StudyingSubjectResponse>>(
-			apiMethod: LessonControllerMethods.GetStudyingSubjects,
+		IEnumerable<WardSubjectStudying.StudyingSubjectResponse> subjects = await client.GetAsync<IEnumerable<WardSubjectStudying.StudyingSubjectResponse>>(
+			apiMethod: LessonControllerMethods.GetSubjectsStudiedByWard,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		return new StudyingSubjectCollection(
+		return new WardSubjectStudyingCollection(
 			client: client,
-			studyingSubjects: subjects.Select(selector: s => StudyingSubject.Create(
+			studyingSubjects: subjects.Select(selector: s => WardSubjectStudying.Create(
 				client: client,
 				response: s
 			))
@@ -57,8 +57,8 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 	}
 	#endregion
 
-	#region IEnumerable<StudyingSubject>
-	public IEnumerator<StudyingSubject> GetEnumerator()
+	#region IEnumerable<WardSubjectStudying>
+	public IEnumerator<WardSubjectStudying> GetEnumerator()
 		=> _subjects.Value.GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator()

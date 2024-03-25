@@ -2,17 +2,17 @@ using MyJournal.Core.Utilities.Api;
 
 namespace MyJournal.Core.SubEntities;
 
-public sealed class StudyingSubject : Subject
+public sealed class StudyingSubjectInClass : Subject
 {
 	#region Fields
 	private readonly ApiClient _client;
 	#endregion
 
 	#region Constructors
-	private StudyingSubject(ApiClient client)
+	private StudyingSubjectInClass(ApiClient client)
 		=> _client = client;
 
-	private StudyingSubject(
+	private StudyingSubjectInClass(
 		ApiClient client,
 		string name
 	) : this(client: client)
@@ -21,7 +21,7 @@ public sealed class StudyingSubject : Subject
 		IsFirst = true;
 	}
 
-	private StudyingSubject(
+	private StudyingSubjectInClass(
 		ApiClient client,
 		StudyingSubjectResponse response
 	) : this(client: client)
@@ -39,15 +39,15 @@ public sealed class StudyingSubject : Subject
 
 	#region Methods
 	#region Static
-	internal static StudyingSubject Create(
+	internal static StudyingSubjectInClass Create(
 		ApiClient client,
 		StudyingSubjectResponse response
-	) => new StudyingSubject(client: client, response: response);
+	) => new StudyingSubjectInClass(client: client, response: response);
 
-	internal static StudyingSubject Create(
+	internal static StudyingSubjectInClass Create(
 		ApiClient client,
 		string name
-	) => new StudyingSubject(client: client, name: name);
+	) => new StudyingSubjectInClass(client: client, name: name);
 	#endregion
 	#endregion
 }

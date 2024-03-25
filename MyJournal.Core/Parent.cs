@@ -8,7 +8,7 @@ namespace MyJournal.Core;
 
 public sealed class Parent : User
 {
-	private readonly Lazy<StudyingSubjectCollection> _studyingSubjects;
+	private readonly Lazy<WardSubjectStudyingCollection> _wardSubjectsStudying;
 
 	private Parent(
 		ApiClient client,
@@ -19,7 +19,7 @@ public sealed class Parent : User
 		Lazy<InterlocutorCollection> interlocutors,
 		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
 		Lazy<SessionCollection> sessions,
-		Lazy<StudyingSubjectCollection> studyingSubjects
+		Lazy<WardSubjectStudyingCollection> wardSubjectsStudying
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -31,10 +31,10 @@ public sealed class Parent : User
 		sessions: sessions
 	)
 	{
-		_studyingSubjects = studyingSubjects;
+		_wardSubjectsStudying = wardSubjectsStudying;
 	}
 
-	public StudyingSubjectCollection StudyingSubjects => _studyingSubjects.Value;
+	public WardSubjectStudyingCollection WardSubjectsStudying => _wardSubjectsStudying.Value;
 
 	internal static async Task<Parent> Create(
 		ApiClient client,
@@ -68,9 +68,8 @@ public sealed class Parent : User
 				client: client,
 				cancellationToken: cancellationToken
 			)),
-			studyingSubjects: new Lazy<StudyingSubjectCollection>(value: await StudyingSubjectCollection.Create(
+			wardSubjectsStudying: new Lazy<WardSubjectStudyingCollection>(value: await WardSubjectStudyingCollection.Create(
 				client: client,
-				apiMethod: LessonControllerMethods.GetSubjectsStudiedByWard,
 				cancellationToken: cancellationToken
 			))
 		);

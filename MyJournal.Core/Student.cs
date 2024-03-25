@@ -69,7 +69,6 @@ public sealed class Student : User
 				cancellationToken: cancellationToken
 			)),
 			studyingSubjects: new Lazy<StudyingSubjectCollection>(value: await StudyingSubjectCollection.Create(
-				apiMethod: LessonControllerMethods.GetStudyingSubjects,
 				client: client,
 				cancellationToken: cancellationToken
 			))

@@ -1,27 +1,26 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
-using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.SubEntities;
 
 public class Class : ISubEntity
 {
-	private readonly Lazy<StudyingSubjectCollection> _studyingSubjects;
+	private readonly Lazy<StudyingSubjectInClassCollection> _studyingSubjects;
 
 	private Class(
 		int id,
 		string name,
-		StudyingSubjectCollection studyingSubjects
+		StudyingSubjectInClassCollection studyingSubjects
 	)
 	{
 		Id = id;
 		Name = name;
-		_studyingSubjects = new Lazy<StudyingSubjectCollection>(value: studyingSubjects);
+		_studyingSubjects = new Lazy<StudyingSubjectInClassCollection>(value: studyingSubjects);
 	}
 
 	public int Id { get; init; }
 	public string Name { get; init; }
-	public StudyingSubjectCollection StudyingSubjects => _studyingSubjects.Value;
+	public StudyingSubjectInClassCollection StudyingSubjects => _studyingSubjects.Value;
 
 	internal static async Task<Class> Create(
 		ApiClient client,
@@ -33,9 +32,9 @@ public class Class : ISubEntity
 		return new Class(
 			id: classId,
 			name: name,
-			studyingSubjects: await StudyingSubjectCollection.Create(
+			studyingSubjects: await StudyingSubjectInClassCollection.Create(
 				client: client,
-				apiMethod: LessonControllerMethods.GetSubjectsStudiedInClass(classId: classId),
+				classId: classId,
 				cancellationToken: cancellationToken
 			)
 		);
