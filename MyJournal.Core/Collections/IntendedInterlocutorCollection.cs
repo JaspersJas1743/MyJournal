@@ -99,15 +99,6 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		_offset = _collection.Value.Count;
 	}
 
-	public override async Task Clear(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		Filter = String.Empty;
-		IncludeExistedInterlocutors = false;
-		await base.Clear(cancellationToken: cancellationToken);
-	}
-
 	internal override async Task Append(
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)

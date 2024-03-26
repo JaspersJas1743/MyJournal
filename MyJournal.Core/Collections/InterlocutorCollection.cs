@@ -101,7 +101,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	#endregion
 
 	#region LazyCollection<Interlocutor>
-		protected override async Task Load(
+	protected override async Task Load(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
