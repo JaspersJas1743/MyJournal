@@ -1,5 +1,7 @@
 using MyJournal.Core.Collections;
+using MyJournal.Core.TaskBuilder;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -13,24 +15,28 @@ public sealed class TaughtSubject : ISubEntity
 {
 	#region Fields
 	private readonly ApiClient _client;
+	private readonly IFileService _fileService;
 	private readonly Lazy<CreatedTaskCollection> _tasks;
 	#endregion
 
 	#region Constructors
 	private TaughtSubject(
 		ApiClient client,
+		IFileService fileService,
 		Lazy<CreatedTaskCollection> tasks
 	)
 	{
 		_client = client;
+		_fileService = fileService;
 		_tasks = tasks;
 	}
 
 	private TaughtSubject(
 		ApiClient client,
+		IFileService fileService,
 		string name,
 		Lazy<CreatedTaskCollection> tasks
-	) : this(client: client, tasks: tasks)
+	) : this(client: client, tasks: tasks, fileService: fileService)
 	{
 		Name = name;
 		IsFirst = true;
@@ -38,9 +44,10 @@ public sealed class TaughtSubject : ISubEntity
 
 	private TaughtSubject(
 		ApiClient client,
+		IFileService fileService,
 		TaughtSubjectResponse response,
 		Lazy<CreatedTaskCollection> tasks
-	) : this(client: client, tasks: tasks)
+	) : this(client: client, tasks: tasks, fileService: fileService)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -68,11 +75,12 @@ public sealed class TaughtSubject : ISubEntity
 	#region Static
 	internal static async Task<TaughtSubject> Create(
 		ApiClient client,
+		IFileService fileService,
 		TaughtSubjectResponse response,
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new TaughtSubject(client: client, response: response, tasks: new Lazy<CreatedTaskCollection>(value:
+		return new TaughtSubject(client: client, fileService: fileService, response: response, tasks: new Lazy<CreatedTaskCollection>(value:
 			CreatedTaskCollection.Create(
 				client: client,
 				subjectId: response.Id,
@@ -83,11 +91,12 @@ public sealed class TaughtSubject : ISubEntity
 
 	internal static async Task<TaughtSubject> Create(
 		ApiClient client,
+		IFileService fileService,
 		string name,
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new TaughtSubject(client: client, name: name, tasks: new Lazy<CreatedTaskCollection>(value:
+		return new TaughtSubject(client: client, fileService: fileService, name: name, tasks: new Lazy<CreatedTaskCollection>(value:
 			CreatedTaskCollection.Create(
 				client: client,
 				subjectId: 0,
@@ -95,6 +104,11 @@ public sealed class TaughtSubject : ISubEntity
 			).GetAwaiter().GetResult()
 		));
 	}
+	#endregion
+
+	#region Instance
+	public IInitTaskBuilder CreateTask()
+		=> InitTaskBuilder.Create(fileService: _fileService);
 	#endregion
 	#endregion
 }

@@ -26,7 +26,6 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	#endregion
 
 	#region Enum
-
 	public enum TaskCompletionStatus
 	{
 		All,

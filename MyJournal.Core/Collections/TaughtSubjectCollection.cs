@@ -2,6 +2,7 @@ using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
@@ -15,6 +16,7 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 	#region Constructor
 	private TaughtSubjectCollection(
 		ApiClient client,
+		IFileService fileService,
 		IEnumerable<TaughtSubject> studyingSubjects
 	)
 	{
@@ -22,7 +24,8 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 		List<TaughtSubject> subjects = new List<TaughtSubject>(collection: studyingSubjects);
 		subjects.Insert(index: 0, item: TaughtSubject.Create(
 			client: client,
-			name: "Все дисциплины"
+			name: "Все дисциплины",
+			fileService: fileService
 		).GetAwaiter().GetResult());
 		_subjects = new Lazy<List<TaughtSubject>>(value: subjects);
 	}
@@ -40,6 +43,7 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 	#region Instance
 	public static async Task<TaughtSubjectCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -49,8 +53,10 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 		) ?? throw new InvalidOperationException();
 		return new TaughtSubjectCollection(
 			client: client,
+			fileService: fileService,
 			studyingSubjects: subjects.Select(selector: s => TaughtSubject.Create(
 				client: client,
+				fileService: fileService,
 				response: s,
 				cancellationToken: cancellationToken
 			).GetAwaiter().GetResult()

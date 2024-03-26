@@ -69,6 +69,7 @@ public sealed class Teacher : User
 			)),
 			taughtSubjects: new Lazy<TaughtSubjectCollection>(value: await TaughtSubjectCollection.Create(
 				client: client,
+				fileService: fileService,
 				cancellationToken: cancellationToken
 			))
 		);
