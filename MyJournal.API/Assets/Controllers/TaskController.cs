@@ -34,6 +34,8 @@ public class TaskController(
 	public sealed record GetAssignedTasksRequest(AssignedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int Offset, int Count);
 	public sealed record GetAssignedTasksResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, AssignedTaskCompletionStatusResponse CompletionStatus);
 
+	public sealed record GetAssignedToClassTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int Offset, int Count);
+	public sealed record GetAllAssignedToClassTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int Offset, int Count);
 
 	public sealed record GetAllCreatedTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int Offset, int Count);
 	public sealed record GetCreatedTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int ClassId, int Offset, int Count);
@@ -70,29 +72,26 @@ public class TaskController(
 	}
 
 	private async Task<IQueryable<DatabaseModels.Task>> GetTasksForAdministrator(
-		int userId,
-		AssignedTaskCompletionStatusRequest completionStatusRequest,
+		CreatedTaskCompletionStatusRequest completionStatusRequest,
 		bool allSubject,
 		int classId,
 		int subjectId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IQueryable<DatabaseModels.Task> tasks = _context.Students.AsNoTracking()
-			.Where(predicate: s => s.UserId == userId)
-			.SelectMany(selector: s => s.Class.Tasks)
-			.Where(predicate: t => t.ClassId == classId);
+		IQueryable<DatabaseModels.Task> tasks = _context.Classes.AsNoTracking()
+			.Where(predicate: t => t.Id == classId)
+			.SelectMany(selector: c => c.Tasks);
 
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.LessonId == subjectId);
 
-		if (completionStatusRequest == AssignedTaskCompletionStatusRequest.Expired)
-			return tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0);
-
-		return tasks.Where(predicate: t => completionStatusRequest == AssignedTaskCompletionStatusRequest.All || t.TaskCompletionResults.Any(tcr =>
-			tcr.Student.UserId == userId &&
-			tcr.TaskCompletionStatus.CompletionStatus == Enum.Parse<TaskCompletionStatuses>(completionStatusRequest.ToString())
-		));
+		return completionStatusRequest switch
+		{
+			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0),
+			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) >= 0),
+			_ => tasks
+		};
 	}
 
 	private async Task<IQueryable<DatabaseModels.Task>> GetTasksForParent(
@@ -135,13 +134,12 @@ public class TaskController(
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.ClassId == classId && t.LessonId == subjectId);
 
-		if (completionStatusRequest == CreatedTaskCompletionStatusRequest.Expired)
-			return tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0);
-
-		if (completionStatusRequest == CreatedTaskCompletionStatusRequest.NotExpired)
-			return tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) >= 0);
-
-		return tasks;
+		return completionStatusRequest switch
+		{
+			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0),
+			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) >= 0),
+			_ => tasks
+		};
 	}
 	#endregion
 
@@ -371,9 +369,8 @@ public class TaskController(
 	///	classId - идентификатор класса, список задач для которого необходимо получить
 	///	CompletionStatus - статус выполнения задачи:
 	///		0 - Все задачи
-	///		1 - Невыполненные задачи
-	///		2 - Выполненные задачи
-	///		3 - Завершенные задачи
+	///		1 - Завершенные задачи
+	///		2 - Незавершенные задачи
 	///	SubjectId - идентификатор дисциплины, список задач для которой необходимо получить
 	///	Offset - смещение, начиная с которого будет происходить выборка задач
 	///	Count - максимальное количество возвращаемых задач
@@ -386,18 +383,17 @@ public class TaskController(
 	[Authorize(Policy = nameof(UserRoles.Administrator))]
 	[HttpGet(template: "assigned/class/{classId:int}/get")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetAssignedTasksResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetCreatedTasksResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetAssignedTasksResponse>>> GetAssignedByClassTasks(
+	public async Task<ActionResult<IEnumerable<GetCreatedTasksResponse>>> GetAssignedByClassTasks(
 		[FromRoute] int classId,
-		[FromQuery] GetAssignedTasksRequest request,
+		[FromQuery] GetAssignedToClassTasksRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
 		IQueryable<DatabaseModels.Task> tasks = await GetTasksForAdministrator(
-			userId: userId,
 			subjectId: request.SubjectId,
 			completionStatusRequest: request.CompletionStatus,
 			allSubject: false,
@@ -405,15 +401,14 @@ public class TaskController(
 			cancellationToken: cancellationToken
 		);
 
-		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAssignedTasksResponse(
+		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetCreatedTasksResponse(
 			t.Id,
+			t.Class.Name,
+			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
-				? AssignedTaskCompletionStatusResponse.Expired
-				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
-					t.TaskCompletionResults.Single(tcr => tcr.Student.UserId == userId).TaskCompletionStatus.CompletionStatus.ToString()
-				)
+			t.TaskCompletionResults.Count(tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Completed),
+			t.TaskCompletionResults.Count(tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Uncompleted)
 		)));
 	}
 
@@ -431,9 +426,8 @@ public class TaskController(
 	///	classId - идентификатор класса, список задач для которого необходимо получить
 	///	CompletionStatus - статус выполнения задачи:
 	///		0 - Все задачи
-	///		1 - Невыполненные задачи
-	///		2 - Выполненные задачи
-	///		3 - Завершенные задачи
+	///		1 - Завершенные задачи
+	///		2 - Незавершенные задачи
 	///	Offset - смещение, начиная с которого будет происходить выборка задач
 	///	Count - максимальное количество возвращаемых задач
 	///
@@ -445,34 +439,31 @@ public class TaskController(
 	[Authorize(Policy = nameof(UserRoles.Administrator))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[HttpGet(template: "assigned/class/{classId:int}/get/all")]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetAllAssignedTasksResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetCreatedTasksResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetAllAssignedTasksResponse>>> GetAllAssignedByClassTasks(
+	public async Task<ActionResult<IEnumerable<GetCreatedTasksResponse>>> GetAllAssignedByClassTasks(
 		[FromRoute] int classId,
-		[FromQuery] GetAllAssignedTasksRequest request,
+		[FromQuery] GetAllAssignedToClassTasksRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
 		IQueryable<DatabaseModels.Task> tasks = await GetTasksForAdministrator(
-			userId: userId,
 			completionStatusRequest: request.CompletionStatus,
 			allSubject: true,
 			classId: classId,
 			cancellationToken: cancellationToken
 		);
 
-		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAllAssignedTasksResponse(
+		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetCreatedTasksResponse(
 			t.Id,
+			t.Class.Name,
 			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
-				? AssignedTaskCompletionStatusResponse.Expired
-				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
-					t.TaskCompletionResults.Single(tcr => tcr.Student.UserId == userId).TaskCompletionStatus.CompletionStatus.ToString()
-				)
+			t.TaskCompletionResults.Count(tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Completed),
+			t.TaskCompletionResults.Count(tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Uncompleted)
 		)));
 	}
 
