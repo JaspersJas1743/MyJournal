@@ -4,12 +4,12 @@ using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.MessageBuilder;
 
-public sealed class MessageBuilder : IMessageBuilder
+internal sealed class MessageBuilder : IMessageBuilder
 {
 	private readonly StringBuilder _text = new StringBuilder();
 	private readonly List<Attachment> _attachments = new List<Attachment>();
 	private readonly IFileService _fileService;
-	private int _chatId;
+	private readonly int _chatId;
 
 	private MessageBuilder(
 		IFileService fileService,
@@ -49,6 +49,17 @@ public sealed class MessageBuilder : IMessageBuilder
 			pathToFile: pathToFile,
 			cancellationToken: cancellationToken
 		));
+		return this;
+	}
+
+	public async Task<IMessageBuilder> RemoveAttachment(
+		int index,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		Attachment attachment = _attachments[index: index];
+		await _fileService.Delete(link: attachment.LinkToFile, cancellationToken: cancellationToken);
+		_attachments.Remove(attachment);
 		return this;
 	}
 

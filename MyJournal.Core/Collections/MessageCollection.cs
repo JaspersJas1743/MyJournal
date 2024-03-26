@@ -33,7 +33,6 @@ public sealed class MessageCollection : LazyCollection<Message>
 
 	#region Records
 	private sealed record GetMessagesRequest(int ChatId, int Offset, int Count);
-	internal sealed record SendMessageRequest(int ChatId, Message.MessageContent Content);
 	#endregion
 
 	#region Methods

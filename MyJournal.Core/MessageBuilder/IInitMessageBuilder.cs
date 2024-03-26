@@ -1,5 +1,3 @@
-using MyJournal.Core.SubEntities;
-
 namespace MyJournal.Core.MessageBuilder;
 
 public interface IInitMessageBuilder

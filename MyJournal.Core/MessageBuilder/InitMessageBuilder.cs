@@ -4,7 +4,7 @@ using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.MessageBuilder;
 
-public sealed class InitMessageBuilder : IInitMessageBuilder
+internal sealed class InitMessageBuilder : IInitMessageBuilder
 {
 	private readonly IFileService _fileService;
 	private readonly int _chatId;

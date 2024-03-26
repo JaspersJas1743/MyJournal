@@ -5,7 +5,7 @@ using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.MessageBuilder;
 
-public sealed class MessageSender : IMessageSender
+internal sealed class MessageSender : IMessageSender
 {
 	private readonly ApiClient _client;
 	private readonly Message.MessageContent _content;
@@ -22,13 +22,15 @@ public sealed class MessageSender : IMessageSender
 		_chatId = chatId;
 	}
 
+	internal sealed record SendMessageRequest(int ChatId, Message.MessageContent Content);
+
 	public async Task Send(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await _client.PostAsync<MessageCollection.SendMessageRequest>(
+		await _client.PostAsync<SendMessageRequest>(
 			apiMethod: MessageControllerMethods.SendMessage,
-			arg: new MessageCollection.SendMessageRequest(
+			arg: new SendMessageRequest(
 				ChatId: _chatId,
 				Content: _content
 			),
