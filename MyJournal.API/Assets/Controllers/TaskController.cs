@@ -31,16 +31,13 @@ public class TaskController(
 	public sealed record TaskContent(string? Text, IEnumerable<TaskAttachment>? Attachments);
 
 	public sealed record GetAllAssignedTasksRequest(AssignedTaskCompletionStatusRequest CompletionStatus, int Offset, int Count);
-	public sealed record GetAllAssignedTasksResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, AssignedTaskCompletionStatusResponse CompletionStatus);
-
 	public sealed record GetAssignedTasksRequest(AssignedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int Offset, int Count);
-	public sealed record GetAssignedTasksResponse(int TaskId, DateTime ReleasedAt, TaskContent Content, AssignedTaskCompletionStatusResponse CompletionStatus);
+	public sealed record GetAssignedTasksResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, AssignedTaskCompletionStatusResponse CompletionStatus);
+
 
 	public sealed record GetAllCreatedTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int Offset, int Count);
-	public sealed record GetAllCreatedTasksResponse(int TaskId, string ClassName, string LessonName, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
-
 	public sealed record GetCreatedTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int ClassId, int Offset, int Count);
-	public sealed record GetCreatedTasksResponse(int TaskId, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
+	public sealed record GetCreatedTasksResponse(int TaskId, string ClassName, string LessonName, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
 
 	public sealed record CreateTasksRequest(int SubjectId, int ClassId, TaskContent Content, DateTime ReleasedAt);
 	public sealed record CreateTasksResponse(string Message);
@@ -294,6 +291,7 @@ public class TaskController(
 
 		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAssignedTasksResponse(
 			t.Id,
+			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
 			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
@@ -330,10 +328,10 @@ public class TaskController(
 	[HttpGet(template: "assigned/get/all")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetAllAssignedTasksResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetAssignedTasksResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetAllAssignedTasksResponse>>> GetAllAssignedTasks(
+	public async Task<ActionResult<IEnumerable<GetAssignedTasksResponse>>> GetAllAssignedTasks(
 		[FromQuery] GetAllAssignedTasksRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -346,7 +344,7 @@ public class TaskController(
 			cancellationToken: cancellationToken
 		);
 
-		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAllAssignedTasksResponse(
+		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAssignedTasksResponse(
 			t.Id,
 			t.Lesson.Name,
 			t.ReleasedAt,
@@ -525,6 +523,7 @@ public class TaskController(
 
 		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAssignedTasksResponse(
 			t.Id,
+			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
 			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
@@ -562,10 +561,10 @@ public class TaskController(
 	[Authorize(Policy = nameof(UserRoles.Parent))]
 	[HttpGet(template: "assigned/children/get/all")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetAllAssignedTasksResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetAssignedTasksResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetAllAssignedTasksResponse>>> GetAllAssignedTasksForChildren(
+	public async Task<ActionResult<IEnumerable<GetAssignedTasksResponse>>> GetAllAssignedTasksForChildren(
 		[FromQuery] GetAllAssignedTasksRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -578,7 +577,7 @@ public class TaskController(
 			cancellationToken: cancellationToken
 		);
 
-		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAllAssignedTasksResponse(
+		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAssignedTasksResponse(
 			t.Id,
 			t.Lesson.Name,
 			t.ReleasedAt,
@@ -638,7 +637,7 @@ public class TaskController(
 			cancellationToken: cancellationToken
 		);
 
-		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAllCreatedTasksResponse(
+		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetCreatedTasksResponse(
 			t.Id,
 			t.Class.Name,
 			t.Lesson.Name,
@@ -676,10 +675,10 @@ public class TaskController(
 	[HttpGet(template: "created/get/all")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetAllCreatedTasksResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetCreatedTasksResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetAllCreatedTasksResponse>>> GetAllCreatedTasks(
+	public async Task<ActionResult<IEnumerable<GetCreatedTasksResponse>>> GetAllCreatedTasks(
 		[FromQuery] GetAllCreatedTasksRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -692,7 +691,7 @@ public class TaskController(
 			cancellationToken: cancellationToken
 		);
 
-		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetAllCreatedTasksResponse(
+		return Ok(value: tasks.Skip(count: request.Offset).Take(count: request.Count).Select(selector: t => new GetCreatedTasksResponse(
 			t.Id,
 			t.Class.Name,
 			t.Lesson.Name,
