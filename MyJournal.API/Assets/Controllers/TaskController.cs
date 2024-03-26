@@ -150,6 +150,104 @@ public class TaskController(
 
 	#region GET
 	/// <summary>
+	/// Получение дополнительной информации о заданной задаче по ее идентификатору
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/task/assigned/get/{taskId:int}
+	///
+	/// Параметры:
+	///
+	///	taskId - идентификатор задачи, дополнительную информацию по которой необходимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Дополнительная информация о заданной задаче</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
+	/// <response code="404">Некорректный идентификатор задачи</response>
+	[Authorize]
+	[HttpGet(template: "assigned/get/{taskId:int}")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssignedTasksResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetAssignedTasksResponse>> GetAssignedTaskById(
+		[FromRoute] int taskId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		DatabaseModels.Task task = await _context.Tasks.Where(predicate: t => t.Id == taskId).SingleOrDefaultAsync(cancellationToken: cancellationToken)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор задачи.");
+
+		return Ok(value: new GetAssignedTasksResponse(
+			task.Id,
+			task.Lesson.Name,
+			task.ReleasedAt,
+			new TaskContent(task.Text, task.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
+			(DateTime.Now - task.ReleasedAt).Days <= 0
+				? AssignedTaskCompletionStatusResponse.Expired
+				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
+					task.TaskCompletionResults.Single(tcr => tcr.Student.UserId == userId).TaskCompletionStatus.CompletionStatus.ToString()
+				)
+		));
+	}
+
+	/// <summary>
+	/// Получение дополнительной информации о заданной задаче по ее идентификатору
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/task/created/get/{taskId:int}
+	///
+	/// Параметры:
+	///
+	///	taskId - идентификатор задачи, дополнительную информацию по которой необходимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Дополнительная информация о заданной задаче</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
+	/// <response code="404">Некорректный идентификатор задачи</response>
+	[Authorize]
+	[HttpGet(template: "created/get/{taskId:int}")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetCreatedTasksResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetCreatedTasksResponse>> GetCreatedTaskById(
+		[FromRoute] int taskId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		DatabaseModels.Task task = await _context.Tasks.Where(predicate: t => t.Id == taskId).SingleOrDefaultAsync(cancellationToken: cancellationToken)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор задачи.");
+
+		return Ok(value: new GetCreatedTasksResponse(
+			task.Id,
+			task.Class.Name,
+			task.Lesson.Name,
+			task.ReleasedAt,
+			new TaskContent(task.Text, task.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
+			task.TaskCompletionResults.Count(
+				tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Completed
+			),
+			task.TaskCompletionResults.Count(
+				tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Uncompleted
+			)
+		));
+	}
+
+	/// <summary>
 	/// [Студент] Получение списка заданных задач с фильтрацией по дисциплине и статусу выполнения
 	/// </summary>
 	/// <remarks>
