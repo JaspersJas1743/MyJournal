@@ -15,6 +15,7 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 	#region Constructor
 	private StudyingSubjectInClassCollection(
 		ApiClient client,
+		int classId,
 		IEnumerable<StudyingSubjectInClass> studyingSubjects
 	)
 	{
@@ -22,8 +23,9 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 		List<StudyingSubjectInClass> subjects = new List<StudyingSubjectInClass>(collection: studyingSubjects);
 		subjects.Insert(index: 0, item: StudyingSubjectInClass.Create(
 			client: client,
+			classId: classId,
 			name: "Все дисциплины"
-		));
+		).GetAwaiter().GetResult());
 		_subjects = new Lazy<List<StudyingSubjectInClass>>(value: subjects);
 	}
 	#endregion
@@ -50,11 +52,13 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 		) ?? throw new InvalidOperationException();
 		return new StudyingSubjectInClassCollection(
 			client: client,
+			classId: classId,
 			studyingSubjects: subjects.Select(selector: s => StudyingSubjectInClass.Create(
 				client: client,
+				classId: classId,
 				response: s
-			))
-		);
+			).GetAwaiter().GetResult()
+		));
 	}
 	#endregion
 

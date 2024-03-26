@@ -23,7 +23,7 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 		subjects.Insert(index: 0, item: TaughtSubject.Create(
 			client: client,
 			name: "Все дисциплины"
-		));
+		).GetAwaiter().GetResult());
 		_subjects = new Lazy<List<TaughtSubject>>(value: subjects);
 	}
 	#endregion
@@ -51,9 +51,10 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 			client: client,
 			studyingSubjects: subjects.Select(selector: s => TaughtSubject.Create(
 				client: client,
-				response: s
-			))
-		);
+				response: s,
+				cancellationToken: cancellationToken
+			).GetAwaiter().GetResult()
+		));
 	}
 	#endregion
 

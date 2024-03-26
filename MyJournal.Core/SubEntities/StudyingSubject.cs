@@ -1,3 +1,4 @@
+using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 
 namespace MyJournal.Core.SubEntities;
@@ -6,16 +7,25 @@ public sealed class StudyingSubject : Subject
 {
 	#region Fields
 	private readonly ApiClient _client;
+	private readonly Lazy<AssignedTaskCollection> _tasks;
 	#endregion
 
 	#region Constructors
-	private StudyingSubject(ApiClient client)
-		=> _client = client;
 
 	private StudyingSubject(
 		ApiClient client,
-		string name
-	) : this(client: client)
+		Lazy<AssignedTaskCollection> tasks
+	)
+	{
+		_client = client;
+		_tasks = tasks;
+	}
+
+	private StudyingSubject(
+		ApiClient client,
+		string name,
+		Lazy<AssignedTaskCollection> tasks
+	) : this(client: client, tasks: tasks)
 	{
 		Name = name;
 		IsFirst = true;
@@ -23,8 +33,9 @@ public sealed class StudyingSubject : Subject
 
 	private StudyingSubject(
 		ApiClient client,
-		StudyingSubjectResponse response
-	) : this(client: client)
+		StudyingSubjectResponse response,
+		Lazy<AssignedTaskCollection> tasks
+	) : this(client: client, tasks: tasks)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -33,21 +44,45 @@ public sealed class StudyingSubject : Subject
 	}
 	#endregion
 
+	#region Properties
+	public AssignedTaskCollection Tasks => _tasks.Value;
+	#endregion
+
 	#region Records
 	internal sealed record StudyingSubjectResponse(int Id, string Name, SubjectTeacher Teacher);
 	#endregion
 
 	#region Methods
 	#region Static
-	internal static StudyingSubject Create(
+	internal static async Task<StudyingSubject> Create(
 		ApiClient client,
-		StudyingSubjectResponse response
-	) => new StudyingSubject(client: client, response: response);
+		StudyingSubjectResponse response,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return new StudyingSubject(client: client, response: response, tasks: new Lazy<AssignedTaskCollection>(value:
+			AssignedTaskCollection.Create(
+				client: client,
+				subjectId: response.Id,
+				cancellationToken: cancellationToken
+			).GetAwaiter().GetResult()
+		));
+	}
 
-	internal static StudyingSubject Create(
+	internal static async Task<StudyingSubject> Create(
 		ApiClient client,
-		string name
-	) => new StudyingSubject(client: client, name: name);
+		string name,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return new StudyingSubject(client: client, name: name, tasks: new Lazy<AssignedTaskCollection>(value:
+			AssignedTaskCollection.Create(
+				client: client,
+				subjectId: 0,
+				cancellationToken: cancellationToken
+			).GetAwaiter().GetResult()
+		));
+	}
 	#endregion
 	#endregion
 }

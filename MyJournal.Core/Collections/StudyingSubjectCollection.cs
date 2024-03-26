@@ -23,7 +23,7 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 		subjects.Insert(index: 0, item: StudyingSubject.Create(
 			client: client,
 			name: "Все дисциплины"
-		));
+		).GetAwaiter().GetResult());
 		_subjects = new Lazy<List<StudyingSubject>>(value: subjects);
 	}
 	#endregion
@@ -49,10 +49,13 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 		) ?? throw new InvalidOperationException();
 		return new StudyingSubjectCollection(
 			client: client,
-			studyingSubjects: subjects.Select(selector: s => StudyingSubject.Create(
-				client: client,
-				response: s
-			))
+			studyingSubjects: subjects.Select(selector: s =>
+				StudyingSubject.Create(
+					client: client,
+					response: s,
+					cancellationToken: cancellationToken
+				).GetAwaiter().GetResult()
+			)
 		);
 	}
 	#endregion

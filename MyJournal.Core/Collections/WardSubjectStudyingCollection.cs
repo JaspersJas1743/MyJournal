@@ -23,7 +23,7 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 		subjects.Insert(index: 0, item: WardSubjectStudying.Create(
 			client: client,
 			name: "Все дисциплины"
-		));
+		).GetAwaiter().GetResult());
 		_subjects = new Lazy<List<WardSubjectStudying>>(value: subjects);
 	}
 	#endregion
@@ -52,7 +52,7 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 			studyingSubjects: subjects.Select(selector: s => WardSubjectStudying.Create(
 				client: client,
 				response: s
-			))
+			).GetAwaiter().GetResult())
 		);
 	}
 	#endregion
