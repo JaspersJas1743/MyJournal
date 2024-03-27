@@ -44,4 +44,30 @@ public sealed class AssignedTask : BaseTask
 		) ?? throw new InvalidOperationException();
 		return new AssignedTask(client: client, response: response);
 	}
+
+	public async Task MarkCompleted(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _client.PutAsync(
+			apiMethod: TaskControllerMethods.ChangeCompletionStatusForTask(
+				taskId: Id,
+				completionStatus: TaskControllerMethods.CompletionStatus.Completed
+			),
+			cancellationToken: cancellationToken
+		);
+	}
+
+	public async Task MarkUncompleted(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _client.PutAsync(
+			apiMethod: TaskControllerMethods.ChangeCompletionStatusForTask(
+				taskId: Id,
+				completionStatus: TaskControllerMethods.CompletionStatus.Uncompleted
+			),
+			cancellationToken: cancellationToken
+		);
+	}
 }
