@@ -90,8 +90,12 @@ public class User
 	public InterlocutorCollection Interlocutors => _interlocutors.Value;
 	public IntendedInterlocutorCollection IntendedInterlocutors => _intendedInterlocutors.Value;
 	public Security Security => _security.Value;
+	public bool SecurityIsLoaded => _security.IsValueCreated;
 	public ProfilePhoto Photo => _photo.Value;
+	public bool PersonalDataIsLoaded => _personalData.IsValueCreated;
+	public bool PhotoIsLoaded => _photo.IsValueCreated;
 	public Activity Activity => _activity.Value;
+	public bool ActivityIsLoaded => _activity.IsValueCreated;
 	#endregion
 
 	#region Records
@@ -131,61 +135,90 @@ public class User
 	{
 		await _userHubConnection.StartAsync(cancellationToken: cancellationToken);
 		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOnline, handler: (userId, onlineAt) =>
-			Interlocutors.OnAppearedOnline(e: new InterlocutorCollection.InterlocutorAppearedOnlineEventArgs(
-				interlocutorId: userId,
-				onlineAt: onlineAt
-			))
-		);
+		{
+			if (Interlocutors.IsLoaded)
+			{
+				Interlocutors.OnAppearedOnline(e: new InterlocutorCollection.InterlocutorAppearedOnlineEventArgs(
+					   interlocutorId: userId,
+					   onlineAt: onlineAt
+				));
+			}
+		});
 		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOffline, handler: (userId, onlineAt) =>
-			Interlocutors.OnAppearedOffline(e: new InterlocutorCollection.InterlocutorAppearedOfflineEventArgs(
-				interlocutorId: userId,
-				onlineAt: onlineAt
-			))
-		);
+		{
+			if (Interlocutors.IsLoaded)
+			{
+				Interlocutors.OnAppearedOffline(e: new InterlocutorCollection.InterlocutorAppearedOfflineEventArgs(
+					interlocutorId: userId,
+					onlineAt: onlineAt
+				));
+			}
+		});
 		_userHubConnection.On<int, string>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: (userId, link) =>
-			Interlocutors.OnUpdatedPhoto(e: new InterlocutorCollection.InterlocutorUpdatedPhotoEventArgs(
-				interlocutorId: userId,
-				link: link
-			))
-		);
+		{
+			if (Interlocutors.IsLoaded)
+			{
+				Interlocutors.OnUpdatedPhoto(e: new InterlocutorCollection.InterlocutorUpdatedPhotoEventArgs(
+					 interlocutorId: userId,
+					 link: link
+				));
+			}
+		});
 		_userHubConnection.On<int>(methodName: UserHubMethods.DeletedProfilePhoto, handler: userId =>
-			Interlocutors.OnDeletedPhoto(e: new InterlocutorCollection.InterlocutorDeletedPhotoEventArgs(
-				interlocutorId: userId
-			))
-		);
-		_userHubConnection.On<int>(methodName: UserHubMethods.SignIn, handler: async sessionId=>
-			await Security.Sessions.OnCreatedSession(
-				e: new SessionCollection.CreatedSessionEventArgs(sessionId: sessionId),
-				cancellationToken: cancellationToken
-			)
-		);
+		{
+			if (Interlocutors.IsLoaded)
+			{
+				Interlocutors.OnDeletedPhoto(e: new InterlocutorCollection.InterlocutorDeletedPhotoEventArgs(
+					 interlocutorId: userId
+				));
+			}
+		});
+		_userHubConnection.On<int>(methodName: UserHubMethods.SignIn, handler: async sessionId =>
+		{
+			if (SecurityIsLoaded)
+			{
+				await Security.Sessions.OnCreatedSession(
+					e: new SessionCollection.CreatedSessionEventArgs(sessionId: sessionId),
+					cancellationToken: cancellationToken
+				);
+			}
+		});
 		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: async (sessionIds) =>
 		{
-			await Security.Sessions.OnClosedSession(
-				e: new SessionCollection.ClosedSessionEventArgs(
+			if (SecurityIsLoaded)
+			{
+				await Security.Sessions.OnClosedSession(e: new SessionCollection.ClosedSessionEventArgs(
 					sessionIds: sessionIds,
 					currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)
-				), cancellationToken: cancellationToken
-			);
-		}
-		);
+				), cancellationToken: cancellationToken);
+			}
+		});
 		_userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async (chatId) =>
 		{
-			await Chats.Append(chatId: chatId, cancellationToken: cancellationToken);
+			if (Chats.IsLoaded)
+				await Chats.Append(chatId: chatId, cancellationToken: cancellationToken);
 			JoinedInChat?.Invoke(e: new JoinedInChatEventArgs(chatId: chatId));
 		});
 		_userHubConnection.On<string?>(methodName: UserHubMethods.SetPhone, handler: (phone) =>
-			Security.Phone?.OnUpdated(e: new Phone.UpdatedPhoneEventArgs(phone: phone))
-		);
+		{
+			if (SecurityIsLoaded)
+				Security.Phone?.OnUpdated(e: new Phone.UpdatedPhoneEventArgs(phone: phone));
+		});
 		_userHubConnection.On<string?>(methodName: UserHubMethods.SetEmail, handler: (email) =>
-			Security.Email?.OnUpdated(e: new Email.UpdatedEmailEventArgs(email: email))
-		);
+		{
+			if (SecurityIsLoaded)
+				Security.Email?.OnUpdated(e: new Email.UpdatedEmailEventArgs(email: email));
+		});
 		_userHubConnection.On<int, int>(methodName: UserHubMethods.SendMessage, handler: async (chatId, messageId) =>
-			await Chats.OnReceivedMessage(
-				e: new ChatCollection.ReceivedMessageInChatEventArgs(chatId: chatId, messageId: messageId),
-				cancellationToken: cancellationToken
-			)
-		);
+		{
+			if (Chats.IsLoaded)
+			{
+				await Chats.OnReceivedMessage(
+					e: new ChatCollection.ReceivedMessageInChatEventArgs(chatId: chatId, messageId: messageId),
+					cancellationToken: cancellationToken
+				);
+			}
+		});
 	}
 	#endregion
 }

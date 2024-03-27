@@ -34,6 +34,8 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 	#region Properties
 	public int Length => _collection.Value.Count;
 
+	public bool IsLoaded => _collection.IsValueCreated;
+
 	public T this[int id]
 		=> _collection.Value.Find(match: i => i.Id.Equals(id))
 		   ?? throw new ArgumentOutOfRangeException(message: $"Объект с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
