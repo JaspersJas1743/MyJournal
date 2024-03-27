@@ -24,10 +24,28 @@ public sealed class TaskAssignedToClass : BaseTask
 
 	public string LessonName { get; init; }
 	public string ClassName { get; init; }
-	public int CountOfCompletedTask { get; init; }
-	public int CountOfUncompletedTask { get; init; }
+	public int CountOfCompletedTask { get; private set; }
+	public int CountOfUncompletedTask { get; private set; }
 
 	internal sealed record GetCreatedTasksResponse(int TaskId, string ClassName, string LessonName, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
+
+	#region Classes
+	public sealed class CompletedEventArgs : EventArgs;
+	public sealed class UncompletedEventArgs : EventArgs;
+	public sealed class CreatedEventArgs : EventArgs;
+	#endregion
+
+	#region Delegates
+	public delegate void CompletedHandler(CompletedEventArgs e);
+	public delegate void UncompletedHandler(UncompletedEventArgs e);
+	public delegate void CreatedHandler(CreatedEventArgs e);
+	#endregion
+
+	#region Events
+	public event CompletedHandler Completed;
+	public event UncompletedHandler Uncompleted;
+	public event CreatedHandler Created;
+	#endregion
 
 	internal static TaskAssignedToClass Create(
 		ApiClient client,
@@ -46,4 +64,21 @@ public sealed class TaskAssignedToClass : BaseTask
 		) ?? throw new InvalidOperationException();
 		return new TaskAssignedToClass(client: client, response: response);
 	}
+
+	internal async Task OnCompletedTask(CompletedEventArgs e)
+	{
+		CountOfCompletedTask += 1;
+		CountOfUncompletedTask -= 1;
+		Completed?.Invoke(e: e);
+	}
+
+	internal async Task OnUncompletedTask(UncompletedEventArgs e)
+	{
+		CountOfCompletedTask -= 1;
+		CountOfUncompletedTask += 1;
+		Uncompleted?.Invoke(e: e);
+	}
+
+	internal void OnCreatedTask(CreatedEventArgs e)
+		=> Created?.Invoke(e: e);
 }

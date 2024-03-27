@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
+using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -7,7 +10,8 @@ namespace MyJournal.Core;
 
 public sealed class Teacher : User
 {
-	private readonly Lazy<TaughtSubjectCollection> _toughtSubjectCollection;
+	private readonly Lazy<TaughtSubjectCollection> _taughtSubjectCollection;
+	private readonly HubConnection _teacherHubConnection;
 
 	private Teacher(
 		ApiClient client,
@@ -30,10 +34,14 @@ public sealed class Teacher : User
 		sessions: sessions
 	)
 	{
-		_toughtSubjectCollection = taughtSubjects;
+		_taughtSubjectCollection = taughtSubjects;
+		_teacherHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
+			url: TeacherHubMethods.HubEndpoint,
+			token: client.Token!
+		);
 	}
 
-	public TaughtSubjectCollection TaughtSubjects => _toughtSubjectCollection.Value;
+	public TaughtSubjectCollection TaughtSubjects => _taughtSubjectCollection.Value;
 
 	internal static async Task<Teacher> Create(
 		ApiClient client,
@@ -74,6 +82,23 @@ public sealed class Teacher : User
 			))
 		);
 		await teacher.ConnectToUserHub(cancellationToken: cancellationToken);
+		await teacher.ConnectToTeacherHub(cancellationToken: cancellationToken);
 		return teacher;
+	}
+
+	private async Task ConnectToTeacherHub(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _teacherHubConnection.StartAsync(cancellationToken: cancellationToken);
+		_teacherHubConnection.On<int>(methodName: TeacherHubMethods.StudentCompletedTask, handler: async taskId =>
+			await TaughtSubjects.OnCompletedTask(e: new TaughtSubjectCollection.CompletedTaskEventArgs(taskId: taskId))
+		);
+		_teacherHubConnection.On<int>(methodName: TeacherHubMethods.StudentUncompletedTask, handler: async taskId =>
+			await TaughtSubjects.OnUncompletedTask(e: new TaughtSubjectCollection.UncompletedTaskEventArgs(taskId: taskId))
+		);
+		_teacherHubConnection.On<int, int>(methodName: TeacherHubMethods.CreatedTask, handler: async (taskId, subjectId) =>
+			await TaughtSubjects.OnCreatedTask(e: new TaughtSubjectCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId))
+		);
 	}
 }

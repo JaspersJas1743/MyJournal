@@ -51,6 +51,33 @@ public sealed class StudyingSubjectInClass : Subject
 	public TaskAssignedToClassCollection Tasks => _tasks.Value;
 	#endregion
 
+	#region Classes
+	public sealed class CompletedTaskEventArgs(int taskId) : EventArgs
+	{
+		public int TaskId { get; } = taskId;
+	}
+	public sealed class UncompletedTaskEventArgs(int taskId) : EventArgs
+	{
+		public int TaskId { get; } = taskId;
+	}
+	public sealed class CreatedTaskEventArgs(int taskId) : EventArgs
+	{
+		public int TaskId { get; } = taskId;
+	}
+	#endregion
+
+	#region Delegates
+	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
+	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
+	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
+	#endregion
+
+	#region Events
+	public event CompletedTaskHandler CompletedTask;
+	public event UncompletedTaskHandler UncompletedTask;
+	public event CreatedTaskHandler CreatedTask;
+	#endregion
+
 	#region Methods
 	#region Static
 	internal static async Task<StudyingSubjectInClass> Create(
@@ -85,6 +112,33 @@ public sealed class StudyingSubjectInClass : Subject
 				cancellationToken: cancellationToken
 			).GetAwaiter().GetResult()
 		));
+	}
+	#endregion
+
+	#region Instance
+	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
+	{
+		foreach (TaskAssignedToClass task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+			await task.OnCompletedTask(e: new TaskAssignedToClass.CompletedEventArgs());
+
+		CompletedTask?.Invoke(e: e);
+	}
+
+	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
+	{
+		foreach (TaskAssignedToClass task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+			await task.OnUncompletedTask(e: new TaskAssignedToClass.UncompletedEventArgs());
+
+		UncompletedTask?.Invoke(e: e);
+	}
+
+	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
+	{
+		await Tasks.Append(id: e.TaskId);
+		foreach (TaskAssignedToClass task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+			task.OnCreatedTask(e: new TaskAssignedToClass.CreatedEventArgs());
+
+		CreatedTask?.Invoke(e: e);
 	}
 	#endregion
 	#endregion

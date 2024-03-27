@@ -233,6 +233,8 @@ public class Program
 		app.MapHub<UserHub>(pattern: "/hub/user");
 		app.MapHub<TeacherHub>(pattern: "/hub/teacher");
 		app.MapHub<StudentHub>(pattern: "/hub/student");
+		app.MapHub<ParentHub>(pattern: "/hub/parent");
+		app.MapHub<AdministratorHub>(pattern: "/hub/administrator");
 
 		app.UseExceptionHandler();
 

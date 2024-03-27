@@ -71,6 +71,33 @@ public sealed class TaughtSubject : ISubEntity
 	public CreatedTaskCollection Tasks => _tasks.Value;
 	#endregion
 
+	#region Classes
+	public sealed class CompletedTaskEventArgs(int taskId) : EventArgs
+	{
+		public int TaskId { get; } = taskId;
+	}
+	public sealed class UncompletedTaskEventArgs(int taskId) : EventArgs
+	{
+		public int TaskId { get; } = taskId;
+	}
+	public sealed class CreatedTaskEventArgs(int taskId) : EventArgs
+	{
+		public int TaskId { get; } = taskId;
+	}
+	#endregion
+
+	#region Delegates
+	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
+	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
+	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
+	#endregion
+
+	#region Events
+	public event CompletedTaskHandler CompletedTask;
+	public event UncompletedTaskHandler UncompletedTask;
+	public event CreatedTaskHandler CreatedTask;
+	#endregion
+
 	#region Methods
 	#region Static
 	internal static async Task<TaughtSubject> Create(
@@ -109,6 +136,31 @@ public sealed class TaughtSubject : ISubEntity
 	#region Instance
 	public IInitTaskBuilder CreateTask()
 		=> InitTaskBuilder.Create(fileService: _fileService);
+
+	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
+	{
+		foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+			await task.OnCompletedTask(e: new CreatedTask.CompletedEventArgs());
+
+		CompletedTask?.Invoke(e: e);
+	}
+
+	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
+	{
+		foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+			await task.OnUncompletedTask(e: new CreatedTask.UncompletedEventArgs());
+
+		UncompletedTask?.Invoke(e: e);
+	}
+
+	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
+	{
+		await Tasks.Append(id: e.TaskId);
+		foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+			task.OnCreatedTask(e: new CreatedTask.CreatedEventArgs());
+
+		CreatedTask?.Invoke(e: e);
+	}
 	#endregion
 	#endregion
 }

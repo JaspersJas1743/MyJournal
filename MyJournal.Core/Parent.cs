@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
-using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -9,6 +10,7 @@ namespace MyJournal.Core;
 public sealed class Parent : User
 {
 	private readonly Lazy<WardSubjectStudyingCollection> _wardSubjectsStudying;
+	private readonly HubConnection _parentHubConnection;
 
 	private Parent(
 		ApiClient client,
@@ -32,6 +34,10 @@ public sealed class Parent : User
 	)
 	{
 		_wardSubjectsStudying = wardSubjectsStudying;
+		_parentHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
+			url: ParentHubMethods.HubEndpoint,
+			token: client.Token!
+		);
 	}
 
 	public WardSubjectStudyingCollection WardSubjectsStudying => _wardSubjectsStudying.Value;
@@ -74,6 +80,23 @@ public sealed class Parent : User
 			))
 		);
 		await parent.ConnectToUserHub(cancellationToken: cancellationToken);
+		await parent.ConnectToParentHub(cancellationToken: cancellationToken);
 		return parent;
+	}
+
+	private async Task ConnectToParentHub(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _parentHubConnection.StartAsync(cancellationToken: cancellationToken);
+		_parentHubConnection.On<int>(methodName: ParentHubMethods.WardCompletedTask, handler: async taskId =>
+			await WardSubjectsStudying.OnCompletedTask(e: new WardSubjectStudyingCollection.CompletedTaskEventArgs(taskId: taskId))
+		);
+		_parentHubConnection.On<int>(methodName: ParentHubMethods.WardUncompletedTask, handler: async taskId =>
+			await WardSubjectsStudying.OnUncompletedTask(e: new WardSubjectStudyingCollection.UncompletedTaskEventArgs(taskId: taskId))
+		);
+		_parentHubConnection.On<int, int>(methodName: ParentHubMethods.CreatedTaskToWard, handler: async (taskId, subjectId) =>
+			await WardSubjectsStudying.OnCreatedTask(e: new WardSubjectStudyingCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId))
+		);
 	}
 }

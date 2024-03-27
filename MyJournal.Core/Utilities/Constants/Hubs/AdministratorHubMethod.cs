@@ -1,9 +1,9 @@
 namespace MyJournal.Core.Utilities.Constants.Hubs;
 
-internal static class TeacherHubMethods
+internal static class AdministratorHubMethod
 {
-	internal const string HubEndpoint = "https://localhost:7267/hub/teacher";
-	internal const string CreatedTask = nameof(CreatedTask);
+	internal const string HubEndpoint = "https://localhost:7267/hub/administrator";
 	internal const string StudentCompletedTask = nameof(StudentCompletedTask);
 	internal const string StudentUncompletedTask = nameof(StudentUncompletedTask);
+	internal const string CreatedTaskToStudents = nameof(CreatedTaskToStudents);
 }

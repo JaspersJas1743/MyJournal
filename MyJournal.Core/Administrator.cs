@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -8,6 +10,7 @@ namespace MyJournal.Core;
 public sealed class Administrator : User
 {
 	private readonly Lazy<ClassCollection> _classes;
+	private readonly HubConnection _administratorHubConnection;
 
 	private Administrator(
 		ApiClient client,
@@ -31,6 +34,10 @@ public sealed class Administrator : User
 	)
 	{
 		_classes = classes;
+		_administratorHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
+			url: AdministratorHubMethod.HubEndpoint,
+			token: client.Token!
+		);
 	}
 
 	public ClassCollection Classes => _classes.Value;
@@ -73,6 +80,23 @@ public sealed class Administrator : User
 			))
 		);
 		await administrator.ConnectToUserHub(cancellationToken: cancellationToken);
+		await administrator.ConnectToAdministratorHub(cancellationToken: cancellationToken);
 		return administrator;
+	}
+
+	private async Task ConnectToAdministratorHub(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _administratorHubConnection.StartAsync(cancellationToken: cancellationToken);
+		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentCompletedTask, handler: async taskId =>
+			await Classes.OnCompletedTask(e: new ClassCollection.CompletedTaskEventArgs(taskId: taskId))
+		);
+		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentUncompletedTask, handler: async taskId =>
+			await Classes.OnUncompletedTask(e: new ClassCollection.UncompletedTaskEventArgs(taskId: taskId))
+		);
+		_administratorHubConnection.On<int, int, int>(methodName: AdministratorHubMethod.CreatedTaskToStudents, handler: async (taskId, subjectId, classId) =>
+			await Classes.OnCreatedTask(e: new ClassCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: classId))
+		);
 	}
 }

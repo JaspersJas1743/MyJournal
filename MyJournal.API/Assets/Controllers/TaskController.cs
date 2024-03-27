@@ -15,7 +15,9 @@ namespace MyJournal.API.Assets.Controllers;
 public class TaskController(
 	MyJournalContext context,
 	IHubContext<TeacherHub, ITeacherHub> teacherHubContext,
-	IHubContext<StudentHub, IStudentHub> studentHubContext
+	IHubContext<StudentHub, IStudentHub> studentHubContext,
+	IHubContext<ParentHub, IParentHub> parentHubContext,
+	IHubContext<AdministratorHub, IAdministratorHub> administratorHubContext
 ) : MyJournalBaseController(context: context)
 {
 	private readonly MyJournalContext _context = context;
@@ -789,8 +791,16 @@ public class TaskController(
 		IEnumerable<string> studentIds = _context.Students.AsNoTracking()
 			.Where(predicate: s => s.ClassId == request.ClassId)
 			.Select(selector: s => s.UserId.ToString());
+		IQueryable<string> parentIds = _context.Users.Where(predicate: u => u.Id == userId)
+			.SelectMany(selector: u => u.Parents.Select(p => p.UserId.ToString()));
+		IQueryable<string> adminIds = _context.Administrators.Where(
+			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).Select(selector: a => a.UserId.ToString());
 
-		await teacherHubContext.Clients.Users(userIds: studentIds).CreatedTask(taskId: newTask.Id);
+		await studentHubContext.Clients.Users(userIds: studentIds).TeacherCreatedTask(taskId: newTask.Id, subjectId: newTask.LessonId);
+		await teacherHubContext.Clients.User(userId: userId.ToString()).CreatedTask(taskId: newTask.Id, subjectId: newTask.LessonId);
+		await parentHubContext.Clients.Users(userIds: parentIds).CreatedTaskToWard(taskId: newTask.Id, subjectId: newTask.LessonId);
+		await administratorHubContext.Clients.Users(userIds: adminIds).CreatedTaskToStudents(taskId: newTask.Id, subjectId: newTask.LessonId, classId: newTask.ClassId);
 
 		return Ok(value: new CreateTasksResponse(Message: "Задание успешно сохранено!"));
 	}
@@ -847,11 +857,28 @@ public class TaskController(
 
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
+		IQueryable<string> parentIds = _context.Users.Where(predicate: u => u.Id == userId)
+			.SelectMany(selector: u => u.Parents.Select(p => p.UserId.ToString()));
+		IQueryable<string> adminIds = _context.Administrators.Where(
+			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).Select(selector: a => a.UserId.ToString());
+		string creatorId = await _context.Tasks.Where(predicate: t => t.Id == taskId)
+			.Select(selector: t => t.Creator.UserId.ToString())
+			.SingleAsync(cancellationToken: cancellationToken);
 		if (status == TaskCompletionStatuses.Completed)
+		{
 			await studentHubContext.Clients.User(userId: userId.ToString()).CompletedTask(taskId: taskId);
+			await teacherHubContext.Clients.User(userId: creatorId).StudentCompletedTask(taskId: taskId);
+			await parentHubContext.Clients.Users(userIds: parentIds).WardCompletedTask(taskId: taskId);
+			await administratorHubContext.Clients.Users(userIds: adminIds).StudentCompletedTask(taskId: taskId);
+		}
 		else
+		{
 			await studentHubContext.Clients.User(userId: userId.ToString()).UncompletedTask(taskId: taskId);
-
+			await teacherHubContext.Clients.User(userId: creatorId).StudentUncompletedTask(taskId: taskId);
+			await parentHubContext.Clients.Users(userIds: parentIds).WardUncompletedTask(taskId: taskId);
+			await administratorHubContext.Clients.Users(userIds: adminIds).StudentUncompletedTask(taskId: taskId);
+		}
 		return Ok();
 	}
 	#endregion

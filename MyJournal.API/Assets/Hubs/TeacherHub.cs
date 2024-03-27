@@ -14,6 +14,6 @@ public sealed class TeacherHub : Hub<ITeacherHub>
 	public async Task StudentUncompletedTask(int taskId, IEnumerable<string> studentIds)
 		=> await Clients.Users(userIds: studentIds).StudentUncompletedTask(taskId: taskId);
 
-	public async Task CreatedTask(int taskId, IEnumerable<string> studentIds)
-		=> await Clients.Users(userIds: studentIds).CreatedTask(taskId: taskId);
+	public async Task CreatedTask(int taskId, int subjectId, IEnumerable<string> studentIds)
+		=> await Clients.Users(userIds: studentIds).CreatedTask(taskId: taskId, subjectId: subjectId);
 }

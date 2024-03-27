@@ -20,12 +20,30 @@ public sealed class TaskAssignedToWard : BaseTask
 		LessonName = response.LessonName;
 	}
 
-	public TaskCompletionStatus CompletionStatus { get; init; }
+	public TaskCompletionStatus CompletionStatus { get; private set; }
 	public string LessonName { get; init; }
 
 	public enum TaskCompletionStatus { Uncompleted, Completed, Expired }
 
 	internal sealed record GetAssignedTaskResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, TaskCompletionStatus CompletionStatus);
+
+	#region Classes
+	public sealed class CompletedEventArgs : EventArgs;
+	public sealed class UncompletedEventArgs : EventArgs;
+	public sealed class CreatedEventArgs : EventArgs;
+	#endregion
+
+	#region Delegates
+	public delegate void CompletedHandler(CompletedEventArgs e);
+	public delegate void UncompletedHandler(UncompletedEventArgs e);
+	public delegate void CreatedHandler(CreatedEventArgs e);
+	#endregion
+
+	#region Events
+	public event CompletedHandler Completed;
+	public event UncompletedHandler Uncompleted;
+	public event CreatedHandler Created;
+	#endregion
 
 	internal static TaskAssignedToWard Create(
 		ApiClient client,
@@ -43,4 +61,20 @@ public sealed class TaskAssignedToWard : BaseTask
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new TaskAssignedToWard(client: client, response: response);
-	}}
+	}
+
+	internal async Task OnCompletedTask(CompletedEventArgs e)
+	{
+		CompletionStatus = TaskCompletionStatus.Completed;
+		Completed?.Invoke(e: e);
+	}
+
+	internal async Task OnUncompletedTask(UncompletedEventArgs e)
+	{
+		CompletionStatus = TaskCompletionStatus.Uncompleted;
+		Uncompleted?.Invoke(e: e);
+	}
+
+	internal void OnCreatedTask(CreatedEventArgs e)
+		=> Created?.Invoke(e: e);
+}

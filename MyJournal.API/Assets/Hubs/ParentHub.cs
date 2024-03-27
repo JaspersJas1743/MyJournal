@@ -14,6 +14,6 @@ public sealed class ParentHub : Hub<IParentHub>
 	public async Task WardUncompletedTask(int taskId)
 		=> await Clients.Caller.WardUncompletedTask(taskId: taskId);
 
-	public async Task CreatedTaskToWard(int taskId)
-		=> await Clients.Caller.CreatedTaskToWard(taskId: taskId);
+	public async Task CreatedTaskToWard(int taskId, int subjectId)
+		=> await Clients.Caller.CreatedTaskToWard(taskId: taskId, subjectId: subjectId);
 }

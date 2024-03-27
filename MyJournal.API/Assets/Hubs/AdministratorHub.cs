@@ -14,6 +14,6 @@ public sealed class AdministratorHub : Hub<IAdministratorHub>
 	public async Task StudentUncompletedTask(int taskId)
 		=> await Clients.Caller.StudentUncompletedTask(taskId: taskId);
 
-	public async Task CreatedTaskToStudents(int taskId)
-		=> await Clients.Caller.CreatedTaskToStudents(taskId: taskId);
+	public async Task CreatedTaskToStudents(int taskId, int subjectId, int classId)
+		=> await Clients.Caller.CreatedTaskToStudents(taskId: taskId, subjectId: subjectId, classId: classId);
 }
