@@ -16,7 +16,7 @@ public class ClassController(
 	private readonly MyJournalContext _context = context;
 
 	public sealed record GetClassResponse(int Id, string Name);
-	public sealed record GetEducationPeriodsByClassResponse(int Id, string Name);
+	public sealed record GetEducationPeriodsByClassResponse(int Id, string Name, DateOnly StartDate, DateOnly EndDate);
 
 	/// <summary>
 	/// [Администратор] Получение списка классов
@@ -77,7 +77,9 @@ public class ClassController(
 			.Select(selector: epfc => epfc.EducationPeriod)
 			.Select(selector: ep => new GetEducationPeriodsByClassResponse(
 				ep.Id,
-				ep.Period
+				ep.Period,
+				ep.StartDate,
+				ep.EndDate
 			));
 
 		return Ok(value: educationPeriods);
