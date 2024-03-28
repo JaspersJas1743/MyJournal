@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
-using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;

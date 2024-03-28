@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
@@ -42,6 +43,8 @@ public sealed class Student : User
 
 	public StudyingSubjectCollection StudyingSubjects => _studyingSubjects.Value;
 
+	private sealed record GetStudentInformationResponse(int ClassId);
+
 	internal static async Task<Student> Create(
 		ApiClient client,
 		IFileService fileService,
@@ -76,6 +79,7 @@ public sealed class Student : User
 			)),
 			studyingSubjects: new Lazy<StudyingSubjectCollection>(value: await StudyingSubjectCollection.Create(
 				client: client,
+				fileService: fileService,
 				cancellationToken: cancellationToken
 			))
 		);

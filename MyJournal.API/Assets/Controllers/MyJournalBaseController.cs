@@ -15,7 +15,7 @@ public class MyJournalBaseController(
 	protected int GetAuthorizedUserId()
 	{
 		return Int32.Parse(s: HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Identifier)
-							  ?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
 	}
 
 	protected async Task<User> GetAuthorizedUser(
@@ -57,7 +57,7 @@ public class MyJournalBaseController(
 	protected IPAddress GetSenderIp()
     {
         return HttpContext.Connection.RemoteIpAddress?.MapToIPv4() ??
-               throw new NullReferenceException(message: "HttpContext.Connection.RemoteIpAddress is null");
+			throw new NullReferenceException(message: "HttpContext.Connection.RemoteIpAddress is null");
     }
 
 	protected async Task<User?> FindUserByIdAsync(

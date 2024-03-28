@@ -637,6 +637,84 @@ public class UserTests
 	}
 
 	[Test]
+	public async Task StudentGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Student? student = await service.SignIn(credentials: credentials) as Student;
+		StudyingSubjectCollection studyingSubjects = student.StudyingSubjects;
+		EducationPeriod lastPeriod = studyingSubjects.EducationPeriods.Last();
+		EducationPeriod firstPeriod = studyingSubjects.EducationPeriods.First();
+		await studyingSubjects.SetEducationPeriod(period: lastPeriod);
+		await studyingSubjects.SetEducationPeriod(period: firstPeriod);
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 4));
+		StudyingSubject firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
+		StudyingSubject secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		StudyingSubject thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		StudyingSubject fourStudyingSubject = studyingSubjects[index: 3];
+		Assert.That(actual: fourStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: fourStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: fourStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: fourStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+	}
+
+	[Test]
+	public async Task StudentGetStudyingSubjectsForPeriod_WithCorrectData_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Student? student = await service.SignIn(credentials: credentials) as Student;
+		StudyingSubjectCollection studyingSubjects = student.StudyingSubjects;
+		EducationPeriod period = studyingSubjects.EducationPeriods.Last();
+		await studyingSubjects.SetEducationPeriod(period: period);
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 3));
+		StudyingSubject firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: firstStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: firstStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: firstStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: firstStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		StudyingSubject secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		StudyingSubject thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+	}
+
+	[Test]
 	public async Task TeacherGetTaughtSubjects_WithCorrectData_ShouldPassed()
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
@@ -646,10 +724,56 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		TaughtSubjectCollection studyingSubjects = teacher.TaughtSubjects;
-		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 2));
-		TaughtSubject firstTaughtSubject = studyingSubjects[index: 0];
-		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
+		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
+		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
+		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все классы"));
+		TaughtSubject secondTaughtSubject = teacher.TaughtSubjects[index: 1];
+		Assert.That(actual: secondTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: secondTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondTaughtSubject.Class.Id, expression: Is.EqualTo(expected: 11));
+		Assert.That(actual: secondTaughtSubject.Class.Name, expression: Is.EqualTo(expected: "11 класс"));
+	}
+
+	[Test]
+	public async Task TeacherGetTaughtSubjectsForPeriod_WithCorrectData_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test2",
+			password: "test2test2",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
+		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
+		EducationPeriod educationPeriod = taughtSubjects.EducationPeriods.Last();
+		await taughtSubjects.SetEducationPeriod(period: educationPeriod);
+		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 1));
+		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
+		Assert.That(actual: firstTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: firstTaughtSubject.Class.Id, expression: Is.EqualTo(expected: 11));
+		Assert.That(actual: firstTaughtSubject.Class.Name, expression: Is.EqualTo(expected: "11 класс"));
+	}
+
+	[Test]
+	public async Task TeacherGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test2",
+			password: "test2test2",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
+		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
+		EducationPeriod lastEducationPeriod = taughtSubjects.EducationPeriods.Last();
+		EducationPeriod firstEducationPeriod = taughtSubjects.EducationPeriods.First();
+		await taughtSubjects.SetEducationPeriod(period: lastEducationPeriod);
+		await taughtSubjects.SetEducationPeriod(period: firstEducationPeriod);
+		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
+		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все классы"));
 		TaughtSubject secondTaughtSubject = teacher.TaughtSubjects[index: 1];
 		Assert.That(actual: secondTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
 		Assert.That(actual: secondTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -668,6 +792,84 @@ public class UserTests
 		);
 		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
 		StudyingSubjectInClassCollection studyingSubjects = administrator.Classes[index: 10].StudyingSubjects;
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 4));
+		StudyingSubjectInClass firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
+		StudyingSubjectInClass secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		StudyingSubjectInClass thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		StudyingSubjectInClass fourStudyingSubject = studyingSubjects[index: 3];
+		Assert.That(actual: fourStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: fourStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: fourStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: fourStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+	}
+
+	[Test]
+	public async Task AdministratorGetStudyingSubjectsForPeriod_WithCorrectData_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
+		StudyingSubjectInClassCollection studyingSubjects = administrator.Classes[index: 10].StudyingSubjects;
+		EducationPeriod educationPeriod = studyingSubjects.EducationPeriods.Last();
+		await studyingSubjects.SetEducationPeriod(period: educationPeriod);
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 3));
+		StudyingSubjectInClass firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: firstStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: firstStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: firstStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: firstStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		StudyingSubjectInClass secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		StudyingSubjectInClass thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+	}
+
+	[Test]
+	public async Task AdministratorGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
+		StudyingSubjectInClassCollection studyingSubjects = administrator.Classes[index: 10].StudyingSubjects;
+		EducationPeriod lastEducationPeriod = studyingSubjects.EducationPeriods.Last();
+		EducationPeriod firstEducationPeriod = studyingSubjects.EducationPeriods.First();
+		await studyingSubjects.SetEducationPeriod(period: lastEducationPeriod);
+		await studyingSubjects.SetEducationPeriod(period: firstEducationPeriod);
 		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 4));
 		StudyingSubjectInClass firstStudyingSubject = studyingSubjects[index: 0];
 		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
@@ -730,9 +932,87 @@ public class UserTests
 		Assert.That(actual: fourStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
 		Assert.That(actual: fourStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
 	}
+
+	[Test]
+	public async Task ParentGetStudyingSubjectsForPeriod_WithCorrectData_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test5",
+			password: "test5test5",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Parent? parent = await service.SignIn(credentials: credentials) as Parent;
+		WardSubjectStudyingCollection studyingSubjects = parent.WardSubjectsStudying;
+		EducationPeriod educationPeriod = studyingSubjects.EducationPeriods.Last();
+		await studyingSubjects.SetEducationPeriod(period: educationPeriod);
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 3));
+		WardSubjectStudying firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: firstStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: firstStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: firstStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: firstStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		WardSubjectStudying secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		WardSubjectStudying thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+	}
+
+	[Test]
+	public async Task ParentGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test5",
+			password: "test5test5",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Parent? parent = await service.SignIn(credentials: credentials) as Parent;
+		WardSubjectStudyingCollection studyingSubjects = parent.WardSubjectsStudying;
+		EducationPeriod lastEducationPeriod = studyingSubjects.EducationPeriods.Last();
+		EducationPeriod firstEducationPeriod = studyingSubjects.EducationPeriods.First();
+		await studyingSubjects.SetEducationPeriod(period: lastEducationPeriod);
+		await studyingSubjects.SetEducationPeriod(period: firstEducationPeriod);
+		Assert.That(actual: studyingSubjects.Length, expression: Is.EqualTo(expected: 4));
+		WardSubjectStudying firstStudyingSubject = studyingSubjects[index: 0];
+		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
+		WardSubjectStudying secondStudyingSubject = studyingSubjects[index: 1];
+		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
+		Assert.That(actual: secondStudyingSubject.Id, expression: Is.EqualTo(expected: 37));
+		Assert.That(actual: secondStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: secondStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "Иванов"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "Иван"));
+		Assert.That(actual: secondStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "Иванович"));
+		WardSubjectStudying thirdStudyingSubject = studyingSubjects[index: 2];
+		Assert.That(actual: thirdStudyingSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdStudyingSubject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test2"));
+		Assert.That(actual: thirdStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test2"));
+		WardSubjectStudying fourStudyingSubject = studyingSubjects[index: 3];
+		Assert.That(actual: fourStudyingSubject.Name, expression: Is.EqualTo(expected: "Проектная деятельность"));
+		Assert.That(actual: fourStudyingSubject.Id, expression: Is.EqualTo(expected: 72));
+		Assert.That(actual: fourStudyingSubject.Teacher.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: fourStudyingSubject.Teacher.Surname, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Name, expression: Is.EqualTo(expected: "test3"));
+		Assert.That(actual: fourStudyingSubject.Teacher.Patronymic, expression: Is.EqualTo(expected: "test3"));
+	}
 	#endregion
 
-	#region Student Tasks
+	#region Tasks
 	[Test]
 	public async Task StudentGetAssignedTasks_WithDefaultValues_ShouldPassed()
 	{
@@ -903,9 +1183,7 @@ public class UserTests
 		Assert.That(actual: thirdTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: thirdTask.CompletionStatus, expression: Is.EqualTo(expected: AssignedTask.TaskCompletionStatus.Expired));
 	}
-	#endregion
 
-	#region Administrator Tasks
 	[Test]
 	public async Task AdministratorGetTasksAssignedTo11Class_WithDefaultValues_ShouldPassed()
 	{
@@ -1051,9 +1329,7 @@ public class UserTests
 		Assert.That(actual: thirdTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: thirdTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
 	}
-	#endregion
 
-	#region Teacher Tasks
 	[Test]
 	public async Task TeacherGetCreatedTasks_WithDefaultValues_ShouldPassed()
 	{
@@ -1183,9 +1459,7 @@ public class UserTests
 		Assert.That(actual: secondTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: secondTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: secondTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));	}
-	#endregion
 
-	#region Parent Ward Tasks
 	[Test]
 	public async Task ParentGetTasksAssignedToWard_WithDefaultValues_ShouldPassed()
 	{

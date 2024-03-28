@@ -110,6 +110,16 @@ public sealed class StudyingSubject : Subject
 			).GetAwaiter().GetResult()
 		));
 	}
+
+	internal static StudyingSubject CreateWithoutTasks(
+		ApiClient client,
+		StudyingSubjectResponse response
+	) => new StudyingSubject(client: client, response: response, tasks: new Lazy<AssignedTaskCollection>(value: null));
+
+	internal static StudyingSubject CreateWithoutTasks(
+		ApiClient client,
+		string name
+	) => new StudyingSubject(client: client, name: name, tasks: new Lazy<AssignedTaskCollection>(value: null));
 	#endregion
 
 	#region Instance

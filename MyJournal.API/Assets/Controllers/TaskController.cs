@@ -828,7 +828,7 @@ public class TaskController(
 	/// <response code="200">Статус выполнения задачи успешно изменён</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
-	/// <response code="403">Некорректный идентификатор задачи</response>
+	/// <response code="404">Некорректный идентификатор задачи</response>
 	[Authorize(Policy = nameof(UserRoles.Student))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[HttpPut(template: "{taskId:int}/completion-status/change/{completionStatus}")]

@@ -39,7 +39,6 @@ public sealed class TaughtSubject : ISubEntity
 	) : this(client: client, tasks: tasks, fileService: fileService)
 	{
 		Name = name;
-		IsFirst = true;
 	}
 
 	private TaughtSubject(
@@ -52,7 +51,6 @@ public sealed class TaughtSubject : ISubEntity
 		Id = response.Id;
 		Name = response.Name;
 		Class = response.Class;
-		IsFirst = false;
 	}
 	#endregion
 
@@ -60,7 +58,6 @@ public sealed class TaughtSubject : ISubEntity
 	public int Id { get; init; }
 	public string Name { get; init; }
 	public TaughtClass Class { get; init; }
-	internal bool IsFirst { get; init; }
 	#endregion
 
 	#region Records
@@ -115,6 +112,18 @@ public sealed class TaughtSubject : ISubEntity
 			).GetAwaiter().GetResult()
 		));
 	}
+
+	internal static TaughtSubject CreateWithoutTasks(
+		ApiClient client,
+		IFileService fileService,
+		string name
+	) => new TaughtSubject(client: client, fileService: fileService, name: name, tasks: new Lazy<CreatedTaskCollection>(value: null));
+
+	internal static TaughtSubject CreateWithoutTasks(
+		ApiClient client,
+		IFileService fileService,
+		TaughtSubjectResponse response
+	) => new TaughtSubject(client: client, fileService: fileService, response: response, tasks: new Lazy<CreatedTaskCollection>(value: null));
 
 	internal static async Task<TaughtSubject> Create(
 		ApiClient client,

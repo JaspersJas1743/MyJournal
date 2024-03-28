@@ -109,6 +109,18 @@ public sealed class WardSubjectStudying : Subject
 			).GetAwaiter().GetResult()
 		));
 	}
+
+	internal static WardSubjectStudying CreateWithoutTasks(
+		ApiClient client,
+		StudyingSubjectResponse response,
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => new WardSubjectStudying(client: client, response: response, tasks: new Lazy<TaskAssignedToWardCollection>(value: null));
+
+	internal static WardSubjectStudying CreateWithoutTasks(
+		ApiClient client,
+		string name,
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => new WardSubjectStudying(client: client, name: name, tasks: new Lazy<TaskAssignedToWardCollection>(value: null));
 	#endregion
 
 	#region Instance
