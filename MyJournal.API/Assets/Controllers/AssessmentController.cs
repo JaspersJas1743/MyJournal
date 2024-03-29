@@ -1,0 +1,469 @@
+using System.Globalization;
+using System.Net.Mime;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MyJournal.API.Assets.DatabaseModels;
+using MyJournal.API.Assets.ExceptionHandlers;
+using MyJournal.API.Assets.Utilities;
+using MyJournal.API.Assets.Validation;
+using MyJournal.API.Assets.Validation.Validators;
+
+namespace MyJournal.API.Assets.Controllers;
+
+[ApiController]
+[Route(template: "api/assessments")]
+public sealed class AssessmentController(
+	MyJournalContext context
+) : MyJournalBaseController(context: context)
+{
+	private readonly MyJournalContext _context = context;
+
+	#region Records
+	public sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, GradeTypes GradeType);
+
+	public sealed record GetAssessmentsByIdResponse(string AverageGrade, IEnumerable<Grade> Grades);
+
+	[Validator<GetAssessmentsRequestValidator>]
+	public sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
+	public sealed record GetAssessmentsResponse(string AverageAssessment, string? FinalAssessment, IEnumerable<Grade> Assessments);
+
+	public sealed record GetPossibleAssessmentsResponse(int Id, string Assessment);
+
+	public sealed record GetCommentsForAssessmentsResponse(int Id, string? Comment, string Description);
+
+	[Validator<CreateAssessmentRequestValidator>]
+	public sealed record CreateAssessmentRequest(int GradeId, DateTime Datetime, int CommentId, int SubjectId, int StudentId);
+
+	[Validator<SetAttendanceRequestValidator>]
+	public sealed record SetAttendanceRequest(int SubjectId, DateTime Datetime, IEnumerable<Attendance> Attendances);
+	public sealed record Attendance(int StudentId, bool IsPresent, int? CommentId);
+
+	[Validator<ChangeAssessmentRequestValidator>]
+	public sealed record ChangeAssessmentRequest(int ChangedAssessmentId, int NewAssessmentId, DateTime Datetime, int CommentId);
+	public sealed record ChangeAssessmentResponse(string Message);
+
+	public sealed record DeleteAssessmentRequest(int AssessmentId);
+	#endregion
+
+	#region Methods
+	#region GET
+	/// <summary>
+	/// [Студент] Получение информации об оценках авторизованного ученика за указанный период
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/me/get?PeriodId=0&SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках
+	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Информация об оценках авторизованного ученика</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
+	[HttpGet(template: "me/get")]
+	[Authorize(Policy = nameof(UserRoles.Student))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetAssessmentsResponse>> GetAssessments(
+		[FromQuery] GetAssessmentsRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		EducationPeriod period = await _context.EducationPeriods.AsNoTracking()
+			.Where(predicate: ep => ep.Id == request.PeriodId)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден.");
+		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
+		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
+		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
+			.Where(predicate: s => s.UserId == userId)
+			.SelectMany(selector: s => s.Assessments)
+			.Where(predicate: a => EF.Functions.DateDiffDay(a.Datetime, start) <= 0 && EF.Functions.DateDiffDay(a.Datetime, end) >= 0);
+
+		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
+			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
+			.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
+
+		string? final = await _context.FinalGradesForEducationPeriods
+			.Where(predicate: fgfep =>
+				fgfep.EducationPeriodId == period.Id &&
+				fgfep.Student.UserId == userId &&
+				fgfep.LessonId == request.SubjectId
+			).Select(selector: fgfep => fgfep.Grade.Assessment)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+		return Ok(value: new GetAssessmentsResponse(
+		AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+			FinalAssessment: final is null ? null : final + ".00",
+			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+		));
+	}
+
+	/// <summary>
+	/// [Преподаватель/Администратор] Получение информации об оценках ученика по идентификатору за указанный период
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/{studentId:int}/get?PeriodId=0&SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	studentId - идентификатор ученик, информацию об оценках которого необходимо получить
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках
+	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Информация об оценках ученика</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
+	/// <response code="404">Указанный учебный период не найден</response>
+	[HttpGet(template: "{studentId:int}/get")]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsByIdResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetAssessmentsByIdResponse>> GetAssessmentsById(
+		[FromRoute] int studentId,
+		[FromQuery] GetAssessmentsRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		EducationPeriod period = await _context.EducationPeriods.AsNoTracking()
+			.Where(predicate: ep => ep.Id == request.PeriodId)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден.");
+		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
+		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
+		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
+			.Where(predicate: s => s.Id == studentId)
+			.SelectMany(selector: s => s.Assessments)
+			.Where(predicate: a => EF.Functions.DateDiffDay(a.Datetime, start) <= 0 && EF.Functions.DateDiffDay(a.Datetime, end) >= 0);
+
+		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
+			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
+			.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
+
+		return Ok(value: new GetAssessmentsByIdResponse(
+			AverageGrade: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+			Grades: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+		));
+	}
+
+	/// <summary>
+	/// [Преподаватель] Получение списка возможных оценок
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/possible/get
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Список возможных оценок</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	[HttpGet(template: "possible/get")]
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetPossibleAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetPossibleAssessmentsResponse>> GetPossibleAssessments(
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => Ok(value: _context.Grades.Select(selector: g => new GetPossibleAssessmentsResponse(g.Id, g.Assessment)));
+
+	/// <summary>
+	/// [Преподаватель] Получение списка возможных комментариев к оценке
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/{assessmentId:int}/comments/get
+	///
+	/// Параметры:
+	///
+	///	assessmentId - идентификатор оценки, список комментариев к которой необходимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Список возможных комментариев к оценке</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[HttpGet(template: "{assessmentId:int}/comments/get")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetCommentsForAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetCommentsForAssessmentsResponse>> GetCommentsForAssessments(
+		[FromRoute] int assessmentId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return Ok(value: _context.Grades.Where(predicate: g => g.Id == assessmentId).SelectMany(selector: g => g.GradeType.CommentsOnGrades)
+			.Select(selector: c => new GetCommentsForAssessmentsResponse(c.Id, c.Comment, c.Description))
+		);
+	}
+
+	/// <summary>
+	/// [Преподаватель] Получение списка комментариев к пропуску
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/truancy/comments/get
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Список возможных комментариев к пропуску</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	[HttpGet(template: "truancy/comments/get")]
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetCommentsForAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetCommentsForAssessmentsResponse>> GetCommentsForAssessments(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return Ok(value: _context.GradeTypes.Where(predicate: gt => gt.Type == GradeTypes.Truancy).SelectMany(selector: gt => gt.CommentsOnGrades)
+			.Select(selector: c => new GetCommentsForAssessmentsResponse(c.Id, c.Comment, c.Description))
+		);
+	}
+	#endregion
+
+	#region POST
+	/// <summary>
+	/// [Преподаватель] Установка новой оценки для ученика
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	POST api/assessments/create
+	/// {
+	///		"GradeId": 0,
+	///		"Datetime": "2024-03-29T17:40:07.894Z",
+	///		"CommentId": 0,
+	/// 	"SubjectId": 0,
+	/// 	"StudentId": 0
+	/// }
+	///
+	/// Параметры:
+	///
+	///	GradeId - идентификатор полученной оценки
+	///	Datetime - дата, за которую необходимо установить оценку
+	///	CommentId - идентификатор комментария к оценке
+	///	SubjectId - идентификатор дисциплины, по которой получена оценка
+	///	StudentId - идентификатор ученика, получившего оценку
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Оценка успешно установлена</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	[HttpPost(template: "create")]
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult> Create(
+		[FromBody] CreateAssessmentRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		Assessment assessment = new Assessment()
+		{
+			GradeId = request.GradeId,
+			CommentId = request.CommentId,
+			Datetime = request.Datetime,
+			LessonId = request.SubjectId,
+			StudentId = request.StudentId
+		};
+
+		await _context.AddAsync(entity: assessment, cancellationToken: cancellationToken);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		return Ok();
+	}
+
+	/// <summary>
+	/// [Преподаватель] Установка посещаемости учеников
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	POST api/assessments/attendance/set
+	/// {
+	/// 	"SubjectId": 0,
+	///		"Datetime": "2024-03-29T17:40:07.894Z",
+	/// 	"Attendances": [
+	/// 		{
+	/// 			"StudentId": 0,
+	/// 			"IsPresent": true,
+	/// 			"CommentId": 0
+	///			}
+	/// 	]
+	/// }
+	///
+	///
+	/// Параметры:
+	///
+	///	SubjectId - идентификатор дисциплины, по которой устанавливается посещаемость
+	///	Datetime - дата, за которую необходимо установить оценку
+	///	Attendances - информация о посещаемости ученика
+	///	Attendances.StudentId - идентификатор присутствовавшего/отсутствовавшего ученика
+	///	Attendances.IsPresent - присутствие на занятии: true - присутствовал, false - отсутствовал
+	///	Attendances.CommentId - идентификатор комментария к пропуску (если ученик отсутствовал)
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Посещаемость успешно проставлена</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	[HttpPost(template: "attendance/set")]
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult> SetAttendance(
+		[FromBody] SetAttendanceRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		DatabaseModels.Grade miss = await _context.Grades.Where(predicate: g => g.GradeType.Type == GradeTypes.Truancy).SingleAsync(cancellationToken: cancellationToken);
+
+		await _context.AddRangeAsync(entities: request.Attendances.Where(predicate: a => !a.IsPresent).Select(selector: a => new Assessment()
+		{
+			GradeId = miss.Id,
+			CommentId = a.CommentId,
+			Datetime = request.Datetime,
+			LessonId = request.SubjectId,
+			StudentId = a.StudentId,
+		}), cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		return Ok();
+	}
+	#endregion
+
+	#region PUT
+	/// <summary>
+	/// [Преподаватель] Изменение оценки по ее идентификатору
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	PUT api/assessments/change
+	/// {
+	/// 	"ChangedAssessmentId": 0,
+	/// 	"NewAssessmentId": 0,
+	/// 	"Datetime": "2024-03-29T17:49:20.205Z",
+	/// 	"CommentId": 0
+	/// }
+	///
+	/// Параметры:
+	///
+	///	ChangedAssessmentId - идентификатор заменяемой оценки
+	///	NewAssessmentId - идентификатор оценки, на которую производится замена
+	///	Datetime - дата, за которую установлена оценка
+	///	CommentId - идентификатор комментария к оценке
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Оценка успешно изменена</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	/// <response code="404">Оценка с указанным идентификатором не найдена</response>
+	[HttpPut(template: "change")]
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<ChangeAssessmentResponse>> Change(
+		[FromBody] ChangeAssessmentRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		Assessment assessment = await _context.Assessments.SingleOrDefaultAsync(predicate: a => a.Id == request.ChangedAssessmentId, cancellationToken: cancellationToken)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена.");
+
+		assessment.Datetime = request.Datetime;
+		assessment.CommentId = request.CommentId;
+		assessment.GradeId = request.NewAssessmentId;
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+		return Ok(value: new ChangeAssessmentResponse(Message: "Оценка успешно изменена!"));
+	}
+	#endregion
+
+	#region DELETE
+	/// <summary>
+	/// [Преподаватель/Администратор] Удаление оценки по ее идентификатору
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	POST api/assessments/attendance/set
+	/// {
+	/// 	"AssessmentId": 0
+	/// }
+	///
+	/// Параметры:
+	///
+	///	AssessmentId - идентификатор оценки, подлежащей удалению
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Оценка успешно удалена</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
+	/// <response code="404">Оценка с указанным идентификатором не найдена</response>
+	[HttpDelete(template: "delete")]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult> Delete(
+		[FromBody] DeleteAssessmentRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		Assessment assessment = await _context.Assessments.SingleOrDefaultAsync(predicate: a => a.Id == request.AssessmentId, cancellationToken: cancellationToken)
+			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена.");
+
+		_context.Assessments.Remove(entity: assessment);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+		return Ok();
+	}
+	#endregion
+	#endregion
+}
