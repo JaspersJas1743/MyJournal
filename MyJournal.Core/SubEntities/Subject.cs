@@ -15,5 +15,4 @@ public abstract class Subject : ISubEntity
 	public int Id { get; init; }
 	public string Name { get; init; }
 	public SubjectTeacher Teacher { get; init; }
-	internal bool IsFirst { get; init; }
 }

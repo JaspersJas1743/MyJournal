@@ -28,7 +28,6 @@ public sealed class StudyingSubject : Subject
 	) : this(client: client, tasks: tasks)
 	{
 		Name = name;
-		IsFirst = true;
 	}
 
 	private StudyingSubject(
@@ -40,7 +39,6 @@ public sealed class StudyingSubject : Subject
 		Id = response.Id;
 		Name = response.Name;
 		Teacher = response.Teacher;
-		IsFirst = false;
 	}
 	#endregion
 
