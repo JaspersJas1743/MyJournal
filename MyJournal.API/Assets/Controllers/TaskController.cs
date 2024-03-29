@@ -32,17 +32,21 @@ public class TaskController(
 	public sealed record TaskAttachment(string LinkToFile, AttachmentTypes AttachmentType);
 	public sealed record TaskContent(string? Text, IEnumerable<TaskAttachment>? Attachments);
 
+	[Validator<GetAllAssignedTasksRequestValidator>]
 	public sealed record GetAllAssignedTasksRequest(AssignedTaskCompletionStatusRequest CompletionStatus, int Offset, int Count);
 	public sealed record GetAssignedTasksRequest(AssignedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int Offset, int Count);
 	public sealed record GetAssignedTasksResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, AssignedTaskCompletionStatusResponse CompletionStatus);
 
+	[Validator<GetAssignedToClassTasksRequestValidator>]
 	public sealed record GetAssignedToClassTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int Offset, int Count);
 	public sealed record GetAllAssignedToClassTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int Offset, int Count);
 
+	[Validator<GetAllCreatedTasksRequestValidator>]
 	public sealed record GetAllCreatedTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int Offset, int Count);
 	public sealed record GetCreatedTasksRequest(CreatedTaskCompletionStatusRequest CompletionStatus, int SubjectId, int ClassId, int Offset, int Count);
 	public sealed record GetCreatedTasksResponse(int TaskId, string ClassName, string LessonName, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
 
+	[Validator<CreateTasksRequestValidator>]
 	public sealed record CreateTasksRequest(int SubjectId, int ClassId, TaskContent Content, DateTime ReleasedAt);
 	public sealed record CreateTasksResponse(string Message);
 	#endregion
