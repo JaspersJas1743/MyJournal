@@ -795,9 +795,9 @@ public class TaskController(
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		IEnumerable<string> studentIds = _context.Students.AsNoTracking()
-			.Where(predicate: s => s.ClassId == request.ClassId)
+			.Where(predicate: s => s.ClassId == request.ClassId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
 			.Select(selector: s => s.UserId.ToString());
-		IQueryable<string> parentIds = _context.Users.Where(predicate: u => u.Id == userId)
+		IQueryable<string> parentIds = _context.Users.Where(predicate: u => u.Id == userId && u.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
 			.SelectMany(selector: u => u.Parents.Select(p => p.UserId.ToString()));
 		IQueryable<string> adminIds = _context.Administrators.Where(
 			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online

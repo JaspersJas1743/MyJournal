@@ -2,9 +2,11 @@ using System.Globalization;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
+using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.Utilities;
 using MyJournal.API.Assets.Validation;
 using MyJournal.API.Assets.Validation.Validators;
@@ -14,7 +16,11 @@ namespace MyJournal.API.Assets.Controllers;
 [ApiController]
 [Route(template: "api/assessments")]
 public sealed class AssessmentController(
-	MyJournalContext context
+	MyJournalContext context,
+	IHubContext<TeacherHub, ITeacherHub> teacherHubContext,
+	IHubContext<StudentHub, IStudentHub> studentHubContext,
+	IHubContext<ParentHub, IParentHub> parentHubContext,
+	IHubContext<AdministratorHub, IAdministratorHub> administratorHubContext
 ) : MyJournalBaseController(context: context)
 {
 	private readonly MyJournalContext _context = context;
@@ -103,7 +109,7 @@ public sealed class AssessmentController(
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
 		return Ok(value: new GetAssessmentsResponse(
-		AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+			AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
 			FinalAssessment: final is null ? null : final + ".00",
 			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
 		));
@@ -305,6 +311,17 @@ public sealed class AssessmentController(
 		await _context.AddAsync(entity: assessment, cancellationToken: cancellationToken);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
+		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == request.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
+			.SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
+
+		IQueryable<string> adminIds = _context.Administrators.Where(
+			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).Select(selector: a => a.UserId.ToString());
+
+		await teacherHubContext.Clients.User(userId: GetAuthorizedUserId().ToString()).CreatedAssessment(assessmentId: assessment.Id);
+		await studentHubContext.Clients.User(userId: request.StudentId.ToString()).TeacherCreatedAssessment(assessmentId: assessment.Id);
+		await parentHubContext.Clients.Users(userIds: parentIds).CreatedAssessmentToWard(assessmentId: assessment.Id);
+		await administratorHubContext.Clients.Users(userIds: adminIds).CreatedAssessmentToStudent(assessmentId: assessment.Id, studentId: request.StudentId);
 		return Ok();
 	}
 
@@ -356,15 +373,33 @@ public sealed class AssessmentController(
 	{
 		DatabaseModels.Grade miss = await _context.Grades.Where(predicate: g => g.GradeType.Type == GradeTypes.Truancy).SingleAsync(cancellationToken: cancellationToken);
 
-		await _context.AddRangeAsync(entities: request.Attendances.Where(predicate: a => !a.IsPresent).Select(selector: a => new Assessment()
+		IEnumerable<Assessment> assessments = request.Attendances.Where(predicate: a => !a.IsPresent).Select(selector: a => new Assessment()
 		{
 			GradeId = miss.Id,
 			CommentId = a.CommentId,
 			Datetime = request.Datetime,
 			LessonId = request.SubjectId,
 			StudentId = a.StudentId,
-		}), cancellationToken: cancellationToken);
+		});
+		await _context.AddRangeAsync(entities: assessments, cancellationToken: cancellationToken);
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		int userId = GetAuthorizedUserId();
+		foreach (Assessment assessment in assessments)
+		{
+			IQueryable<string> parentIds = _context.Students.Where(predicate: s =>
+				s.Id == assessment.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+			).SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
+
+			IQueryable<string> adminIds = _context.Administrators.Where(
+				predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+			).Select(selector: a => a.UserId.ToString());
+
+			await teacherHubContext.Clients.User(userId: userId.ToString()).CreatedAssessment(assessmentId: assessment.Id);
+			await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherCreatedAssessment(assessmentId: assessment.Id);
+			await parentHubContext.Clients.Users(userIds: parentIds).CreatedAssessmentToWard(assessmentId: assessment.Id);
+			await administratorHubContext.Clients.Users(userIds: adminIds).CreatedAssessmentToStudent(assessmentId: assessment.Id, studentId: assessment.StudentId);
+		}
 
 		return Ok();
 	}
@@ -418,6 +453,19 @@ public sealed class AssessmentController(
 		assessment.CommentId = request.CommentId;
 		assessment.GradeId = request.NewAssessmentId;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
+			.SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
+
+		IQueryable<string> adminIds = _context.Administrators.Where(
+			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).Select(selector: a => a.UserId.ToString());
+
+		await teacherHubContext.Clients.User(userId: GetAuthorizedUserId().ToString()).ChangedAssessment(assessmentId: assessment.Id);
+		await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherChangedAssessment(assessmentId: assessment.Id);
+		await parentHubContext.Clients.Users(userIds: parentIds).ChangedAssessmentToWard(assessmentId: assessment.Id);
+		await administratorHubContext.Clients.Users(userIds: adminIds).ChangedAssessmentToStudent(assessmentId: assessment.Id, studentId: assessment.StudentId);
+
 		return Ok(value: new ChangeAssessmentResponse(Message: "Оценка успешно изменена!"));
 	}
 	#endregion
@@ -462,6 +510,19 @@ public sealed class AssessmentController(
 
 		_context.Assessments.Remove(entity: assessment);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
+			.SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
+
+		IQueryable<string> adminIds = _context.Administrators.Where(
+			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).Select(selector: a => a.UserId.ToString());
+
+		await teacherHubContext.Clients.User(userId: GetAuthorizedUserId().ToString()).DeletedAssessment(assessmentId: assessment.Id);
+		await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherDeletedAssessment(assessmentId: assessment.Id);
+		await parentHubContext.Clients.Users(userIds: parentIds).DeletedAssessmentToWard(assessmentId: assessment.Id);
+		await administratorHubContext.Clients.Users(userIds: adminIds).DeletedAssessmentToStudent(assessmentId: assessment.Id, studentId: assessment.StudentId);
+
 		return Ok();
 	}
 	#endregion
