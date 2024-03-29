@@ -17,7 +17,7 @@ public sealed class SendMessageRequestValidator : AbstractValidator<MessageContr
 			RuleForEach(expression: request => request.Content.Attachments).ChildRules(action: r =>
 			{
 				r.RuleFor(expression: a => a.LinkToFile)
-				 .HaveText(errorMessage: "Ссылка на фотографию имеет некорректный формат.")
+				 .HaveText(errorMessage: "Ссылка на вложение имеет некорректный формат.")
 				 .IsValidUrl().WithMessage(errorMessage: "Некорректная ссылка на вложение.");
 
 				r.When(predicate: a => a.AttachmentType == AttachmentTypes.Photo, action: () =>

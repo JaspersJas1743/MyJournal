@@ -164,6 +164,9 @@ public class Program
 			options.AddPolicy(name: nameof(UserRoles.Parent), configurePolicy: policyBuilder =>
 				policyBuilder.RequireClaim(claimType: MyJournalClaimTypes.Role, allowedValues: nameof(UserRoles.Parent))
 			);
+			options.AddPolicy(name: nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator), configurePolicy: policyBuilder =>
+				policyBuilder.RequireClaim(claimType: MyJournalClaimTypes.Role, allowedValues: new string[] { nameof(UserRoles.Teacher), nameof(UserRoles.Administrator) })
+			);
 		});
 
 		builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
@@ -206,10 +209,7 @@ public class Program
 		WebApplication app = builder.Build();
 
 		if (app.Environment.IsDevelopment())
-		{
-			app.UseSwagger();
-			app.UseSwaggerUI();
-		}
+			app.UseSwagger().UseSwaggerUI();
 
 		app.MapHealthChecks(pattern: "/health", options: CreateHealthCheckOptions(predicate: _ => true));
 		app.MapHealthChecks(pattern: "/health/db", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "db")));

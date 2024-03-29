@@ -70,14 +70,12 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		return new ChatCollection(
 			client: client,
 			fileService: fileService,
-			chats: chats.Select(selector: c =>
-				Chat.Create(
-					client: client,
-					fileService: fileService,
-					id: c.Id,
-					cancellationToken: cancellationToken
-				).GetAwaiter().GetResult()
-			),
+			chats: chats.Select(selector: c => Chat.Create(
+				client: client,
+				fileService: fileService,
+				id: c.Id,
+				cancellationToken: cancellationToken
+			).GetAwaiter().GetResult()),
 			count: basedCount
 		);
 	}

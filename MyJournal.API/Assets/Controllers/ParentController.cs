@@ -16,7 +16,7 @@ public sealed class ParentController(
 {
 	private readonly MyJournalContext _context = context;
 
-	public sealed record GetTeacherEducationPeriodsResponse(int Id, string Name, DateOnly StartDate, DateOnly EndDate);
+	public sealed record GetParentEducationPeriodsResponse(int Id, string Name, DateOnly StartDate, DateOnly EndDate);
 
 	/// <summary>
 	/// [Родитель] Получение списка учебных периодов подопечного
@@ -34,18 +34,18 @@ public sealed class ParentController(
 	/// <response code="403">Роль пользователя не соотвествует роли Parent</response>
 	[HttpGet(template: "periods/education/get")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTeacherEducationPeriodsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetParentEducationPeriodsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTeacherEducationPeriodsResponse>>> GetEducationPeriods(
+	public async Task<ActionResult<IEnumerable<GetParentEducationPeriodsResponse>>> GetEducationPeriods(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IQueryable<GetTeacherEducationPeriodsResponse> educationPeriods = _context.Parents.AsNoTracking()
+		IQueryable<GetParentEducationPeriodsResponse> educationPeriods = _context.Parents.AsNoTracking()
 			.Where(predicate: p => p.UserId == userId)
 			.SelectMany(selector: t => t.Children.Class.EducationPeriodForClasses)
-			.Select(selector: epfc => new GetTeacherEducationPeriodsResponse(
+			.Select(selector: epfc => new GetParentEducationPeriodsResponse(
 				epfc.EducationPeriod.Id,
 				epfc.EducationPeriod.Period,
 				epfc.EducationPeriod.StartDate,

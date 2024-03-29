@@ -343,9 +343,9 @@ public partial class MyJournalContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Grades__3214EC079EF12C03");
 
-            entity.HasIndex(e => e.Grade1, "UQ__Grades__DF0ADB7AAD4E5716").IsUnique();
+            entity.HasIndex(e => e.Assessment, "UQ__Grades__DF0ADB7AAD4E5716").IsUnique();
 
-            entity.Property(e => e.Grade1)
+            entity.Property(e => e.Assessment)
                 .HasMaxLength(1)
                 .HasColumnName("Grade");
 

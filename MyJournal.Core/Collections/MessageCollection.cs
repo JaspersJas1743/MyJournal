@@ -46,24 +46,20 @@ public sealed class MessageCollection : LazyCollection<Message>
 	{
 		const int basedOffset = 0;
 		const int basedCount = 20;
-		IEnumerable<Message.GetMessageResponse> messages =
-			await client.GetAsync<IEnumerable<Message.GetMessageResponse>, GetMessagesRequest>(
-				apiMethod: MessageControllerMethods.GetMessages,
-				argQuery: new GetMessagesRequest(ChatId: chatId, Offset: basedOffset, Count: basedCount),
-				cancellationToken: cancellationToken
-			) ??
-			throw new InvalidOperationException();
+		IEnumerable<Message.GetMessageResponse> messages = await client.GetAsync<IEnumerable<Message.GetMessageResponse>, GetMessagesRequest>(
+			   apiMethod: MessageControllerMethods.GetMessages,
+			   argQuery: new GetMessagesRequest(ChatId: chatId, Offset: basedOffset, Count: basedCount),
+			   cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
 		return new MessageCollection(
 			client: client,
 			chatId: chatId,
 			fileService: fileService,
-			messages: messages.Select(
-				m => Message.Create(
-					client: client,
-					messageId: m.MessageId,
-					cancellationToken: cancellationToken
-				).GetAwaiter().GetResult()
-			).Reverse(),
+			messages: messages.Select(m => Message.Create(
+				client: client,
+				messageId: m.MessageId,
+				cancellationToken: cancellationToken
+			).GetAwaiter().GetResult()).Reverse(),
 			count: basedCount
 		);
 	}

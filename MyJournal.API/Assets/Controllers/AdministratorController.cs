@@ -16,7 +16,7 @@ public sealed class AdministratorController(
 {
 	private readonly MyJournalContext _context = context;
 
-	public sealed record GetTeacherEducationPeriodsResponse(int Id, string Name, DateOnly StartDate, DateOnly EndDate);
+	public sealed record GetEducationPeriodsInClassResponse(int Id, string Name, DateOnly StartDate, DateOnly EndDate);
 
 	/// <summary>
 	/// [Администратор] Получение списка учебных периодов для класса
@@ -34,10 +34,10 @@ public sealed class AdministratorController(
 	/// <response code="403">Роль пользователя не соотвествует роли Parent</response>
 	[HttpGet(template: "periods/education/class/{classId:int}/get")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTeacherEducationPeriodsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetEducationPeriodsInClassResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTeacherEducationPeriodsResponse>>> GetEducationPeriods(
+	public async Task<ActionResult<IEnumerable<GetEducationPeriodsInClassResponse>>> GetEducationPeriods(
 		[FromRoute] int classId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)

@@ -18,7 +18,6 @@
         <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.SqlServer.Storage" Version="8.0.0" />
         <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
         <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.300" />
