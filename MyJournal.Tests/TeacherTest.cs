@@ -43,11 +43,11 @@ public class TeacherTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
-		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 2));
-		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
 		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все классы"));
-		TaughtSubject secondTaughtSubject = teacher.TaughtSubjects[index: 1];
+		TaughtSubject secondTaughtSubject = await taughtSubjects.GetByIndex(index: 1);
 		Assert.That(actual: secondTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
 		Assert.That(actual: secondTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: secondTaughtSubject.Class.Id, expression: Is.EqualTo(expected: 11));
@@ -64,11 +64,12 @@ public class TeacherTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
-		EducationPeriod educationPeriod = taughtSubjects.EducationPeriods.Last();
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		IEnumerable<EducationPeriod> educationPeriods = await taughtSubjects.GetEducationPeriods();
+		EducationPeriod educationPeriod = educationPeriods.Last();
 		await taughtSubjects.SetEducationPeriod(period: educationPeriod);
-		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 1));
-		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
+		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 1));
+		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
 		Assert.That(actual: firstTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
 		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: firstTaughtSubject.Class.Id, expression: Is.EqualTo(expected: 11));
@@ -85,15 +86,16 @@ public class TeacherTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
-		EducationPeriod lastEducationPeriod = taughtSubjects.EducationPeriods.Last();
-		EducationPeriod firstEducationPeriod = taughtSubjects.EducationPeriods.First();
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		IEnumerable<EducationPeriod> educationPeriods = await taughtSubjects.GetEducationPeriods();
+		EducationPeriod lastEducationPeriod = educationPeriods.Last();
+		EducationPeriod firstEducationPeriod = educationPeriods.First();
 		await taughtSubjects.SetEducationPeriod(period: lastEducationPeriod);
 		await taughtSubjects.SetEducationPeriod(period: firstEducationPeriod);
-		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 2));
-		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
+		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
 		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все классы"));
-		TaughtSubject secondTaughtSubject = teacher.TaughtSubjects[index: 1];
+		TaughtSubject secondTaughtSubject = await taughtSubjects.GetByIndex(index: 1);
 		Assert.That(actual: secondTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
 		Assert.That(actual: secondTaughtSubject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: secondTaughtSubject.Class.Id, expression: Is.EqualTo(expected: 11));
@@ -112,11 +114,11 @@ public class TeacherTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
-		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 2));
-		TaughtSubject allSubjects = taughtSubjects[index: 0];
-		CreatedTaskCollection allTasks = allSubjects.Tasks;
-		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 2));
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
+		TaughtSubject allSubjects = await taughtSubjects.GetByIndex(index: 0);
+		CreatedTaskCollection allTasks = await allSubjects.GetTasks();
+		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 2));
 		CreatedTask firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -135,9 +137,9 @@ public class TeacherTest
 		Assert.That(actual: secondTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: secondTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: secondTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
-		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
-		CreatedTaskCollection firstTaughtSubjectTasks = firstTaughtSubject.Tasks;
-		Assert.That(actual: firstTaughtSubjectTasks.Length, expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
+		CreatedTaskCollection firstTaughtSubjectTasks = await firstTaughtSubject.GetTasks();
+		Assert.That(actual: await firstTaughtSubjectTasks.GetLength(), expression: Is.EqualTo(expected: 2));
 		firstTask = firstTaughtSubjectTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -168,12 +170,12 @@ public class TeacherTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
-		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 2));
-		TaughtSubject singleSubject = taughtSubjects[index: 0];
-		CreatedTaskCollection allTasks = singleSubject.Tasks;
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
+		TaughtSubject singleSubject = await taughtSubjects.GetByIndex(index: 0);
+		CreatedTaskCollection allTasks = await singleSubject.GetTasks();
 		await allTasks.SetCompletionStatus(status: CreatedTaskCollection.TaskCompletionStatus.NotExpired);
-		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 0));
 	}
 
 	[Test]
@@ -186,12 +188,12 @@ public class TeacherTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
-		TaughtSubjectCollection taughtSubjects = teacher.TaughtSubjects;
-		Assert.That(actual: taughtSubjects.Length, expression: Is.EqualTo(expected: 2));
-		TaughtSubject allSubjects = taughtSubjects[index: 0];
-		CreatedTaskCollection allTasks = allSubjects.Tasks;
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
+		TaughtSubject allSubjects = await taughtSubjects.GetByIndex(index: 0);
+		CreatedTaskCollection allTasks = await allSubjects.GetTasks();
 		await allTasks.SetCompletionStatus(status: CreatedTaskCollection.TaskCompletionStatus.Expired);
-		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 2));
 		CreatedTask firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -210,9 +212,9 @@ public class TeacherTest
 		Assert.That(actual: secondTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: secondTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: secondTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
-		TaughtSubject firstTaughtSubject = taughtSubjects[index: 0];
-		CreatedTaskCollection firstTaughtSubjectTasks = firstTaughtSubject.Tasks;
-		Assert.That(actual: firstTaughtSubjectTasks.Length, expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
+		CreatedTaskCollection firstTaughtSubjectTasks = await firstTaughtSubject.GetTasks();
+		Assert.That(actual: await firstTaughtSubjectTasks.GetLength(), expression: Is.EqualTo(expected: 2));
 		firstTask = firstTaughtSubjectTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));

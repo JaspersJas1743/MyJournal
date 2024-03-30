@@ -113,7 +113,6 @@ public sealed class ChatController(
 	{
 		int userId = GetAuthorizedUserId();
 		User user = await _context.Users
-			.AsSplitQuery()
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.ChatType)
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.LastMessageNavigation)
@@ -283,7 +282,7 @@ public sealed class ChatController(
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
 			.SingleOrDefaultAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken)
 		?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
-		IQueryable<User> interlocutors = _context.Users.AsNoTracking().AsSplitQuery()
+		IQueryable<User> interlocutors = _context.Users.AsNoTracking()
 			.Where(predicate: u => u.RegisteredAt != null);
 
 		if (!request.IncludeExistedInterlocutors)

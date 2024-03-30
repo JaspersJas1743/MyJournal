@@ -1,5 +1,6 @@
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
@@ -15,9 +16,10 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	private InterlocutorCollection(
 		ApiClient client,
 		IFileService fileService,
-		IEnumerable<Interlocutor> interlocutors,
-		int count
-	) : base(client: client, collection: interlocutors, count: count)
+		AsyncLazy<List<Interlocutor>> interlocutors,
+		int count,
+		int offset
+	) : base(client: client, collection: interlocutors, count: count, offset: offset)
 	{
 		_fileService = fileService;
 	}
@@ -87,15 +89,17 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 		return new InterlocutorCollection(
 			client: client,
 			fileService: fileService,
-			interlocutors: interlocutors.Select(selector: i =>
-				Interlocutor.Create(
+			interlocutors: new AsyncLazy<List<Interlocutor>>(valueFactory: async () => new List<Interlocutor>(collection: await Task.WhenAll(
+				tasks: interlocutors.Select(selector: async i => await Interlocutor.Create(
 					client: client,
 					fileService: fileService,
 					id: i.UserId,
-					cancellationToken: cancellationToken
-				).GetAwaiter().GetResult()
-			),
-			count: basedCount
+					cancellationToken:
+					cancellationToken
+				))
+			))),
+			count: basedCount,
+			offset: interlocutors.Count()
 		);
 	}
 	#endregion
@@ -112,15 +116,14 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 				Count: _count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Value.AddRange(collection: interlocutors.Select(selector: i =>
-			Interlocutor.Create(
-				client: _client,
-				fileService: _fileService,
-				id: i.UserId,
-				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()
-		));
-		_offset = _collection.Value.Count;
+		List<Interlocutor> collection = await _collection;
+		collection.AddRange(collection: await Task.WhenAll(tasks: interlocutors.Select(selector: async i => await Interlocutor.Create(
+			client: _client,
+			fileService: _fileService,
+			id: i.UserId,
+			cancellationToken: cancellationToken
+		))));
+		_offset = collection.Count;
 	}
 
 	internal override async Task Append(
@@ -152,31 +155,35 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	#endregion
 
 	#region Instance
-	internal void OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
+	internal async Task OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
 	{
-		this[id: e.InterlocutorId].OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(
+		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
+		interlocutor.OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(
 			onlineAt: e.OnlineAt
 		));
 		InterlocutorAppearedOnline?.Invoke(e: e);
 	}
 
-	internal void OnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
+	internal async Task OnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
 	{
-		this[id: e.InterlocutorId].OnAppearedOffline(e: new Interlocutor.AppearedOfflineEventArgs(
+		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
+		interlocutor.OnAppearedOffline(e: new Interlocutor.AppearedOfflineEventArgs(
 			onlineAt: e.OnlineAt
 		));
 		InterlocutorAppearedOffline?.Invoke(e: e);
 	}
 
-	internal void OnUpdatedPhoto(InterlocutorUpdatedPhotoEventArgs e)
+	internal async Task OnUpdatedPhoto(InterlocutorUpdatedPhotoEventArgs e)
 	{
-		this[id: e.InterlocutorId].OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs(link: e.Link));
+		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
+		interlocutor.OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs(link: e.Link));
 		InterlocutorUpdatedPhoto?.Invoke(e: e);
 	}
 
-	internal void OnDeletedPhoto(InterlocutorDeletedPhotoEventArgs e)
+	internal async Task OnDeletedPhoto(InterlocutorDeletedPhotoEventArgs e)
 	{
-		this[id: e.InterlocutorId].OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs());
+		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
+		interlocutor.OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs());
 		InterlocutorDeletedPhoto?.Invoke(e: e);
 	}
 	#endregion

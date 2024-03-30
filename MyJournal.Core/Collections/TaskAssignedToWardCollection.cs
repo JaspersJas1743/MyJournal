@@ -1,5 +1,6 @@
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
@@ -12,14 +13,11 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 	#region Constructor
 	private TaskAssignedToWardCollection(
 		ApiClient client,
-		IEnumerable<TaskAssignedToWard> collection,
+		AsyncLazy<List<TaskAssignedToWard>> collection,
 		int subjectId,
-		int count
-	) : base(
-		client: client,
-		collection: collection,
-		count: count
-	)
+		int count,
+		int offset
+	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
 		_subjectId = subjectId;
 	}
@@ -105,9 +103,12 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 			);
 		return new TaskAssignedToWardCollection(
 			client: client,
-			collection: tasks.Select(selector: t => TaskAssignedToWard.Create(client: client, response: t)),
+			collection: new AsyncLazy<List<TaskAssignedToWard>>(valueFactory: async () => new List<TaskAssignedToWard>(collection: await Task.WhenAll(
+				tasks: tasks.Select(selector: async t => await TaskAssignedToWard.Create(client: client, response: t))
+			))),
 			subjectId: subjectId,
-			count: basedCount
+			count: basedCount,
+			offset: tasks.Count()
 		);
 	}
 	#endregion
@@ -169,13 +170,12 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
                 count: _count,
 				cancellationToken: cancellationToken
 			);
-		_collection.Value.AddRange(collection: tasks.Select(selector: t => TaskAssignedToWard.Create(
-			client: _client,
-			response: t
+		List<TaskAssignedToWard> collection = await _collection;
+		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
+			selector: async t => await TaskAssignedToWard.Create(client: _client, response: t)
 		)));
-		_offset = _collection.Value.Count;
+		_offset = collection.Count;
 	}
 	#endregion
 	#endregion
-
 }

@@ -50,7 +50,7 @@ public sealed class LessonController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Students.AsNoTracking().AsSplitQuery()
+		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
 			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc =>
@@ -94,7 +94,7 @@ public sealed class LessonController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Students.AsNoTracking().AsSplitQuery()
+		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
 			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc => epfc.EducationPeriod.Period == period)
@@ -139,7 +139,7 @@ public sealed class LessonController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking().AsSplitQuery()
+		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
@@ -182,7 +182,7 @@ public sealed class LessonController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking().AsSplitQuery()
+		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc => epfc.EducationPeriod.Period == period)))
@@ -224,7 +224,7 @@ public sealed class LessonController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Parents.AsNoTracking().AsSplitQuery()
+		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Parents.AsNoTracking()
 			.Where(predicate: p => p.UserId == userId)
 			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc =>
@@ -272,7 +272,7 @@ public sealed class LessonController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Parents.AsNoTracking().AsSplitQuery()
+		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Parents.AsNoTracking()
 			.Where(predicate: p => p.UserId == userId)
 			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc => epfc.EducationPeriod.Period == period)
@@ -323,7 +323,7 @@ public sealed class LessonController(
 	)
 	{
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes.AsNoTracking().AsSplitQuery()
+		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes.AsNoTracking()
 			.Where(predicate: c => c.Id == classId)
 			.SelectMany(selector: c => c.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
@@ -374,7 +374,7 @@ public sealed class LessonController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes.AsNoTracking().AsSplitQuery()
+		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes.AsNoTracking()
 			.Where(predicate: c => c.Id == classId)
 			.SelectMany(selector: c => c.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc => epfc.EducationPeriod.Period == period)))

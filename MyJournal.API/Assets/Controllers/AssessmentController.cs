@@ -311,8 +311,9 @@ public sealed class AssessmentController(
 		await _context.AddAsync(entity: assessment, cancellationToken: cancellationToken);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == request.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
-			.SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
+		IQueryable<string> parentIds = _context.Students.Where(
+			predicate: s => s.Id == request.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
 
 		IQueryable<string> adminIds = _context.Administrators.Where(
 			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
@@ -454,8 +455,9 @@ public sealed class AssessmentController(
 		assessment.GradeId = request.NewAssessmentId;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
-			.SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
+		IQueryable<string> parentIds = _context.Students.Where(predicate:
+			s => s.Id == assessment.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
 
 		IQueryable<string> adminIds = _context.Administrators.Where(
 			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
@@ -511,8 +513,9 @@ public sealed class AssessmentController(
 		_context.Assessments.Remove(entity: assessment);
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
-			.SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
+		IQueryable<string> parentIds = _context.Students.Where(
+			predicate: s => s.Id == assessment.StudentId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
+		).SelectMany(selector: s => s.Parents).Select(selector: p => p.Id.ToString());
 
 		IQueryable<string> adminIds = _context.Administrators.Where(
 			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online

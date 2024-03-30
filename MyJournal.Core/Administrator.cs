@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
@@ -9,7 +10,7 @@ namespace MyJournal.Core;
 
 public sealed class Administrator : User
 {
-	private readonly Lazy<ClassCollection> _classes;
+	private readonly AsyncLazy<ClassCollection> _classes;
 	private readonly HubConnection _administratorHubConnection;
 
 	private Administrator(
@@ -17,11 +18,11 @@ public sealed class Administrator : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		Lazy<ChatCollection> chats,
-		Lazy<InterlocutorCollection> interlocutors,
-		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		Lazy<SessionCollection> sessions,
-		Lazy<ClassCollection> classes
+		AsyncLazy<ChatCollection> chats,
+		AsyncLazy<InterlocutorCollection> interlocutors,
+		AsyncLazy<IntendedInterlocutorCollection> intendedInterlocutors,
+		AsyncLazy<SessionCollection> sessions,
+		AsyncLazy<ClassCollection> classes
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -40,7 +41,8 @@ public sealed class Administrator : User
 		);
 	}
 
-	public ClassCollection Classes => _classes.Value;
+	public async Task<ClassCollection> GetClasses()
+		=> await _classes;
 
 	internal static async Task<Administrator> Create(
 		ApiClient client,
@@ -55,26 +57,26 @@ public sealed class Administrator : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
-			chats: new Lazy<ChatCollection>(value: await ChatCollection.Create(
+			chats: new AsyncLazy<ChatCollection>(valueFactory: async () => await ChatCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
-			interlocutors: new Lazy<InterlocutorCollection>(value: await InterlocutorCollection.Create(
+			interlocutors: new AsyncLazy<InterlocutorCollection>(valueFactory: async () => await InterlocutorCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
-			intendedInterlocutors: new Lazy<IntendedInterlocutorCollection>(value: await IntendedInterlocutorCollection.Create(
+			intendedInterlocutors: new AsyncLazy<IntendedInterlocutorCollection>(valueFactory: async () => await IntendedInterlocutorCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
-			sessions: new Lazy<SessionCollection>(value: await SessionCollection.Create(
+			sessions: new AsyncLazy<SessionCollection>(valueFactory: async () => await SessionCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			)),
-			classes: new Lazy<ClassCollection>(value: await ClassCollection.Create(
+			classes: new AsyncLazy<ClassCollection>(valueFactory: async () => await ClassCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			))
@@ -90,13 +92,13 @@ public sealed class Administrator : User
 	{
 		await _administratorHubConnection.StartAsync(cancellationToken: cancellationToken);
 		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentCompletedTask, handler: async taskId =>
-			await Classes.OnCompletedTask(e: new ClassCollection.CompletedTaskEventArgs(taskId: taskId))
+		{}	// await Classes.OnCompletedTask(e: new ClassCollection.CompletedTaskEventArgs(taskId: taskId))
 		);
 		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentUncompletedTask, handler: async taskId =>
-			await Classes.OnUncompletedTask(e: new ClassCollection.UncompletedTaskEventArgs(taskId: taskId))
+		{}	// await Classes.OnUncompletedTask(e: new ClassCollection.UncompletedTaskEventArgs(taskId: taskId))
 		);
 		_administratorHubConnection.On<int, int, int>(methodName: AdministratorHubMethod.CreatedTaskToStudents, handler: async (taskId, subjectId, classId) =>
-			await Classes.OnCreatedTask(e: new ClassCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: classId))
+		{}	// await Classes.OnCreatedTask(e: new ClassCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: classId))
 		);
 	}
 }

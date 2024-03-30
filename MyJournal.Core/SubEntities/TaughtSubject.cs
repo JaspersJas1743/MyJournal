@@ -1,6 +1,7 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.TaskBuilder;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
@@ -16,14 +17,14 @@ public sealed class TaughtSubject : ISubEntity
 	#region Fields
 	private readonly ApiClient _client;
 	private readonly IFileService _fileService;
-	private readonly Lazy<CreatedTaskCollection> _tasks;
+	private readonly AsyncLazy<CreatedTaskCollection> _tasks;
 	#endregion
 
 	#region Constructors
 	private TaughtSubject(
 		ApiClient client,
 		IFileService fileService,
-		Lazy<CreatedTaskCollection> tasks
+		AsyncLazy<CreatedTaskCollection> tasks
 	)
 	{
 		_client = client;
@@ -35,7 +36,7 @@ public sealed class TaughtSubject : ISubEntity
 		ApiClient client,
 		IFileService fileService,
 		string name,
-		Lazy<CreatedTaskCollection> tasks
+		AsyncLazy<CreatedTaskCollection> tasks
 	) : this(client: client, tasks: tasks, fileService: fileService)
 	{
 		Name = name;
@@ -45,7 +46,7 @@ public sealed class TaughtSubject : ISubEntity
 		ApiClient client,
 		IFileService fileService,
 		TaughtSubjectResponse response,
-		Lazy<CreatedTaskCollection> tasks
+		AsyncLazy<CreatedTaskCollection> tasks
 	) : this(client: client, tasks: tasks, fileService: fileService)
 	{
 		Id = response.Id;
@@ -65,7 +66,8 @@ public sealed class TaughtSubject : ISubEntity
 	#endregion
 
 	#region Properties
-	public CreatedTaskCollection Tasks => _tasks.Value;
+	public async Task<CreatedTaskCollection> GetTasks()
+		=> await _tasks;
 	#endregion
 
 	#region Classes
@@ -104,12 +106,12 @@ public sealed class TaughtSubject : ISubEntity
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new TaughtSubject(client: client, fileService: fileService, response: response, tasks: new Lazy<CreatedTaskCollection>(value:
-			CreatedTaskCollection.Create(
+		return new TaughtSubject(client: client, fileService: fileService, response: response, tasks: new AsyncLazy<CreatedTaskCollection>(
+			valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()
+			)
 		));
 	}
 
@@ -117,13 +119,13 @@ public sealed class TaughtSubject : ISubEntity
 		ApiClient client,
 		IFileService fileService,
 		string name
-	) => new TaughtSubject(client: client, fileService: fileService, name: name, tasks: new Lazy<CreatedTaskCollection>(value: null));
+	) => new TaughtSubject(client: client, fileService: fileService, name: name, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null));
 
 	internal static TaughtSubject CreateWithoutTasks(
 		ApiClient client,
 		IFileService fileService,
 		TaughtSubjectResponse response
-	) => new TaughtSubject(client: client, fileService: fileService, response: response, tasks: new Lazy<CreatedTaskCollection>(value: null));
+	) => new TaughtSubject(client: client, fileService: fileService, response: response, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null));
 
 	internal static async Task<TaughtSubject> Create(
 		ApiClient client,
@@ -132,12 +134,12 @@ public sealed class TaughtSubject : ISubEntity
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new TaughtSubject(client: client, fileService: fileService, name: name, tasks: new Lazy<CreatedTaskCollection>(value:
-			CreatedTaskCollection.Create(
+		return new TaughtSubject(client: client, fileService: fileService, name: name, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory:
+			async () => await CreatedTaskCollection.Create(
 				client: client,
 				subjectId: 0,
 				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()
+			)
 		));
 	}
 	#endregion
@@ -148,25 +150,25 @@ public sealed class TaughtSubject : ISubEntity
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
-		foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-			await task.OnCompletedTask(e: new CreatedTask.CompletedEventArgs());
+		// foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+		// 	await task.OnCompletedTask(e: new CreatedTask.CompletedEventArgs());
 
 		CompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
-		foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-			await task.OnUncompletedTask(e: new CreatedTask.UncompletedEventArgs());
+		// foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+		// 	await task.OnUncompletedTask(e: new CreatedTask.UncompletedEventArgs());
 
 		UncompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
-		await Tasks.Append(id: e.TaskId);
-		foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-			task.OnCreatedTask(e: new CreatedTask.CreatedEventArgs());
+		// await Tasks.Append(id: e.TaskId);
+		// foreach (CreatedTask task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+		// 	task.OnCreatedTask(e: new CreatedTask.CreatedEventArgs());
 
 		CreatedTask?.Invoke(e: e);
 	}

@@ -1,5 +1,6 @@
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
@@ -13,9 +14,10 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	private ChatCollection(
 		ApiClient client,
 		IFileService fileService,
-		IEnumerable<Chat> chats,
-		int count
-	) : base(client: client, collection: chats, count: count)
+		AsyncLazy<List<Chat>> chats,
+		int count,
+		int offset
+	) : base(client: client, collection: chats, count: count, offset: offset)
 	{
 		_fileService = fileService;
 	}
@@ -70,13 +72,16 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		return new ChatCollection(
 			client: client,
 			fileService: fileService,
-			chats: chats.Select(selector: c => Chat.Create(
-				client: client,
-				fileService: fileService,
-				id: c.Id,
-				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()),
-			count: basedCount
+			chats: new AsyncLazy<List<Chat>>(valueFactory: async () => new List<Chat>(collection: await Task.WhenAll(
+				tasks: chats.Select(selector: async c => await Chat.Create(
+					client: client,
+					fileService: fileService,
+					id: c.Id,
+					cancellationToken: cancellationToken
+				))
+			))),
+			count: basedCount,
+			offset: chats.Count()
 		);
 	}
 	#endregion
@@ -95,15 +100,14 @@ public sealed class ChatCollection : LazyCollection<Chat>
 				Count: _count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Value.AddRange(collection: loadedChats.Select(selector: c =>
-			Chat.Create(
-				client: _client,
-				fileService: _fileService,
-				id: c.Id,
-				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()
-		));
-		_offset = _collection.Value.Count;
+		List<Chat> collection = await _collection;
+		collection.AddRange(collection: await Task.WhenAll(tasks: loadedChats.Select(selector: async c => await Chat.Create(
+			client: _client,
+			fileService: _fileService,
+			id: c.Id,
+			cancellationToken: cancellationToken
+		))));
+		_offset = collection.Count;
 	}
 
 	public override async Task Clear(
@@ -164,8 +168,9 @@ public sealed class ChatCollection : LazyCollection<Chat>
 			arg: new CreateSingleChatRequest(InterlocutorId: interlocutorId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Value.AddRange(collection: chats);
-		_offset = _collection.Value.Count;
+		List<Chat> collection = await _collection;
+		collection.AddRange(collection: chats);
+		_offset = collection.Count;
 	}
 
 	public async Task AddMultiChat(
@@ -181,8 +186,9 @@ public sealed class ChatCollection : LazyCollection<Chat>
 			arg: new CreateMultiChatRequest(InterlocutorIds: interlocutorIds, ChatName: chatName, LinkToPhoto: linkToPhoto),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Value.AddRange(collection: chats);
-		_offset = _collection.Value.Count;
+		List<Chat> collection = await _collection;
+		collection.AddRange(collection: chats);
+		_offset = collection.Count;
 	}
 
 	internal async Task OnReceivedMessage(
@@ -190,8 +196,13 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await this[id: e.ChatId].Messages.Append(id: e.MessageId, cancellationToken: cancellationToken);
-		this[id: e.ChatId].OnReceivedMessage(e: new Chat.ReceivedMessageEventArgs(messageId: e.MessageId));
+		Chat chat = await GetById(id: e.ChatId);
+		if (chat.MessagesAreCreated)
+		{
+			MessageCollection messageFromChat = await chat.GetMessages();
+			await messageFromChat.Append(id: e.MessageId, cancellationToken: cancellationToken);
+		}
+		chat.OnReceivedMessage(e: new Chat.ReceivedMessageEventArgs(messageId: e.MessageId));
 		ReceivedMessageInChat?.Invoke(e: e);
 	}
 	#endregion

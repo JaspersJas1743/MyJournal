@@ -1,5 +1,6 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
@@ -19,7 +20,7 @@ public sealed class Chat : ISubEntity
 	#region Fields
 	private readonly ApiClient _client;
 	private readonly IFileService _fileService;
-	private readonly Lazy<MessageCollection> _messages;
+	private readonly AsyncLazy<MessageCollection> _messages;
 	#endregion
 
 	#region Constructor
@@ -27,7 +28,7 @@ public sealed class Chat : ISubEntity
 		ApiClient client,
 		IFileService fileService,
 		ChatResponse response,
-		Lazy<MessageCollection> messages
+		AsyncLazy<MessageCollection> messages
 	)
 	{
 		_client = client;
@@ -48,7 +49,10 @@ public sealed class Chat : ISubEntity
 	public string? ChatPhoto { get; init; }
 	public LastMessage? LastMessage { get; init; }
 	public int CountOfUnreadMessages { get; init; }
-	public MessageCollection Messages => _messages.Value;
+	public async Task<MessageCollection> GetMessages()
+		=> await _messages;
+
+	internal bool MessagesAreCreated => _messages.IsValueCreated;
 	#endregion
 
 	#region Records
@@ -86,7 +90,7 @@ public sealed class Chat : ISubEntity
 			client: client,
 			fileService: fileService,
 			response: response,
-			messages: new Lazy<MessageCollection>(value: await MessageCollection.Create(
+			messages: new AsyncLazy<MessageCollection>(valueFactory: async () => await MessageCollection.Create(
 				client: client,
 				fileService: fileService,
 				chatId: id,
@@ -97,13 +101,7 @@ public sealed class Chat : ISubEntity
 
 	public async Task Read(
 		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.PutAsync(
-			apiMethod: ChatControllerMethods.ReadChat(chatId: Id),
-			cancellationToken: cancellationToken
-		);
-	}
+	) => await _client.PutAsync(apiMethod: ChatControllerMethods.ReadChat(chatId: Id), cancellationToken: cancellationToken);
 
 	internal void OnReceivedMessage(ReceivedMessageEventArgs e)
 		=> ReceivedMessage?.Invoke(e: e);

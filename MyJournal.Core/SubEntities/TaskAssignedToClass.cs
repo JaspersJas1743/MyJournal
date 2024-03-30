@@ -47,7 +47,7 @@ public sealed class TaskAssignedToClass : BaseTask
 	public event CreatedHandler Created;
 	#endregion
 
-	internal static TaskAssignedToClass Create(
+	internal static async Task<TaskAssignedToClass> Create(
 		ApiClient client,
 		GetCreatedTasksResponse response
 	) => new TaskAssignedToClass(client: client, response: response);
@@ -67,6 +67,7 @@ public sealed class TaskAssignedToClass : BaseTask
 
 	internal async Task OnCompletedTask(CompletedEventArgs e)
 	{
+		// TODO: обновление с api, а не + и -
 		CountOfCompletedTask += 1;
 		CountOfUncompletedTask -= 1;
 		Completed?.Invoke(e: e);
@@ -74,6 +75,7 @@ public sealed class TaskAssignedToClass : BaseTask
 
 	internal async Task OnUncompletedTask(UncompletedEventArgs e)
 	{
+		// TODO: обновление с api, а не + и -
 		CountOfCompletedTask -= 1;
 		CountOfUncompletedTask += 1;
 		Uncompleted?.Invoke(e: e);

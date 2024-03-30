@@ -36,7 +36,7 @@ public class RestoringAccessTests
 			Email = "lesha.smirnov2019@mail.ru"
 		};
 		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		await userRegistrationService.VerifyAuthenticationCode(code: "499980");
+		await userRegistrationService.VerifyAuthenticationCode(code: "963584");
 		await userRegistrationService.ResetPassword(newPassword: "bratbratubrat");
 		Assert.Pass();
 	}
@@ -52,27 +52,22 @@ public class RestoringAccessTests
 				Email = "lesha.smirnov2019@mail.ru"
 			};
 			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			await userRegistrationService.VerifyAuthenticationCode(code: "499980");
-			await userRegistrationService.ResetPassword(newPassword: "JaspersJas1743");
+			await userRegistrationService.VerifyAuthenticationCode(code: "988130");
+			await userRegistrationService.ResetPassword(newPassword: "bratbratubrat");
 		});
 	}
 
 	[Test]
-	public void UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
+	public async Task UserRestoringAccessThroughEmailService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldReturnFalse()
 	{
-		Assert.ThrowsAsync<Exception>(code: async () =>
+		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughEmailService))!;
+		EmailCredentials emailCredentials = new EmailCredentials()
 		{
-			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughEmailService))!;
-			EmailCredentials emailCredentials = new EmailCredentials()
-			{
-				Email = "lesha.smirnov2019@mail.ru"
-			};
-			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			bool isVerified = await userRegistrationService.VerifyAuthenticationCode(code: "123456");
-			if (!isVerified)
-				throw new Exception();
-			await userRegistrationService.ResetPassword(newPassword: "bratbratubrat");
-		});
+			Email = "lesha.smirnov2019@mail.ru"
+		};
+		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
+		bool isVerified = await userRegistrationService.VerifyAuthenticationCode(code: "123456");
+		Assert.That(actual: isVerified, expression: Is.False);
 	}
 
 	[Test]
@@ -96,7 +91,7 @@ public class RestoringAccessTests
 			Phone = "+7(910)952-0836"
 		};
 		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		await userRegistrationService.VerifyAuthenticationCode(code: "499980");
+		await userRegistrationService.VerifyAuthenticationCode(code: "988130");
 		await userRegistrationService.ResetPassword(newPassword: "bratbratubrat2");
 		Assert.Pass();
 	}
@@ -112,27 +107,22 @@ public class RestoringAccessTests
 				Phone = "+7(910)952-0836"
 			};
 			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			await userRegistrationService.VerifyAuthenticationCode(code: "499980");
-			await userRegistrationService.ResetPassword(newPassword: "JaspersJas1743");
+			await userRegistrationService.VerifyAuthenticationCode(code: "988130");
+			await userRegistrationService.ResetPassword(newPassword: "bratbratubrat2");
 		});
 	}
 
 	[Test]
-	public void UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldThrowException()
+	public async Task UserRestoringAccessThroughPhoneService_WithCorrectCredentialsAndIncorrectAuthenticationCode_ShouldReturnFalse()
 	{
-		Assert.ThrowsAsync<Exception>(code: async () =>
+		IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughPhoneService))!;
+		PhoneCredentials emailCredentials = new PhoneCredentials()
 		{
-			IRestoringAccessService<User> userRegistrationService = _serviceProvider.GetKeyedService<IRestoringAccessService<User>>(nameof(RestoringAccessThroughPhoneService))!;
-			PhoneCredentials emailCredentials = new PhoneCredentials()
-			{
-				Phone = "+7(910)952-0836"
-			};
-			_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-			bool isVerified = await userRegistrationService.VerifyAuthenticationCode(code: "123456");
-			if (!isVerified)
-				throw new Exception();
-			await userRegistrationService.ResetPassword(newPassword: "bratbratubrat");
-		});
+			Phone = "+7(910)952-0836"
+		};
+		_ = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
+		bool isVerified = await userRegistrationService.VerifyAuthenticationCode(code: "123456");
+		Assert.That(actual: isVerified, expression: Is.False);
 	}
 
 	[Test]

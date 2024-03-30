@@ -1,6 +1,7 @@
 using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
@@ -9,8 +10,8 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly Lazy<List<EducationPeriod>> _educationPeriods;
-	private readonly Lazy<List<StudyingSubjectInClass>> _subjects;
+	private readonly AsyncLazy<List<EducationPeriod>> _educationPeriods;
+	private readonly AsyncLazy<List<StudyingSubjectInClass>> _subjects;
 	private readonly int _classId;
 
 	private EducationPeriod _currentPeriod;
@@ -20,35 +21,47 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 	private StudyingSubjectInClassCollection(
 		ApiClient client,
 		int classId,
-		IEnumerable<StudyingSubjectInClass> studyingSubjects,
-		IEnumerable<EducationPeriod> educationPeriods
+		AsyncLazy<List<StudyingSubjectInClass>> studyingSubjects,
+		AsyncLazy<List<EducationPeriod>> educationPeriods,
+		EducationPeriod currentPeriod
 	)
 	{
 		_client = client;
 		_classId = classId;
-		List<StudyingSubjectInClass> subjects = new List<StudyingSubjectInClass>(collection: studyingSubjects);
-		subjects.Insert(index: 0, item: StudyingSubjectInClass.Create(
-			client: client,
-			classId: classId,
-			name: "Все дисциплины"
-		).GetAwaiter().GetResult());
-		_subjects = new Lazy<List<StudyingSubjectInClass>>(value: subjects);
-		List<EducationPeriod> periods = new List<EducationPeriod>(collection: educationPeriods);
-		EducationPeriod currentTime = new EducationPeriod() { Id = 0, Name = periods.Count == 2 ? "Текущий семестр" : "Текущая четверть" };
-		periods.Insert(index: 0, item: currentTime);
-		_educationPeriods = new Lazy<List<EducationPeriod>>(value: periods);
-		_currentPeriod = currentTime;
+		_subjects = studyingSubjects;
+		_educationPeriods = educationPeriods;
+		// List<StudyingSubjectInClass> subjects = new List<StudyingSubjectInClass>(collection: studyingSubjects);
+		// subjects.Insert(index: 0, item: StudyingSubjectInClass.Create(
+		// 	client: client,
+		// 	classId: classId,
+		// 	name: "Все дисциплины"
+		// ).GetAwaiter().GetResult());
+		// _subjects = new Lazy<List<StudyingSubjectInClass>>(value: subjects);
+		// List<EducationPeriod> periods = new List<EducationPeriod>(collection: educationPeriods);
+		// EducationPeriod currentTime = new EducationPeriod() { Id = 0, Name = periods.Count == 2 ? "Текущий семестр" : "Текущая четверть" };
+		// periods.Insert(index: 0, item: currentTime);
+		// _educationPeriods = new Lazy<List<EducationPeriod>>(value: periods);
+		_currentPeriod = currentPeriod;
 	}
 	#endregion
 
 	#region Properties
-	public int Length => _subjects.Value.Count;
+	public async Task<int> GetLength()
+	{
+		List<StudyingSubjectInClass> collection = await _subjects;
+		return collection.Count;
+	}
 
-	public IEnumerable<EducationPeriod> EducationPeriods => _educationPeriods.Value;
+	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
+		=> await _educationPeriods;
 
-	public StudyingSubjectInClass this[int index]
-		=> _subjects.Value.ElementAtOrDefault(index: index)
-		   ?? throw new ArgumentOutOfRangeException(message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index));
+	public async Task<StudyingSubjectInClass> GetByIndex(int index)
+	{
+		List<StudyingSubjectInClass> collection = await _subjects;
+		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
+		);
+	}
 	#endregion
 
 	#region Methods
@@ -80,16 +93,39 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 			apiMethod: AdministratorControllerMethods.GetEducationPeriods(classId: classId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		EducationPeriod currentPeriod = new EducationPeriod()
+		{
+			Id = 0,
+			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть"
+		};
 		return new StudyingSubjectInClassCollection(
 			client: client,
 			classId: classId,
-			studyingSubjects: subjects.Select(selector: s => StudyingSubjectInClass.Create(
-				client: client,
-				classId: classId,
-				response: s,
-				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()),
-			educationPeriods: educationPeriods
+			studyingSubjects: new AsyncLazy<List<StudyingSubjectInClass>>(valueFactory: async () =>
+			{
+				List<StudyingSubjectInClass> collection = new List<StudyingSubjectInClass>(collection: await Task.WhenAll(
+					tasks: subjects.Select(selector: async s => await StudyingSubjectInClass.Create(
+						client: client,
+						classId: classId,
+						response: s,
+						cancellationToken: cancellationToken
+					))
+				));
+				collection.Insert(index: 0, item: await StudyingSubjectInClass.Create(
+					client: client,
+					classId: classId,
+					name: "Все дисциплины",
+					cancellationToken: cancellationToken
+				));
+				return collection;
+			}),
+			educationPeriods: new AsyncLazy<List<EducationPeriod>>(valueFactory: async () =>
+			{
+				List<EducationPeriod> collection = new List<EducationPeriod>(collection: educationPeriods);
+				collection.Insert(index: 0, item: currentPeriod);
+				return collection;
+			}),
+			currentPeriod: currentPeriod
 		);
 	}
 	#endregion
@@ -109,23 +145,23 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 				: LessonControllerMethods.GetSubjectsStudiedInClassByPeriod(classId: _classId, period: period.Name),
 			cancellationToken: cancellationToken
 		);
-		List<StudyingSubjectInClass> subjects = new List<StudyingSubjectInClass>(collection: response.Select(selector: s => StudyingSubjectInClass.CreateWithoutTasks(
-			client: _client,
-			response: s
-		)));
+		List<StudyingSubjectInClass> subjects = new List<StudyingSubjectInClass>(collection: response.Select(
+			selector: s => StudyingSubjectInClass.CreateWithoutTasks(client: _client, response: s)
+		));
 
 		if (period.Id == 0)
 			subjects.Insert(index: 0, item: StudyingSubjectInClass.CreateWithoutTasks(client: _client, name: "Все дисциплины"));
 
-		_subjects.Value.Clear();
-		_subjects.Value.AddRange(collection: subjects);
+		List<StudyingSubjectInClass> collection = await _subjects;
+		collection.Clear();
+		collection.AddRange(collection: subjects);
 		_currentPeriod = period;
 	}
 	#endregion
 
 	#region IEnumerable<StudyingSubjectInClass>
 	public IEnumerator<StudyingSubjectInClass> GetEnumerator()
-		=> _subjects.Value.GetEnumerator();
+		=> _subjects.GetAwaiter().GetResult().GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator()
 		=> GetEnumerator();

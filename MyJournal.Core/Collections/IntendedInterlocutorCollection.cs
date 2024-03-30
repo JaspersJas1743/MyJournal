@@ -1,5 +1,6 @@
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
@@ -15,10 +16,11 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	private IntendedInterlocutorCollection(
 		ApiClient client,
 		IFileService fileService,
-		IEnumerable<IntendedInterlocutor> intendedInterlocutors,
+		AsyncLazy<List<IntendedInterlocutor>> intendedInterlocutors,
 		int count,
+		int offset,
 		bool includeExistedInterlocutors
-	) : base(client: client, collection: intendedInterlocutors, count: count)
+	) : base(client: client, collection: intendedInterlocutors, count: count, offset: offset)
 	{
 		_fileService = fileService;
 		IncludeExistedInterlocutors = includeExistedInterlocutors;
@@ -59,15 +61,16 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		return new IntendedInterlocutorCollection(
 			client: client,
 			fileService: fileService,
-			intendedInterlocutors: interlocutors.Select(selector: i =>
-				IntendedInterlocutor.Create(
+			intendedInterlocutors: new AsyncLazy<List<IntendedInterlocutor>>(valueFactory: async () => new List<IntendedInterlocutor>(collection: await Task.WhenAll(
+				tasks: interlocutors.Select(selector: async i => await IntendedInterlocutor.Create(
 					client: client,
 					fileService: fileService,
 					id: i.UserId,
 					cancellationToken: cancellationToken
-				).GetAwaiter().GetResult()
-			),
+				))
+			))),
 			count: basedCount,
+			offset: interlocutors.Count(),
 			includeExistedInterlocutors: includeExistedInterlocutors
 		);
 	}
@@ -88,15 +91,14 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 				IncludeExistedInterlocutors: IncludeExistedInterlocutors
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		_collection.Value.AddRange(collection: interlocutors.Select(selector: i =>
-			IntendedInterlocutor.Create(
-				client: _client,
-				fileService: _fileService,
-				id: i.UserId,
-				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()
-		));
-		_offset = _collection.Value.Count;
+		List<IntendedInterlocutor> collection = await _collection;
+		collection.AddRange(collection: await Task.WhenAll(tasks: interlocutors.Select(selector: async i => await IntendedInterlocutor.Create(
+			client: _client,
+			fileService: _fileService,
+			id: i.UserId,
+			cancellationToken: cancellationToken
+		))));
+		_offset = collection.Count;
 	}
 
 	internal override async Task Append(

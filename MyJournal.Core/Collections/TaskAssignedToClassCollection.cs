@@ -1,5 +1,6 @@
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
@@ -13,15 +14,12 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 	#region Constructor
 	private TaskAssignedToClassCollection(
 		ApiClient client,
-		IEnumerable<TaskAssignedToClass> collection,
+		AsyncLazy<List<TaskAssignedToClass>> collection,
 		int subjectId,
 		int classId,
-		int count
-	) : base(
-		client: client,
-		collection: collection,
-		count: count
-	)
+		int count,
+		int offset
+	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
 		_subjectId = subjectId;
 		_classId = classId;
@@ -113,10 +111,13 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 			);
 		return new TaskAssignedToClassCollection(
 			client: client,
-			collection: tasks.Select(selector: t => TaskAssignedToClass.Create(client: client, response: t)),
+			collection: new AsyncLazy<List<TaskAssignedToClass>>(valueFactory: async () => new List<TaskAssignedToClass>(collection: await Task.WhenAll(
+				tasks: tasks.Select(selector: async t => await TaskAssignedToClass.Create(client: client, response: t))
+			))),
 			classId: classId,
 			subjectId: subjectId,
-			count: basedCount
+			count: basedCount,
+			offset: tasks.Count()
 		);
 	}
 	#endregion
@@ -180,11 +181,11 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 				count: _count,
 				cancellationToken: cancellationToken
 			);
-		_collection.Value.AddRange(collection: tasks.Select(selector: t => TaskAssignedToClass.Create(
-			client: _client,
-			response: t
+		List<TaskAssignedToClass> collection = await _collection;
+		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
+			selector: async t => await TaskAssignedToClass.Create(client: _client, response: t)
 		)));
-		_offset = _collection.Value.Count;
+		_offset = collection.Count;
 	}
 	#endregion
 	#endregion

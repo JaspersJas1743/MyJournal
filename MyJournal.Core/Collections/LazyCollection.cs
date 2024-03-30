@@ -1,44 +1,52 @@
 using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 
 namespace MyJournal.Core.Collections;
 
-public abstract class LazyCollection<T> : IEnumerable<T>
-	where T: ISubEntity
+public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 {
 	#region Fields
+	private bool _allItemsAreUploaded;
+
 	protected readonly ApiClient _client;
-	protected readonly Lazy<List<T>> _collection = new Lazy<List<T>>(value: new List<T>());
+	protected readonly AsyncLazy<List<T>> _collection;
 	protected readonly int _count;
 
 	protected int _offset;
-	protected bool _allItemsAreUploaded;
 	#endregion
 
 	#region Constructor
 	protected LazyCollection(
 		ApiClient client,
-		IEnumerable<T> collection,
+		AsyncLazy<List<T>> collection,
+		int offset,
 		int count
 	)
 	{
 		_client = client;
-		_collection.Value.AddRange(collection: collection);
-		_offset = _collection.Value.Count;
+		_collection = collection;
+		_offset = offset;
 		_count = count;
-		_allItemsAreUploaded = _collection.Value.Count < _count;
+		_allItemsAreUploaded = offset < _count;
 	}
 	#endregion
 
 	#region Properties
-	public int Length => _collection.Value.Count;
 
-	public bool IsLoaded => _collection.IsValueCreated;
+	public async Task<int> GetLength()
+	{
+		List<T> collection = await _collection;
+		return collection.Count;
+	}
 
-	public T this[int id]
-		=> _collection.Value.Find(match: i => i.Id.Equals(id))
+	public async Task<T> GetById(int id)
+	{
+		List<T> collection = await _collection;
+		return collection.Find(match: i => i.Id.Equals(id))
 		   ?? throw new ArgumentOutOfRangeException(message: $"Объект с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
+	}
 	#endregion
 
 	#region Methods
@@ -50,9 +58,10 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 		if (_allItemsAreUploaded)
 			return;
 
-		int lengthBeforeLoading = Length;
+		int lengthBeforeLoading = await GetLength();
 		await Load(cancellationToken: cancellationToken);
-		_allItemsAreUploaded = Length == lengthBeforeLoading;
+		int lengthAfterLoading = await GetLength();
+		_allItemsAreUploaded = lengthAfterLoading == lengthBeforeLoading;
 	}
 	#endregion
 
@@ -61,8 +70,9 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Value.Clear();
-		_offset = _collection.Value.Count;
+		List<T> collection = await _collection;
+		collection.Clear();
+		_offset = collection.Count;
 		_allItemsAreUploaded = false;
 	}
 
@@ -76,8 +86,9 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Value.Add(item: instance);
-		_offset = _collection.Value.Count;
+		List<T> collection = await _collection;
+		collection.Add(item: instance);
+		_offset = collection.Count;
 	}
 
 	internal abstract Task Insert(
@@ -92,8 +103,17 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_collection.Value.Insert(index: index, item: instance);
-		_offset = _collection.Value.Count;
+		List<T> collection = await _collection;
+		collection.Insert(index: index, item: instance);
+		_offset = collection.Count;
+	}
+
+	public async Task<bool> Equals(object? obj)
+	{
+		List<T> currentCollection = await _collection;
+		if (obj is LazyCollection<T> collection)
+			return currentCollection.SequenceEqual(second: collection);
+		return false;
 	}
 	#endregion
 
@@ -105,19 +125,10 @@ public abstract class LazyCollection<T> : IEnumerable<T>
 
 	#region IEnumerable<T>
 	public IEnumerator<T> GetEnumerator()
-		=> _collection.Value.GetEnumerator();
+		=> _collection.GetAwaiter().GetResult().GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() =>
 		GetEnumerator();
-	#endregion
-
-	#region Overriden
-	public override bool Equals(object? obj)
-	{
-		if (obj is LazyCollection<T> collection)
-			return _collection.Value.SequenceEqual(second: collection);
-		return false;
-	}
 	#endregion
 	#endregion
 }

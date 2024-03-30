@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
@@ -9,7 +10,7 @@ namespace MyJournal.Core;
 
 public sealed class Parent : User
 {
-	private readonly Lazy<WardSubjectStudyingCollection> _wardSubjectsStudying;
+	private readonly AsyncLazy<WardSubjectStudyingCollection> _wardSubjectsStudying;
 	private readonly HubConnection _parentHubConnection;
 
 	private Parent(
@@ -17,11 +18,11 @@ public sealed class Parent : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		Lazy<ChatCollection> chats,
-		Lazy<InterlocutorCollection> interlocutors,
-		Lazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		Lazy<SessionCollection> sessions,
-		Lazy<WardSubjectStudyingCollection> wardSubjectsStudying
+		AsyncLazy<ChatCollection> chats,
+		AsyncLazy<InterlocutorCollection> interlocutors,
+		AsyncLazy<IntendedInterlocutorCollection> intendedInterlocutors,
+		AsyncLazy<SessionCollection> sessions,
+		AsyncLazy<WardSubjectStudyingCollection> wardSubjectsStudying
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -40,7 +41,8 @@ public sealed class Parent : User
 		);
 	}
 
-	public WardSubjectStudyingCollection WardSubjectsStudying => _wardSubjectsStudying.Value;
+	public async Task<WardSubjectStudyingCollection> GetWardSubjectsStudying()
+		=> await _wardSubjectsStudying;
 
 	internal static async Task<Parent> Create(
 		ApiClient client,
@@ -55,26 +57,26 @@ public sealed class Parent : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
-			chats: new Lazy<ChatCollection>(value: await ChatCollection.Create(
+			chats: new AsyncLazy<ChatCollection>(valueFactory: async () => await ChatCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
-			interlocutors: new Lazy<InterlocutorCollection>(value: await InterlocutorCollection.Create(
+			interlocutors: new AsyncLazy<InterlocutorCollection>(valueFactory: async () => await InterlocutorCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
-			intendedInterlocutors: new Lazy<IntendedInterlocutorCollection>(value: await IntendedInterlocutorCollection.Create(
+			intendedInterlocutors: new AsyncLazy<IntendedInterlocutorCollection>(valueFactory: async () => await IntendedInterlocutorCollection.Create(
 				client: client,
 				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
-			sessions: new Lazy<SessionCollection>(value: await SessionCollection.Create(
+			sessions: new AsyncLazy<SessionCollection>(valueFactory: async () => await SessionCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			)),
-			wardSubjectsStudying: new Lazy<WardSubjectStudyingCollection>(value: await WardSubjectStudyingCollection.Create(
+			wardSubjectsStudying: new AsyncLazy<WardSubjectStudyingCollection>(valueFactory: async () => await WardSubjectStudyingCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			))
@@ -90,13 +92,13 @@ public sealed class Parent : User
 	{
 		await _parentHubConnection.StartAsync(cancellationToken: cancellationToken);
 		_parentHubConnection.On<int>(methodName: ParentHubMethods.WardCompletedTask, handler: async taskId =>
-			await WardSubjectsStudying.OnCompletedTask(e: new WardSubjectStudyingCollection.CompletedTaskEventArgs(taskId: taskId))
+		{}	// await WardSubjectsStudying.OnCompletedTask(e: new WardSubjectStudyingCollection.CompletedTaskEventArgs(taskId: taskId))
 		);
 		_parentHubConnection.On<int>(methodName: ParentHubMethods.WardUncompletedTask, handler: async taskId =>
-			await WardSubjectsStudying.OnUncompletedTask(e: new WardSubjectStudyingCollection.UncompletedTaskEventArgs(taskId: taskId))
+		{}	// await WardSubjectsStudying.OnUncompletedTask(e: new WardSubjectStudyingCollection.UncompletedTaskEventArgs(taskId: taskId))
 		);
 		_parentHubConnection.On<int, int>(methodName: ParentHubMethods.CreatedTaskToWard, handler: async (taskId, subjectId) =>
-			await WardSubjectsStudying.OnCreatedTask(e: new WardSubjectStudyingCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId))
+		{}	// await WardSubjectsStudying.OnCreatedTask(e: new WardSubjectStudyingCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId))
 		);
 	}
 }

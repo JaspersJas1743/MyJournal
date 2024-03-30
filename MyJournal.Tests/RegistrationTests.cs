@@ -64,7 +64,7 @@ public class RegistrationTests
 		{
 			Login = "Jaspers",
 			Password = "IvanIvanovich",
-			RegistrationCode = "1234567"
+			RegistrationCode = "testtes"
 		};
 		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials);
 		Assert.That(actual: isRegistered, expression: Is.False);

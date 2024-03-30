@@ -1,5 +1,6 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -7,13 +8,13 @@ public sealed class WardSubjectStudying : Subject
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly Lazy<TaskAssignedToWardCollection> _tasks;
+	private readonly AsyncLazy<TaskAssignedToWardCollection> _tasks;
 	#endregion
 
 	#region Constructors
 	private WardSubjectStudying(
 		ApiClient client,
-		Lazy<TaskAssignedToWardCollection> tasks
+		AsyncLazy<TaskAssignedToWardCollection> tasks
 	)
 	{
 		_client = client;
@@ -23,7 +24,7 @@ public sealed class WardSubjectStudying : Subject
 	private WardSubjectStudying(
 		ApiClient client,
 		string name,
-		Lazy<TaskAssignedToWardCollection> tasks
+		AsyncLazy<TaskAssignedToWardCollection> tasks
 	) : this(client: client, tasks: tasks)
 	{
 		Name = name;
@@ -32,7 +33,7 @@ public sealed class WardSubjectStudying : Subject
 	private WardSubjectStudying(
 		ApiClient client,
 		StudyingSubjectResponse response,
-		Lazy<TaskAssignedToWardCollection> tasks
+		AsyncLazy<TaskAssignedToWardCollection> tasks
 	) : this(client: client, tasks: tasks)
 	{
 		Id = response.Id;
@@ -46,7 +47,8 @@ public sealed class WardSubjectStudying : Subject
 	#endregion
 
 	#region Properties
-	public TaskAssignedToWardCollection Tasks => _tasks.Value;
+	public async Task<TaskAssignedToWardCollection> GetTasks()
+		=> await _tasks;
 	#endregion
 
 	#region Classes
@@ -84,12 +86,12 @@ public sealed class WardSubjectStudying : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new WardSubjectStudying(client: client, response: response, tasks: new Lazy<TaskAssignedToWardCollection>(value:
-			TaskAssignedToWardCollection.Create(
+		return new WardSubjectStudying(client: client, response: response, tasks: new AsyncLazy<TaskAssignedToWardCollection>(
+			valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()
+			)
 		));
 	}
 
@@ -99,12 +101,12 @@ public sealed class WardSubjectStudying : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new WardSubjectStudying(client: client, name: name, tasks: new Lazy<TaskAssignedToWardCollection>(value:
-			TaskAssignedToWardCollection.Create(
+		return new WardSubjectStudying(client: client, name: name, tasks: new AsyncLazy<TaskAssignedToWardCollection>(
+			valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
 				subjectId: 0,
 				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()
+			)
 		));
 	}
 
@@ -112,37 +114,37 @@ public sealed class WardSubjectStudying : Subject
 		ApiClient client,
 		StudyingSubjectResponse response,
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => new WardSubjectStudying(client: client, response: response, tasks: new Lazy<TaskAssignedToWardCollection>(value: null));
+	) => new WardSubjectStudying(client: client, response: response, tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null));
 
 	internal static WardSubjectStudying CreateWithoutTasks(
 		ApiClient client,
 		string name,
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => new WardSubjectStudying(client: client, name: name, tasks: new Lazy<TaskAssignedToWardCollection>(value: null));
+	) => new WardSubjectStudying(client: client, name: name, tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null));
 	#endregion
 
 	#region Instance
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
-		foreach (TaskAssignedToWard task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-			await task.OnCompletedTask(e: new TaskAssignedToWard.CompletedEventArgs());
+		// foreach (TaskAssignedToWard task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+		// 	await task.OnCompletedTask(e: new TaskAssignedToWard.CompletedEventArgs());
 
 		CompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
-		foreach (TaskAssignedToWard task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-			await task.OnUncompletedTask(e: new TaskAssignedToWard.UncompletedEventArgs());
+		// foreach (TaskAssignedToWard task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+		// 	await task.OnUncompletedTask(e: new TaskAssignedToWard.UncompletedEventArgs());
 
 		UncompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
-		await Tasks.Append(id: e.TaskId);
-		foreach (TaskAssignedToWard task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-			task.OnCreatedTask(e: new TaskAssignedToWard.CreatedEventArgs());
+		// await Tasks.Append(id: e.TaskId);
+		// foreach (TaskAssignedToWard task in Tasks.Where(predicate: t => t.Id == e.TaskId))
+		// 	task.OnCreatedTask(e: new TaskAssignedToWard.CreatedEventArgs());
 
 		CreatedTask?.Invoke(e: e);
 	}

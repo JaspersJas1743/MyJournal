@@ -1,26 +1,28 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 
 namespace MyJournal.Core.SubEntities;
 
 public class Class : ISubEntity
 {
-	private readonly Lazy<StudyingSubjectInClassCollection> _studyingSubjects;
+	private readonly AsyncLazy<StudyingSubjectInClassCollection> _studyingSubjects;
 
 	private Class(
 		int id,
 		string name,
-		StudyingSubjectInClassCollection studyingSubjects
+		AsyncLazy<StudyingSubjectInClassCollection> studyingSubjects
 	)
 	{
 		Id = id;
 		Name = name;
-		_studyingSubjects = new Lazy<StudyingSubjectInClassCollection>(value: studyingSubjects);
+		_studyingSubjects = studyingSubjects;
 	}
 
 	public int Id { get; init; }
 	public string Name { get; init; }
-	public StudyingSubjectInClassCollection StudyingSubjects => _studyingSubjects.Value;
+	public async Task<StudyingSubjectInClassCollection> GetStudyingSubjects()
+		=> await _studyingSubjects;
 
 	internal static async Task<Class> Create(
 		ApiClient client,
@@ -29,14 +31,12 @@ public class Class : ISubEntity
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new Class(
-			id: classId,
-			name: name,
-			studyingSubjects: await StudyingSubjectInClassCollection.Create(
+		return new Class(id: classId, name: name, studyingSubjects: new AsyncLazy<StudyingSubjectInClassCollection>(
+			valueFactory: async () => await StudyingSubjectInClassCollection.Create(
 				client: client,
 				classId: classId,
 				cancellationToken: cancellationToken
 			)
-		);
+		));
 	}
 }

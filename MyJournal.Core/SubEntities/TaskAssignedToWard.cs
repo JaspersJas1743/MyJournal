@@ -45,7 +45,7 @@ public sealed class TaskAssignedToWard : BaseTask
 	public event CreatedHandler Created;
 	#endregion
 
-	internal static TaskAssignedToWard Create(
+	internal static async Task<TaskAssignedToWard> Create(
 		ApiClient client,
 		GetAssignedTaskResponse response
 	) => new TaskAssignedToWard(client: client, response: response);

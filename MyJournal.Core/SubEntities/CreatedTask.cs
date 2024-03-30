@@ -47,7 +47,7 @@ public sealed class CreatedTask : BaseTask
 	public event CreatedHandler Created;
 	#endregion
 
-	internal static CreatedTask Create(
+	internal static async Task<CreatedTask> Create(
 		ApiClient client,
 		GetCreatedTasksResponse response
 	) => new CreatedTask(client: client, response: response);

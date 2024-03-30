@@ -1,5 +1,6 @@
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
@@ -12,14 +13,11 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	#region Constructor
 	private CreatedTaskCollection(
 		ApiClient client,
-		IEnumerable<CreatedTask> collection,
+		AsyncLazy<List<CreatedTask>> collection,
 		int subjectId,
-		int count
-	) : base(
-		client: client,
-		collection: collection,
-		count: count
-	)
+		int count,
+		int offset
+	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
 		_subjectId = subjectId;
 	}
@@ -104,9 +102,15 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 			);
 		return new CreatedTaskCollection(
 			client: client,
-			collection: tasks.Select(selector: t => CreatedTask.Create(client: client, response: t)),
+			collection: new AsyncLazy<List<CreatedTask>>(valueFactory: async () => new List<CreatedTask>(collection: await Task.WhenAll(
+				tasks: tasks.Select(selector: async t => await CreatedTask.Create(
+					client: client,
+					response: t
+				))
+			))),
 			subjectId: subjectId,
-			count: basedCount
+			count: basedCount,
+			offset: tasks.Count()
 		);
 	}
 	#endregion
@@ -168,11 +172,11 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 				count: _count,
 				cancellationToken: cancellationToken
 			);
-		_collection.Value.AddRange(collection: tasks.Select(selector: t => CreatedTask.Create(
-			client: _client,
-			response: t
+		List<CreatedTask> collection = await _collection;
+		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
+			selector: t => CreatedTask.Create(client: _client, response: t)
 		)));
-		_offset = _collection.Value.Count;
+		_offset = collection.Count;
 	}
 	#endregion
 	#endregion

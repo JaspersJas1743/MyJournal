@@ -1,6 +1,7 @@
 using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
@@ -10,8 +11,8 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly Lazy<List<EducationPeriod>> _educationPeriods;
-	private readonly Lazy<List<WardSubjectStudying>> _subjects;
+	private readonly AsyncLazy<List<EducationPeriod>> _educationPeriods;
+	private readonly AsyncLazy<List<WardSubjectStudying>> _subjects;
 
 	private EducationPeriod _currentPeriod;
 	#endregion
@@ -19,33 +20,45 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 	#region Constructor
 	private WardSubjectStudyingCollection(
 		ApiClient client,
-		IEnumerable<WardSubjectStudying> studyingSubjects,
-		IEnumerable<EducationPeriod> educationPeriods
+		AsyncLazy<List<WardSubjectStudying>> studyingSubjects,
+		AsyncLazy<List<EducationPeriod>> educationPeriods,
+		EducationPeriod currentPeriod
 	)
 	{
 		_client = client;
-		List<WardSubjectStudying> subjects = new List<WardSubjectStudying>(collection: studyingSubjects);
-		subjects.Insert(index: 0, item: WardSubjectStudying.Create(
-			client: client,
-			name: "Все дисциплины"
-		).GetAwaiter().GetResult());
-		_subjects = new Lazy<List<WardSubjectStudying>>(value: subjects);
-		List<EducationPeriod> periods = new List<EducationPeriod>(collection: educationPeriods);
-		EducationPeriod currentTime = new EducationPeriod() { Id = 0, Name = periods.Count == 2 ? "Текущий семестр" : "Текущая четверть" };
-		periods.Insert(index: 0, item: currentTime);
-		_educationPeriods = new Lazy<List<EducationPeriod>>(value: periods);
-		_currentPeriod = currentTime;
+		// List<WardSubjectStudying> subjects = new List<WardSubjectStudying>(collection: studyingSubjects);
+		// subjects.Insert(index: 0, item: WardSubjectStudying.Create(
+		// 	client: client,
+		// 	name: "Все дисциплины"
+		// ).GetAwaiter().GetResult());
+		// _subjects = new Lazy<List<WardSubjectStudying>>(value: subjects);
+		_subjects = studyingSubjects;
+		// List<EducationPeriod> periods = new List<EducationPeriod>(collection: educationPeriods);
+		// EducationPeriod currentTime = new EducationPeriod() { Id = 0, Name = periods.Count == 2 ? "Текущий семестр" : "Текущая четверть" };
+		// periods.Insert(index: 0, item: currentTime);
+		// _educationPeriods = new Lazy<List<EducationPeriod>>(value: periods);
+		_educationPeriods = educationPeriods;
+		_currentPeriod = currentPeriod;
 	}
 	#endregion
 
 	#region Properties
-	public int Length => _subjects.Value.Count;
+	public async Task<int> GetLength()
+	{
+		List<WardSubjectStudying> collection = await _subjects;
+		return collection.Count;
+	}
 
-	public IEnumerable<EducationPeriod> EducationPeriods => _educationPeriods.Value;
+	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
+		=> await _educationPeriods;
 
-	public WardSubjectStudying this[int index]
-		=> _subjects.Value.ElementAtOrDefault(index: index)
-		   ?? throw new ArgumentOutOfRangeException(message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index));
+	public async Task<WardSubjectStudying> GetByIndex(int index)
+	{
+		List<WardSubjectStudying> collection = await _subjects;
+		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
+		);
+	}
 	#endregion
 
 	#region Classes
@@ -104,14 +117,36 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 			apiMethod: ParentControllerMethods.GetEducationPeriods,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		EducationPeriod currentPeroid = new EducationPeriod()
+		{
+			Id = 0,
+			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть"
+		};
 		return new WardSubjectStudyingCollection(
 			client: client,
-			studyingSubjects: subjects.Select(selector: s => WardSubjectStudying.Create(
-				client: client,
-				response: s,
-				cancellationToken: cancellationToken
-			).GetAwaiter().GetResult()),
-			educationPeriods: educationPeriods
+			studyingSubjects: new AsyncLazy<List<WardSubjectStudying>>(valueFactory: async () =>
+			{
+				List<WardSubjectStudying> collection = new List<WardSubjectStudying>(collection: await Task.WhenAll(tasks: subjects.Select(
+					selector: async s => await WardSubjectStudying.Create(
+						client: client,
+						response: s,
+						cancellationToken: cancellationToken
+					)
+				)));
+				collection.Insert(index: 0, item: await WardSubjectStudying.Create(
+					client: client,
+					name: "Все дисциплины",
+					cancellationToken: cancellationToken
+				));
+				return collection;
+			}),
+			educationPeriods: new AsyncLazy<List<EducationPeriod>>(valueFactory: async () =>
+			{
+				List<EducationPeriod> collection = new List<EducationPeriod>(collection: educationPeriods);
+				collection.Insert(index: 0, item: currentPeroid);
+				return collection;
+			}),
+			currentPeriod: currentPeroid
 		);
 	}
 	#endregion
@@ -127,45 +162,46 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 
 		IEnumerable<WardSubjectStudying.StudyingSubjectResponse> response = await LoadSubjectCollection(
 			client: _client,
-			apiMethod: period.Id == 0 ? LessonControllerMethods.GetSubjectsStudiedByWard : LessonControllerMethods.GetSubjectsStudiedByWardByPeriod(period: period.Name),
+			apiMethod: period.Id == 0 ? LessonControllerMethods.GetSubjectsStudiedByWard
+				: LessonControllerMethods.GetSubjectsStudiedByWardByPeriod(period: period.Name),
 			cancellationToken: cancellationToken
 		);
-		List<WardSubjectStudying> subjects = new List<WardSubjectStudying>(collection: response.Select(selector: s => WardSubjectStudying.CreateWithoutTasks(
-			client: _client,
-			response: s
-		)));
+		List<WardSubjectStudying> subjects = new List<WardSubjectStudying>(collection: response.Select(
+			selector: s => WardSubjectStudying.CreateWithoutTasks(client: _client, response: s)
+		));
 
 		if (period.Id == 0)
 			subjects.Insert(index: 0, item: WardSubjectStudying.CreateWithoutTasks(client: _client, name: "Все дисциплины"));
 
-		_subjects.Value.Clear();
-		_subjects.Value.AddRange(collection: subjects);
+		List<WardSubjectStudying> collection = await _subjects;
+		collection.Clear();
+		collection.AddRange(collection: subjects);
 		_currentPeriod = period;
 	}
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
-		foreach (WardSubjectStudying subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-			if (subject.Tasks.IsLoaded)
-				await subject.OnCompletedTask(e: new WardSubjectStudying.CompletedTaskEventArgs(taskId: e.TaskId));
+		// foreach (WardSubjectStudying subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
+		// 	await subject.OnCompletedTask(e: new WardSubjectStudying.CompletedTaskEventArgs(taskId: e.TaskId));
+			// if (subject.Tasks.IsLoaded)
 
 		CompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
-		foreach (WardSubjectStudying subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-			if (subject.Tasks.IsLoaded)
-				await subject.OnUncompletedTask(e: new WardSubjectStudying.UncompletedTaskEventArgs(taskId: e.TaskId));
+		// foreach (WardSubjectStudying subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
+		// 	await subject.OnUncompletedTask(e: new WardSubjectStudying.UncompletedTaskEventArgs(taskId: e.TaskId));
+			// if (subject.Tasks.IsLoaded)
 
 		UncompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
-		foreach (WardSubjectStudying subject in this.Where(predicate: ts => ts.Id == 0 || ts.Id == e.SubjectId))
-			if (subject.Tasks.IsLoaded)
-				await subject.OnCreatedTask(e: new WardSubjectStudying.CreatedTaskEventArgs(taskId: e.TaskId));
+		// foreach (WardSubjectStudying subject in this.Where(predicate: ts => ts.Id == 0 || ts.Id == e.SubjectId))
+		// 	await subject.OnCreatedTask(e: new WardSubjectStudying.CreatedTaskEventArgs(taskId: e.TaskId));
+			// if (subject.Tasks.IsLoaded)
 
 		CreatedTask?.Invoke(e: e);
 	}
@@ -173,7 +209,7 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 
 	#region IEnumerable<WardSubjectStudying>
 	public IEnumerator<WardSubjectStudying> GetEnumerator()
-		=> _subjects.Value.GetEnumerator();
+		=> _subjects.GetAwaiter().GetResult().GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator()
 		=> GetEnumerator();
