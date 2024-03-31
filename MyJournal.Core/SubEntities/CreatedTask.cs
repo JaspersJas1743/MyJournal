@@ -77,19 +77,24 @@ public sealed class CreatedTask : BaseTask
 	#endregion
 
 	#region Instance
+	private async Task ChangeCompletionData()
+	{
+		GetCreatedTasksResponse response = await _client.GetAsync<GetCreatedTasksResponse>(
+			apiMethod: TaskControllerMethods.GetCreatedTaskById(taskId: Id)
+		) ?? throw new InvalidOperationException();
+		CountOfCompletedTask = response.CountOfCompletedTask;
+		CountOfUncompletedTask = response.CountOfUncompletedTask;
+	}
+
 	internal async Task OnCompletedTask(CompletedEventArgs e)
 	{
-		// TODO: обновление с api, а не + и -
-		CountOfCompletedTask += 1;
-		CountOfUncompletedTask -= 1;
+		await ChangeCompletionData();
 		Completed?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedEventArgs e)
 	{
-		// TODO: обновление с api, а не + и -
-		CountOfCompletedTask -= 1;
-		CountOfUncompletedTask += 1;
+		await ChangeCompletionData();
 		Uncompleted?.Invoke(e: e);
 	}
 
