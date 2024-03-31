@@ -7,7 +7,7 @@ using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
-public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudying>
+public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubjectStudying>
 {
 	#region Fields
 	private readonly ApiClient _client;
@@ -172,7 +172,7 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			TaskAssignedToWardCollection tasks = await subject.GetTasks();
-			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnCompletedTask(e: new WardSubjectStudying.CompletedTaskEventArgs(taskId: e.TaskId));
 		}, filter: subject => subject.TasksAreCreated);
 
@@ -184,7 +184,7 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			TaskAssignedToWardCollection tasks = await subject.GetTasks();
-			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnUncompletedTask(e: new WardSubjectStudying.UncompletedTaskEventArgs(taskId: e.TaskId));
 		}, filter: subject => subject.TasksAreCreated);
 
@@ -215,12 +215,19 @@ public sealed class WardSubjectStudyingCollection : IEnumerable<WardSubjectStudy
 	}
 	#endregion
 
-	#region IEnumerable<WardSubjectStudying>
-	public IEnumerator<WardSubjectStudying> GetEnumerator()
-		=> _subjects.GetAwaiter().GetResult().GetEnumerator();
+	#region IAsyncEnumerable<WardSubjectStudying>
+	public async IAsyncEnumerator<WardSubjectStudying> GetAsyncEnumerator(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		foreach (WardSubjectStudying subject in await _subjects)
+		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
 
-	IEnumerator IEnumerable.GetEnumerator()
-		=> GetEnumerator();
+			yield return subject;
+		}
+	}
 	#endregion
 	#endregion
 }

@@ -6,7 +6,7 @@ using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
 
-public sealed class ClassCollection : IEnumerable<Class>
+public sealed class ClassCollection : IAsyncEnumerable<Class>
 {
 	#region Fields
 	private readonly AsyncLazy<List<Class>> _classes;
@@ -130,7 +130,7 @@ public sealed class ClassCollection : IEnumerable<Class>
 		);
 		foreach (StudyingSubjectInClassCollection subjects in subjectCollection)
 		{
-			foreach (StudyingSubjectInClass subject in subjects.Where(predicate: s => s.TasksAreCreated && subjectFilter(obj: s)))
+			await foreach (StudyingSubjectInClass subject in subjects.Where(predicate: s => s.TasksAreCreated && subjectFilter(obj: s)))
 				await invocation(arg: subject);
 		}
 	}
@@ -149,22 +149,30 @@ public sealed class ClassCollection : IEnumerable<Class>
 		);
 		foreach (StudyingSubjectInClassCollection subjects in subjectCollection)
 		{
-			foreach (StudyingSubjectInClass subject in subjects.Where(predicate: s => s.TasksAreCreated))
+			await foreach (StudyingSubjectInClass subject in subjects.Where(predicate: s => s.TasksAreCreated))
 			{
 				TaskAssignedToClassCollection tasks = await subject.GetTasks();
-				if (tasks.Any(predicate: taskFilter))
+				if (await tasks.AnyAsync(predicate: taskFilter))
 					await invocation(arg: subject);
 			}
 		}
 	}
 	#endregion
 
-	#region IEnumerable<Class>
-	public IEnumerator<Class> GetEnumerator()
-		=> _classes.GetAwaiter().GetResult().GetEnumerator();
+	#region IAsyncEnumerable<Class>
 
-	IEnumerator IEnumerable.GetEnumerator()
-		=> GetEnumerator();
+	public async IAsyncEnumerator<Class> GetAsyncEnumerator(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		foreach (Class @class in await _classes)
+		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
+
+			yield return @class;
+		}
+	}
 	#endregion
 	#endregion
 }

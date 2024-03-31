@@ -7,7 +7,7 @@ using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
-public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
+public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 {
 	#region Fields
 	private readonly ApiClient _client;
@@ -181,7 +181,7 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			CreatedTaskCollection tasks = await subject.GetTasks();
-			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId));
 		}, filter: _ => true);
 
@@ -193,7 +193,7 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			CreatedTaskCollection tasks = await subject.GetTasks();
-			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnUncompletedTask(e: new TaughtSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
 		}, filter: _ => true);
 
@@ -221,12 +221,19 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 	}
 	#endregion
 
-	#region IEnumerable<TaughtSubject>
-	public IEnumerator<TaughtSubject> GetEnumerator()
-		=> _subjects.GetAwaiter().GetResult().GetEnumerator();
+	#region IAsyncEnumerable<TaughtSubject>
+	public async IAsyncEnumerator<TaughtSubject> GetAsyncEnumerator(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		foreach (TaughtSubject subject in await _subjects)
+		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
 
-	IEnumerator IEnumerable.GetEnumerator()
-		=> GetEnumerator();
+			yield return subject;
+		}
+	}
 	#endregion
 	#endregion
 }

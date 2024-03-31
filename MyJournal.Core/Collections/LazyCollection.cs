@@ -5,7 +5,7 @@ using MyJournal.Core.Utilities.AsyncLazy;
 
 namespace MyJournal.Core.Collections;
 
-public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
+public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntity
 {
 	#region Fields
 	private bool _allItemsAreUploaded;
@@ -122,12 +122,19 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 	);
 	#endregion
 
-	#region IEnumerable<T>
-	public IEnumerator<T> GetEnumerator()
-		=> Collection.GetAwaiter().GetResult().GetEnumerator();
+	#region IAsyncEnumerable<T>
+	public async IAsyncEnumerator<T> GetAsyncEnumerator(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		foreach (T item in await Collection)
+		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
 
-	IEnumerator IEnumerable.GetEnumerator() =>
-		GetEnumerator();
+			yield return item;
+		}
+	}
 	#endregion
 	#endregion
 }

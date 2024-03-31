@@ -6,7 +6,7 @@ using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
 
-public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInClass>
+public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubjectInClass>
 {
 	#region Fields
 	private readonly ApiClient _client;
@@ -146,12 +146,19 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 	}
 	#endregion
 
-	#region IEnumerable<StudyingSubjectInClass>
-	public IEnumerator<StudyingSubjectInClass> GetEnumerator()
-		=> _subjects.GetAwaiter().GetResult().GetEnumerator();
+	#region IAsyncEnumerable<StudyingSubjectInClass>
+	public async IAsyncEnumerator<StudyingSubjectInClass> GetAsyncEnumerator(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		foreach (StudyingSubjectInClass subject in await _subjects)
+		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
 
-	IEnumerator IEnumerable.GetEnumerator()
-		=> GetEnumerator();
+			yield return subject;
+		}
+	}
 	#endregion
 	#endregion
 }

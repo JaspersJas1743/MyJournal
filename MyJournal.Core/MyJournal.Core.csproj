@@ -9,6 +9,8 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.2" />
       <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="8.0.2" />
+      <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+      <PackageReference Include="System.Reactive.Core" Version="6.0.0" />
     </ItemGroup>
 
 </Project>

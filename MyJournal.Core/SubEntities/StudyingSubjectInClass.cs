@@ -125,7 +125,7 @@ public sealed class StudyingSubjectInClass : Subject
 	{
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
-			foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
+			await foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
 				await task.OnCompletedTask(e: new TaskAssignedToClass.CompletedEventArgs());
 		});
 
@@ -136,7 +136,7 @@ public sealed class StudyingSubjectInClass : Subject
 	{
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
-			foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
+			await foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
 				await task.OnUncompletedTask(e: new TaskAssignedToClass.UncompletedEventArgs());
 		});
 
@@ -148,7 +148,7 @@ public sealed class StudyingSubjectInClass : Subject
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
 			await collection.Append(id: e.TaskId);
-			foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
+			await foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
 				task.OnCreatedTask(e: new TaskAssignedToClass.CreatedEventArgs());
 		});
 

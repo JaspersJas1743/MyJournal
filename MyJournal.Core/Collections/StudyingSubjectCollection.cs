@@ -1,4 +1,3 @@
-using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -6,7 +5,7 @@ using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
 
-public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
+public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject>
 {
 	#region Fields
 	private readonly ApiClient _client;
@@ -163,7 +162,7 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			AssignedTaskCollection tasks = await subject.GetTasks();
-			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnCompletedTask(e: new StudyingSubject.CompletedTaskEventArgs(taskId: e.TaskId));
 		}, filter: _ => true);
 
@@ -175,7 +174,7 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			AssignedTaskCollection tasks = await subject.GetTasks();
-			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnUncompletedTask(e: new StudyingSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
 		}, filter: _ => true);
 
@@ -206,12 +205,19 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 	}
 	#endregion
 
-	#region IEnumerable<StudyingSubject>
-	public IEnumerator<StudyingSubject> GetEnumerator()
-		=> _subjects.GetAwaiter().GetResult().GetEnumerator();
+	#region IAsyncEnumerable<StudyingSubject>
+	public async IAsyncEnumerator<StudyingSubject> GetAsyncEnumerator(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		foreach (StudyingSubject subject in await _subjects)
+		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
 
-	IEnumerator IEnumerable.GetEnumerator()
-		=> GetEnumerator();
+			yield return subject;
+		}
+	}
 	#endregion
 	#endregion
 }

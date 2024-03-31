@@ -119,7 +119,7 @@ public class TeacherTest
 		TaughtSubject allSubjects = await taughtSubjects.GetByIndex(index: 0);
 		CreatedTaskCollection allTasks = await allSubjects.GetTasks();
 		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 2));
-		CreatedTask firstTask = allTasks.ElementAt(index: 0);
+		CreatedTask firstTask = await allTasks.ElementAtAsync(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
@@ -128,7 +128,7 @@ public class TeacherTest
 		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
 		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
-		CreatedTask secondTask = allTasks.ElementAt(index: 1);
+		CreatedTask secondTask = await allTasks.ElementAtAsync(index: 1);
 		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
 		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
@@ -140,7 +140,7 @@ public class TeacherTest
 		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
 		CreatedTaskCollection firstTaughtSubjectTasks = await firstTaughtSubject.GetTasks();
 		Assert.That(actual: firstTaughtSubjectTasks.Length, expression: Is.EqualTo(expected: 2));
-		firstTask = firstTaughtSubjectTasks.ElementAt(index: 0);
+		firstTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
@@ -149,7 +149,7 @@ public class TeacherTest
 		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
 		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
-		secondTask = firstTaughtSubjectTasks.ElementAt(index: 1);
+		secondTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 1);
 		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
 		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
@@ -194,7 +194,7 @@ public class TeacherTest
 		CreatedTaskCollection allTasks = await allSubjects.GetTasks();
 		await allTasks.SetCompletionStatus(status: CreatedTaskCollection.TaskCompletionStatus.Expired);
 		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 2));
-		CreatedTask firstTask = allTasks.ElementAt(index: 0);
+		CreatedTask firstTask = await allTasks.ElementAtAsync(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
@@ -203,7 +203,7 @@ public class TeacherTest
 		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
 		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
-		CreatedTask secondTask = allTasks.ElementAt(index: 1);
+		CreatedTask secondTask = await allTasks.ElementAtAsync(index: 1);
 		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
 		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
@@ -215,7 +215,7 @@ public class TeacherTest
 		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
 		CreatedTaskCollection firstTaughtSubjectTasks = await firstTaughtSubject.GetTasks();
 		Assert.That(actual: firstTaughtSubjectTasks.Length, expression: Is.EqualTo(expected: 2));
-		firstTask = firstTaughtSubjectTasks.ElementAt(index: 0);
+		firstTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
@@ -224,7 +224,7 @@ public class TeacherTest
 		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
 		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
-		secondTask = firstTaughtSubjectTasks.ElementAt(index: 1);
+		secondTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 1);
 		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
 		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
 		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));

@@ -144,7 +144,7 @@ public sealed class TaughtSubject : ISubEntity
 	{
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
-			foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
+			await foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
 				await createdTask.OnCompletedTask(e: new CreatedTask.CompletedEventArgs());
 		});
 
@@ -155,7 +155,7 @@ public sealed class TaughtSubject : ISubEntity
 	{
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
-			foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
+			await foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
 				await createdTask.OnUncompletedTask(e: new CreatedTask.UncompletedEventArgs());
 		});
 
@@ -167,7 +167,7 @@ public sealed class TaughtSubject : ISubEntity
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
 			await collection.Append(id: e.TaskId);
-			foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
+			await foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
 				createdTask.OnCreatedTask(e: new CreatedTask.CreatedEventArgs());
 		});
 

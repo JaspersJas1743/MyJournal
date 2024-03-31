@@ -606,9 +606,9 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		ChatCollection chats = await user.GetChats();
-		Chat firstChat = chats.First();
+		Chat firstChat = await chats.FirstAsync();
 		MessageCollection messages = await firstChat.GetMessages();
-		Message lastMessage = messages.Last();
+		Message lastMessage = await messages.LastAsync();
 		Assert.That(actual: lastMessage.Sender.Surname, expression: Is.EqualTo(expected: "Смирнов"));
 		Assert.That(actual: lastMessage.Sender.Name, expression: Is.EqualTo(expected: "Алексей"));
 		Assert.That(actual: lastMessage.Sender.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
@@ -630,7 +630,7 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		ChatCollection chats = await user.GetChats();
-		Chat firstChat = chats.First();
+		Chat firstChat = await chats.FirstAsync();
 		const string message = "Тестирование сообщения :)";
 		MessageCollection messages = await firstChat.GetMessages();
 		IMessageBuilder builder = messages.CreateMessage().WithText(text: message);
@@ -638,7 +638,7 @@ public class UserTests
 		await builder.Build().Send();
 		await Task.Delay(millisecondsDelay: 50);
 		messages = await firstChat.GetMessages();
-		Message lastMessage = messages.Last();
+		Message lastMessage = await messages.LastAsync();
 		PersonalData personalData = await user.GetPersonalData();
 		Assert.That(actual: lastMessage.Sender.Surname, expression: Is.EqualTo(expected: personalData.Surname));
 		Assert.That(actual: lastMessage.Sender.Name, expression: Is.EqualTo(expected: personalData.Name));
@@ -662,7 +662,7 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			ChatCollection chats = await user.GetChats();
-			Chat firstChat = chats.First();
+			Chat firstChat = await chats.FirstAsync();
 			const string message = "Тестирование сообщения";
 			MessageCollection messages = await firstChat.GetMessages();
 			IMessageBuilder builder = messages.CreateMessage().WithText(text: message);
