@@ -19,20 +19,12 @@ public sealed class Teacher : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		AsyncLazy<ChatCollection> chats,
-		AsyncLazy<InterlocutorCollection> interlocutors,
-		AsyncLazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		AsyncLazy<SessionCollection> sessions,
 		AsyncLazy<TaughtSubjectCollection> taughtSubjects
 	) : base(
 		client: client,
 		fileService: fileService,
 		googleAuthenticatorService: googleAuthenticatorService,
-		information: information,
-		chats: chats,
-		interlocutors: interlocutors,
-		intendedInterlocutors: intendedInterlocutors,
-		sessions: sessions
+		information: information
 	)
 	{
 		_taughtSubjectCollection = taughtSubjects;
@@ -58,25 +50,6 @@ public sealed class Teacher : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
-			chats: new AsyncLazy<ChatCollection>(valueFactory: async () => await ChatCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			interlocutors: new AsyncLazy<InterlocutorCollection>(valueFactory: async () => await InterlocutorCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			intendedInterlocutors: new AsyncLazy<IntendedInterlocutorCollection>(valueFactory: async () => await IntendedInterlocutorCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			sessions: new AsyncLazy<SessionCollection>(valueFactory: async () => await SessionCollection.Create(
-				client: client,
-				cancellationToken: cancellationToken
-			)),
 			taughtSubjects: new AsyncLazy<TaughtSubjectCollection>(valueFactory: async () => await TaughtSubjectCollection.Create(
 				client: client,
 				fileService: fileService,
@@ -94,13 +67,31 @@ public sealed class Teacher : User
 	{
 		await _teacherHubConnection.StartAsync(cancellationToken: cancellationToken);
 		_teacherHubConnection.On<int>(methodName: TeacherHubMethods.StudentCompletedTask, handler: async taskId =>
-		{ }	// await TaughtSubjects.OnCompletedTask(e: new TaughtSubjectCollection.CompletedTaskEventArgs(taskId: taskId))
-		);
+		{
+			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCompletedTask(
+				e: new TaughtSubjectCollection.CompletedTaskEventArgs(taskId: taskId)
+			));
+		});
 		_teacherHubConnection.On<int>(methodName: TeacherHubMethods.StudentUncompletedTask, handler: async taskId =>
-		{ }	// await TaughtSubjects.OnUncompletedTask(e: new TaughtSubjectCollection.UncompletedTaskEventArgs(taskId: taskId))
-		);
+		{
+			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnUncompletedTask(
+				e: new TaughtSubjectCollection.UncompletedTaskEventArgs(taskId: taskId)
+			));
+		});
 		_teacherHubConnection.On<int, int>(methodName: TeacherHubMethods.CreatedTask, handler: async (taskId, subjectId) =>
-		{ }	// await TaughtSubjects.OnCreatedTask(e: new TaughtSubjectCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId))
-		);
+		{
+			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCreatedTask(
+				e: new TaughtSubjectCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId)
+			));
+		});
+	}
+
+	private async Task InvokeIfTaughtSubjectsAreCreated(Action<TaughtSubjectCollection> invocation)
+	{
+		if (!_taughtSubjectCollection.IsValueCreated)
+			return;
+
+		TaughtSubjectCollection taughtSubjectCollection = await GetTaughtSubjects();
+		invocation(obj: taughtSubjectCollection);
 	}
 }

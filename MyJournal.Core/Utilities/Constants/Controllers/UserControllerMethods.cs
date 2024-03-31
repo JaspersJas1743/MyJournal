@@ -6,7 +6,6 @@ internal static class UserControllerMethods
 	internal const string SetOffline = "user/profile/activity/offline";
 	internal const string SetOnline = "user/profile/activity/online";
 	internal const string UploadProfilePhoto = "user/profile/photo/upload";
-	internal const string DownloadProfilePhoto = "user/profile/photo/download";
 	internal const string DeleteProfilePhoto = "user/profile/photo/delete";
 	internal const string ChangeEmail = "user/profile/security/email/change";
 	internal const string ChangePhone = "user/profile/security/phone/change";

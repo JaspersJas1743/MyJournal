@@ -1,5 +1,6 @@
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
@@ -8,15 +9,15 @@ namespace MyJournal.Core.SubEntities;
 public sealed class Interlocutor : ISubEntity
 {
 	#region Fields
-	private readonly Lazy<PersonalData> _personalData;
-	private readonly Lazy<ProfilePhoto> _photo;
+	private readonly AsyncLazy<PersonalData> _personalData;
+	private readonly AsyncLazy<ProfilePhoto> _photo;
 	#endregion
 
 	#region Constructor
 	private Interlocutor(
 		int id,
-		Lazy<PersonalData> personalData,
-		Lazy<ProfilePhoto> photo,
+		AsyncLazy<PersonalData> personalData,
+		AsyncLazy<ProfilePhoto> photo,
 		Activity.Statuses activity,
 		DateTime? onlineAt
 	)
@@ -32,8 +33,6 @@ public sealed class Interlocutor : ISubEntity
 
 	#region Properties
 	public int Id { get; init; }
-	public PersonalData PersonalData => _personalData.Value;
-	public ProfilePhoto Photo => _photo.Value;
 	public Activity.Statuses Activity { get; private set; }
 	public DateTime? OnlineAt { get; private set; }
 	#endregion
@@ -90,12 +89,12 @@ public sealed class Interlocutor : ISubEntity
 		) ?? throw new InvalidOperationException();
 		Interlocutor interlocutor = new Interlocutor(
 			id: response.Id,
-			personalData: new Lazy<PersonalData>(value: new PersonalData(
+			personalData: new AsyncLazy<PersonalData>(valueFactory: async () => new PersonalData(
 				name: response.Name,
 				surname: response.Surname,
 				patronymic: response.Patronymic
 			)),
-			photo: new Lazy<ProfilePhoto>(value: new ProfilePhoto(
+			photo: new AsyncLazy<ProfilePhoto>(valueFactory: async () => new ProfilePhoto(
 				client: client,
 				fileService: fileService,
 				link: response.Photo
@@ -108,6 +107,12 @@ public sealed class Interlocutor : ISubEntity
 	#endregion
 
 	#region Instance
+	public async Task<PersonalData> GetPersonalData()
+		=> await _personalData;
+
+	public async Task<ProfilePhoto> GetPhoto()
+		=> await _photo;
+
 	internal void OnAppearedOnline(AppearedOnlineEventArgs e)
 	{
 		Activity = UserData.Activity.Statuses.Online;
@@ -122,15 +127,23 @@ public sealed class Interlocutor : ISubEntity
 		AppearedOffline?.Invoke(e: e);
 	}
 
-	internal void OnUpdatedPhoto(UpdatedPhotoEventArgs e)
+	internal async Task OnUpdatedPhoto(UpdatedPhotoEventArgs e)
 	{
-		Photo.UpdatePhoto(link: e.Link);
+		if (!_photo.IsValueCreated)
+			return;
+
+		ProfilePhoto photo = await _photo;
+		photo.UpdatePhoto(link: e.Link);
 		UpdatedPhoto?.Invoke(e: e);
 	}
 
-	internal void OnDeletedPhoto(DeletedPhotoEventArgs e)
+	internal async Task OnDeletedPhoto(DeletedPhotoEventArgs e)
 	{
-		Photo.UpdatePhoto(link: null);
+		if (!_photo.IsValueCreated)
+			return;
+
+		ProfilePhoto photo = await _photo;
+		photo.UpdatePhoto(link: null);
 		DeletedPhoto?.Invoke(e: e);
 	}
 	#endregion

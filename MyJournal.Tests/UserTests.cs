@@ -4,6 +4,7 @@ using MyJournal.Core.Authorization;
 using MyJournal.Core.Collections;
 using MyJournal.Core.MessageBuilder;
 using MyJournal.Core.SubEntities;
+using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
@@ -44,7 +45,8 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		SessionCollection sessions = await user.Security.GetSessions();
+		Security security = await user.GetSecurity();
+		SessionCollection sessions = await security.GetSessions();
 		_ = await sessions.CloseThis();
 		Assert.Pass();
 	}
@@ -61,7 +63,8 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			SessionCollection sessions = await user.Security.GetSessions();
+			Security security = await user.GetSecurity();
+			SessionCollection sessions = await security.GetSessions();
 			_ = await sessions.CloseThis();
 			_ = await sessions.CloseThis();
 		});
@@ -81,9 +84,11 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			User user2 = await service2.SignIn(credentials: credentials);
-			SessionCollection sessions = await user.Security.GetSessions();
+			Security security = await user.GetSecurity();
+			SessionCollection sessions = await security.GetSessions();
 			_ = await sessions.CloseAll();
-			await user2.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
+			ProfilePhoto photo = await user2.GetPhoto();
+			await photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 		});
 	}
 
@@ -101,9 +106,11 @@ public class UserTests
 			);
 			User user = await service.SignIn(credentials: credentials);
 			User user2 = await service2.SignIn(credentials: credentials);
-			SessionCollection sessions = await user.Security.GetSessions();
+			Security security = await user.GetSecurity();
+			SessionCollection sessions = await security.GetSessions();
 			_ = await sessions.CloseOthers();
-			await user2.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
+			ProfilePhoto photo = await user2.GetPhoto();
+			await photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 		});
 	}
 
@@ -117,9 +124,11 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		SessionCollection sessions = await user.Security.GetSessions();
+		Security security = await user.GetSecurity();
+		SessionCollection sessions = await security.GetSessions();
 		_ = await sessions.CloseOthers();
-		await user.Photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
+		ProfilePhoto photo = await user.GetPhoto();
+		await photo.Download(folder: @"C:\Users\JaspersJas1743\Downloads");
 	}
 	#endregion
 
@@ -135,8 +144,10 @@ public class UserTests
 		);
 		User user = await service.SignIn(credentials: credentials);
 		string newEmail = "test@mail.ru";
-		await user.Security.Email.Change(confirmationCode: "804680", newEmail: newEmail);
-		Assert.That(actual: user.Security.Email.Address, expression: Is.EqualTo(expected: newEmail));
+		Security security = await user.GetSecurity();
+		Email email = await security.GetEmail();
+		await email.Change(confirmationCode: "658228", newEmail: newEmail);
+		Assert.That(actual: email.Address, expression: Is.EqualTo(expected: newEmail));
 	}
 
 	[Test]
@@ -151,7 +162,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email.Change(confirmationCode: "804680", newEmail: "test@mail.ru");
+			Security security = await user.GetSecurity();
+			Email email = await security.GetEmail();
+			await email.Change(confirmationCode: "658228", newEmail: "test@mail.ru");
 		});
 	}
 
@@ -167,7 +180,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email.Change(confirmationCode: "804680", newEmail: "@mail.ru");
+			Security security = await user.GetSecurity();
+			Email email = await security.GetEmail();
+			await email.Change(confirmationCode: "658228", newEmail: "@mail.ru");
 		});
 	}
 
@@ -183,7 +198,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email.Change(confirmationCode: "804680", newEmail: "test@.ru");
+			Security security = await user.GetSecurity();
+			Email email = await security.GetEmail();
+			await email.Change(confirmationCode: "658228", newEmail: "test@.ru");
 		});
 	}
 
@@ -199,7 +216,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email.Change(confirmationCode: "804680", newEmail: "test@");
+			Security security = await user.GetSecurity();
+			Email email = await security.GetEmail();
+			await email.Change(confirmationCode: "658228", newEmail: "test@");
 		});
 	}
 
@@ -215,7 +234,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email.Change(confirmationCode: "804680", newEmail: "testmail.ru");
+			Security security = await user.GetSecurity();
+			Email email = await security.GetEmail();
+			await email.Change(confirmationCode: "658228", newEmail: "testmail.ru");
 		});
 	}
 
@@ -231,7 +252,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Email.Change(confirmationCode: "000000", newEmail: "testmail.ru");
+			Security security = await user.GetSecurity();
+			Email email = await security.GetEmail();
+			await email.Change(confirmationCode: "000000", newEmail: "testmail.ru");
 		});
 	}
 	#endregion
@@ -247,7 +270,9 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.Security.Phone.Change(confirmationCode: "232046", newPhone: "+7(777)777-7777");
+		Security security = await user.GetSecurity();
+		Phone phone = await security.GetPhone();
+		await phone.Change(confirmationCode: "025134", newPhone: "+7(777)777-7777");
 	}
 
 	[Test]
@@ -262,7 +287,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone.Change(confirmationCode: "232046", newPhone: "+7(777)777-7777");
+			Security security = await user.GetSecurity();
+			Phone phone = await security.GetPhone();
+			await phone.Change(confirmationCode: "025134", newPhone: "+7(777)777-7777");
 		});
 	}
 
@@ -278,7 +305,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone.Change(confirmationCode: "232046", newPhone: "123453");
+			Security security = await user.GetSecurity();
+			Phone phone = await security.GetPhone();
+			await phone.Change(confirmationCode: "025134", newPhone: "123453");
 		});
 	}
 
@@ -294,7 +323,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone.Change(confirmationCode: "232046", newPhone: "9999999999");
+			Security security = await user.GetSecurity();
+			Phone phone = await security.GetPhone();
+			await phone.Change(confirmationCode: "025134", newPhone: "9999999999");
 		});
 	}
 
@@ -310,7 +341,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone.Change(confirmationCode: "232046", newPhone: "7(999)999-9999");
+			Security security = await user.GetSecurity();
+			Phone phone = await security.GetPhone();
+			await phone.Change(confirmationCode: "025134", newPhone: "7(999)999-9999");
 		});
 	}
 
@@ -326,7 +359,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone.Change(confirmationCode: "232046", newPhone: "79999999999");
+			Security security = await user.GetSecurity();
+			Phone phone = await security.GetPhone();
+			await phone.Change(confirmationCode: "025134", newPhone: "79999999999");
 		});
 	}
 
@@ -342,7 +377,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Phone.Change(confirmationCode: "000000", newPhone: "+7(999)999-9999");
+			Security security = await user.GetSecurity();
+			Phone phone = await security.GetPhone();
+			await phone.Change(confirmationCode: "000000", newPhone: "+7(999)999-9999");
 		});
 	}
 	#endregion
@@ -358,7 +395,9 @@ public class UserTests
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		User user = await service.SignIn(credentials: credentials);
-		await user.Security.Password.Change(confirmationCode: "669148", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
+		Security security = await user.GetSecurity();
+		Password password = await security.GetPassword();
+		await password.Change(confirmationCode: "248771", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
 	}
 
 	[Test]
@@ -373,7 +412,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password.Change(confirmationCode: "669148", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
+			Security security = await user.GetSecurity();
+			Password password = await security.GetPassword();
+			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
 		});
 	}
 
@@ -389,7 +430,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password.Change(confirmationCode: "669148", currentPassword: "Jaspers", newPassword: "Jaspers");
+			Security security = await user.GetSecurity();
+			Password password = await security.GetPassword();
+			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "Jaspers");
 		});
 	}
 
@@ -405,7 +448,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password.Change(confirmationCode: "669148", currentPassword: "Jaspers", newPassword: "J");
+			Security security = await user.GetSecurity();
+			Password password = await security.GetPassword();
+			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "J");
 		});
 	}
 
@@ -421,7 +466,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password.Change(confirmationCode: "669148", currentPassword: "Jaspers", newPassword: "Js");
+			Security security = await user.GetSecurity();
+			Password password = await security.GetPassword();
+			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "Js");
 		});
 	}
 
@@ -437,7 +484,9 @@ public class UserTests
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
 			User user = await service.SignIn(credentials: credentials);
-			await user.Security.Password.Change(confirmationCode: "000000", currentPassword: "JaspersJas1743", newPassword: "Js");
+			Security security = await user.GetSecurity();
+			Password password = await security.GetPassword();
+			await password.Change(confirmationCode: "000000", currentPassword: "JaspersJas1743", newPassword: "Js");
 		});
 	}
 	#endregion
@@ -499,10 +548,11 @@ public class UserTests
 		User user = await service.SignIn(credentials: credentials);
 		IntendedInterlocutorCollection intendedInterlocutors = await user.GetIntendedInterlocutors();
 		await intendedInterlocutors.SetFilter(filter: null);
-		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.GetById(id: 5);
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.FindById(id: 5);
+		PersonalData personalData = await intendedInterlocutorWithFiveId.GetPersonalData();
+		Assert.That(actual: personalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: personalData.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: personalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
 	}
 
 	[Test]
@@ -517,10 +567,11 @@ public class UserTests
 		User user = await service.SignIn(credentials: credentials);
 		IntendedInterlocutorCollection intendedInterlocutors = await user.GetIntendedInterlocutors();
 		await intendedInterlocutors.SetFilter(filter: String.Empty);
-		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.GetById(id: 5);
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.FindById(id: 5);
+		PersonalData personalData = await intendedInterlocutorWithFiveId.GetPersonalData();
+		Assert.That(actual: personalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: personalData.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: personalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
 	}
 
 	[Test]
@@ -535,10 +586,11 @@ public class UserTests
 		User user = await service.SignIn(credentials: credentials);
 		IntendedInterlocutorCollection intendedInterlocutors = await user.GetIntendedInterlocutors();
 		await intendedInterlocutors.SetFilter(filter: "   ");
-		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.GetById(id: 5);
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: intendedInterlocutorWithFiveId.PersonalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.FindById(id: 5);
+		PersonalData personalData = await intendedInterlocutorWithFiveId.GetPersonalData();
+		Assert.That(actual: personalData.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: personalData.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: personalData.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
 	}
 	#endregion
 
@@ -579,7 +631,7 @@ public class UserTests
 		User user = await service.SignIn(credentials: credentials);
 		ChatCollection chats = await user.GetChats();
 		Chat firstChat = chats.First();
-		const string message = "Тестирование сообщения";
+		const string message = "Тестирование сообщения :)";
 		MessageCollection messages = await firstChat.GetMessages();
 		IMessageBuilder builder = messages.CreateMessage().WithText(text: message);
 		await builder.AddAttachment(pathToFile: @"C:\Users\JaspersJas1743\Downloads\985b88cf-5ee0-496f-98a9-88fb9e35cd32.docx");
@@ -587,9 +639,10 @@ public class UserTests
 		await Task.Delay(millisecondsDelay: 50);
 		messages = await firstChat.GetMessages();
 		Message lastMessage = messages.Last();
-		Assert.That(actual: lastMessage.Sender.Surname, expression: Is.EqualTo(expected: user.PersonalData.Surname));
-		Assert.That(actual: lastMessage.Sender.Name, expression: Is.EqualTo(expected: user.PersonalData.Name));
-		Assert.That(actual: lastMessage.Sender.Patronymic, expression: Is.EqualTo(expected: user.PersonalData.Patronymic));
+		PersonalData personalData = await user.GetPersonalData();
+		Assert.That(actual: lastMessage.Sender.Surname, expression: Is.EqualTo(expected: personalData.Surname));
+		Assert.That(actual: lastMessage.Sender.Name, expression: Is.EqualTo(expected: personalData.Name));
+		Assert.That(actual: lastMessage.Sender.Patronymic, expression: Is.EqualTo(expected: personalData.Patronymic));
 		Assert.That(actual: lastMessage.Text, expression: Is.EqualTo(expected: message));
 		Assert.That(actual: lastMessage.Attachments?.Count(), expression: Is.EqualTo(expected: 1));
 		Attachment? singleAttachment = lastMessage.Attachments?.Single();

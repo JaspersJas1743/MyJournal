@@ -109,21 +109,21 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<GetInterlocutorsResponse> interlocutors = await _client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
+		IEnumerable<GetInterlocutorsResponse> interlocutors = await Client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
-				Offset: _offset,
-				Count: _count
+				Offset: Offset,
+				Count: Count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		List<Interlocutor> collection = await _collection;
+		List<Interlocutor> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: interlocutors.Select(selector: async i => await Interlocutor.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: i.UserId,
 			cancellationToken: cancellationToken
 		))));
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 
 	internal override async Task Append(
@@ -132,7 +132,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	)
 	{
 		await base.Append(instance: await Interlocutor.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
@@ -146,7 +146,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	)
 	{
 		await base.Insert(index: index, instance: await Interlocutor.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
@@ -157,34 +157,51 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	#region Instance
 	internal async Task OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
 	{
-		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
-		interlocutor.OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(
-			onlineAt: e.OnlineAt
-		));
+		await InvokeIfInterlocutorIsCreated(
+			invocation: async interlocutor => interlocutor.OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(onlineAt: e.OnlineAt)),
+			interlocutorId: e.InterlocutorId
+		);
+
 		InterlocutorAppearedOnline?.Invoke(e: e);
 	}
 
 	internal async Task OnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
 	{
-		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
-		interlocutor.OnAppearedOffline(e: new Interlocutor.AppearedOfflineEventArgs(
-			onlineAt: e.OnlineAt
-		));
+		await InvokeIfInterlocutorIsCreated(
+			invocation: async interlocutor => interlocutor.OnAppearedOffline(e: new Interlocutor.AppearedOfflineEventArgs(onlineAt: e.OnlineAt)),
+			interlocutorId: e.InterlocutorId
+		);
 		InterlocutorAppearedOffline?.Invoke(e: e);
 	}
 
 	internal async Task OnUpdatedPhoto(InterlocutorUpdatedPhotoEventArgs e)
 	{
-		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
-		interlocutor.OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs(link: e.Link));
+		await InvokeIfInterlocutorIsCreated(
+			invocation: async interlocutor => await interlocutor.OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs(link: e.Link)),
+			interlocutorId: e.InterlocutorId
+		);
 		InterlocutorUpdatedPhoto?.Invoke(e: e);
 	}
 
 	internal async Task OnDeletedPhoto(InterlocutorDeletedPhotoEventArgs e)
 	{
-		Interlocutor interlocutor = await GetById(id: e.InterlocutorId);
-		interlocutor.OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs());
+		await InvokeIfInterlocutorIsCreated(
+			invocation: async interlocutor => await interlocutor.OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs()),
+			interlocutorId: e.InterlocutorId
+		);
 		InterlocutorDeletedPhoto?.Invoke(e: e);
+	}
+
+	private async Task InvokeIfInterlocutorIsCreated(
+		Func<Interlocutor, Task> invocation,
+		int interlocutorId
+	)
+	{
+		if (!Collection.IsValueCreated)
+			return;
+
+		Interlocutor interlocutor = await FindById(id: interlocutorId);
+		await invocation(arg: interlocutor);
 	}
 	#endregion
 	#endregion

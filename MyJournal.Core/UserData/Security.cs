@@ -4,19 +4,29 @@ using MyJournal.Core.Utilities.AsyncLazy;
 namespace MyJournal.Core.UserData;
 
 public sealed class Security(
-	Lazy<Phone> phone,
-	Lazy<Email> email,
-	Lazy<Password> password,
+	AsyncLazy<Phone> phone,
+	AsyncLazy<Email> email,
+	AsyncLazy<Password> password,
 	AsyncLazy<SessionCollection> sessions
 )
 {
 	#region Properties
-	public Phone Phone => phone.Value;
-	public Email Email => email.Value;
-	public Password Password => password.Value;
+	internal bool SessionsAreCreated => sessions.IsValueCreated;
+	internal bool PhoneIsCreated => phone.IsValueCreated;
+	internal bool EmailIsCreated => email.IsValueCreated;
+	#endregion
+
+	#region Methods
+	public async Task<Phone> GetPhone()
+		=> await phone;
+
+	public async Task<Email> GetEmail()
+		=> await email;
+
+	public async Task<Password> GetPassword()
+		=> await password;
+
 	public async Task<SessionCollection> GetSessions()
 		=> await sessions;
-
-	internal bool SessionsAreCreated => sessions.IsValueCreated;
 	#endregion
 }

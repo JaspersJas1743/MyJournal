@@ -7,6 +7,7 @@ public sealed record Sender(int Id, string Surname, string Name, string Patronym
 
 public sealed class Message : ISubEntity
 {
+	#region Constructors
 	private Message(
 		GetMessageResponse response,
 		IEnumerable<Attachment>? attachments
@@ -20,7 +21,9 @@ public sealed class Message : ISubEntity
 		FromMe = response.FromMe;
 		IsRead = response.IsRead;
 	}
+	#endregion
 
+	#region Properties
 	public int Id { get; init; }
 	public string? Text { get; set; }
 	public IEnumerable<Attachment>? Attachments { get; init; }
@@ -28,11 +31,15 @@ public sealed class Message : ISubEntity
 	public DateTime CreatedAt { get; init; }
 	public bool FromMe { get; init; }
 	public bool IsRead { get; init; }
+	#endregion
 
+	#region Records
 	internal sealed record MessageAttachment(string? LinkToFile, Attachment.AttachmentType AttachmentType);
 	internal sealed record MessageContent(string? Text, IEnumerable<MessageAttachment>? Attachments);
 	internal sealed record GetMessageResponse(int MessageId, MessageContent Content, DateTime CreatedAt, Sender Sender, bool FromMe, bool IsRead);
+	#endregion
 
+	#region Methods
 	internal static async Task<Message> Create(
 		ApiClient client,
 		int messageId,
@@ -50,4 +57,5 @@ public sealed class Message : ISubEntity
 			)
 		);
 	}
+	#endregion
 }

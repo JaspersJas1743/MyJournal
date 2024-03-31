@@ -1,5 +1,6 @@
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
@@ -8,15 +9,15 @@ namespace MyJournal.Core.SubEntities;
 public sealed class IntendedInterlocutor : ISubEntity
 {
 	#region Fields
-	private readonly Lazy<PersonalData> _personalData;
-	private readonly Lazy<ProfilePhoto> _photo;
+	private readonly AsyncLazy<PersonalData> _personalData;
+	private readonly AsyncLazy<ProfilePhoto> _photo;
 	#endregion
 
 	#region Constructor
 	private IntendedInterlocutor(
 		int id,
-		Lazy<PersonalData> personalData,
-		Lazy<ProfilePhoto> photo,
+		AsyncLazy<PersonalData> personalData,
+		AsyncLazy<ProfilePhoto> photo,
 		Activity.Statuses activity,
 		DateTime? onlineAt
 	)
@@ -32,8 +33,6 @@ public sealed class IntendedInterlocutor : ISubEntity
 
 	#region Properties
 	public int Id { get; init; }
-	public PersonalData PersonalData => _personalData.Value;
-	public ProfilePhoto? Photo => _photo.Value;
 	public Activity.Statuses Activity { get; init; }
 	public DateTime? OnlineAt { get; init; }
 	#endregion
@@ -56,12 +55,12 @@ public sealed class IntendedInterlocutor : ISubEntity
 		) ?? throw new InvalidOperationException();
 		IntendedInterlocutor interlocutor = new IntendedInterlocutor(
 			id: response.Id,
-			personalData: new Lazy<PersonalData>(value: new PersonalData(
+			personalData: new AsyncLazy<PersonalData>(valueFactory: async () => new PersonalData(
 				name: response.Name,
 				surname: response.Surname,
 				patronymic: response.Patronymic
 			)),
-			photo: new Lazy<ProfilePhoto>(value: new ProfilePhoto(
+			photo: new AsyncLazy<ProfilePhoto>(valueFactory: async () => new ProfilePhoto(
 				client: client,
 				fileService: fileService,
 				link: response.Photo
@@ -71,5 +70,11 @@ public sealed class IntendedInterlocutor : ISubEntity
 		);
 		return interlocutor;
 	}
+
+	public async Task<PersonalData> GetPersonalData()
+		=> await _personalData;
+
+	public async Task<ProfilePhoto?> GetPhoto()
+		=> await _photo;
 	#endregion
 }

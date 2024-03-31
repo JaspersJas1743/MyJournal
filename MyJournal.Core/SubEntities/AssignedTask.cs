@@ -5,8 +5,11 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class AssignedTask : BaseTask
 {
+	#region Fields
 	private readonly ApiClient _client;
+	#endregion
 
+	#region Constructors
 	private AssignedTask(
 		ApiClient client,
 		GetAssignedTaskResponse response
@@ -19,13 +22,20 @@ public sealed class AssignedTask : BaseTask
 		CompletionStatus = response.CompletionStatus;
 		LessonName = response.LessonName;
 	}
+	#endregion
 
+	#region Properties
 	public TaskCompletionStatus CompletionStatus { get; private set; }
 	public string LessonName { get; init; }
+	#endregion
 
+	#region Enum
 	public enum TaskCompletionStatus { Uncompleted, Completed, Expired }
+	#endregion
 
+	#region Records
 	internal sealed record GetAssignedTaskResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, TaskCompletionStatus CompletionStatus);
+	#endregion
 
 	#region Classes
 	public sealed class CompletedEventArgs : EventArgs;
@@ -45,6 +55,8 @@ public sealed class AssignedTask : BaseTask
 	public event CreatedHandler Created;
 	#endregion
 
+	#region Methods
+	#region Static
 	internal static async Task<AssignedTask> Create(
 		ApiClient client,
 		GetAssignedTaskResponse response
@@ -62,32 +74,27 @@ public sealed class AssignedTask : BaseTask
 		) ?? throw new InvalidOperationException();
 		return new AssignedTask(client: client, response: response);
 	}
+	#endregion
+
+	#region Instance
+	private async Task Mark(
+		TaskControllerMethods.CompletionStatus status,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _client.PutAsync(
+			apiMethod: TaskControllerMethods.ChangeCompletionStatusForTask(taskId: Id, completionStatus: status),
+			cancellationToken: cancellationToken
+		);
+	}
 
 	public async Task MarkCompleted(
 		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.PutAsync(
-			apiMethod: TaskControllerMethods.ChangeCompletionStatusForTask(
-				taskId: Id,
-				completionStatus: TaskControllerMethods.CompletionStatus.Completed
-			),
-			cancellationToken: cancellationToken
-		);
-	}
+	) => await Mark(status: TaskControllerMethods.CompletionStatus.Completed, cancellationToken: cancellationToken);
 
 	public async Task MarkUncompleted(
 		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.PutAsync(
-			apiMethod: TaskControllerMethods.ChangeCompletionStatusForTask(
-				taskId: Id,
-				completionStatus: TaskControllerMethods.CompletionStatus.Uncompleted
-			),
-			cancellationToken: cancellationToken
-		);
-	}
+	) => await Mark(status: TaskControllerMethods.CompletionStatus.Uncompleted, cancellationToken: cancellationToken);
 
 	internal async Task OnCompletedTask(CompletedEventArgs e)
 	{
@@ -103,4 +110,6 @@ public sealed class AssignedTask : BaseTask
 
 	internal void OnCreatedTask(CreatedEventArgs e)
 		=> Created?.Invoke(e: e);
+	#endregion
+	#endregion
 }

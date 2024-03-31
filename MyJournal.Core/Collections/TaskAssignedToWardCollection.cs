@@ -7,8 +7,10 @@ namespace MyJournal.Core.Collections;
 
 public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedToWard>
 {
+	#region Fields
 	private AssignedTaskCompletionStatus _currentStatus = AssignedTaskCompletionStatus.All;
 	private readonly int _subjectId;
+	#endregion
 
 	#region Constructor
 	private TaskAssignedToWardCollection(
@@ -132,7 +134,7 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 	)
 	{
 		await base.Append(instance: await TaskAssignedToWard.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -145,7 +147,7 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 	)
 	{
 		await base.Insert(index: index, instance: await TaskAssignedToWard.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -157,24 +159,24 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 	{
 		IEnumerable<TaskAssignedToWard.GetAssignedTaskResponse> tasks = _subjectId == 0 ?
 			await LoadAll(
-            	client: _client,
+            	client: Client,
                 completionStatus: _currentStatus,
-                offset: _offset,
-                count: _count,
+                offset: Offset,
+                count: Count,
                 cancellationToken: cancellationToken
 			) : await Load(
-            	client: _client,
+            	client: Client,
                 completionStatus: _currentStatus,
                 subjectId: _subjectId,
-                offset: _offset,
-                count: _count,
+                offset: Offset,
+                count: Count,
 				cancellationToken: cancellationToken
 			);
-		List<TaskAssignedToWard> collection = await _collection;
+		List<TaskAssignedToWard> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
-			selector: async t => await TaskAssignedToWard.Create(client: _client, response: t)
+			selector: async t => await TaskAssignedToWard.Create(client: Client, response: t)
 		)));
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 	#endregion
 	#endregion

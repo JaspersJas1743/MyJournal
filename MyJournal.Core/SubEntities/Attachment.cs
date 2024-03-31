@@ -4,10 +4,13 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class Attachment
 {
+	#region Fields
 	private const string DefaultBucket = "message_attachments";
 
 	private static readonly string[] PhotoExtension = new string[] { ".png", ".jpg", ".jpeg" };
+	#endregion
 
+	#region Constructor
 	private Attachment(
 		string? linkToFile,
 		AttachmentType type
@@ -16,16 +19,22 @@ public sealed class Attachment
 		LinkToFile = linkToFile;
 		Type = type;
 	}
+	#endregion
 
+	#region Properties
 	public string? LinkToFile { get; set; }
 	public AttachmentType Type { get; set; }
+	#endregion
 
+	#region Enum
 	public enum AttachmentType
 	{
 		Document,
 		Photo
 	}
+	#endregion
 
+	#region Methods
 	internal static async Task<Attachment> Create(
 		IFileService fileService,
 		string pathToFile,
@@ -49,4 +58,5 @@ public sealed class Attachment
 		string? linkToFile,
 		AttachmentType type
 	) => new Attachment(linkToFile: linkToFile, type: type);
+	#endregion
 }

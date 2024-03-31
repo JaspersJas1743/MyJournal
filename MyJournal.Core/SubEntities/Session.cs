@@ -5,8 +5,11 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class Session : ISubEntity
 {
+	#region Fields
 	private readonly ApiClient _client;
+	#endregion
 
+	#region Constructors
 	private Session(
 		ApiClient client,
 		GetSessionsResponse response
@@ -20,6 +23,7 @@ public sealed class Session : ISubEntity
 		Ip = response.Ip;
 		IsCurrentSession = response.IsCurrentSession;
 	}
+	#endregion
 
 	#region Properties
 	public int Id { get; init; }

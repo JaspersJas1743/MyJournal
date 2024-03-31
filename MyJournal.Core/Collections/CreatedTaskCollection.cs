@@ -7,8 +7,10 @@ namespace MyJournal.Core.Collections;
 
 public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 {
+	#region Fields
 	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 	private readonly int _subjectId;
+	#endregion
 
 	#region Constructor
 	private CreatedTaskCollection(
@@ -134,7 +136,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	)
 	{
 		await base.Append(instance: await CreatedTask.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -147,7 +149,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	)
 	{
 		await base.Insert(index: index, instance: await CreatedTask.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -159,24 +161,24 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	{
 		IEnumerable<CreatedTask.GetCreatedTasksResponse> tasks = _subjectId == 0 ?
 			await LoadAll(
-				client: _client,
+				client: Client,
 				completionStatus: _currentStatus,
-				offset: _offset,
-				count: _count,
+				offset: Offset,
+				count: Count,
 				cancellationToken: cancellationToken
 			) : await Load(
-				client: _client,
+				client: Client,
 				completionStatus: _currentStatus,
 				subjectId: _subjectId,
-				offset: _offset,
-				count: _count,
+				offset: Offset,
+				count: Count,
 				cancellationToken: cancellationToken
 			);
-		List<CreatedTask> collection = await _collection;
+		List<CreatedTask> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
-			selector: t => CreatedTask.Create(client: _client, response: t)
+			selector: t => CreatedTask.Create(client: Client, response: t)
 		)));
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 	#endregion
 	#endregion

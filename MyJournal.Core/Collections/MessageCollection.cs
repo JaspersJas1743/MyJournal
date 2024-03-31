@@ -71,16 +71,16 @@ public sealed class MessageCollection : LazyCollection<Message>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<Message.GetMessageResponse> loadedMessages = await _client.GetAsync<IEnumerable<Message.GetMessageResponse>, GetMessagesRequest>(
+		IEnumerable<Message.GetMessageResponse> loadedMessages = await Client.GetAsync<IEnumerable<Message.GetMessageResponse>, GetMessagesRequest>(
 			apiMethod: ChatControllerMethods.GetChats,
-			argQuery: new GetMessagesRequest(ChatId: _chatId, Offset: _offset, Count: _count),
+			argQuery: new GetMessagesRequest(ChatId: _chatId, Offset: Offset, Count: Count),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		List<Message> collection = await _collection;
+		List<Message> collection = await Collection;
 		collection.InsertRange(index: 0, collection: await Task.WhenAll(tasks: loadedMessages.Select(
-			selector: async m => await Message.Create(client: _client, messageId: m.MessageId, cancellationToken: cancellationToken)
+			selector: async m => await Message.Create(client: Client, messageId: m.MessageId, cancellationToken: cancellationToken)
 		)));
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 
 	internal override async Task Append(
@@ -89,7 +89,7 @@ public sealed class MessageCollection : LazyCollection<Message>
 	)
 	{
 		await base.Append(
-			instance: await Message.Create(client: _client, messageId: id, cancellationToken: cancellationToken),
+			instance: await Message.Create(client: Client, messageId: id, cancellationToken: cancellationToken),
 			cancellationToken: cancellationToken
 		);
 	}
@@ -100,10 +100,9 @@ public sealed class MessageCollection : LazyCollection<Message>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int length = await GetLength();
 		await base.Insert(
-			index: length - index,
-			instance: await Message.Create(client: _client, messageId: id, cancellationToken: cancellationToken),
+			index: Length - index,
+			instance: await Message.Create(client: Client, messageId: id, cancellationToken: cancellationToken),
 			cancellationToken: cancellationToken
 		);
 	}

@@ -8,24 +8,20 @@ namespace MyJournal.Core.Collections;
 
 public sealed class ClassCollection : IEnumerable<Class>
 {
+	#region Fields
 	private readonly AsyncLazy<List<Class>> _classes;
+	#endregion
 
+	#region Constructors
 	private ClassCollection(
 		AsyncLazy<List<Class>> classes
-	)
-	{
-		_classes = classes;
-	}
+	) => _classes = classes;
 
-	public async Task<Class> GetByIndex(int index)
-	{
-		List<Class> collection = await _classes;
-		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
-			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
-		);
-	}
+	#endregion
 
+	#region Records
 	private sealed record GetClassesResponse(int Id, string Name);
+	#endregion
 
 	#region Classes
 	public sealed class CompletedTaskEventArgs(int taskId) : EventArgs
@@ -56,6 +52,8 @@ public sealed class ClassCollection : IEnumerable<Class>
 	public event CreatedTaskHandler CreatedTask;
 	#endregion
 
+	#region Methods
+	#region Static
 	internal static async Task<ClassCollection> Create(
 		ApiClient client,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -74,42 +72,99 @@ public sealed class ClassCollection : IEnumerable<Class>
 			))
 		))));
 	}
+	#endregion
 
 	#region Instance
+	public async Task<Class> GetByIndex(int index)
+	{
+		List<Class> collection = await _classes;
+		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
+		);
+	}
+
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
-		// foreach (Class @class in this.Where(predicate: c => c.StudyingSubjects.Any(predicate: s => s.Tasks.Any(predicate: t => t.Id == e.TaskId))))
-		// 	foreach (StudyingSubjectInClass subject in @class.StudyingSubjects.Where(predicate: ss => ss.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-		// 		if (subject.Tasks.IsLoaded)
-		// 			await subject.OnCompletedTask(e: new StudyingSubjectInClass.CompletedTaskEventArgs(taskId: e.TaskId));
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCompletedTask(e: new StudyingSubjectInClass.CompletedTaskEventArgs(taskId: e.TaskId)),
+			taskFilter: subject => subject.Id == e.TaskId
+		);
 
 		CompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
-		// foreach (Class @class in this.Where(predicate: c => c.StudyingSubjects.Any(predicate: s => s.Tasks.Any(predicate: t => t.Id == e.TaskId))))
-		// 	foreach (StudyingSubjectInClass subject in @class.StudyingSubjects.Where(predicate: ss => ss.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-		// 		if (subject.Tasks.IsLoaded)
-		// 			await subject.OnUncompletedTask(e: new StudyingSubjectInClass.UncompletedTaskEventArgs(taskId: e.TaskId));
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnUncompletedTask(e: new StudyingSubjectInClass.UncompletedTaskEventArgs(taskId: e.TaskId)),
+			taskFilter: subject => subject.Id == e.TaskId
+		);
 
 		UncompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
-		// foreach (Class @class in this.Where(predicate: c => c.Id == e.ClassId))
-		// 	foreach (StudyingSubjectInClass subject in @class.StudyingSubjects.Where(predicate: ss => ss.Id == 0 || ss.Id == e.SubjectId))
-		// 		if (subject.Tasks.IsLoaded)
-		// 			await subject.OnCreatedTask(e: new StudyingSubjectInClass.CreatedTaskEventArgs(taskId: e.TaskId));
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCreatedTask(e: new StudyingSubjectInClass.CreatedTaskEventArgs(taskId: e.TaskId)),
+			classFilter: @class => @class.Id == e.ClassId,
+			subjectFilter: subject => subject.Id == 0 || subject.Id == e.SubjectId
+		);
 
 		CreatedTask?.Invoke(e: e);
 	}
+
+	private async Task InvokeIfSubjectsAreCreated(
+		Func<StudyingSubjectInClass, Task> invocation,
+		Predicate<Class> classFilter,
+		Predicate<StudyingSubjectInClass> subjectFilter
+	)
+	{
+		if (!_classes.IsValueCreated)
+			return;
+
+		List<Class> collection = await _classes;
+		StudyingSubjectInClassCollection[] subjectCollection = await Task.WhenAll(
+			tasks: collection.FindAll(match: @class => @class.StudyingSubjectsAreCreated && classFilter(obj: @class))
+				.Select<Class, Task<StudyingSubjectInClassCollection>>(selector: async @class => await @class.GetStudyingSubjects())
+		);
+		foreach (StudyingSubjectInClassCollection subjects in subjectCollection)
+		{
+			foreach (StudyingSubjectInClass subject in subjects.Where(predicate: s => s.TasksAreCreated && subjectFilter(obj: s)))
+				await invocation(arg: subject);
+		}
+	}
+
+	private async Task InvokeIfSubjectsAreCreated(
+		Func<StudyingSubjectInClass, Task> invocation,
+		Func<TaskAssignedToClass, bool> taskFilter
+	)
+	{
+		if (!_classes.IsValueCreated)
+			return;
+
+		List<Class> collection = await _classes;
+		StudyingSubjectInClassCollection[] subjectCollection = await Task.WhenAll(
+			tasks: collection.FindAll(match: @class => @class.StudyingSubjectsAreCreated).Select(selector: async @class => await @class.GetStudyingSubjects())
+		);
+		foreach (StudyingSubjectInClassCollection subjects in subjectCollection)
+		{
+			foreach (StudyingSubjectInClass subject in subjects.Where(predicate: s => s.TasksAreCreated))
+			{
+				TaskAssignedToClassCollection tasks = await subject.GetTasks();
+				if (tasks.Any(predicate: taskFilter))
+					await invocation(arg: subject);
+			}
+		}
+	}
 	#endregion
 
+	#region IEnumerable<Class>
 	public IEnumerator<Class> GetEnumerator()
 		=> _classes.GetAwaiter().GetResult().GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator()
 		=> GetEnumerator();
+	#endregion
+	#endregion
 }

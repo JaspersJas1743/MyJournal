@@ -7,9 +7,11 @@ namespace MyJournal.Core.Collections;
 
 public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssignedToClass>
 {
+	#region Fields
 	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 	private readonly int _subjectId;
 	private readonly int _classId;
+	#endregion
 
 	#region Constructor
 	private TaskAssignedToClassCollection(
@@ -27,7 +29,6 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 	#endregion
 
 	#region Enum
-
 	public enum TaskCompletionStatus
 	{
 		All,
@@ -141,7 +142,7 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 	)
 	{
 		await base.Append(instance: await TaskAssignedToClass.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -154,7 +155,7 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 	)
 	{
 		await base.Insert(index: index, instance: await TaskAssignedToClass.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -166,26 +167,26 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 	{
 		IEnumerable<TaskAssignedToClass.GetCreatedTasksResponse> tasks = _subjectId == 0 ?
 			await LoadAll(
-				client: _client,
+				client: Client,
 				completionStatus: _currentStatus,
 				classId: _classId,
-				offset: _offset,
-				count: _count,
+				offset: Offset,
+				count: Count,
 				cancellationToken: cancellationToken
 			) : await Load(
-				client: _client,
+				client: Client,
 				completionStatus: _currentStatus,
 				classId: _classId,
 				subjectId: _subjectId,
-				offset: _offset,
-				count: _count,
+				offset: Offset,
+				count: Count,
 				cancellationToken: cancellationToken
 			);
-		List<TaskAssignedToClass> collection = await _collection;
+		List<TaskAssignedToClass> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
-			selector: async t => await TaskAssignedToClass.Create(client: _client, response: t)
+			selector: async t => await TaskAssignedToClass.Create(client: Client, response: t)
 		)));
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 	#endregion
 	#endregion

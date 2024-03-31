@@ -167,7 +167,7 @@ public class ParentTest
 		WardSubjectStudying firstSubject = await wardStudyingSubjects.GetByIndex(index: 0);
 		Assert.That(actual: firstSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		TaskAssignedToWardCollection allTasks = await firstSubject.GetTasks();
-		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
 		TaskAssignedToWard firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -240,7 +240,7 @@ public class ParentTest
 		Assert.That(actual: firstSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		TaskAssignedToWardCollection allTasks = await firstSubject.GetTasks();
 		await allTasks.SetCompletionStatus(status: TaskAssignedToWardCollection.AssignedTaskCompletionStatus.Uncompleted);
-		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 2));
 		TaskAssignedToWard firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 6));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Проектная деятельность"));
@@ -273,7 +273,7 @@ public class ParentTest
 		Assert.That(actual: firstSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		TaskAssignedToWardCollection allTasks = await firstSubject.GetTasks();
 		await allTasks.SetCompletionStatus(status: TaskAssignedToWardCollection.AssignedTaskCompletionStatus.Completed);
-		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 1));
 		TaskAssignedToWard firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -299,7 +299,7 @@ public class ParentTest
 		Assert.That(actual: firstSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		TaskAssignedToWardCollection allTasks = await firstSubject.GetTasks();
 		await allTasks.SetCompletionStatus(status: TaskAssignedToWardCollection.AssignedTaskCompletionStatus.Expired);
-		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
 		TaskAssignedToWard firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));

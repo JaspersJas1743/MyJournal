@@ -6,8 +6,11 @@ namespace MyJournal.Core.SubEntities;
 
 public class Class : ISubEntity
 {
+	#region Fields
 	private readonly AsyncLazy<StudyingSubjectInClassCollection> _studyingSubjects;
+	#endregion
 
+	#region Constructors
 	private Class(
 		int id,
 		string name,
@@ -18,13 +21,17 @@ public class Class : ISubEntity
 		Name = name;
 		_studyingSubjects = studyingSubjects;
 	}
+	#endregion
 
+	#region Properties
 	public int Id { get; init; }
 	public string Name { get; init; }
-	public async Task<StudyingSubjectInClassCollection> GetStudyingSubjects()
-		=> await _studyingSubjects;
+	internal bool StudyingSubjectsAreCreated => _studyingSubjects.IsValueCreated;
+	#endregion
 
-	internal static async Task<Class> Create(
+	#region Methods
+	#region Static
+		internal static async Task<Class> Create(
 		ApiClient client,
 		int classId,
 		string name,
@@ -39,4 +46,11 @@ public class Class : ISubEntity
 			)
 		));
 	}
+	#endregion
+
+	#region Instance
+	public async Task<StudyingSubjectInClassCollection> GetStudyingSubjects()
+		=> await _studyingSubjects;
+	#endregion
+	#endregion
 }

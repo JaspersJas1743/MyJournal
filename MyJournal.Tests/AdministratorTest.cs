@@ -175,7 +175,7 @@ public class AdministratorTest
 		StudyingSubjectInClass firstSubject = await studyingSubjects.GetByIndex(index: 0);
 		Assert.That(actual: firstSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		TaskAssignedToClassCollection allTasks = await firstSubject.GetTasks();
-		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
 		TaskAssignedToClass firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -262,7 +262,7 @@ public class AdministratorTest
 		Assert.That(actual: firstSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		TaskAssignedToClassCollection allTasks = await firstSubject.GetTasks();
 		await allTasks.SetCompletionStatus(status: TaskAssignedToClassCollection.TaskCompletionStatus.NotExpired);
-		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 0));
 	}
 
 	[Test]
@@ -283,7 +283,7 @@ public class AdministratorTest
 		Assert.That(actual: firstSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		TaskAssignedToClassCollection allTasks = await firstSubject.GetTasks();
 		await allTasks.SetCompletionStatus(status: TaskAssignedToClassCollection.TaskCompletionStatus.Expired);
-		Assert.That(actual: await allTasks.GetLength(), expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
 		TaskAssignedToClass firstTask = allTasks.ElementAt(index: 0);
 		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
 		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));

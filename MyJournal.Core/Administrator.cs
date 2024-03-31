@@ -18,20 +18,12 @@ public sealed class Administrator : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		AsyncLazy<ChatCollection> chats,
-		AsyncLazy<InterlocutorCollection> interlocutors,
-		AsyncLazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		AsyncLazy<SessionCollection> sessions,
 		AsyncLazy<ClassCollection> classes
 	) : base(
 		client: client,
 		fileService: fileService,
 		googleAuthenticatorService: googleAuthenticatorService,
-		information: information,
-		chats: chats,
-		interlocutors: interlocutors,
-		intendedInterlocutors: intendedInterlocutors,
-		sessions: sessions
+		information: information
 	)
 	{
 		_classes = classes;
@@ -57,25 +49,6 @@ public sealed class Administrator : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
-			chats: new AsyncLazy<ChatCollection>(valueFactory: async () => await ChatCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			interlocutors: new AsyncLazy<InterlocutorCollection>(valueFactory: async () => await InterlocutorCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			intendedInterlocutors: new AsyncLazy<IntendedInterlocutorCollection>(valueFactory: async () => await IntendedInterlocutorCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			sessions: new AsyncLazy<SessionCollection>(valueFactory: async () => await SessionCollection.Create(
-				client: client,
-				cancellationToken: cancellationToken
-			)),
 			classes: new AsyncLazy<ClassCollection>(valueFactory: async () => await ClassCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
@@ -92,13 +65,33 @@ public sealed class Administrator : User
 	{
 		await _administratorHubConnection.StartAsync(cancellationToken: cancellationToken);
 		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentCompletedTask, handler: async taskId =>
-		{}	// await Classes.OnCompletedTask(e: new ClassCollection.CompletedTaskEventArgs(taskId: taskId))
-		);
+		{
+            await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnCompletedTask(
+                e: new ClassCollection.CompletedTaskEventArgs(taskId: taskId)
+			));
+		});
 		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentUncompletedTask, handler: async taskId =>
-		{}	// await Classes.OnUncompletedTask(e: new ClassCollection.UncompletedTaskEventArgs(taskId: taskId))
-		);
+		{
+            await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnUncompletedTask(
+                e: new ClassCollection.UncompletedTaskEventArgs(taskId: taskId)
+			));
+		});
 		_administratorHubConnection.On<int, int, int>(methodName: AdministratorHubMethod.CreatedTaskToStudents, handler: async (taskId, subjectId, classId) =>
-		{}	// await Classes.OnCreatedTask(e: new ClassCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: classId))
-		);
+		{
+            await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnCreatedTask(
+                e: new ClassCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: classId)
+			));
+		});
+	}
+
+	private async Task InvokeIfClassesAreCreated(
+		Func<ClassCollection, Task> invocation
+	)
+	{
+		if (!_classes.IsValueCreated)
+			return;
+
+		ClassCollection studyingSubjects = await GetClasses();
+		await invocation(arg: studyingSubjects);
 	}
 }

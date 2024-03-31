@@ -30,37 +30,7 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 		_classId = classId;
 		_subjects = studyingSubjects;
 		_educationPeriods = educationPeriods;
-		// List<StudyingSubjectInClass> subjects = new List<StudyingSubjectInClass>(collection: studyingSubjects);
-		// subjects.Insert(index: 0, item: StudyingSubjectInClass.Create(
-		// 	client: client,
-		// 	classId: classId,
-		// 	name: "Все дисциплины"
-		// ).GetAwaiter().GetResult());
-		// _subjects = new Lazy<List<StudyingSubjectInClass>>(value: subjects);
-		// List<EducationPeriod> periods = new List<EducationPeriod>(collection: educationPeriods);
-		// EducationPeriod currentTime = new EducationPeriod() { Id = 0, Name = periods.Count == 2 ? "Текущий семестр" : "Текущая четверть" };
-		// periods.Insert(index: 0, item: currentTime);
-		// _educationPeriods = new Lazy<List<EducationPeriod>>(value: periods);
 		_currentPeriod = currentPeriod;
-	}
-	#endregion
-
-	#region Properties
-	public async Task<int> GetLength()
-	{
-		List<StudyingSubjectInClass> collection = await _subjects;
-		return collection.Count;
-	}
-
-	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
-		=> await _educationPeriods;
-
-	public async Task<StudyingSubjectInClass> GetByIndex(int index)
-	{
-		List<StudyingSubjectInClass> collection = await _subjects;
-		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
-			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
-		);
 	}
 	#endregion
 
@@ -131,6 +101,23 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 	#endregion
 
 	#region Instance
+	public async Task<int> GetLength()
+	{
+		List<StudyingSubjectInClass> collection = await _subjects;
+		return collection.Count;
+	}
+
+	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
+		=> await _educationPeriods;
+
+	public async Task<StudyingSubjectInClass> GetByIndex(int index)
+	{
+		List<StudyingSubjectInClass> collection = await _subjects;
+		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
+		);
+	}
+
 	public async Task SetEducationPeriod(
 		EducationPeriod period,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -146,11 +133,11 @@ public class StudyingSubjectInClassCollection : IEnumerable<StudyingSubjectInCla
 			cancellationToken: cancellationToken
 		);
 		List<StudyingSubjectInClass> subjects = new List<StudyingSubjectInClass>(collection: response.Select(
-			selector: s => StudyingSubjectInClass.CreateWithoutTasks(client: _client, response: s)
+			selector: StudyingSubjectInClass.CreateWithoutTasks
 		));
 
 		if (period.Id == 0)
-			subjects.Insert(index: 0, item: StudyingSubjectInClass.CreateWithoutTasks(client: _client, name: "Все дисциплины"));
+			subjects.Insert(index: 0, item: StudyingSubjectInClass.CreateWithoutTasks(name: "Все дисциплины"));
 
 		List<StudyingSubjectInClass> collection = await _subjects;
 		collection.Clear();

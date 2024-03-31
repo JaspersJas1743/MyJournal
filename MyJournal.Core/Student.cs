@@ -18,20 +18,12 @@ public sealed class Student : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		AsyncLazy<ChatCollection> chats,
-		AsyncLazy<InterlocutorCollection> interlocutors,
-		AsyncLazy<IntendedInterlocutorCollection> intendedInterlocutors,
-		AsyncLazy<SessionCollection> sessions,
 		AsyncLazy<StudyingSubjectCollection> studyingSubjects
 	) : base(
 		client: client,
 		fileService: fileService,
 		googleAuthenticatorService: googleAuthenticatorService,
-		information: information,
-		chats: chats,
-		interlocutors: interlocutors,
-		intendedInterlocutors: intendedInterlocutors,
-		sessions: sessions
+		information: information
 	)
 	{
 		_studyingSubjects = studyingSubjects;
@@ -43,8 +35,6 @@ public sealed class Student : User
 
 	public async Task<StudyingSubjectCollection> GetStudyingSubjects()
 		=> await _studyingSubjects;
-
-	private sealed record GetStudentInformationResponse(int ClassId);
 
 	internal static async Task<Student> Create(
 		ApiClient client,
@@ -59,28 +49,8 @@ public sealed class Student : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
-			chats: new AsyncLazy<ChatCollection>(valueFactory: async () => await ChatCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			interlocutors: new AsyncLazy<InterlocutorCollection>(valueFactory: async () => await InterlocutorCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			intendedInterlocutors: new AsyncLazy<IntendedInterlocutorCollection>(valueFactory: async () => await IntendedInterlocutorCollection.Create(
-				client: client,
-				fileService: fileService,
-				cancellationToken: cancellationToken
-			)),
-			sessions: new AsyncLazy<SessionCollection>(valueFactory: async () => await SessionCollection.Create(
-				client: client,
-				cancellationToken: cancellationToken
-			)),
 			studyingSubjects: new AsyncLazy<StudyingSubjectCollection>(valueFactory: async () => await StudyingSubjectCollection.Create(
 				client: client,
-				fileService: fileService,
 				cancellationToken: cancellationToken
 			))
 		);
@@ -114,7 +84,9 @@ public sealed class Student : User
 		});
 	}
 
-	private async Task InvokeIfStudyingSubjectsAreCreated(Func<StudyingSubjectCollection, Task> invocation)
+	private async Task InvokeIfStudyingSubjectsAreCreated(
+		Func<StudyingSubjectCollection, Task> invocation
+	)
 	{
 		if (!_studyingSubjects.IsValueCreated)
 			return;

@@ -19,7 +19,7 @@ public sealed class ProfilePhoto(
 	#endregion
 
 	#region Records
-	private sealed record UploadProfilePhotoRequest(string Link);
+	private sealed record UploadProfilePhotoRequest(string? Link);
 	private sealed record UploadProfilePhotoResponse(string Message);
 	#endregion
 
@@ -31,7 +31,7 @@ public sealed class ProfilePhoto(
 	{
 		Link = await fileService.Upload(folderToSave: DefaultBucket, pathToFile: pathToPhoto, cancellationToken: cancellationToken);
 
-		UploadProfilePhotoResponse? response = await client.PutAsync<UploadProfilePhotoResponse, UploadProfilePhotoRequest>(
+		_ = await client.PutAsync<UploadProfilePhotoResponse, UploadProfilePhotoRequest>(
 			apiMethod: UserControllerMethods.UploadProfilePhoto,
 			arg: new UploadProfilePhotoRequest(Link: Link),
 			cancellationToken: cancellationToken

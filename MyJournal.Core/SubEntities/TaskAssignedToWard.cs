@@ -5,27 +5,37 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class TaskAssignedToWard : BaseTask
 {
-	private readonly ApiClient _client;
-
+	#region Constructors
 	private TaskAssignedToWard(
 		ApiClient client,
 		GetAssignedTaskResponse response
 	)
 	{
-		_client = client;
 		Id = response.TaskId;
 		ReleasedAt = response.ReleasedAt;
 		Content = response.Content;
 		CompletionStatus = response.CompletionStatus;
 		LessonName = response.LessonName;
 	}
+	#endregion
 
+	#region Properties
 	public TaskCompletionStatus CompletionStatus { get; private set; }
 	public string LessonName { get; init; }
+	#endregion
 
-	public enum TaskCompletionStatus { Uncompleted, Completed, Expired }
+	#region Enum
+	public enum TaskCompletionStatus
+	{
+		Uncompleted,
+		Completed,
+		Expired
+	}
+	#endregion
 
+	#region Records
 	internal sealed record GetAssignedTaskResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, TaskCompletionStatus CompletionStatus);
+	#endregion
 
 	#region Classes
 	public sealed class CompletedEventArgs : EventArgs;
@@ -45,6 +55,8 @@ public sealed class TaskAssignedToWard : BaseTask
 	public event CreatedHandler Created;
 	#endregion
 
+	#region Methods
+	#region Static
 	internal static async Task<TaskAssignedToWard> Create(
 		ApiClient client,
 		GetAssignedTaskResponse response
@@ -62,7 +74,9 @@ public sealed class TaskAssignedToWard : BaseTask
 		) ?? throw new InvalidOperationException();
 		return new TaskAssignedToWard(client: client, response: response);
 	}
+	#endregion
 
+	#region Instance
 	internal async Task OnCompletedTask(CompletedEventArgs e)
 	{
 		CompletionStatus = TaskCompletionStatus.Completed;
@@ -77,4 +91,6 @@ public sealed class TaskAssignedToWard : BaseTask
 
 	internal void OnCreatedTask(CreatedEventArgs e)
 		=> Created?.Invoke(e: e);
+	#endregion
+	#endregion
 }

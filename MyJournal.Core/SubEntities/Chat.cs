@@ -19,24 +19,20 @@ public sealed class Chat : ISubEntity
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly IFileService _fileService;
 	private readonly AsyncLazy<MessageCollection> _messages;
 	#endregion
 
 	#region Constructor
 	private Chat(
 		ApiClient client,
-		IFileService fileService,
 		ChatResponse response,
 		AsyncLazy<MessageCollection> messages
 	)
 	{
 		_client = client;
-		_fileService = fileService;
-
 		Id = response.Id;
-		ChatName = response.ChatName;
-		ChatPhoto = response.ChatPhoto;
+		Name = response.ChatName;
+		Photo = response.ChatPhoto;
 		LastMessage = response.LastMessage;
 		CountOfUnreadMessages = response.CountOfUnreadMessages;
 		_messages = messages;
@@ -45,13 +41,10 @@ public sealed class Chat : ISubEntity
 
 	#region Properties
 	public int Id { get; init; }
-	public string? ChatName { get; init; }
-	public string? ChatPhoto { get; init; }
+	public string? Name { get; init; }
+	public string? Photo { get; init; }
 	public LastMessage? LastMessage { get; init; }
 	public int CountOfUnreadMessages { get; init; }
-	public async Task<MessageCollection> GetMessages()
-		=> await _messages;
-
 	internal bool MessagesAreCreated => _messages.IsValueCreated;
 	#endregion
 
@@ -88,7 +81,6 @@ public sealed class Chat : ISubEntity
 		) ?? throw new InvalidOperationException();
 		return new Chat(
 			client: client,
-			fileService: fileService,
 			response: response,
 			messages: new AsyncLazy<MessageCollection>(valueFactory: async () => await MessageCollection.Create(
 				client: client,
@@ -98,6 +90,9 @@ public sealed class Chat : ISubEntity
 			))
 		);
 	}
+
+	public async Task<MessageCollection> GetMessages()
+		=> await _messages;
 
 	public async Task Read(
 		CancellationToken cancellationToken = default(CancellationToken)

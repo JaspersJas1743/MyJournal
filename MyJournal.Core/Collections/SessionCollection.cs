@@ -1,6 +1,7 @@
 using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Collections;
@@ -9,24 +10,18 @@ public sealed class SessionCollection : IEnumerable<Session>
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly List<Session> _sessions = new List<Session>();
+	private readonly AsyncLazy<List<Session>> _sessions;
 	#endregion
 
 	#region Constructor
 	private SessionCollection(
 		ApiClient client,
-		IEnumerable<Session> sessions
+		AsyncLazy<List<Session>> sessions
 	)
 	{
 		_client = client;
-		_sessions.AddRange(collection: sessions);
+		_sessions = sessions;
 	}
-	#endregion
-
-	#region Properties
-	public Session this[int id]
-		=> _sessions.Find(match: i => i.Id.Equals(id))
-		   ?? throw new ArgumentOutOfRangeException(message: $"Сессия с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
 	#endregion
 
 	#region Records
@@ -69,14 +64,21 @@ public sealed class SessionCollection : IEnumerable<Session>
 		) ?? throw new InvalidOperationException();
 		return new SessionCollection(
 			client: client,
-			sessions: await Task.WhenAll(tasks: sessions.Select(
+			sessions: new AsyncLazy<List<Session>>(valueFactory: async () => new List<Session>(collection: await Task.WhenAll(tasks: sessions.Select(
 				selector: async s => await Session.Create(client: client, id: s.Id, cancellationToken: cancellationToken)
-			))
-		);
+			)))));
 	}
 	#endregion
 
 	#region Instance
+	public async Task<Session> FindById(int id)
+	{
+		List<Session> sessions = await _sessions;
+		return sessions.Find(match: i => i.Id.Equals(id)) ?? throw new ArgumentOutOfRangeException(
+			message: $"Сессия с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id)
+		);
+	}
+
 	private async Task<string> SignOut(
 		string method,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -89,18 +91,24 @@ public sealed class SessionCollection : IEnumerable<Session>
 		return response.Message;
 	}
 
-	internal async Task Clear(CancellationToken cancellationToken = default(CancellationToken))
-		=> _sessions.Clear();
+	internal async Task Clear(
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		List<Session> sessions = await _sessions;
+		sessions.Clear();
+	}
 
 	internal async Task Append(
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_sessions.Add(item: await Session.Create(
-			client: _client,
-			id: id,
-			cancellationToken: cancellationToken
+		List<Session> sessions = await _sessions;
+		sessions.Add(item: await Session.Create(
+			  client: _client,
+			  id: id,
+			  cancellationToken: cancellationToken
 		));
 	}
 
@@ -110,7 +118,8 @@ public sealed class SessionCollection : IEnumerable<Session>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_sessions.Insert(index: index, item: await Session.Create(
+		List<Session> sessions = await _sessions;
+		sessions.Insert(index: index, item: await Session.Create(
 			client: _client,
 			id: id,
 			cancellationToken: cancellationToken
@@ -120,7 +129,11 @@ public sealed class SessionCollection : IEnumerable<Session>
 	internal async Task RemoveRange(
 		IEnumerable<int> ids,
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => _sessions.RemoveAll(match: s => ids.Contains(value: s.Id));
+	)
+	{
+		List<Session> sessions = await _sessions;
+		sessions.RemoveAll(match: s => ids.Contains(value: s.Id));
+	}
 
 	public async Task<string> CloseThis(
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -149,8 +162,12 @@ public sealed class SessionCollection : IEnumerable<Session>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (!_sessions.IsValueCreated)
+			return;
+
 		await Insert(index: 0, id: e.SessionId, cancellationToken: cancellationToken);
-		this[id: e.SessionId].OnCreated(e: new Session.CreatedEventArgs());
+		Session session = await FindById(id: e.SessionId);
+		session.OnCreated(e: new Session.CreatedEventArgs());
 		CreatedSession?.Invoke(e: e);
 	}
 
@@ -159,8 +176,14 @@ public sealed class SessionCollection : IEnumerable<Session>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (!_sessions.IsValueCreated)
+			return;
+
 		foreach (int sessionId in e.SessionIds)
-			this[id: sessionId].OnClosed(e: new Session.ClosedEventArgs());
+		{
+			Session session = await FindById(id: sessionId);
+			session.OnClosed(e: new Session.ClosedEventArgs());
+		}
 		await RemoveRange(ids: e.SessionIds, cancellationToken: cancellationToken);
 		ClosedSession?.Invoke(e: e);
 	}
@@ -168,7 +191,7 @@ public sealed class SessionCollection : IEnumerable<Session>
 
 	#region IEnumerable<Session>
 	public IEnumerator<Session> GetEnumerator()
-		=> _sessions.GetEnumerator();
+		=> _sessions.GetAwaiter().GetResult().GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() =>
 		GetEnumerator();

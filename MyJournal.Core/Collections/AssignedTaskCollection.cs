@@ -132,7 +132,7 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 	)
 	{
 		await base.Append(instance: await AssignedTask.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -145,7 +145,7 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 	)
 	{
 		await base.Insert(index: index, instance: await AssignedTask.Create(
-			client: _client,
+			client: Client,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -157,24 +157,24 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 	{
 		IEnumerable<AssignedTask.GetAssignedTaskResponse> tasks = _subjectId == 0 ?
 			await LoadAll(
-            	client: _client,
+            	client: Client,
                 completionStatus: _currentStatus,
-                offset: _offset,
-                count: _count,
+                offset: Offset,
+                count: Count,
                 cancellationToken: cancellationToken
 			) : await Load(
-            	client: _client,
+            	client: Client,
                 completionStatus: _currentStatus,
                 subjectId: _subjectId,
-                offset: _offset,
-                count: _count,
+                offset: Offset,
+                count: Count,
 				cancellationToken: cancellationToken
 			);
-		List<AssignedTask> collection = await _collection;
+		List<AssignedTask> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
-			selector: async t => await AssignedTask.Create(client: _client, response: t)
+			selector: async t => await AssignedTask.Create(client: Client, response: t)
 		)));
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 	#endregion
 	#endregion

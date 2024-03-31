@@ -10,11 +10,11 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 	#region Fields
 	private bool _allItemsAreUploaded;
 
-	protected readonly ApiClient _client;
-	protected readonly AsyncLazy<List<T>> _collection;
-	protected readonly int _count;
+	protected readonly ApiClient Client;
+	protected readonly AsyncLazy<List<T>> Collection;
+	protected readonly int Count;
 
-	protected int _offset;
+	protected int Offset;
 	#endregion
 
 	#region Constructor
@@ -25,32 +25,27 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 		int count
 	)
 	{
-		_client = client;
-		_collection = collection;
-		_offset = offset;
-		_count = count;
-		_allItemsAreUploaded = offset < _count;
+		Client = client;
+		Collection = collection;
+		Offset = offset;
+		Count = count;
+		_allItemsAreUploaded = offset < Count;
 	}
 	#endregion
 
 	#region Properties
-
-	public async Task<int> GetLength()
-	{
-		List<T> collection = await _collection;
-		return collection.Count;
-	}
-
-	public async Task<T> GetById(int id)
-	{
-		List<T> collection = await _collection;
-		return collection.Find(match: i => i.Id.Equals(id))
-		   ?? throw new ArgumentOutOfRangeException(message: $"Объект с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
-	}
+	public int Length => Offset;
 	#endregion
 
 	#region Methods
 	#region Instance
+	public async Task<T> FindById(int id)
+	{
+		List<T> collection = await Collection;
+		return collection.Find(match: i => i.Id.Equals(id))
+			?? throw new ArgumentOutOfRangeException(message: $"Объект с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
+	}
+
 	public virtual async Task LoadNext(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -58,9 +53,9 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 		if (_allItemsAreUploaded)
 			return;
 
-		int lengthBeforeLoading = await GetLength();
+		int lengthBeforeLoading = Length;
 		await Load(cancellationToken: cancellationToken);
-		int lengthAfterLoading = await GetLength();
+		int lengthAfterLoading = Length;
 		_allItemsAreUploaded = lengthAfterLoading == lengthBeforeLoading;
 	}
 	#endregion
@@ -70,9 +65,9 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		List<T> collection = await _collection;
+		List<T> collection = await Collection;
 		collection.Clear();
-		_offset = collection.Count;
+		Offset = collection.Count;
 		_allItemsAreUploaded = false;
 	}
 
@@ -86,9 +81,9 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		List<T> collection = await _collection;
+		List<T> collection = await Collection;
 		collection.Add(item: instance);
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 
 	internal abstract Task Insert(
@@ -103,17 +98,21 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		List<T> collection = await _collection;
+		List<T> collection = await Collection;
 		collection.Insert(index: index, item: instance);
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 
-	public async Task<bool> Equals(object? obj)
+	public new async Task<bool> Equals(object? obj)
 	{
-		List<T> currentCollection = await _collection;
-		if (obj is LazyCollection<T> collection)
-			return currentCollection.SequenceEqual(second: collection);
-		return false;
+		if (!Collection.IsValueCreated)
+			return ReferenceEquals(objA: Collection, objB: obj);
+
+		List<T> currentCollection = await Collection;
+		if (obj is not LazyCollection<T> collection)
+			return false;
+
+		return collection.Collection.IsValueCreated || currentCollection.SequenceEqual(second: await collection.Collection);
 	}
 	#endregion
 
@@ -125,7 +124,7 @@ public abstract class LazyCollection<T> : IEnumerable<T> where T: ISubEntity
 
 	#region IEnumerable<T>
 	public IEnumerator<T> GetEnumerator()
-		=> _collection.GetAwaiter().GetResult().GetEnumerator();
+		=> Collection.GetAwaiter().GetResult().GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() =>
 		GetEnumerator();

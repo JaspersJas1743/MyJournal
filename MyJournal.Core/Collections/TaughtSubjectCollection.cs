@@ -35,29 +35,6 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 	}
 	#endregion
 
-	#region Properties
-	public async Task<int> GetLength()
-	{
-		List<TaughtSubject> collection = await _subjects;
-        return collection.Count;
-	}
-
-	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
-	{
-		List<EducationPeriod> collection = await _educationPeriods;
-        return collection;
-	}
-
-	public async Task<TaughtSubject> GetByIndex(int index)
-	{
-		List<TaughtSubject> collection = await _subjects;
-		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
-			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
-		);
-	}
-
-	#endregion
-
 	#region Classes
 	public sealed class CompletedTaskEventArgs(int taskId) : EventArgs
 	{
@@ -106,7 +83,11 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<TaughtSubject.TaughtSubjectResponse> subjects = await LoadSubjectCollection(client: client, apiMethod: LessonControllerMethods.GetTaughtSubjects, cancellationToken: cancellationToken);
+		IEnumerable<TaughtSubject.TaughtSubjectResponse> subjects = await LoadSubjectCollection(
+			client: client,
+			apiMethod: LessonControllerMethods.GetTaughtSubjects,
+			cancellationToken: cancellationToken
+		);
 		IEnumerable<EducationPeriod> educationPeriods = await client.GetAsync<IEnumerable<EducationPeriod>>(
 			apiMethod: TeacherControllerMethods.GetEducationPeriods,
 			cancellationToken: cancellationToken
@@ -148,6 +129,26 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 	#endregion
 
 	#region Instance
+	public async Task<int> GetLength()
+	{
+		List<TaughtSubject> collection = await _subjects;
+		return collection.Count;
+	}
+
+	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
+	{
+		List<EducationPeriod> collection = await _educationPeriods;
+		return collection;
+	}
+
+	public async Task<TaughtSubject> GetByIndex(int index)
+	{
+		List<TaughtSubject> collection = await _subjects;
+		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
+		);
+	}
+
 	public async Task SetEducationPeriod(
 		EducationPeriod period,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -162,13 +163,12 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 			cancellationToken: cancellationToken
 		);
 		List<TaughtSubject> subjects = new List<TaughtSubject>(collection: response.Select(selector: s => TaughtSubject.CreateWithoutTasks(
-			client: _client,
 			fileService: _fileService,
 			response: s
 		)));
 
 		if (period.Id == 0)
-			subjects.Insert(index: 0, item: TaughtSubject.CreateWithoutTasks(client: _client, name: "Все классы", fileService: _fileService));
+			subjects.Insert(index: 0, item: TaughtSubject.CreateWithoutTasks(name: "Все классы", fileService: _fileService));
 
 		List<TaughtSubject> collection = await _subjects;
 		collection.Clear();
@@ -178,29 +178,46 @@ public class TaughtSubjectCollection : IEnumerable<TaughtSubject>
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
-		// foreach (TaughtSubject subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-		// 	await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId));
-			// if (subject.Tasks.IsLoaded)
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			CreatedTaskCollection tasks = await subject.GetTasks();
+			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+				await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId));
+		}, filter: _ => true);
 
 		CompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
-		// foreach (TaughtSubject subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-		// 	await subject.OnUncompletedTask(e: new TaughtSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
-			// if (subject.Tasks.IsLoaded)
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			CreatedTaskCollection tasks = await subject.GetTasks();
+			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+				await subject.OnUncompletedTask(e: new TaughtSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
+		}, filter: _ => true);
 
 		UncompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
-		// foreach (TaughtSubject subject in this.Where(predicate: ts => ts.Id == 0 || ts.Id == e.SubjectId))
-		// 	await subject.OnCreatedTask(e: new TaughtSubject.CreatedTaskEventArgs(taskId: e.TaskId));
-			// if (subject.Tasks.IsLoaded)
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId)),
+			filter: subject => subject.Id == 0 || subject.Id == e.SubjectId
+		);
 
 		CreatedTask?.Invoke(e: e);
+	}
+
+	private async Task InvokeIfSubjectsAreCreated(Func<TaughtSubject, Task> invocation, Predicate<TaughtSubject> filter)
+	{
+		if (!_subjects.IsValueCreated)
+			return;
+
+		List<TaughtSubject> collection = await _subjects;
+		foreach (TaughtSubject subject in collection.FindAll(match: subject => subject.TasksAreCreated && filter(obj: subject)))
+			await invocation(arg: subject);
 	}
 	#endregion
 

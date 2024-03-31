@@ -91,23 +91,23 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<Chat.ChatResponse> loadedChats = await _client.GetAsync<IEnumerable<Chat.ChatResponse>, GetChatsRequest>(
+		IEnumerable<Chat.ChatResponse> loadedChats = await Client.GetAsync<IEnumerable<Chat.ChatResponse>, GetChatsRequest>(
 			apiMethod: ChatControllerMethods.GetChats,
 			argQuery: new GetChatsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: Filter),
 				Filter: Filter,
-				Offset: _offset,
-				Count: _count
+				Offset: Offset,
+				Count: Count
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		List<Chat> collection = await _collection;
+		List<Chat> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: loadedChats.Select(selector: async c => await Chat.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: c.Id,
 			cancellationToken: cancellationToken
 		))));
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 
 	public override async Task Clear(
@@ -124,7 +124,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	)
 	{
 		await base.Append(instance: await Chat.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: chatId,
 			cancellationToken: cancellationToken
@@ -138,7 +138,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	)
 	{
 		await base.Insert(index: index, instance: await Chat.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: chatId,
 			cancellationToken: cancellationToken
@@ -163,14 +163,14 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	)
 	{
 		await Clear(cancellationToken: cancellationToken);
-		IEnumerable<Chat> chats = await _client.PostAsync<IEnumerable<Chat>, CreateSingleChatRequest>(
+		IEnumerable<Chat> chats = await Client.PostAsync<IEnumerable<Chat>, CreateSingleChatRequest>(
 			apiMethod: ChatControllerMethods.CreateSingleChat,
 			arg: new CreateSingleChatRequest(InterlocutorId: interlocutorId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		List<Chat> collection = await _collection;
+		List<Chat> collection = await Collection;
 		collection.AddRange(collection: chats);
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 
 	public async Task AddMultiChat(
@@ -181,14 +181,14 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	)
 	{
 		await Clear(cancellationToken: cancellationToken);
-		IEnumerable<Chat> chats = await _client.PostAsync<IEnumerable<Chat>, CreateMultiChatRequest>(
+		IEnumerable<Chat> chats = await Client.PostAsync<IEnumerable<Chat>, CreateMultiChatRequest>(
 			apiMethod: ChatControllerMethods.CreateMultiChat,
 			arg: new CreateMultiChatRequest(InterlocutorIds: interlocutorIds, ChatName: chatName, LinkToPhoto: linkToPhoto),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		List<Chat> collection = await _collection;
+		List<Chat> collection = await Collection;
 		collection.AddRange(collection: chats);
-		_offset = collection.Count;
+		Offset = collection.Count;
 	}
 
 	internal async Task OnReceivedMessage(
@@ -196,13 +196,16 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Chat chat = await GetById(id: e.ChatId);
-		if (chat.MessagesAreCreated)
+		if (Collection.IsValueCreated)
 		{
-			MessageCollection messageFromChat = await chat.GetMessages();
-			await messageFromChat.Append(id: e.MessageId, cancellationToken: cancellationToken);
+			Chat chat = await FindById(id: e.ChatId);
+			if (chat.MessagesAreCreated)
+			{
+				MessageCollection messageFromChat = await chat.GetMessages();
+				await messageFromChat.Append(id: e.MessageId, cancellationToken: cancellationToken);
+			}
+			chat.OnReceivedMessage(e: new Chat.ReceivedMessageEventArgs(messageId: e.MessageId));
 		}
-		chat.OnReceivedMessage(e: new Chat.ReceivedMessageEventArgs(messageId: e.MessageId));
 		ReceivedMessageInChat?.Invoke(e: e);
 	}
 	#endregion

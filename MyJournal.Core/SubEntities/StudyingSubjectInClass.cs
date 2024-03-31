@@ -7,34 +7,29 @@ namespace MyJournal.Core.SubEntities;
 public sealed class StudyingSubjectInClass : Subject
 {
 	#region Fields
-	private readonly ApiClient _client;
 	private readonly AsyncLazy<TaskAssignedToClassCollection> _tasks;
 	#endregion
 
 	#region Constructors
 	private StudyingSubjectInClass(
-		ApiClient client,
 		AsyncLazy<TaskAssignedToClassCollection> tasks
 	)
 	{
-		_client = client;
 		_tasks = tasks;
 	}
 
 	private StudyingSubjectInClass(
-		ApiClient client,
 		string name,
 		AsyncLazy<TaskAssignedToClassCollection> tasks
-	) : this(client: client, tasks: tasks)
+	) : this(tasks: tasks)
 	{
 		Name = name;
 	}
 
 	private StudyingSubjectInClass(
-		ApiClient client,
 		StudyingSubjectResponse response,
 		AsyncLazy<TaskAssignedToClassCollection> tasks
-	) : this(client: client, tasks: tasks)
+	) : this(tasks: tasks)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -47,8 +42,7 @@ public sealed class StudyingSubjectInClass : Subject
 	#endregion
 
 	#region Properties
-	public async Task<TaskAssignedToClassCollection> GetTasks()
-		=> await _tasks;
+	public bool TasksAreCreated => _tasks.IsValueCreated;
 	#endregion
 
 	#region Classes
@@ -87,7 +81,7 @@ public sealed class StudyingSubjectInClass : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new StudyingSubjectInClass(client: client, response: response, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
+		return new StudyingSubjectInClass(response: response, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
 			await TaskAssignedToClassCollection.Create(
 				client: client,
 				subjectId: response.Id,
@@ -104,7 +98,7 @@ public sealed class StudyingSubjectInClass : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new StudyingSubjectInClass(client: client, name: name, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
+		return new StudyingSubjectInClass(name: name, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
 			await TaskAssignedToClassCollection.Create(
 				client: client,
 				subjectId: 0,
@@ -115,42 +109,61 @@ public sealed class StudyingSubjectInClass : Subject
 	}
 
 	internal static StudyingSubjectInClass CreateWithoutTasks(
-		ApiClient client,
-		StudyingSubjectResponse response,
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => new StudyingSubjectInClass(client: client, response: response, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null));
+		StudyingSubjectResponse response
+	) => new StudyingSubjectInClass(response: response, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null));
 
 	internal static StudyingSubjectInClass CreateWithoutTasks(
-		ApiClient client,
-		string name,
-		CancellationToken cancellationToken = default(CancellationToken)
-	) => new StudyingSubjectInClass(client: client, name: name, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null));
+		string name
+	) => new StudyingSubjectInClass(name: name, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null));
 	#endregion
 
 	#region Instance
+	public async Task<TaskAssignedToClassCollection> GetTasks()
+		=> await _tasks;
+
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
-		// foreach (TaskAssignedToClass task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-		// 	await task.OnCompletedTask(e: new TaskAssignedToClass.CompletedEventArgs());
+		await InvokeIfTasksAreCreated(invocation: async collection =>
+		{
+			foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
+				await task.OnCompletedTask(e: new TaskAssignedToClass.CompletedEventArgs());
+		});
 
 		CompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
-		// foreach (TaskAssignedToClass task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-		// 	await task.OnUncompletedTask(e: new TaskAssignedToClass.UncompletedEventArgs());
+		await InvokeIfTasksAreCreated(invocation: async collection =>
+		{
+			foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
+				await task.OnUncompletedTask(e: new TaskAssignedToClass.UncompletedEventArgs());
+		});
 
 		UncompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
-		// await Tasks.Append(id: e.TaskId);
-		// foreach (TaskAssignedToClass task in Tasks.Where(predicate: t => t.Id == e.TaskId))
-		// 	task.OnCreatedTask(e: new TaskAssignedToClass.CreatedEventArgs());
+		await InvokeIfTasksAreCreated(invocation: async collection =>
+		{
+			await collection.Append(id: e.TaskId);
+			foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
+				task.OnCreatedTask(e: new TaskAssignedToClass.CreatedEventArgs());
+		});
 
 		CreatedTask?.Invoke(e: e);
+	}
+
+	private async Task InvokeIfTasksAreCreated(
+		Func<TaskAssignedToClassCollection, Task> invocation
+	)
+	{
+		if (!_tasks.IsValueCreated)
+			return;
+
+		TaskAssignedToClassCollection collection = await _tasks;
+		await invocation(arg: collection);
 	}
 	#endregion
 	#endregion

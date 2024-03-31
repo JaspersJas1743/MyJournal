@@ -44,9 +44,6 @@ public sealed class StudyingSubject : Subject
 	#endregion
 
 	#region Properties
-	public async Task<AssignedTaskCollection> GetTasks()
-		=> await _tasks;
-
 	internal bool TasksAreCreated => _tasks.IsValueCreated;
 	#endregion
 
@@ -125,6 +122,9 @@ public sealed class StudyingSubject : Subject
 	#endregion
 
 	#region Instance
+	public async Task<AssignedTaskCollection> GetTasks()
+		=> await _tasks;
+
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
 		await InvokeIfTasksAreCreated(invocation: async collection =>

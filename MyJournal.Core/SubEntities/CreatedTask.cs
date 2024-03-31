@@ -5,8 +5,11 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class CreatedTask : BaseTask
 {
+	#region Fields
 	private readonly ApiClient _client;
+	#endregion
 
+	#region Constructors
 	private CreatedTask(
 		ApiClient client,
 		GetCreatedTasksResponse response
@@ -21,13 +24,18 @@ public sealed class CreatedTask : BaseTask
 		CountOfCompletedTask = response.CountOfCompletedTask;
 		CountOfUncompletedTask = response.CountOfUncompletedTask;
 	}
+	#endregion
 
+	#region Properties
 	public string LessonName { get; init; }
 	public string ClassName { get; init; }
 	public int CountOfCompletedTask { get; private set; }
 	public int CountOfUncompletedTask { get; private set; }
+	#endregion
 
+	#region Records
 	internal sealed record GetCreatedTasksResponse(int TaskId, string ClassName, string LessonName, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
+	#endregion
 
 	#region Classes
 	public sealed class CompletedEventArgs : EventArgs;
@@ -47,6 +55,8 @@ public sealed class CreatedTask : BaseTask
 	public event CreatedHandler Created;
 	#endregion
 
+	#region Methods
+	#region Static
 	internal static async Task<CreatedTask> Create(
 		ApiClient client,
 		GetCreatedTasksResponse response
@@ -64,9 +74,12 @@ public sealed class CreatedTask : BaseTask
 		) ?? throw new InvalidOperationException();
 		return new CreatedTask(client: client, response: response);
 	}
+	#endregion
 
+	#region Instance
 	internal async Task OnCompletedTask(CompletedEventArgs e)
 	{
+		// TODO: обновление с api, а не + и -
 		CountOfCompletedTask += 1;
 		CountOfUncompletedTask -= 1;
 		Completed?.Invoke(e: e);
@@ -74,6 +87,7 @@ public sealed class CreatedTask : BaseTask
 
 	internal async Task OnUncompletedTask(UncompletedEventArgs e)
 	{
+		// TODO: обновление с api, а не + и -
 		CountOfCompletedTask -= 1;
 		CountOfUncompletedTask += 1;
 		Uncompleted?.Invoke(e: e);
@@ -81,4 +95,6 @@ public sealed class CreatedTask : BaseTask
 
 	internal void OnCreatedTask(CreatedEventArgs e)
 		=> Created?.Invoke(e: e);
+	#endregion
+	#endregion
 }

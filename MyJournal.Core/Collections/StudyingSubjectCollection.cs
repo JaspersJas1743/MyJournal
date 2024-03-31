@@ -3,7 +3,6 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
-using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
@@ -29,25 +28,6 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 		_subjects = studyingSubjects;
 		_educationPeriods = educationPeriods;
 		_currentPeriod = currentPeriod;
-	}
-	#endregion
-
-	#region Properties
-	public async Task<int> GetLength()
-	{
-		List<StudyingSubject> collection = await _subjects;
-		return collection.Count;
-	}
-
-	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
-		=> await _educationPeriods;
-
-	public async Task<StudyingSubject> GetByIndex(int index)
-	{
-		List<StudyingSubject> collection = await _subjects;
-		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
-			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
-		);
 	}
 	#endregion
 
@@ -95,7 +75,6 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 
 	public static async Task<StudyingSubjectCollection> Create(
 		ApiClient client,
-		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -135,6 +114,23 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 	#endregion
 
 	#region Instance
+	public async Task<int> GetLength()
+	{
+		List<StudyingSubject> collection = await _subjects;
+		return collection.Count;
+	}
+
+	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
+		=> await _educationPeriods;
+
+	public async Task<StudyingSubject> GetByIndex(int index)
+	{
+		List<StudyingSubject> collection = await _subjects;
+		return collection.ElementAtOrDefault(index: index) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с индексом {index} отсутствует.", paramName: nameof(index)
+		);
+	}
+
 	public async Task SetEducationPeriod(
 		EducationPeriod period,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -164,29 +160,49 @@ public sealed class StudyingSubjectCollection : IEnumerable<StudyingSubject>
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
-		// foreach (StudyingSubject subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-		// 	if (subject.TasksAreCreated)
-		// 		await subject.OnCompletedTask(e: new StudyingSubject.CompletedTaskEventArgs(taskId: e.TaskId));
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			AssignedTaskCollection tasks = await subject.GetTasks();
+			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+				await subject.OnCompletedTask(e: new StudyingSubject.CompletedTaskEventArgs(taskId: e.TaskId));
+		}, filter: _ => true);
 
 		CompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
-		// foreach (StudyingSubject subject in this.Where(predicate: ts => ts.Tasks.Any(predicate: t => t.Id == e.TaskId)))
-		// 	if (subject.TasksAreCreated)
-		// 		await subject.OnUncompletedTask(e: new StudyingSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			AssignedTaskCollection tasks = await subject.GetTasks();
+			if (tasks.Any(predicate: task => task.Id == e.TaskId))
+				await subject.OnUncompletedTask(e: new StudyingSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
+		}, filter: _ => true);
 
 		UncompletedTask?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
-		// foreach (StudyingSubject subject in this.Where(predicate: ts => ts.Id == 0 || ts.Id == e.SubjectId))
-		// 	if (subject.TasksAreCreated)
-		// 		await subject.OnCreatedTask(e: new StudyingSubject.CreatedTaskEventArgs(taskId: e.TaskId));
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCompletedTask(e: new StudyingSubject.CompletedTaskEventArgs(taskId: e.TaskId)),
+			filter: subject => subject.Id == 0 || subject.Id == e.SubjectId
+		);
 
 		CreatedTask?.Invoke(e: e);
+	}
+
+	private async Task InvokeIfSubjectsAreCreated(
+		Func<StudyingSubject, Task> invocation,
+		Predicate<StudyingSubject> filter
+	)
+	{
+		if (!_subjects.IsValueCreated)
+			return;
+
+		List<StudyingSubject> collection = await _subjects;
+		foreach (StudyingSubject subject in collection.FindAll(match: subject => subject.TasksAreCreated && filter(obj: subject)))
+			await invocation(arg: subject);
 	}
 	#endregion
 

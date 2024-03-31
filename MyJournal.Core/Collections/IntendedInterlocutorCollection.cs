@@ -81,24 +81,26 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<GetInterlocutorsResponse> interlocutors = await _client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
+		IEnumerable<GetInterlocutorsResponse> interlocutors = await Client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: Filter),
 				Filter: Filter,
-				Offset: _offset,
-				Count: _count,
+				Offset: Offset,
+				Count: Count,
 				IncludeExistedInterlocutors: IncludeExistedInterlocutors
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		List<IntendedInterlocutor> collection = await _collection;
-		collection.AddRange(collection: await Task.WhenAll(tasks: interlocutors.Select(selector: async i => await IntendedInterlocutor.Create(
-			client: _client,
-			fileService: _fileService,
-			id: i.UserId,
-			cancellationToken: cancellationToken
-		))));
-		_offset = collection.Count;
+		List<IntendedInterlocutor> collection = await Collection;
+		collection.AddRange(collection: await Task.WhenAll(tasks: interlocutors.Select(
+			selector: async i => await IntendedInterlocutor.Create(
+				client: Client,
+				fileService: _fileService,
+				id: i.UserId,
+				cancellationToken: cancellationToken
+			)
+		)));
+		Offset = collection.Count;
 	}
 
 	internal override async Task Append(
@@ -107,7 +109,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	)
 	{
 		await base.Append(instance: await IntendedInterlocutor.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
@@ -121,7 +123,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	)
 	{
 		await base.Insert(index: index, instance: await IntendedInterlocutor.Create(
-			client: _client,
+			client: Client,
 			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
