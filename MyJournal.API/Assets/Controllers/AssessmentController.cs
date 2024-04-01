@@ -26,7 +26,7 @@ public sealed class AssessmentController(
 	private readonly MyJournalContext _context = context;
 
 	#region Records
-	public sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, GradeTypes GradeType);
+	public sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, string Description, GradeTypes GradeType);
 
 	public sealed record GetAssessmentsByIdResponse(string AverageAssessment, IEnumerable<Grade> Assessments);
 
@@ -48,9 +48,10 @@ public sealed class AssessmentController(
 	public sealed record Attendance(int StudentId, bool IsPresent, int? CommentId);
 
 	[Validator<ChangeAssessmentRequestValidator>]
-	public sealed record ChangeAssessmentRequest(int ChangedAssessmentId, int NewAssessmentId, DateTime Datetime, int CommentId);
+	public sealed record ChangeAssessmentRequest(int ChangedAssessmentId, int NewGradeId, DateTime Datetime, int CommentId);
 	public sealed record ChangeAssessmentResponse(string Message);
 
+	[Validator<DeleteAssessmentRequestValidator>]
 	public sealed record DeleteAssessmentRequest(int AssessmentId);
 	#endregion
 
@@ -120,7 +121,14 @@ public sealed class AssessmentController(
 		return Ok(value: new GetAssessmentsResponse(
 			AverageAssessment: avg.ToString(format: "F2", CultureInfo.InvariantCulture).Replace(oldValue: "0.00", newValue: "-.--"),
 			FinalAssessment: final is null ? null : final + ".00",
-			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+			Assessments: assessments.Select(selector: a => new Grade(
+				a.Id,
+				a.Grade.Assessment,
+				a.Datetime,
+				a.Comment.Comment,
+				a.Comment.Description,
+				a.Grade.GradeType.Type
+			))
 		));
 	}
 
@@ -182,7 +190,14 @@ public sealed class AssessmentController(
 
 		return Ok(value: new GetAssessmentsByIdResponse(
 			AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
-			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+			Assessments: assessments.Select(selector: a => new Grade(
+				a.Id,
+				a.Grade.Assessment,
+				a.Datetime,
+				a.Comment.Comment,
+				a.Comment.Description,
+				a.Grade.GradeType.Type
+			))
 		));
 	}
 
@@ -250,7 +265,14 @@ public sealed class AssessmentController(
 		return Ok(value: new GetAssessmentsResponse(
 			AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
 			FinalAssessment: final is null ? null : final + ".00",
-			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+			Assessments: assessments.Select(selector: a => new Grade(
+				a.Id,
+				a.Grade.Assessment,
+				a.Datetime,
+				a.Comment.Comment,
+				a.Comment.Description,
+				a.Grade.GradeType.Type
+			))
 		));
 	}
 
@@ -375,7 +397,7 @@ public sealed class AssessmentController(
 				a.Student.Assessments.Where(asses => EF.Functions.IsNumeric(asses.Grade.Assessment))
 					.Select(asses => asses.Grade.Assessment).DefaultIfEmpty().Select(assess => assess ?? "0")
 					.Average(asses => Convert.ToDouble(asses)).ToString("F2", CultureInfo.InvariantCulture).Replace("0.00", "-.--"),
-				new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type)
+				new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Comment.Description, a.Grade.GradeType.Type)
 			)).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
 				statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена."
 			)
@@ -576,7 +598,7 @@ public sealed class AssessmentController(
 
 		assessment.Datetime = request.Datetime;
 		assessment.CommentId = request.CommentId;
-		assessment.GradeId = request.NewAssessmentId;
+		assessment.GradeId = request.NewGradeId;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		IQueryable<string> parentIds = _context.Students.Where(predicate:

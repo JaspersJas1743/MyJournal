@@ -6,25 +6,22 @@ using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
-public sealed class TaughtClass : ISubEntity
-{
-	public int Id { get; init; }
-	public string Name { get; init; }
-}
-
 public sealed class TaughtSubject : ISubEntity
 {
 	#region Fields
 	private readonly IFileService _fileService;
 	private readonly AsyncLazy<CreatedTaskCollection> _tasks;
+	private readonly AsyncLazy<TaughtClass> _taughtClass;
 	#endregion
 
 	#region Constructors
 	private TaughtSubject(
 		IFileService fileService,
+		AsyncLazy<TaughtClass> taughtClass,
 		AsyncLazy<CreatedTaskCollection> tasks
 	)
 	{
+		_taughtClass = taughtClass;
 		_fileService = fileService;
 		_tasks = tasks;
 	}
@@ -32,8 +29,9 @@ public sealed class TaughtSubject : ISubEntity
 	private TaughtSubject(
 		IFileService fileService,
 		string name,
+		AsyncLazy<TaughtClass> taughtClass,
 		AsyncLazy<CreatedTaskCollection> tasks
-	) : this(tasks: tasks, fileService: fileService)
+	) : this(fileService: fileService, taughtClass: taughtClass, tasks: tasks)
 	{
 		Name = name;
 	}
@@ -41,24 +39,25 @@ public sealed class TaughtSubject : ISubEntity
 	private TaughtSubject(
 		IFileService fileService,
 		TaughtSubjectResponse response,
+		AsyncLazy<TaughtClass> taughtClass,
 		AsyncLazy<CreatedTaskCollection> tasks
-	) : this(tasks: tasks, fileService: fileService)
+	) : this(fileService: fileService, taughtClass: taughtClass, tasks: tasks)
 	{
 		Id = response.Id;
 		Name = response.Name;
-		Class = response.Class;
 	}
 	#endregion
 
 	#region Properties
 	public int Id { get; init; }
 	public string Name { get; init; }
-	public TaughtClass Class { get; init; }
-	public bool TasksAreCreated => _tasks.IsValueCreated;
+	internal bool TaughtClassIsCreated => _taughtClass.IsValueCreated;
+	internal bool TasksAreCreated => _tasks.IsValueCreated;
 	#endregion
 
 	#region Records
-	internal sealed record TaughtSubjectResponse(int Id, string Name, TaughtClass Class);
+	internal sealed record TaughtSubjectClass(int Id, string Name);
+	internal sealed record TaughtSubjectResponse(int Id, string Name, TaughtSubjectClass Class);
 	#endregion
 
 	#region Classes
@@ -97,13 +96,21 @@ public sealed class TaughtSubject : ISubEntity
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new TaughtSubject(fileService: fileService, response: response, tasks: new AsyncLazy<CreatedTaskCollection>(
-			valueFactory: async () => await CreatedTaskCollection.Create(
+		return new TaughtSubject(
+			fileService: fileService,
+			response: response, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
-			)
-		));
+			)),
+			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => await TaughtClass.Create(
+				client: client,
+				subjectId: response.Id,
+				id: response.Class.Id,
+				name: response.Class.Name,
+				cancellationToken: cancellationToken
+			))
+		);
 	}
 
 	internal static async Task<TaughtSubject> Create(
@@ -113,29 +120,52 @@ public sealed class TaughtSubject : ISubEntity
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new TaughtSubject(fileService: fileService, name: name, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory:
-			async () => await CreatedTaskCollection.Create(
+		return new TaughtSubject(
+			fileService: fileService,
+			name: name,
+			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
 				subjectId: 0,
 				cancellationToken: cancellationToken
-			)
-		));
+			)),
+			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => null)
+		);
 	}
 
 	internal static TaughtSubject CreateWithoutTasks(
 		IFileService fileService,
 		string name
-	) => new TaughtSubject(fileService: fileService, name: name, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null));
+	)
+	{
+		return new TaughtSubject(
+			fileService: fileService,
+			name: name,
+			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null),
+			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => null)
+		);
+	}
 
 	internal static TaughtSubject CreateWithoutTasks(
 		IFileService fileService,
 		TaughtSubjectResponse response
-	) => new TaughtSubject(fileService: fileService, response: response, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null));
+	)
+	{
+		return new TaughtSubject(
+			fileService: fileService,
+			response: response,
+			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null),
+			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => null)
+		);
+	}
+
 	#endregion
 
 	#region Instance
 	public async Task<CreatedTaskCollection> GetTasks()
 		=> await _tasks;
+
+	public async Task<TaughtClass> GetTaughtClass()
+		=> await _taughtClass;
 
 	public IInitTaskBuilder CreateTask()
 		=> InitTaskBuilder.Create(fileService: _fileService);

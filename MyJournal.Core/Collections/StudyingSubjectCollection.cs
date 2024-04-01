@@ -144,12 +144,11 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			cancellationToken: cancellationToken
 		);
 		List<StudyingSubject> subjects = new List<StudyingSubject>(collection: response.Select(selector: s => StudyingSubject.CreateWithoutTasks(
-			client: _client,
 			response: s
 		)));
 
 		if (period.Id == 0)
-			subjects.Insert(index: 0, item: StudyingSubject.CreateWithoutTasks(client: _client, name: "Все дисциплины"));
+			subjects.Insert(index: 0, item: StudyingSubject.CreateWithoutTasks(name: "Все дисциплины"));
 
 		List<StudyingSubject> collection = await _subjects;
 		collection.Clear();

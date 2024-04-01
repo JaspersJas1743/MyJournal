@@ -8,10 +8,10 @@ public sealed class ChangeAssessmentRequestValidator : AbstractValidator<Assessm
 	public ChangeAssessmentRequestValidator()
 	{
 		RuleFor(expression: request => request.ChangedAssessmentId)
-			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор отметки не может быть отрицательным.");
+			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор заменяемой отметки не может быть отрицательным.");
 
-		RuleFor(expression: request => request.NewAssessmentId)
-			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор отметки не может быть отрицательным.");
+		RuleFor(expression: request => request.NewGradeId)
+			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор новой отметки не может быть отрицательным.");
 
 		RuleFor(expression: request => request.CommentId)
 			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор комментария не может быть отрицательным.");

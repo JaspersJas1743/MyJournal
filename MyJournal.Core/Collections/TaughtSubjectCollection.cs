@@ -1,4 +1,3 @@
-using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -22,14 +21,14 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	private TaughtSubjectCollection(
 		ApiClient client,
 		IFileService fileService,
-		AsyncLazy<List<TaughtSubject>> studyingSubjects,
+		AsyncLazy<List<TaughtSubject>> taughtSubjects,
 		AsyncLazy<List<EducationPeriod>> educationPeriods,
 		EducationPeriod currentPeriod
 	)
 	{
 		_client = client;
 		_fileService = fileService;
-		_subjects = studyingSubjects;
+		_subjects = taughtSubjects;
 		_educationPeriods = educationPeriods;
 		_currentPeriod = currentPeriod;
 	}
@@ -100,7 +99,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		return new TaughtSubjectCollection(
 			client: client,
 			fileService: fileService,
-			studyingSubjects: new AsyncLazy<List<TaughtSubject>>(valueFactory: async () =>
+			taughtSubjects: new AsyncLazy<List<TaughtSubject>>(valueFactory: async () =>
 			{
 				List<TaughtSubject> collection = new List<TaughtSubject>(collection: await Task.WhenAll(
 					tasks: subjects.Select(selector: async s => await TaughtSubject.Create(
@@ -113,7 +112,8 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 				collection.Insert(index: 0, item: await TaughtSubject.Create(
 					client: client,
 					name: "Все классы",
-					fileService: fileService
+					fileService: fileService,
+					cancellationToken: cancellationToken
 				));
 				return collection;
 			}),

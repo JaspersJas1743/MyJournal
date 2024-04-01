@@ -7,35 +7,34 @@ namespace MyJournal.Core.SubEntities;
 public sealed class StudyingSubject : Subject
 {
 	#region Fields
-	private readonly ApiClient _client;
 	private readonly AsyncLazy<AssignedTaskCollection> _tasks;
+	private readonly AsyncLazy<Grade<Estimation>> _grade;
 	#endregion
 
 	#region Constructors
-
 	private StudyingSubject(
-		ApiClient client,
-		AsyncLazy<AssignedTaskCollection> tasks
+		AsyncLazy<AssignedTaskCollection> tasks,
+		AsyncLazy<Grade<Estimation>> grade
 	)
 	{
-		_client = client;
 		_tasks = tasks;
+		_grade = grade;
 	}
 
 	private StudyingSubject(
-		ApiClient client,
 		string name,
-		AsyncLazy<AssignedTaskCollection> tasks
-	) : this(client: client, tasks: tasks)
+		AsyncLazy<AssignedTaskCollection> tasks,
+		AsyncLazy<Grade<Estimation>> grade
+	) : this(tasks: tasks, grade: grade)
 	{
 		Name = name;
 	}
 
 	private StudyingSubject(
-		ApiClient client,
 		StudyingSubjectResponse response,
-		AsyncLazy<AssignedTaskCollection> tasks
-	) : this(client: client, tasks: tasks)
+		AsyncLazy<AssignedTaskCollection> tasks,
+		AsyncLazy<Grade<Estimation>> grade
+	) : this(tasks: tasks, grade: grade)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -45,6 +44,7 @@ public sealed class StudyingSubject : Subject
 
 	#region Properties
 	internal bool TasksAreCreated => _tasks.IsValueCreated;
+	internal bool AssessmentsAreCreated => _grade.IsValueCreated;
 	#endregion
 
 	#region Records
@@ -86,13 +86,19 @@ public sealed class StudyingSubject : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new StudyingSubject(client: client, response: response, tasks: new AsyncLazy<AssignedTaskCollection>(
-			valueFactory: async () => await AssignedTaskCollection.Create(
+		return new StudyingSubject(
+			response: response,
+			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => await AssignedTaskCollection.Create(
 				client: client,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
-			)
-		));
+			)),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
+				client: client,
+				subjectId: response.Id,
+				cancellationToken: cancellationToken
+			))
+		);
 	}
 
 	internal static async Task<StudyingSubject> Create(
@@ -101,29 +107,47 @@ public sealed class StudyingSubject : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new StudyingSubject(client: client, name: name, tasks: new AsyncLazy<AssignedTaskCollection>(
-			valueFactory: async () => await AssignedTaskCollection.Create(
+		return new StudyingSubject(
+			name: name,
+			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => await AssignedTaskCollection.Create(
 				client: client,
 				subjectId: 0,
 				cancellationToken: cancellationToken
-			)
-		));
+			)),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+		);
 	}
 
 	internal static StudyingSubject CreateWithoutTasks(
-		ApiClient client,
 		StudyingSubjectResponse response
-	) => new StudyingSubject(client: client, response: response, tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => null));
+	)
+	{
+		return new StudyingSubject(
+			response: response,
+			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => null),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+		);
+	}
 
 	internal static StudyingSubject CreateWithoutTasks(
-		ApiClient client,
 		string name
-	) => new StudyingSubject(client: client, name: name, tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => null));
+	)
+	{
+		return new StudyingSubject(
+			name: name,
+			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => null),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => null)
+		);
+	}
+
 	#endregion
 
 	#region Instance
 	public async Task<AssignedTaskCollection> GetTasks()
 		=> await _tasks;
+
+	public async Task<Grade<Estimation>> GetGrade()
+		=> await _grade;
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
