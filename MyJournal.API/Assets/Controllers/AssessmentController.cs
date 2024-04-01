@@ -34,6 +34,8 @@ public sealed class AssessmentController(
 	public sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
 	public sealed record GetAssessmentsResponse(string AverageAssessment, string? FinalAssessment, IEnumerable<Grade> Assessments);
 
+	public sealed record GetAssessmentResponse(string AverageAssessment, Grade Assessment);
+
 	public sealed record GetPossibleAssessmentsResponse(int Id, string Assessment);
 
 	public sealed record GetCommentsForAssessmentsResponse(int Id, string? Comment, string Description);
@@ -55,7 +57,7 @@ public sealed class AssessmentController(
 	#region Methods
 	#region GET
 	/// <summary>
-	/// [Студент] Получение информации об оценках авторизованного ученика за указанный период
+	/// [Студент] Получение информации об оценках за указанный период
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -65,12 +67,12 @@ public sealed class AssessmentController(
 	///
 	/// Параметры:
 	///
-	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках (0, если за текущий период)
 	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Информация об оценках авторизованного ученика</response>
+	/// <response code="200">Информация об оценках</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
 	[HttpGet(template: "me/get")]
@@ -85,10 +87,146 @@ public sealed class AssessmentController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		EducationPeriod period = await _context.EducationPeriods.AsNoTracking()
-			.Where(predicate: ep => ep.Id == request.PeriodId)
-			.SingleOrDefaultAsync(cancellationToken: cancellationToken)
-			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден.");
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		EducationPeriod period = await _context.Students.AsNoTracking()
+			.Where(predicate: s => s.UserId == userId)
+			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => ep.Id == request.PeriodId ||
+				(request.PeriodId == 0 && EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
+			).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
+				statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден."
+			);
+
+		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
+		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
+		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
+			.Where(predicate: s => s.UserId == userId)
+			.SelectMany(selector: s => s.Assessments)
+			.Where(predicate: a => EF.Functions.DateDiffDay(a.Datetime, start) <= 0 && EF.Functions.DateDiffDay(a.Datetime, end) >= 0);
+
+		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
+			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
+			.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
+
+		string? final = await _context.FinalGradesForEducationPeriods
+			.Where(predicate: fgfep =>
+				fgfep.EducationPeriodId == period.Id &&
+				fgfep.Student.UserId == userId &&
+				fgfep.LessonId == request.SubjectId
+			).Select(selector: fgfep => fgfep.Grade.Assessment)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+		return Ok(value: new GetAssessmentsResponse(
+			AverageAssessment: avg.ToString(format: "F2", CultureInfo.InvariantCulture).Replace(oldValue: "0.00", newValue: "-.--"),
+			FinalAssessment: final is null ? null : final + ".00",
+			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+		));
+	}
+
+	/// <summary>
+	/// [Преподаватель/Администратор] Получение информации об оценках по идентификатору ученика за указанный период
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/student/{studentId:int}/get?PeriodId=0&SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	studentId - идентификатор ученик, информацию об оценках которого необходимо получить
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках (0, если за текущий период)
+	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Информация об оценках ученика</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
+	/// <response code="404">Указанный учебный период не найден</response>
+	[HttpGet(template: "student/{studentId:int}/get")]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsByIdResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetAssessmentsByIdResponse>> GetAssessmentsById(
+		[FromRoute] int studentId,
+		[FromQuery] GetAssessmentsRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		EducationPeriod period = await _context.Students.AsNoTracking()
+			.Where(predicate: s => s.UserId == studentId)
+			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => ep.Id == request.PeriodId ||
+				(request.PeriodId == 0 && EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
+			).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
+				statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден."
+			);
+		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
+		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
+		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
+			.Where(predicate: s => s.Id == studentId)
+			.SelectMany(selector: s => s.Assessments)
+			.Where(predicate: a => EF.Functions.DateDiffDay(a.Datetime, start) <= 0 && EF.Functions.DateDiffDay(a.Datetime, end) >= 0);
+
+		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
+			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
+			.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
+
+		return Ok(value: new GetAssessmentsByIdResponse(
+			AverageGrade: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+			Grades: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+		));
+	}
+
+	/// <summary>
+	/// [Родитель] Получение информации об оценках подопечного за указанный период
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/ward/get?PeriodId=0&SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках (0, если за текущий период)
+	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Информация об оценках подопечного</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
+	[HttpGet(template: "ward/get")]
+	[Authorize(Policy = nameof(UserRoles.Parent))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetAssessmentsResponse>> GetAssessmentsForWard(
+		[FromQuery] GetAssessmentsRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		EducationPeriod period = await _context.Parents.AsNoTracking()
+			.Where(predicate: s => s.UserId == userId)
+			.SelectMany(selector: s => s.Children.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => ep.Id == request.PeriodId ||
+				(request.PeriodId == 0 && EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
+			).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
+				statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден."
+			);
+
 		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
 		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
 		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
@@ -112,61 +250,6 @@ public sealed class AssessmentController(
 			AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
 			FinalAssessment: final is null ? null : final + ".00",
 			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
-		));
-	}
-
-	/// <summary>
-	/// [Преподаватель/Администратор] Получение информации об оценках ученика по идентификатору за указанный период
-	/// </summary>
-	/// <remarks>
-	/// <![CDATA[
-	/// Пример запроса к API:
-	///
-	///	GET api/assessments/{studentId:int}/get?PeriodId=0&SubjectId=0
-	///
-	/// Параметры:
-	///
-	///	studentId - идентификатор ученик, информацию об оценках которого необходимо получить
-	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках
-	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
-	///
-	/// ]]>
-	/// </remarks>
-	/// <response code="200">Информация об оценках ученика</response>
-	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
-	/// <response code="404">Указанный учебный период не найден</response>
-	[HttpGet(template: "{studentId:int}/get")]
-	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
-	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsByIdResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetAssessmentsByIdResponse>> GetAssessmentsById(
-		[FromRoute] int studentId,
-		[FromQuery] GetAssessmentsRequest request,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		EducationPeriod period = await _context.EducationPeriods.AsNoTracking()
-			.Where(predicate: ep => ep.Id == request.PeriodId)
-			.SingleOrDefaultAsync(cancellationToken: cancellationToken)
-			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден.");
-		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
-		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
-		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
-			.Where(predicate: s => s.Id == studentId)
-			.SelectMany(selector: s => s.Assessments)
-			.Where(predicate: a => EF.Functions.DateDiffDay(a.Datetime, start) <= 0 && EF.Functions.DateDiffDay(a.Datetime, end) >= 0);
-
-		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
-			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
-			.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
-
-		return Ok(value: new GetAssessmentsByIdResponse(
-			AverageGrade: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
-			Grades: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
 		));
 	}
 
@@ -256,6 +339,47 @@ public sealed class AssessmentController(
 			.Select(selector: c => new GetCommentsForAssessmentsResponse(c.Id, c.Comment, c.Description))
 		);
 	}
+
+	/// <summary>
+	/// Получение информации об оценке
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/{assessmentId:int}/get
+	///
+	/// Параметры:
+	///
+	///	assessmentId - идентификатор оценки, информацию о которой необходимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Информация об оценке</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="404">Оценка с указанным идентификатором не найдена</response>
+	[Authorize]
+	[HttpGet(template: "{assessmentId:int}/get")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetAssessmentResponse>> Get(
+		[FromRoute] int assessmentId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return Ok(value: await _context.Assessments.Where(predicate: a => a.Id == assessmentId)
+			.Select(selector: a => new GetAssessmentResponse(
+				a.Student.Assessments.Where(asses => EF.Functions.IsNumeric(asses.Grade.Assessment))
+					.Select(asses => asses.Grade.Assessment).DefaultIfEmpty().Select(assess => assess ?? "0")
+					.Average(asses => Convert.ToDouble(asses)).ToString("F2", CultureInfo.InvariantCulture).Replace("0.00", "-.--"),
+				new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type)
+			)).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
+				statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена."
+			)
+		);
+	}
 	#endregion
 
 	#region POST
@@ -267,13 +391,13 @@ public sealed class AssessmentController(
 	/// Пример запроса к API:
 	///
 	///	POST api/assessments/create
-	/// {
+	///	{
 	///		"GradeId": 0,
 	///		"Datetime": "2024-03-29T17:40:07.894Z",
 	///		"CommentId": 0,
-	/// 	"SubjectId": 0,
-	/// 	"StudentId": 0
-	/// }
+	///		"SubjectId": 0,
+	///		"StudentId": 0,
+	///	}
 	///
 	/// Параметры:
 	///
@@ -334,18 +458,17 @@ public sealed class AssessmentController(
 	/// Пример запроса к API:
 	///
 	///	POST api/assessments/attendance/set
-	/// {
-	/// 	"SubjectId": 0,
+	///	{
+	///		"SubjectId": 0,
 	///		"Datetime": "2024-03-29T17:40:07.894Z",
-	/// 	"Attendances": [
-	/// 		{
-	/// 			"StudentId": 0,
-	/// 			"IsPresent": true,
-	/// 			"CommentId": 0
+	///		"Attendances": [
+	///			{
+	///				"StudentId": 0,
+	///				"IsPresent": true,
+	///				"CommentId": 0,
 	///			}
-	/// 	]
-	/// }
-	///
+	///		]
+	///	}
 	///
 	/// Параметры:
 	///
@@ -415,12 +538,12 @@ public sealed class AssessmentController(
 	/// Пример запроса к API:
 	///
 	///	PUT api/assessments/change
-	/// {
-	/// 	"ChangedAssessmentId": 0,
-	/// 	"NewAssessmentId": 0,
-	/// 	"Datetime": "2024-03-29T17:49:20.205Z",
-	/// 	"CommentId": 0
-	/// }
+	///	{
+	///		"ChangedAssessmentId": 0,
+	///		"NewAssessmentId": 0,
+	///		"Datetime": "2024-03-29T17:40:07.894Z",
+	///		"CommentId": 0
+	///	}
 	///
 	/// Параметры:
 	///
@@ -480,10 +603,10 @@ public sealed class AssessmentController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	POST api/assessments/attendance/set
-	/// {
-	/// 	"AssessmentId": 0
-	/// }
+	///	POST api/assessments/delete
+	///	{
+	///		"AssessmentId": 0
+	///	}
 	///
 	/// Параметры:
 	///
