@@ -207,6 +207,12 @@ public sealed class ApiClient : IDisposable
 		return await responseMessage.Content.ReadFromJsonAsync<TOut>(cancellationToken: cancellationToken);
 	}
 
+	public async Task<TOut?> DeleteAsync<TOut, TIn>(Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		HttpResponseMessage responseMessage = await HelperForDeleteAsync(uri: uri, cancellationToken: cancellationToken);
+		return await responseMessage.Content.ReadFromJsonAsync<TOut>(cancellationToken: cancellationToken);
+	}
+
 	public async Task<TOut?> DeleteAsync<TOut>(string apiMethod, CancellationToken cancellationToken = default(CancellationToken))
 		=> await DeleteAsync<TOut>(uri: CreateUri(apiMethod: apiMethod), cancellationToken: cancellationToken);
 
@@ -226,11 +232,27 @@ public sealed class ApiClient : IDisposable
 		=> await DeleteAsync(uri: CreateUri(apiMethod: apiMethod, arg: arg), cancellationToken: cancellationToken);
 
 	public async Task DeleteAsync<TIn>(string apiMethod, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
-		=> await DeleteAsync(uri: CreateUri(apiMethod: apiMethod, arg: arg), cancellationToken: cancellationToken);
+		=> await DeleteAsync(uri: CreateUri(apiMethod: apiMethod), arg: arg, cancellationToken: cancellationToken);
+
+	public async Task DeleteAsync<TIn>(Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperForDeleteAsync<TIn>(uri: uri, arg: arg, cancellationToken: cancellationToken);
 
 	private async Task<HttpResponseMessage> HelperForDeleteAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		HttpResponseMessage responseMessage = await _client.DeleteAsync(requestUri: uri, cancellationToken: cancellationToken);
+		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: _options);
+		return responseMessage;
+	}
+
+	private async Task<HttpResponseMessage> HelperForDeleteAsync<TIn>(Uri uri, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		HttpRequestMessage requestMessage = new HttpRequestMessage()
+		{
+			Content = JsonContent.Create(inputValue: arg, inputType: arg!.GetType()),
+			Method = HttpMethod.Delete,
+			RequestUri = uri
+		};
+		HttpResponseMessage responseMessage = await _client.SendAsync(request: requestMessage);
 		await ApiException.ThrowIfErrorAsync(message: responseMessage, options: _options);
 		return responseMessage;
 	}
