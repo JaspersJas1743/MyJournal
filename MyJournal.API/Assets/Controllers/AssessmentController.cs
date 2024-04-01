@@ -28,7 +28,7 @@ public sealed class AssessmentController(
 	#region Records
 	public sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, GradeTypes GradeType);
 
-	public sealed record GetAssessmentsByIdResponse(string AverageGrade, IEnumerable<Grade> Grades);
+	public sealed record GetAssessmentsByIdResponse(string AverageAssessment, IEnumerable<Grade> Assessments);
 
 	[Validator<GetAssessmentsRequestValidator>]
 	public sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
@@ -160,7 +160,7 @@ public sealed class AssessmentController(
 	{
 		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
 		EducationPeriod period = await _context.Students.AsNoTracking()
-			.Where(predicate: s => s.UserId == studentId)
+			.Where(predicate: s => s.Id == studentId)
 			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
 			.Select(selector: epfc => epfc.EducationPeriod)
 			.Where(predicate: ep => ep.Id == request.PeriodId ||
@@ -168,6 +168,7 @@ public sealed class AssessmentController(
 			).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
 				statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден."
 			);
+
 		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
 		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
 		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
@@ -180,8 +181,8 @@ public sealed class AssessmentController(
 			.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
 
 		return Ok(value: new GetAssessmentsByIdResponse(
-			AverageGrade: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
-			Grades: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
+			AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+			Assessments: assessments.Select(selector: a => new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Grade.GradeType.Type))
 		));
 	}
 
@@ -331,7 +332,7 @@ public sealed class AssessmentController(
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetCommentsForAssessmentsResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetCommentsForAssessmentsResponse>> GetCommentsForAssessments(
+	public async Task<ActionResult<GetCommentsForAssessmentsResponse>> GetCommentsForTruancy(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
