@@ -324,7 +324,7 @@ public class ParentTest
 	}
 	#endregion
 
-		[Test]
+	[Test]
 	public async Task ParentGetAssessmentsForWard_WithDefaultValue_ShouldPassed()
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
@@ -364,5 +364,27 @@ public class ParentTest
 		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
 		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+	}
+
+	[Test]
+	public async Task ParentGetAssessments_WithChangePeriod_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test5",
+			password: "test5test5",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Parent? parent = await service.SignIn(credentials: credentials) as Parent;
+		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
+		await studyingSubjects.SetEducationPeriod(period: educationPeriods.Single(predicate: ep => ep.Id == 8));
+		WardSubjectStudying physicalEducation = await studyingSubjects.SingleAsync(predicate: s => s.Id == 47);
+		Assert.That(actual: physicalEducation.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Grade<Estimation> grade = await physicalEducation.GetGrade();
+		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
+		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
 	}
 }

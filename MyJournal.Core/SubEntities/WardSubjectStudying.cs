@@ -119,14 +119,23 @@ public sealed class WardSubjectStudying : Subject
 		);
 	}
 
-	internal static WardSubjectStudying CreateWithoutTasks(
-		StudyingSubjectResponse response
+	internal static async Task<WardSubjectStudying> CreateWithoutTasks(
+		ApiClient client,
+		StudyingSubjectResponse response,
+		int educationPeriodId = 0,
+		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		return new WardSubjectStudying(
 			response: response,
 			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null),
-			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
+				client: client,
+				apiMethod: AssessmentControllerMethods.GetAssessmentsForWard,
+				subjectId: response.Id,
+				periodId: educationPeriodId,
+				cancellationToken: cancellationToken
+			))
 		);
 	}
 

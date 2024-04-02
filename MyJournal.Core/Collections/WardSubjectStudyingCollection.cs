@@ -154,9 +154,14 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 				: LessonControllerMethods.GetSubjectsStudiedByWardByPeriod(period: period.Name),
 			cancellationToken: cancellationToken
 		);
-		List<WardSubjectStudying> subjects = new List<WardSubjectStudying>(collection: response.Select(
-			selector: WardSubjectStudying.CreateWithoutTasks
-		));
+		List<WardSubjectStudying> subjects = new List<WardSubjectStudying>(collection: await Task.WhenAll(tasks: response.Select(
+			selector: async subject => await WardSubjectStudying.CreateWithoutTasks(
+				client: _client,
+				educationPeriodId: period.Id,
+				response: subject,
+				cancellationToken: cancellationToken
+			)
+		)));
 
 		if (period.Id == 0)
 			subjects.Insert(index: 0, item: WardSubjectStudying.CreateWithoutTasks(name: "Все дисциплины"));
