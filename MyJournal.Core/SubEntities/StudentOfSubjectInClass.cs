@@ -31,6 +31,7 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 		string name,
 		string? patronymic,
 		int subjectId,
+		int educationPeriodId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -45,20 +46,12 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 				client: client,
 				studentId: id,
 				subjectId: subjectId,
+				periodId: educationPeriodId,
 				cancellationToken: cancellationToken
 			))
 		);
 	}
 
-	public async Task<GradeOfStudent<EstimationOfStudent>> GetGrade(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		return await GradeOfStudent<EstimationOfStudent>.Create(
-			client: _client,
-			studentId: Id,
-			subjectId: _subjectId,
-			cancellationToken: cancellationToken
-		);
-	}
+	public async Task<GradeOfStudent<EstimationOfStudent>> GetGrade()
+		=> await _grade;
 }

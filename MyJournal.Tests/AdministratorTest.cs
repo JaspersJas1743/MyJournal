@@ -351,10 +351,114 @@ public class AdministratorTest
 		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 		Estimation? thirdEstimation = assessments.ElementAtOrDefault(index: 2);
-		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 3));
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
 		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
 		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
 		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
 		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
-		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));	}
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+	}
+
+	[Test]
+	public async Task AdministratorDeleteAssessment_WithDefaultValue_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
+		ClassCollection classes = await administrator.GetClasses();
+		Class @class = await classes.GetByIndex(index: 10);
+		StudyingSubjectInClassCollection subjects = await @class.GetStudyingSubjects();
+		StudyingSubjectInClass subject = await subjects.SingleAsync(predicate: s => s.Id == 47);
+		IEnumerable<StudentOfSubjectInClass> students = await subject.GetStudents();
+		StudentOfSubjectInClass student = students.Single(predicate: s => s.Id == 2);
+		Assert.That(actual: student.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: student.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: student.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: student.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		GradeOfStudent<EstimationOfStudent> secondStudentGrade = await student.GetGrade();
+		EstimationOfStudent lastAssessment = await secondStudentGrade.LastAsync();
+		await lastAssessment.Delete();
+	}
+
+	[Test]
+	public async Task TeacherAddedAssessment_WithDefaultValue_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
+		ClassCollection classes = await administrator.GetClasses();
+		Class @class = await classes.GetByIndex(index: 10);
+		StudyingSubjectInClassCollection subjects = await @class.GetStudyingSubjects();
+		StudyingSubjectInClass subject = await subjects.SingleAsync(predicate: s => s.Id == 47);
+		IEnumerable<StudentOfSubjectInClass> students = await subject.GetStudents();
+		StudentOfSubjectInClass student = students.Single(predicate: s => s.Id == 2);
+		Assert.That(actual: student.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: student.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: student.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: student.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		GradeOfStudent<EstimationOfStudent> secondStudentGrade = await student.GetGrade();
+		await secondStudentGrade.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
+	}
+
+	[Test]
+	public async Task TeacherChangedAssessments_WithDefaultValue_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
+		ClassCollection classes = await administrator.GetClasses();
+		Class @class = await classes.GetByIndex(index: 10);
+		StudyingSubjectInClassCollection subjects = await @class.GetStudyingSubjects();
+		StudyingSubjectInClass subject = await subjects.SingleAsync(predicate: s => s.Id == 47);
+		IEnumerable<StudentOfSubjectInClass> students = await subject.GetStudents();
+		StudentOfSubjectInClass student = students.Single(predicate: s => s.Id == 2);
+		Assert.That(actual: student.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: student.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: student.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: student.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		GradeOfStudent<EstimationOfStudent> secondStudentGrade = await student.GetGrade();
+		EstimationOfStudent lastAssessment = await secondStudentGrade.LastAsync();
+		await lastAssessment.Change(gradeId: 2, dateTime: lastAssessment.CreatedAt, commentId: 2);
+	}
+
+		[Test]
+	public async Task AdministratorGetAssessments_WithChangePeriod_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
+		ClassCollection classes = await administrator.GetClasses();
+		Class @class = await classes.GetByIndex(index: 10);
+		StudyingSubjectInClassCollection subjects = await @class.GetStudyingSubjects();
+		IEnumerable<EducationPeriod> educationPeriods = await subjects.GetEducationPeriods();
+		await subjects.SetEducationPeriod(period: educationPeriods.Single(predicate: ep => ep.Id == 8));
+		StudyingSubjectInClass subject = await subjects.SingleAsync(predicate: s => s.Id == 47);
+		IEnumerable<StudentOfSubjectInClass> students = await subject.GetStudents();
+		StudentOfSubjectInClass student = students.Single(predicate: s => s.Id == 2);
+		Assert.That(actual: student.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: student.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: student.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: student.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		GradeOfStudent<EstimationOfStudent> secondStudentGrade = await student.GetGrade();
+		Assert.That(actual: secondStudentGrade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
+		Assert.That(actual: secondStudentGrade.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> assessments = await secondStudentGrade.GetAssessments();
+		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
+	}
 }

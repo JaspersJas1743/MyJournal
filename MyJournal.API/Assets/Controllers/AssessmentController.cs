@@ -407,7 +407,7 @@ public sealed class AssessmentController(
 
 	#region POST
 	/// <summary>
-	/// [Преподаватель] Установка новой оценки для ученика
+	/// [Преподаватель/Администратор] Установка новой оценки для ученика
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -434,9 +434,9 @@ public sealed class AssessmentController(
 	/// </remarks>
 	/// <response code="200">Оценка успешно установлена</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
 	[HttpPost(template: "create")]
-	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
@@ -554,7 +554,7 @@ public sealed class AssessmentController(
 
 	#region PUT
 	/// <summary>
-	/// [Преподаватель] Изменение оценки по ее идентификатору
+	/// [Преподаватель/Администратор] Изменение оценки по ее идентификатору
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -582,7 +582,7 @@ public sealed class AssessmentController(
 	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
 	/// <response code="404">Оценка с указанным идентификатором не найдена</response>
 	[HttpPut(template: "change")]
-	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]

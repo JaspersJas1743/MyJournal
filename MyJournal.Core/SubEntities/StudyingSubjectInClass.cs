@@ -137,14 +137,36 @@ public sealed class StudyingSubjectInClass : Subject
 		);
 	}
 
-	internal static StudyingSubjectInClass CreateWithoutTasks(
-		StudyingSubjectResponse response
+	internal static async Task<StudyingSubjectInClass> CreateWithoutTasks(
+		ApiClient client,
+		StudyingSubjectResponse response,
+		int classId,
+		int educationPeriodId = 0,
+		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		return new StudyingSubjectInClass(
 			response: response,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null),
-			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => null)
+			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () =>
+			{
+				IEnumerable<GetStudentsFromClassResponse> students = await client.GetAsync<IEnumerable<GetStudentsFromClassResponse>>(
+					apiMethod: ClassControllerMethods.GetStudentsFromClass(classId: classId),
+					cancellationToken: cancellationToken
+				) ?? throw new InvalidOperationException();
+				return new List<StudentOfSubjectInClass>(collection: await Task.WhenAll(tasks: students.Select(
+					selector: async s => await StudentOfSubjectInClass.Create(
+						client: client,
+						id: s.Id,
+						surname: s.Surname,
+						name: s.Name,
+						patronymic: s.Patronymic,
+						subjectId: response.Id,
+						educationPeriodId: educationPeriodId,
+						cancellationToken: cancellationToken
+					)
+				)));
+			})
 		);
 	}
 
