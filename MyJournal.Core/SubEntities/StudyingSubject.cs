@@ -84,6 +84,7 @@ public sealed class StudyingSubject : Subject
 	internal static async Task<StudyingSubject> Create(
 		ApiClient client,
 		StudyingSubjectResponse response,
+		int educationPeriodId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -96,6 +97,7 @@ public sealed class StudyingSubject : Subject
 			)),
 			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
 				client: client,
+				periodId: educationPeriodId,
 				apiMethod: AssessmentControllerMethods.GetAssessments,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
@@ -120,14 +122,23 @@ public sealed class StudyingSubject : Subject
 		);
 	}
 
-	internal static StudyingSubject CreateWithoutTasks(
-		StudyingSubjectResponse response
+	internal static async Task<StudyingSubject> CreateWithoutTasks(
+		ApiClient client,
+		StudyingSubjectResponse response,
+		int periodId = 0,
+		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		return new StudyingSubject(
 			response: response,
 			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => null),
-			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
+				client: client,
+				periodId: periodId,
+				apiMethod: AssessmentControllerMethods.GetAssessments,
+				subjectId: response.Id,
+				cancellationToken: cancellationToken
+			))
 		);
 	}
 

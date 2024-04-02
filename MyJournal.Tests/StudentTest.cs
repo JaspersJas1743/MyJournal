@@ -375,5 +375,27 @@ public class StudentTest
 		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 	}
+
+	[Test]
+	public async Task StudentGetAssessments_WithChangePeriod_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Student? student = await service.SignIn(credentials: credentials) as Student;
+		StudyingSubjectCollection studyingSubjects = await student.GetStudyingSubjects();
+		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
+		await studyingSubjects.SetEducationPeriod(period: educationPeriods.Single(predicate: ep => ep.Id == 8));
+		StudyingSubject physicalEducation = await studyingSubjects.SingleAsync(predicate: s => s.Id == 47);
+		Assert.That(actual: physicalEducation.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Grade<Estimation> grade = await physicalEducation.GetGrade();
+		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
+		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
+	}
 	#endregion
 }

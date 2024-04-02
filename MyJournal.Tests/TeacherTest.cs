@@ -244,7 +244,7 @@ public class TeacherTest
 
 	#region Test
 	[Test]
-	public async Task test()
+	public async Task TeacherGetAssessments_WithChangePeriod_ShouldPassed()
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(

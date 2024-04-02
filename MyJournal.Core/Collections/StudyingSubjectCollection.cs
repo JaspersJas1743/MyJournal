@@ -147,8 +147,13 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			apiMethod: period.Id == 0 ? LessonControllerMethods.GetStudyingSubjects : LessonControllerMethods.GetStudyingSubjectsByPeriod(period: period.Name),
 			cancellationToken: cancellationToken
 		);
-		List<StudyingSubject> subjects = new List<StudyingSubject>(collection: response.Select(selector: s => StudyingSubject.CreateWithoutTasks(
-			response: s
+		List<StudyingSubject> subjects = new List<StudyingSubject>(collection: await Task.WhenAll(tasks: response.Select(
+			selector: async s => await StudyingSubject.CreateWithoutTasks(
+				client: _client,
+				response: s,
+				periodId: period.Id,
+				cancellationToken: cancellationToken
+			)
 		)));
 
 		if (period.Id == 0)
