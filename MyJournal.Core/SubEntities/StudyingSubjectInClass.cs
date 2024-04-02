@@ -13,18 +13,12 @@ public sealed class StudyingSubjectInClass : Subject
 	#region Constructors
 	private StudyingSubjectInClass(
 		AsyncLazy<TaskAssignedToClassCollection> tasks
-	)
-	{
-		_tasks = tasks;
-	}
+	) => _tasks = tasks;
 
 	private StudyingSubjectInClass(
 		string name,
 		AsyncLazy<TaskAssignedToClassCollection> tasks
-	) : this(tasks: tasks)
-	{
-		Name = name;
-	}
+	) : this(tasks: tasks) => Name = name;
 
 	private StudyingSubjectInClass(
 		StudyingSubjectResponse response,

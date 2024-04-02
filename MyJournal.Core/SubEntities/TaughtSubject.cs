@@ -106,7 +106,7 @@ public sealed class TaughtSubject : ISubEntity
 			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => await TaughtClass.Create(
 				client: client,
 				subjectId: response.Id,
-				id: response.Class.Id,
+				classId: response.Class.Id,
 				name: response.Class.Name,
 				cancellationToken: cancellationToken
 			))
@@ -145,16 +145,23 @@ public sealed class TaughtSubject : ISubEntity
 		);
 	}
 
-	internal static TaughtSubject CreateWithoutTasks(
+	internal static async Task<TaughtSubject> CreateWithoutTasks(
 		IFileService fileService,
-		TaughtSubjectResponse response
+		TaughtSubjectResponse response,
+		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		return new TaughtSubject(
 			fileService: fileService,
 			response: response,
 			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null),
-			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => null)
+			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => await TaughtClass.Create(
+				client: fileService.ApiClient,
+				subjectId: response.Id,
+				classId: response.Class.Id,
+				name: response.Class.Name,
+				cancellationToken: cancellationToken
+			))
 		);
 	}
 

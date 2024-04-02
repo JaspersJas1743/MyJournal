@@ -159,13 +159,18 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 
 		IEnumerable<TaughtSubject.TaughtSubjectResponse> response = await LoadSubjectCollection(
 			client: _client,
-			apiMethod: period.Id == 0 ? LessonControllerMethods.GetTaughtSubjects : LessonControllerMethods.GetTaughtSubjectsByPeriod(period: period.Name),
+			apiMethod: period.Id == 0
+				? LessonControllerMethods.GetTaughtSubjects
+				: LessonControllerMethods.GetTaughtSubjectsByPeriod(period: period.Name),
 			cancellationToken: cancellationToken
 		);
-		List<TaughtSubject> subjects = new List<TaughtSubject>(collection: response.Select(selector: s => TaughtSubject.CreateWithoutTasks(
-			fileService: _fileService,
-			response: s
-		)));
+		List<TaughtSubject> subjects = new List<TaughtSubject>(collection: await Task.WhenAll(
+			tasks: response.Select(selector: async s => await TaughtSubject.CreateWithoutTasks(
+				fileService: _fileService,
+				response: s,
+				cancellationToken: cancellationToken
+			))
+		));
 
 		if (period.Id == 0)
 			subjects.Insert(index: 0, item: TaughtSubject.CreateWithoutTasks(name: "Все классы", fileService: _fileService));

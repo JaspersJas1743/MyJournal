@@ -96,7 +96,11 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			studyingSubjects: new AsyncLazy<List<StudyingSubject>>(valueFactory: async () =>
 			{
 				List<StudyingSubject> collection = new List<StudyingSubject>(collection: await Task.WhenAll(tasks: subjects.Select(
-					selector: async s => await StudyingSubject.Create(client: client, response: s, cancellationToken: cancellationToken)
+					selector: async s => await StudyingSubject.Create(
+						client: client,
+						response: s,
+						cancellationToken: cancellationToken
+					)
 				)));
 				collection.Insert(index: 0, item: await StudyingSubject.Create(client: client, name: "Все дисциплины", cancellationToken: cancellationToken));
 				return collection;

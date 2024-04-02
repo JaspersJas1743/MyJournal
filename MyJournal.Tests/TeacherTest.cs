@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
@@ -68,6 +69,7 @@ public class TeacherTest
 		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
 		IEnumerable<EducationPeriod> educationPeriods = await taughtSubjects.GetEducationPeriods();
 		EducationPeriod educationPeriod = educationPeriods.Last();
+		Debug.WriteLine($"{educationPeriod.Id}: {educationPeriod.Name} started {educationPeriod.StartDate} and ended {educationPeriod.EndDate}");
 		await taughtSubjects.SetEducationPeriod(period: educationPeriod);
 		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 1));
 		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
@@ -79,7 +81,7 @@ public class TeacherTest
 	}
 
 	[Test]
-	public async Task TeacherGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
+	public async Task TeacherGetTaughtSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
@@ -96,6 +98,7 @@ public class TeacherTest
 		await taughtSubjects.SetEducationPeriod(period: firstEducationPeriod);
 		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
 		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
+		Assert.That(actual: firstTaughtSubject.Id, expression: Is.EqualTo(expected: 0));
 		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все классы"));
 		TaughtSubject secondTaughtSubject = await taughtSubjects.GetByIndex(index: 1);
 		Assert.That(actual: secondTaughtSubject.Id, expression: Is.EqualTo(expected: 47));
@@ -257,9 +260,9 @@ public class TeacherTest
 		TaughtClass @class = await subject.GetTaughtClass();
 		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
 		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
-		IEnumerable<StudentInClass> students = await @class.GetStudents();
+		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
 		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
-		StudentInClass firstStudent = students.First();
+		StudentInTaughtClass firstStudent = students.First();
 		Assert.That(actual: firstStudent.Id, expression: Is.EqualTo(expected: 1));
 		Assert.That(actual: firstStudent.Surname, expression: Is.EqualTo(expected: "test"));
 		Assert.That(actual: firstStudent.Name, expression: Is.EqualTo(expected: "test"));
@@ -274,7 +277,7 @@ public class TeacherTest
 		Assert.That(actual: estimation.Comment, expression: Is.EqualTo(expected: null));
 		Assert.That(actual: estimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: estimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Truancy));
-		StudentInClass secondStudent = students.Last();
+		StudentInTaughtClass secondStudent = students.Last();
 		Assert.That(actual: secondStudent.Id, expression: Is.EqualTo(expected: 2));
 		Assert.That(actual: secondStudent.Surname, expression: Is.EqualTo(expected: "Смирнов"));
 		Assert.That(actual: secondStudent.Name, expression: Is.EqualTo(expected: "Алексей"));
@@ -324,9 +327,9 @@ public class TeacherTest
 		TaughtClass @class = await subject.GetTaughtClass();
 		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
 		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
-		IEnumerable<StudentInClass> students = await @class.GetStudents();
+		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
 		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
-		StudentInClass lastStudent = students.Last();
+		StudentInTaughtClass lastStudent = students.Last();
 		GradeOfStudent<EstimationOfStudent> gradeOfLastStudent = await lastStudent.GetGrade();
 		EstimationOfStudent lastAssessment = await gradeOfLastStudent.LastAsync();
 		await lastAssessment.Delete();
@@ -349,9 +352,9 @@ public class TeacherTest
 		TaughtClass @class = await subject.GetTaughtClass();
 		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
 		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
-		IEnumerable<StudentInClass> students = await @class.GetStudents();
+		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
 		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
-		StudentInClass lastStudent = students.Last();
+		StudentInTaughtClass lastStudent = students.Last();
 		GradeOfStudent<EstimationOfStudent> gradeOfLastStudent = await lastStudent.GetGrade();
 		EstimationOfStudent lastAssessment = await gradeOfLastStudent.LastAsync();
 		await gradeOfLastStudent.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
@@ -374,9 +377,9 @@ public class TeacherTest
 		TaughtClass @class = await subject.GetTaughtClass();
 		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
 		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
-		IEnumerable<StudentInClass> students = await @class.GetStudents();
+		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
 		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
-		StudentInClass lastStudent = students.Last();
+		StudentInTaughtClass lastStudent = students.Last();
 		GradeOfStudent<EstimationOfStudent> gradeOfLastStudent = await lastStudent.GetGrade();
 		EstimationOfStudent lastAssessment = await gradeOfLastStudent.LastAsync();
 		await lastAssessment.Change(gradeId: 2, dateTime: lastAssessment.CreatedAt, commentId: 2);

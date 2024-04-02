@@ -1,39 +1,25 @@
-using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 
 namespace MyJournal.Core.SubEntities;
 
-public sealed class StudentInClass : ISubEntity
+public sealed class StudentInClass : BaseStudent
 {
-	private readonly AsyncLazy<GradeOfStudent<EstimationOfStudent>> _grade;
+	private readonly ApiClient _client;
 
 	private StudentInClass(
+		ApiClient client,
 		int id,
 		string surname,
 		string name,
-		string? patronymic,
-		AsyncLazy<GradeOfStudent<EstimationOfStudent>> grade
-	)
+		string? patronymic
+	) : base(id: id, surname: surname, name: name, patronymic: patronymic)
 	{
-		Id = id;
-		Surname = surname;
-		Name = name;
-		Patronymic = patronymic;
-		_grade = grade;
+		_client = client;
 	}
-
-	public int Id { get; init; }
-	public string Surname { get; init; }
-	public string Name { get; init; }
-	public string? Patronymic { get; init; }
-
-	public async Task<GradeOfStudent<EstimationOfStudent>> GetGrade()
-		=> await _grade;
 
 	internal static async Task<StudentInClass> Create(
 		ApiClient client,
-		int subjectId,
 		int id,
 		string surname,
 		string name,
@@ -42,16 +28,26 @@ public sealed class StudentInClass : ISubEntity
 	)
 	{
 		return new StudentInClass(
+			client: client,
 			id: id,
 			surname: surname,
 			name: name,
-			patronymic: patronymic,
-			grade: new AsyncLazy<GradeOfStudent<EstimationOfStudent>>(valueFactory: async () => await GradeOfStudent<EstimationOfStudent>.Create(
-				client: client,
-				studentId: id,
-				subjectId: subjectId,
-				cancellationToken: cancellationToken
-			))
+			patronymic: patronymic
+		);
+	}
+
+	public async Task<GradeOfStudent<EstimationOfStudent>> GetGrade(
+		int subjectId,
+		int periodId = 0,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return await GradeOfStudent<EstimationOfStudent>.Create(
+			client: _client,
+			studentId: Id,
+			subjectId: subjectId,
+			periodId: periodId,
+			cancellationToken: cancellationToken
 		);
 	}
 }

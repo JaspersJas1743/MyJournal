@@ -1,6 +1,7 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
+using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -8,28 +9,33 @@ public sealed class WardSubjectStudying : Subject
 {
 	#region Fields
 	private readonly AsyncLazy<TaskAssignedToWardCollection> _tasks;
+	private readonly AsyncLazy<Grade<Estimation>> _grade;
 	#endregion
 
 	#region Constructors
 	private WardSubjectStudying(
-		AsyncLazy<TaskAssignedToWardCollection> tasks
+		AsyncLazy<TaskAssignedToWardCollection> tasks,
+		AsyncLazy<Grade<Estimation>> grade
 	)
 	{
 		_tasks = tasks;
+		_grade = grade;
 	}
 
 	private WardSubjectStudying(
 		string name,
-		AsyncLazy<TaskAssignedToWardCollection> tasks
-	) : this(tasks: tasks)
+		AsyncLazy<TaskAssignedToWardCollection> tasks,
+		AsyncLazy<Grade<Estimation>> grade
+	) : this(tasks: tasks, grade: grade)
 	{
 		Name = name;
 	}
 
 	private WardSubjectStudying(
 		StudyingSubjectResponse response,
-		AsyncLazy<TaskAssignedToWardCollection> tasks
-	) : this(tasks: tasks)
+		AsyncLazy<TaskAssignedToWardCollection> tasks,
+		AsyncLazy<Grade<Estimation>> grade
+	) : this(tasks: tasks, grade: grade)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -80,13 +86,20 @@ public sealed class WardSubjectStudying : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new WardSubjectStudying(response: response, tasks: new AsyncLazy<TaskAssignedToWardCollection>(
-			valueFactory: async () => await TaskAssignedToWardCollection.Create(
+		return new WardSubjectStudying(
+			response: response,
+			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
-			)
-		));
+			)),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
+				client: client,
+				apiMethod: AssessmentControllerMethods.GetAssessmentsForWard,
+				subjectId: response.Id,
+				cancellationToken: cancellationToken
+			))
+		);
 	}
 
 	internal static async Task<WardSubjectStudying> Create(
@@ -95,27 +108,47 @@ public sealed class WardSubjectStudying : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new WardSubjectStudying(name: name, tasks: new AsyncLazy<TaskAssignedToWardCollection>(
-			valueFactory: async () => await TaskAssignedToWardCollection.Create(
+		return new WardSubjectStudying(
+			name: name,
+			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
 				subjectId: 0,
 				cancellationToken: cancellationToken
-			)
-		));
+			)),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+		);
 	}
 
 	internal static WardSubjectStudying CreateWithoutTasks(
 		StudyingSubjectResponse response
-	) => new WardSubjectStudying(response: response, tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null));
+	)
+	{
+		return new WardSubjectStudying(
+			response: response,
+			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+		);
+	}
 
 	internal static WardSubjectStudying CreateWithoutTasks(
 		string name
-	) => new WardSubjectStudying(name: name, tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null));
+	)
+	{
+		return new WardSubjectStudying(
+			name: name,
+			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+		);
+	}
+
 	#endregion
 
 	#region Instance
 	public async Task<TaskAssignedToWardCollection> GetTasks()
 		=> await _tasks;
+
+	public async Task<Grade<Estimation>> GetGrade()
+		=> await _grade;
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{

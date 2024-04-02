@@ -4,17 +4,17 @@ using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.SubEntities;
 
-public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInClass>
+public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtClass>
 {
 	private readonly ApiClient _client;
-	private readonly AsyncLazy<IEnumerable<StudentInClass>> _students;
+	private readonly AsyncLazy<IEnumerable<StudentInTaughtClass>> _students;
 
 	private TaughtClass(
 		ApiClient client,
 		int subjectId,
 		int id,
 		string name,
-		AsyncLazy<IEnumerable<StudentInClass>> students
+		AsyncLazy<IEnumerable<StudentInTaughtClass>> students
 	)
 	{
 		_client = client;
@@ -33,28 +33,28 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInClass>
 	private sealed record SetAttendanceRequest(int SubjectId, DateTime Datetime, IEnumerable<Attendance> Attendances);
 
 
-	public async Task<IEnumerable<StudentInClass>> GetStudents()
+	public async Task<IEnumerable<StudentInTaughtClass>> GetStudents()
 		=> await _students;
 
 	internal static async Task<TaughtClass> Create(
 		ApiClient client,
 		int subjectId,
-		int id,
+		int classId,
 		string name,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		IEnumerable<GetStudentsFromClassResponse> students = await client.GetAsync<IEnumerable<GetStudentsFromClassResponse>>(
-			apiMethod: ClassControllerMethods.GetStudentsFromClass(classId: id),
+			apiMethod: ClassControllerMethods.GetStudentsFromClass(classId: classId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new TaughtClass(
 			client: client,
-			id: id,
+			id: classId,
 			name: name,
 			subjectId: subjectId,
-			students: new AsyncLazy<IEnumerable<StudentInClass>>(valueFactory: async () => await Task.WhenAll(tasks: students.Select(
-				selector: async s => await StudentInClass.Create(
+			students: new AsyncLazy<IEnumerable<StudentInTaughtClass>>(valueFactory: async () => await Task.WhenAll(tasks: students.Select(
+				selector: async s => await StudentInTaughtClass.Create(
 					client: client,
 					subjectId: subjectId,
 					id: s.Id,
@@ -80,11 +80,11 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInClass>
 		);
 	}
 
-	public async IAsyncEnumerator<StudentInClass> GetAsyncEnumerator(
+	public async IAsyncEnumerator<StudentInTaughtClass> GetAsyncEnumerator(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		foreach (StudentInClass student in await _students)
+		foreach (StudentInTaughtClass student in await _students)
 		{
 			if (cancellationToken.IsCancellationRequested)
 				yield break;

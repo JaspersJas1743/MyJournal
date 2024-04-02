@@ -50,13 +50,14 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	#region Static
 	internal static async Task<Grade<Estimation>> Create(
 		ApiClient client,
+		string apiMethod,
 		int subjectId,
 		int periodId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		GetAssessmentsResponse assessments = await client.GetAsync<GetAssessmentsResponse, GetAssessmentsRequest>(
-			apiMethod: AssessmentControllerMethods.GetAssessments,
+			apiMethod: apiMethod,
 			argQuery: new GetAssessmentsRequest(PeriodId: periodId, SubjectId: subjectId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();

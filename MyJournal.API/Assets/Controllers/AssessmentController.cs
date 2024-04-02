@@ -245,9 +245,9 @@ public sealed class AssessmentController(
 
 		DateTime start = period.StartDate.ToDateTime(time: TimeOnly.MinValue);
 		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MaxValue);
-		IQueryable<Assessment> assessments = _context.Students.AsNoTracking()
+		IQueryable<Assessment> assessments = _context.Parents.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
-			.SelectMany(selector: s => s.Assessments)
+			.SelectMany(selector: s => s.Children.Assessments)
 			.Where(predicate: a => EF.Functions.DateDiffDay(a.Datetime, start) <= 0 && EF.Functions.DateDiffDay(a.Datetime, end) >= 0);
 
 		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
@@ -263,7 +263,7 @@ public sealed class AssessmentController(
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
 		return Ok(value: new GetAssessmentsResponse(
-			AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+			AverageAssessment: avg.ToString(format: "F2", CultureInfo.InvariantCulture).Replace(oldValue: "0.00", newValue: "-.--"),
 			FinalAssessment: final is null ? null : final + ".00",
 			Assessments: assessments.Select(selector: a => new Grade(
 				a.Id,

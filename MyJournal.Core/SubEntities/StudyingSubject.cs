@@ -1,6 +1,7 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
+using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -95,6 +96,7 @@ public sealed class StudyingSubject : Subject
 			)),
 			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
 				client: client,
+				apiMethod: AssessmentControllerMethods.GetAssessments,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
 			))
