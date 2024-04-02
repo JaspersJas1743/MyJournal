@@ -93,6 +93,7 @@ public sealed class TaughtSubject : ISubEntity
 		ApiClient client,
 		IFileService fileService,
 		TaughtSubjectResponse response,
+		int educationPeriodId = 0,
         CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -108,6 +109,7 @@ public sealed class TaughtSubject : ISubEntity
 				subjectId: response.Id,
 				classId: response.Class.Id,
 				name: response.Class.Name,
+				educationPeriodId: educationPeriodId,
 				cancellationToken: cancellationToken
 			))
 		);
@@ -148,6 +150,7 @@ public sealed class TaughtSubject : ISubEntity
 	internal static async Task<TaughtSubject> CreateWithoutTasks(
 		IFileService fileService,
 		TaughtSubjectResponse response,
+		int educationPeriodId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -160,6 +163,7 @@ public sealed class TaughtSubject : ISubEntity
 				subjectId: response.Id,
 				classId: response.Class.Id,
 				name: response.Class.Name,
+				educationPeriodId: educationPeriodId,
 				cancellationToken: cancellationToken
 			))
 		);

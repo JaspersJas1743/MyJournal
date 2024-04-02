@@ -168,6 +168,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 			tasks: response.Select(selector: async s => await TaughtSubject.CreateWithoutTasks(
 				fileService: _fileService,
 				response: s,
+				educationPeriodId: period.Id,
 				cancellationToken: cancellationToken
 			))
 		));

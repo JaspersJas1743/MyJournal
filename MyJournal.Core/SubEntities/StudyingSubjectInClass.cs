@@ -1,6 +1,7 @@
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
+using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -8,22 +9,30 @@ public sealed class StudyingSubjectInClass : Subject
 {
 	#region Fields
 	private readonly AsyncLazy<TaskAssignedToClassCollection> _tasks;
+	private readonly AsyncLazy<List<StudentOfSubjectInClass>> _students;
 	#endregion
 
 	#region Constructors
 	private StudyingSubjectInClass(
-		AsyncLazy<TaskAssignedToClassCollection> tasks
-	) => _tasks = tasks;
+		AsyncLazy<TaskAssignedToClassCollection> tasks,
+		AsyncLazy<List<StudentOfSubjectInClass>> students
+	)
+	{
+		_tasks = tasks;
+		_students = students;
+	}
 
 	private StudyingSubjectInClass(
 		string name,
-		AsyncLazy<TaskAssignedToClassCollection> tasks
-	) : this(tasks: tasks) => Name = name;
+		AsyncLazy<TaskAssignedToClassCollection> tasks,
+        AsyncLazy<List<StudentOfSubjectInClass>> students
+	) : this(tasks: tasks, students: students) => Name = name;
 
 	private StudyingSubjectInClass(
 		StudyingSubjectResponse response,
-		AsyncLazy<TaskAssignedToClassCollection> tasks
-	) : this(tasks: tasks)
+		AsyncLazy<TaskAssignedToClassCollection> tasks,
+        AsyncLazy<List<StudentOfSubjectInClass>> students
+	) : this(tasks: tasks, students: students)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -32,6 +41,7 @@ public sealed class StudyingSubjectInClass : Subject
 	#endregion
 
 	#region Records
+	private sealed record GetStudentsFromClassResponse(int Id, string Surname, string Name, string? Patronymic);
 	internal sealed record StudyingSubjectResponse(int Id, string Name, SubjectTeacher Teacher);
 	#endregion
 
@@ -75,14 +85,35 @@ public sealed class StudyingSubjectInClass : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new StudyingSubjectInClass(response: response, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
-			await TaskAssignedToClassCollection.Create(
-				client: client,
-				subjectId: response.Id,
-				classId: classId,
-				cancellationToken: cancellationToken
-			)
-		));
+		return new StudyingSubjectInClass(
+			response: response,
+			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
+				await TaskAssignedToClassCollection.Create(
+					client: client,
+					subjectId: response.Id,
+					classId: classId,
+					cancellationToken: cancellationToken
+				)
+			),
+			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () =>
+			{
+				IEnumerable<GetStudentsFromClassResponse> students = await client.GetAsync<IEnumerable<GetStudentsFromClassResponse>>(
+					apiMethod: ClassControllerMethods.GetStudentsFromClass(classId: classId),
+					cancellationToken: cancellationToken
+				) ?? throw new InvalidOperationException();
+				return new List<StudentOfSubjectInClass>(collection: await Task.WhenAll(tasks: students.Select(
+					selector: async s => await StudentOfSubjectInClass.Create(
+						client: client,
+						id: s.Id,
+						surname: s.Surname,
+						name: s.Name,
+						patronymic: s.Patronymic,
+						subjectId: response.Id,
+						cancellationToken: cancellationToken
+					)
+				)));
+			})
+		);
 	}
 
 	internal static async Task<StudyingSubjectInClass> Create(
@@ -92,28 +123,50 @@ public sealed class StudyingSubjectInClass : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return new StudyingSubjectInClass(name: name, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
-			await TaskAssignedToClassCollection.Create(
-				client: client,
-				subjectId: 0,
-				classId: classId,
-				cancellationToken: cancellationToken
-			)
-		));
+		return new StudyingSubjectInClass(
+			name: name,
+			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
+				await TaskAssignedToClassCollection.Create(
+					client: client,
+					subjectId: 0,
+					classId: classId,
+					cancellationToken: cancellationToken
+				)
+			),
+			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => null)
+		);
 	}
 
 	internal static StudyingSubjectInClass CreateWithoutTasks(
 		StudyingSubjectResponse response
-	) => new StudyingSubjectInClass(response: response, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null));
+	)
+	{
+		return new StudyingSubjectInClass(
+			response: response,
+			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null),
+			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => null)
+		);
+	}
 
 	internal static StudyingSubjectInClass CreateWithoutTasks(
 		string name
-	) => new StudyingSubjectInClass(name: name, tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null));
+	)
+	{
+		return new StudyingSubjectInClass(
+			name: name,
+			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null),
+			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => null)
+		);
+	}
+
 	#endregion
 
 	#region Instance
 	public async Task<TaskAssignedToClassCollection> GetTasks()
 		=> await _tasks;
+
+	public async Task<IEnumerable<StudentOfSubjectInClass>> GetStudents()
+		=> await _students;
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{

@@ -323,24 +323,15 @@ public class AdministratorTest
 		Administrator? administrator = await service.SignIn(credentials: credentials) as Administrator;
 		ClassCollection classes = await administrator.GetClasses();
 		Class @class = await classes.GetByIndex(index: 10);
-		IEnumerable<StudentInClass> students = await @class.GetStudents();
-		StudentInClass firstStudent = students.First();
-		GradeOfStudent<EstimationOfStudent> firstStudentGrade = await firstStudent.GetGrade(subjectId: 47);
-		Assert.That(actual: firstStudentGrade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
-		Assert.That(actual: firstStudentGrade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		Estimation estimation = await firstStudentGrade.SingleAsync();
-		Assert.That(actual: estimation.Id, expression: Is.EqualTo(expected: 5));
-		Assert.That(actual: estimation.Assessment, expression: Is.EqualTo(expected: "Н"));
-		Assert.That(actual: estimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-04-01T12:38:17.183")));
-		Assert.That(actual: estimation.Comment, expression: Is.EqualTo(expected: null));
-		Assert.That(actual: estimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
-		Assert.That(actual: estimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Truancy));
-		StudentInClass secondStudent = students.Last();
-		Assert.That(actual: secondStudent.Id, expression: Is.EqualTo(expected: 2));
-		Assert.That(actual: secondStudent.Surname, expression: Is.EqualTo(expected: "Смирнов"));
-		Assert.That(actual: secondStudent.Name, expression: Is.EqualTo(expected: "Алексей"));
-		Assert.That(actual: secondStudent.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
-		GradeOfStudent<EstimationOfStudent> secondStudentGrade = await secondStudent.GetGrade(subjectId: 47);
+		StudyingSubjectInClassCollection subjects = await @class.GetStudyingSubjects();
+		StudyingSubjectInClass subject = await subjects.SingleAsync(predicate: s => s.Id == 47);
+		IEnumerable<StudentOfSubjectInClass> students = await subject.GetStudents();
+		StudentOfSubjectInClass student = students.Single(predicate: s => s.Id == 2);
+		Assert.That(actual: student.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: student.Surname, expression: Is.EqualTo(expected: "Смирнов"));
+		Assert.That(actual: student.Name, expression: Is.EqualTo(expected: "Алексей"));
+		Assert.That(actual: student.Patronymic, expression: Is.EqualTo(expected: "Игоревич"));
+		GradeOfStudent<EstimationOfStudent> secondStudentGrade = await student.GetGrade();
 		Assert.That(actual: secondStudentGrade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
 		Assert.That(actual: secondStudentGrade.FinalAssessment, expression: Is.EqualTo(expected: null));
 		IEnumerable<Estimation> assessments = await secondStudentGrade.GetAssessments();
@@ -365,6 +356,5 @@ public class AdministratorTest
 		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
 		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
 		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
-		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
-	}
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));	}
 }

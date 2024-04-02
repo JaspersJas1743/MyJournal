@@ -41,6 +41,7 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 		int subjectId,
 		int classId,
 		string name,
+		int educationPeriodId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -61,6 +62,7 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 					surname: s.Surname,
 					name: s.Name,
 					patronymic: s.Patronymic,
+					educationPeriodId: educationPeriodId,
 					cancellationToken: cancellationToken
 				)
 			)))

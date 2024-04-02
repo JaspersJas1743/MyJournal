@@ -5,7 +5,7 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class StudentInTaughtClass : BaseStudent
 {
-	private readonly AsyncLazy<GradeOfStudent<EstimationOfStudent>> _grade;
+	private AsyncLazy<GradeOfStudent<EstimationOfStudent>> _grade;
 
 	private StudentInTaughtClass(
 		int id,
@@ -28,6 +28,7 @@ public sealed class StudentInTaughtClass : BaseStudent
 		string surname,
 		string name,
 		string? patronymic,
+		int educationPeriodId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -40,6 +41,7 @@ public sealed class StudentInTaughtClass : BaseStudent
 				client: client,
 				studentId: id,
 				subjectId: subjectId,
+				periodId: educationPeriodId,
 				cancellationToken: cancellationToken
 			))
 		);

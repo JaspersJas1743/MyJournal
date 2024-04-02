@@ -1,4 +1,3 @@
-using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -160,7 +159,6 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	#endregion
 
 	#region IAsyncEnumerable<Class>
-
 	public async IAsyncEnumerator<Class> GetAsyncEnumerator(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
