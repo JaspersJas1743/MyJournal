@@ -2,6 +2,7 @@ using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
@@ -41,37 +42,11 @@ public sealed class Interlocutor : ISubEntity
 	private sealed record InterlocutorResponse(int Id, string Surname, string Name, string? Patronymic, string Photo, Activity.Statuses Activity, DateTime? OnlineAt);
 	#endregion
 
-	#region Classes
-	public sealed class AppearedOnlineEventArgs(DateTime? onlineAt) : EventArgs
-	{
-		public DateTime? OnlineAt { get; } = onlineAt;
-	}
-
-	public sealed class AppearedOfflineEventArgs(DateTime? onlineAt) : EventArgs
-	{
-		public DateTime? OnlineAt { get; } = onlineAt;
-	}
-
-	public sealed class UpdatedPhotoEventArgs(string link) : EventArgs
-	{
-		public string Link { get; } = link;
-	}
-
-	public sealed class DeletedPhotoEventArgs : EventArgs;
-	#endregion
-
-	#region Delegates
-	public delegate void AppearedOnlineHandler(AppearedOnlineEventArgs e);
-	public delegate void AppearedOfflineHandler(AppearedOfflineEventArgs e);
-	public delegate void UpdatedPhotoHandler(UpdatedPhotoEventArgs e);
-	public delegate void DeletedPhotoHandler(DeletedPhotoEventArgs e);
-	#endregion
-
 	#region Events
-	public event AppearedOnlineHandler? AppearedOnline;
-	public event AppearedOfflineHandler? AppearedOffline;
-	public event UpdatedPhotoHandler? UpdatedPhoto;
-	public event DeletedPhotoHandler? DeletedPhoto;
+	public event InterlocutorAppearedOnlineHandler? AppearedOnline;
+	public event InterlocutorAppearedOfflineHandler? AppearedOffline;
+	public event InterlocutorUpdatedPhotoHandler? UpdatedPhoto;
+	public event InterlocutorDeletedPhotoHandler? DeletedPhoto;
 	#endregion
 
 	#region Methods
@@ -113,21 +88,21 @@ public sealed class Interlocutor : ISubEntity
 	public async Task<ProfilePhoto> GetPhoto()
 		=> await _photo;
 
-	internal void OnAppearedOnline(AppearedOnlineEventArgs e)
+	internal void OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
 	{
 		Activity = UserData.Activity.Statuses.Online;
 		OnlineAt = e.OnlineAt;
 		AppearedOnline?.Invoke(e: e);
 	}
 
-	internal void OnAppearedOffline(AppearedOfflineEventArgs e)
+	internal void OnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
 	{
 		Activity = UserData.Activity.Statuses.Offline;
 		OnlineAt = e.OnlineAt;
 		AppearedOffline?.Invoke(e: e);
 	}
 
-	internal async Task OnUpdatedPhoto(UpdatedPhotoEventArgs e)
+	internal async Task OnUpdatedPhoto(InterlocutorUpdatedPhotoEventArgs e)
 	{
 		if (!_photo.IsValueCreated)
 			return;
@@ -137,7 +112,7 @@ public sealed class Interlocutor : ISubEntity
 		UpdatedPhoto?.Invoke(e: e);
 	}
 
-	internal async Task OnDeletedPhoto(DeletedPhotoEventArgs e)
+	internal async Task OnDeletedPhoto(InterlocutorDeletedPhotoEventArgs e)
 	{
 		if (!_photo.IsValueCreated)
 			return;

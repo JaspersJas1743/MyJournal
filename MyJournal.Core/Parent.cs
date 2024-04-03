@@ -69,19 +69,19 @@ public sealed class Parent : User
 		_parentHubConnection.On<int>(methodName: ParentHubMethods.WardCompletedTask, handler: async taskId =>
 		{
 			await InvokeIfWardSubjectStudyingAreCreated(invocation: async collection => await collection.OnCompletedTask(
-				e: new WardSubjectStudyingCollection.CompletedTaskEventArgs(taskId: taskId)
+				e: new CompletedTaskEventArgs(taskId: taskId)
 			));
 		});
 		_parentHubConnection.On<int>(methodName: ParentHubMethods.WardUncompletedTask, handler: async taskId =>
 		{
 			await InvokeIfWardSubjectStudyingAreCreated(invocation: async collection => await collection.OnUncompletedTask(
-				e: new WardSubjectStudyingCollection.UncompletedTaskEventArgs(taskId: taskId)
+				e: new UncompletedTaskEventArgs(taskId: taskId)
 			));
 		});
 		_parentHubConnection.On<int, int>(methodName: ParentHubMethods.CreatedTaskToWard, handler: async (taskId, subjectId) =>
 		{
 			await InvokeIfWardSubjectStudyingAreCreated(invocation: async collection => await collection.OnCreatedTask(
-				e: new WardSubjectStudyingCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId)
+				e: new CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: -1)
 			));
 		});
 		_parentHubConnection.On<int, int, int>(methodName: ParentHubMethods.CreatedAssessmentToWard, handler: async (assessmentId, studentId, subjectId) =>

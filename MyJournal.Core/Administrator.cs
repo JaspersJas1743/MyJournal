@@ -69,19 +69,19 @@ public sealed class Administrator : User
 		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentCompletedTask, handler: async taskId =>
 		{
             await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnCompletedTask(
-                e: new ClassCollection.CompletedTaskEventArgs(taskId: taskId)
+                e: new CompletedTaskEventArgs(taskId: taskId)
 			));
 		});
 		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.StudentUncompletedTask, handler: async taskId =>
 		{
             await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnUncompletedTask(
-                e: new ClassCollection.UncompletedTaskEventArgs(taskId: taskId)
+                e: new UncompletedTaskEventArgs(taskId: taskId)
 			));
 		});
 		_administratorHubConnection.On<int, int, int>(methodName: AdministratorHubMethod.CreatedTaskToStudents, handler: async (taskId, subjectId, classId) =>
 		{
             await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnCreatedTask(
-                e: new ClassCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: classId)
+                e: new CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: classId)
 			));
 		});
 		_administratorHubConnection.On<int, int, int>(methodName: AdministratorHubMethod.CreatedAssessmentToStudent, handler: async (assessmentId, studentId, subjectId) =>

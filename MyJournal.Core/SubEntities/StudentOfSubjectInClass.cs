@@ -20,12 +20,6 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 		_grade = grade;
 	}
 
-	#region Delegates
-	internal delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
-	internal delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
-	internal delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
-	#endregion
-
 	#region Events
 	internal event CreatedAssessmentHandler CreatedAssessment;
 	internal event ChangedAssessmentHandler ChangedAssessment;

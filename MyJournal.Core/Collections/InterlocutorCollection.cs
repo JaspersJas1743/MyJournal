@@ -2,6 +2,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
@@ -28,38 +29,6 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	#region Records
 	private sealed record GetInterlocutorsRequest(int Offset, int Count);
 	private sealed record GetInterlocutorsResponse(int UserId);
-	#endregion
-
-	#region Classes
-	public sealed class InterlocutorAppearedOnlineEventArgs(int interlocutorId, DateTime? onlineAt) : EventArgs
-	{
-		public int InterlocutorId { get; } = interlocutorId;
-		public DateTime? OnlineAt { get; } = onlineAt;
-	}
-
-	public sealed class InterlocutorAppearedOfflineEventArgs(int interlocutorId, DateTime? onlineAt) : EventArgs
-	{
-		public int InterlocutorId { get; } = interlocutorId;
-		public DateTime? OnlineAt { get; } = onlineAt;
-	}
-
-	public sealed class InterlocutorUpdatedPhotoEventArgs(int interlocutorId, string link) : EventArgs
-	{
-		public int InterlocutorId { get; } = interlocutorId;
-		public string Link { get; } = link;
-	}
-
-	public sealed class InterlocutorDeletedPhotoEventArgs(int interlocutorId) : EventArgs
-	{
-		public int InterlocutorId { get; } = interlocutorId;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void InterlocutorAppearedOnlineHandler(InterlocutorAppearedOnlineEventArgs e);
-	public delegate void InterlocutorAppearedOfflineHandler(InterlocutorAppearedOfflineEventArgs e);
-	public delegate void InterlocutorUpdatedPhotoHandler(InterlocutorUpdatedPhotoEventArgs e);
-	public delegate void InterlocutorDeletedPhotoHandler(InterlocutorDeletedPhotoEventArgs e);
 	#endregion
 
 	#region Events
@@ -158,7 +127,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	internal async Task OnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
 	{
 		await InvokeIfInterlocutorIsCreated(
-			invocation: async interlocutor => interlocutor.OnAppearedOnline(e: new Interlocutor.AppearedOnlineEventArgs(onlineAt: e.OnlineAt)),
+			invocation: async interlocutor => interlocutor.OnAppearedOnline(e: e),
 			interlocutorId: e.InterlocutorId
 		);
 
@@ -168,7 +137,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	internal async Task OnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
 	{
 		await InvokeIfInterlocutorIsCreated(
-			invocation: async interlocutor => interlocutor.OnAppearedOffline(e: new Interlocutor.AppearedOfflineEventArgs(onlineAt: e.OnlineAt)),
+			invocation: async interlocutor => interlocutor.OnAppearedOffline(e: e),
 			interlocutorId: e.InterlocutorId
 		);
 		InterlocutorAppearedOffline?.Invoke(e: e);
@@ -177,7 +146,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	internal async Task OnUpdatedPhoto(InterlocutorUpdatedPhotoEventArgs e)
 	{
 		await InvokeIfInterlocutorIsCreated(
-			invocation: async interlocutor => await interlocutor.OnUpdatedPhoto(e: new Interlocutor.UpdatedPhotoEventArgs(link: e.Link)),
+			invocation: async interlocutor => await interlocutor.OnUpdatedPhoto(e: e),
 			interlocutorId: e.InterlocutorId
 		);
 		InterlocutorUpdatedPhoto?.Invoke(e: e);
@@ -186,7 +155,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	internal async Task OnDeletedPhoto(InterlocutorDeletedPhotoEventArgs e)
 	{
 		await InvokeIfInterlocutorIsCreated(
-			invocation: async interlocutor => await interlocutor.OnDeletedPhoto(e: new Interlocutor.DeletedPhotoEventArgs()),
+			invocation: async interlocutor => await interlocutor.OnDeletedPhoto(e: e),
 			interlocutorId: e.InterlocutorId
 		);
 		InterlocutorDeletedPhoto?.Invoke(e: e);

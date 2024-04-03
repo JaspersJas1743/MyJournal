@@ -428,7 +428,7 @@ public class AdministratorTest
 		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 		Estimation? thirdEstimation = assessments.ElementAtOrDefault(index: 2);
-		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 66));
 		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
 		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
 		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
@@ -458,7 +458,7 @@ public class AdministratorTest
 		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 		thirdEstimation = estimations.ElementAtOrDefault(index: 2);
-		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 66));
 		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
 		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
 		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));

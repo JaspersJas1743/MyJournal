@@ -35,31 +35,6 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	}
 	#endregion
 
-	#region Classes
-	public sealed class CompletedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	public sealed class UncompletedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	public sealed class CreatedTaskEventArgs(int taskId, int subjectId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-		public int SubjectId { get; } = subjectId;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
-	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
-	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
-	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
-	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
-	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
-	#endregion
-
 	#region Events
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
@@ -195,7 +170,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		{
 			CreatedTaskCollection tasks = await subject.GetTasks();
 			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
-				await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId));
+				await subject.OnCompletedTask(e: e);
 		}, filter: subject => subject.TasksAreCreated);
 
 		CompletedTask?.Invoke(e: e);
@@ -207,7 +182,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		{
 			CreatedTaskCollection tasks = await subject.GetTasks();
 			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
-				await subject.OnUncompletedTask(e: new TaughtSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
+				await subject.OnUncompletedTask(e: e);
 		}, filter: subject => subject.TasksAreCreated);
 
 		UncompletedTask?.Invoke(e: e);
@@ -216,7 +191,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	internal async Task OnCreatedTask(CreatedTaskEventArgs e)
 	{
 		await InvokeIfSubjectsAreCreated(
-			invocation: async subject => await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId)),
+			invocation: async subject => await subject.OnCreatedTask(e: e),
 			filter: subject => (subject.Id == 0 || subject.Id == e.SubjectId) && subject.TasksAreCreated
 		);
 

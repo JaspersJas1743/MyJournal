@@ -2,6 +2,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
@@ -33,20 +34,8 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	private sealed record CreateMultiChatRequest(IEnumerable<int> InterlocutorIds, string? ChatName, string? LinkToPhoto);
 	#endregion
 
-	#region Classes
-	public sealed class ReceivedMessageInChatEventArgs(int chatId, int messageId) : EventArgs
-	{
-		public int ChatId { get; } = chatId;
-		public int MessageId { get; } = messageId;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void ReceivedMessageInChatHandler(ReceivedMessageInChatEventArgs e);
-	#endregion
-
 	#region Events
-	public event ReceivedMessageInChatHandler? ReceivedMessageInChat;
+	public event ReceivedMessageHandler? ReceivedMessageInChat;
 	#endregion
 
 	#region Methods
@@ -192,7 +181,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	}
 
 	internal async Task OnReceivedMessage(
-		ReceivedMessageInChatEventArgs e,
+		ReceivedMessageEventArgs e,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -204,7 +193,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 				MessageCollection messageFromChat = await chat.GetMessages();
 				await messageFromChat.Append(id: e.MessageId, cancellationToken: cancellationToken);
 			}
-			chat.OnReceivedMessage(e: new Chat.ReceivedMessageEventArgs(messageId: e.MessageId));
+			chat.OnReceivedMessage(e: e);
 		}
 		ReceivedMessageInChat?.Invoke(e: e);
 	}

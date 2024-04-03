@@ -34,12 +34,6 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 	public sealed record Attendance(int StudentId, bool IsPresent, int? CommentId);
 	private sealed record SetAttendanceRequest(int SubjectId, DateTime Datetime, IEnumerable<Attendance> Attendances);
 
-	#region Delegates
-	internal delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
-	internal delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
-	internal delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
-	#endregion
-
 	#region Events
 	internal event CreatedAssessmentHandler CreatedAssessment;
 	internal event ChangedAssessmentHandler ChangedAssessment;

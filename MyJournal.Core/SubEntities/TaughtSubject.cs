@@ -2,6 +2,7 @@ using MyJournal.Core.Collections;
 using MyJournal.Core.TaskBuilder;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
@@ -58,27 +59,6 @@ public sealed class TaughtSubject : ISubEntity
 	#region Records
 	internal sealed record TaughtSubjectClass(int Id, string Name);
 	internal sealed record TaughtSubjectResponse(int Id, string Name, TaughtSubjectClass Class);
-	#endregion
-
-	#region Classes
-	public sealed class CompletedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	public sealed class UncompletedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	public sealed class CreatedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
-	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
-	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
 	#endregion
 
 	#region Events
@@ -186,7 +166,7 @@ public sealed class TaughtSubject : ISubEntity
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
 			await foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
-				await createdTask.OnCompletedTask(e: new CreatedTask.CompletedEventArgs());
+				await createdTask.OnCompletedTask(e: e);
 		});
 
 		CompletedTask?.Invoke(e: e);
@@ -197,7 +177,7 @@ public sealed class TaughtSubject : ISubEntity
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
 			await foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
-				await createdTask.OnUncompletedTask(e: new CreatedTask.UncompletedEventArgs());
+				await createdTask.OnUncompletedTask(e: e);
 		});
 
 		UncompletedTask?.Invoke(e: e);
@@ -209,7 +189,7 @@ public sealed class TaughtSubject : ISubEntity
 		{
 			await collection.Append(id: e.TaskId);
 			await foreach (CreatedTask createdTask in collection.Where(predicate: task => task.Id == e.TaskId))
-				createdTask.OnCreatedTask(e: new CreatedTask.CreatedEventArgs());
+				createdTask.OnCreatedTask(e: e);
 		});
 
 		CreatedTask?.Invoke(e: e);

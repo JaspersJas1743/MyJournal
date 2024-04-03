@@ -5,6 +5,7 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.Constants.Hubs;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -95,23 +96,6 @@ public class User
 	protected sealed record UserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
 	#endregion
 
-	#region Classes
-	public sealed class JoinedInChatEventArgs(int chatId) : EventArgs
-	{
-		public int ChatId { get; } = chatId;
-	}
-	public sealed class ReceivedMessageEventArgs(int chatId, int messageId) : EventArgs
-	{
-		public int ChatId { get; } = chatId;
-		public int MessageId { get; } = messageId;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
-	public delegate void ReceivedMessageHandler(ReceivedMessageEventArgs e);
-	#endregion
-
 	#region Events
 	public event JoinedInChatHandler? JoinedInChat;
 	public event ReceivedMessageHandler? ReceivedMessage;
@@ -160,38 +144,38 @@ public class User
 		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOnline, handler: async (userId, onlineAt) =>
 		{
 			await InvokeIfInterlocutorsAreCreated(invocation: async collection => await collection.OnAppearedOnline(
-				e: new InterlocutorCollection.InterlocutorAppearedOnlineEventArgs(interlocutorId: userId, onlineAt: onlineAt)
+				e: new InterlocutorAppearedOnlineEventArgs(interlocutorId: userId, onlineAt: onlineAt)
 			));
 		});
 		_userHubConnection.On<int, DateTime?>(methodName: UserHubMethods.SetOffline, handler: async (userId, onlineAt) =>
 		{
 			await InvokeIfInterlocutorsAreCreated(invocation: async collection => await collection.OnAppearedOffline(
-				e: new InterlocutorCollection.InterlocutorAppearedOfflineEventArgs(interlocutorId: userId, onlineAt: onlineAt)
+				e: new InterlocutorAppearedOfflineEventArgs(interlocutorId: userId, onlineAt: onlineAt)
 			));
 		});
 		_userHubConnection.On<int, string>(methodName: UserHubMethods.UpdatedProfilePhoto, handler: async (userId, link) =>
 		{
 			await InvokeIfInterlocutorsAreCreated(invocation: async collection => await collection.OnUpdatedPhoto(
-				e: new InterlocutorCollection.InterlocutorUpdatedPhotoEventArgs(interlocutorId: userId, link: link)
+				e: new InterlocutorUpdatedPhotoEventArgs(interlocutorId: userId, link: link)
 			));
 		});
 		_userHubConnection.On<int>(methodName: UserHubMethods.DeletedProfilePhoto, handler: async userId =>
 		{
 			await InvokeIfInterlocutorsAreCreated(invocation: async collection => await collection.OnDeletedPhoto(
-				e: new InterlocutorCollection.InterlocutorDeletedPhotoEventArgs(interlocutorId: userId)
+				e: new InterlocutorDeletedPhotoEventArgs(interlocutorId: userId)
 			));
 		});
 		_userHubConnection.On<int>(methodName: UserHubMethods.SignIn, handler: async sessionId =>
 		{
 			await InvokeIfSessionsAreCreated(invocation: async collection => await collection.OnCreatedSession(
-				e: new SessionCollection.CreatedSessionEventArgs(sessionId: sessionId),
+				e: new CreatedSessionEventArgs(sessionId: sessionId),
 				cancellationToken: cancellationToken
 			));
 		});
 		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: async sessionIds =>
 		{
 			await InvokeIfSessionsAreCreated(invocation: async collection => await collection.OnClosedSession(
-				e: new SessionCollection.ClosedSessionEventArgs(sessionIds: sessionIds, currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)),
+				e: new ClosedSessionEventArgs(sessionIds: sessionIds, currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)),
 				cancellationToken: cancellationToken
 			));
 		});
@@ -201,15 +185,15 @@ public class User
 			JoinedInChat?.Invoke(e: new JoinedInChatEventArgs(chatId: chatId));
 		});
 		_userHubConnection.On<string?>(methodName: UserHubMethods.SetPhone, handler: async phone =>
-			await InvokeIfPhoneIsCreated(invocation: async p => p.OnUpdated(e: new Phone.UpdatedPhoneEventArgs(phone: phone)))
+			await InvokeIfPhoneIsCreated(invocation: async p => p.OnUpdated(e: new UpdatedPhoneEventArgs(phone: phone)))
 		);
 		_userHubConnection.On<string?>(methodName: UserHubMethods.SetEmail, handler: async email =>
-			await InvokeIfEmailIsCreated(invocation: async e => e.OnUpdated(e: new Email.UpdatedEmailEventArgs(email: email)))
+			await InvokeIfEmailIsCreated(invocation: async e => e.OnUpdated(e: new UpdatedEmailEventArgs(email: email)))
 		);
 		_userHubConnection.On<int, int>(methodName: UserHubMethods.SendMessage, handler: async (chatId, messageId) =>
 		{
 			await InvokeIfChatsAreCreated(invocation: async collection => await collection.OnReceivedMessage(
-				e: new ChatCollection.ReceivedMessageInChatEventArgs(chatId: chatId, messageId: messageId),
+				e: new ReceivedMessageEventArgs(chatId: chatId, messageId: messageId),
 				cancellationToken: cancellationToken
 			));
 			ReceivedMessage?.Invoke(e: new ReceivedMessageEventArgs(chatId: chatId, messageId: messageId));

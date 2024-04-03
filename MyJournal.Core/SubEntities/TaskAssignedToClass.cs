@@ -1,5 +1,6 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -37,22 +38,10 @@ public sealed class TaskAssignedToClass : BaseTask
 	internal sealed record GetCreatedTasksResponse(int TaskId, string ClassName, string LessonName, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
 	#endregion
 
-	#region Classes
-	public sealed class CompletedEventArgs : EventArgs;
-	public sealed class UncompletedEventArgs : EventArgs;
-	public sealed class CreatedEventArgs : EventArgs;
-	#endregion
-
-	#region Delegates
-	public delegate void CompletedHandler(CompletedEventArgs e);
-	public delegate void UncompletedHandler(UncompletedEventArgs e);
-	public delegate void CreatedHandler(CreatedEventArgs e);
-	#endregion
-
 	#region Events
-	public event CompletedHandler Completed;
-	public event UncompletedHandler Uncompleted;
-	public event CreatedHandler Created;
+	public event CompletedTaskHandler Completed;
+	public event UncompletedTaskHandler Uncompleted;
+	public event CreatedTaskHandler Created;
 	#endregion
 
 	#region Methods
@@ -86,19 +75,19 @@ public sealed class TaskAssignedToClass : BaseTask
 		CountOfUncompletedTask = response.CountOfUncompletedTask;
 	}
 
-	internal async Task OnCompletedTask(CompletedEventArgs e)
+	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
 		await ChangeCompletionData();
 		Completed?.Invoke(e: e);
 	}
 
-	internal async Task OnUncompletedTask(UncompletedEventArgs e)
+	internal async Task OnUncompletedTask(UncompletedTaskEventArgs e)
 	{
 		await ChangeCompletionData();
 		Uncompleted?.Invoke(e: e);
 	}
 
-	internal void OnCreatedTask(CreatedEventArgs e)
+	internal void OnCreatedTask(CreatedTaskEventArgs e)
 		=> Created?.Invoke(e: e);
 	#endregion
 	#endregion

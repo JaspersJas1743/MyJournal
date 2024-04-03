@@ -1,5 +1,6 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.UserData;
@@ -17,18 +18,6 @@ public sealed class Email(
 	#region Records
 	private sealed record ChangeEmailRequest(string NewEmail);
 	private sealed record ChangeEmailResponse(string Email, string Message);
-	#endregion
-
-	#region Classes
-
-	public sealed class UpdatedEmailEventArgs(string? email) : EventArgs
-	{
-		public string? Email { get; } = email;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void UpdatedEmailHandler(UpdatedEmailEventArgs e);
 	#endregion
 
 	#region Events

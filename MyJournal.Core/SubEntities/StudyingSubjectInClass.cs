@@ -52,30 +52,6 @@ public sealed class StudyingSubjectInClass : Subject
 	internal bool StudentsAreCreated => _students.IsValueCreated;
 	#endregion
 
-	#region Classes
-	public sealed class CompletedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	public sealed class UncompletedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	public sealed class CreatedTaskEventArgs(int taskId) : EventArgs
-	{
-		public int TaskId { get; } = taskId;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
-	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
-	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
-	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
-	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
-	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
-	#endregion
-
 	#region Events
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
@@ -204,7 +180,7 @@ public sealed class StudyingSubjectInClass : Subject
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
 			await foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
-				await task.OnCompletedTask(e: new TaskAssignedToClass.CompletedEventArgs());
+				await task.OnCompletedTask(e: e);
 		});
 
 		CompletedTask?.Invoke(e: e);
@@ -215,7 +191,7 @@ public sealed class StudyingSubjectInClass : Subject
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
 			await foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
-				await task.OnUncompletedTask(e: new TaskAssignedToClass.UncompletedEventArgs());
+				await task.OnUncompletedTask(e: e);
 		});
 
 		UncompletedTask?.Invoke(e: e);
@@ -227,7 +203,7 @@ public sealed class StudyingSubjectInClass : Subject
 		{
 			await collection.Append(id: e.TaskId);
 			await foreach (TaskAssignedToClass task in collection.Where(predicate: t => t.Id == e.TaskId))
-				task.OnCreatedTask(e: new TaskAssignedToClass.CreatedEventArgs());
+				task.OnCreatedTask(e: e);
 		});
 
 		CreatedTask?.Invoke(e: e);

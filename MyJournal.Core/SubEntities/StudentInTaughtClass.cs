@@ -7,7 +7,7 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class StudentInTaughtClass : BaseStudent
 {
-	private AsyncLazy<GradeOfStudent> _grade;
+	private readonly AsyncLazy<GradeOfStudent> _grade;
 
 	private StudentInTaughtClass(
 		int id,
@@ -19,12 +19,6 @@ public sealed class StudentInTaughtClass : BaseStudent
 	{
 		_grade = grade;
 	}
-
-	#region Delegates
-	internal delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
-	internal delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
-	internal delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
-	#endregion
 
 	#region Events
 	internal event CreatedAssessmentHandler CreatedAssessment;

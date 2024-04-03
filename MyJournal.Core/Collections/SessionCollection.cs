@@ -3,6 +3,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.Collections;
 
@@ -26,24 +27,6 @@ public sealed class SessionCollection : IAsyncEnumerable<Session>
 
 	#region Records
 	private sealed record SignOutResponse(string Message);
-	#endregion
-
-	#region Classes
-	public sealed class CreatedSessionEventArgs(int sessionId) : EventArgs
-	{
-		public int SessionId { get; } = sessionId;
-	}
-
-	public sealed class ClosedSessionEventArgs(IEnumerable<int> sessionIds, bool currentSessionAreClosed) : EventArgs
-	{
-		public IEnumerable<int> SessionIds { get; } = sessionIds;
-		public bool CurrentSessionAreClosed { get; } = currentSessionAreClosed;
-	}
-	#endregion
-
-	#region Delegated
-	public delegate void CreatedSessionHandler(CreatedSessionEventArgs e);
-	public delegate void ClosedSessionHandler(ClosedSessionEventArgs e);
 	#endregion
 
 	#region Events
@@ -167,7 +150,7 @@ public sealed class SessionCollection : IAsyncEnumerable<Session>
 
 		await Insert(index: 0, id: e.SessionId, cancellationToken: cancellationToken);
 		Session session = await FindById(id: e.SessionId);
-		session.OnCreated(e: new Session.CreatedEventArgs());
+		session.OnCreated(e: e);
 		CreatedSession?.Invoke(e: e);
 	}
 
@@ -182,7 +165,7 @@ public sealed class SessionCollection : IAsyncEnumerable<Session>
 		foreach (int sessionId in e.SessionIds)
 		{
 			Session session = await FindById(id: sessionId);
-			session.OnClosed(e: new Session.ClosedEventArgs());
+			session.OnClosed(e: e);
 		}
 		await RemoveRange(ids: e.SessionIds, cancellationToken: cancellationToken);
 		ClosedSession?.Invoke(e: e);

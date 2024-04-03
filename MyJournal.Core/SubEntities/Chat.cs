@@ -2,6 +2,7 @@ using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
@@ -50,17 +51,6 @@ public sealed class Chat : ISubEntity
 
 	#region Records
 	internal sealed record ChatResponse(int Id, string? ChatName, string? ChatPhoto, LastMessage? LastMessage, int CountOfUnreadMessages);
-	#endregion
-
-	#region Classes
-	public sealed class ReceivedMessageEventArgs(int messageId) : EventArgs
-	{
-		public int MessageId { get; } = messageId;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void ReceivedMessageHandler(ReceivedMessageEventArgs e);
 	#endregion
 
 	#region Events

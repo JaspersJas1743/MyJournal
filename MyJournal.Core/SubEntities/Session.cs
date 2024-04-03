@@ -1,5 +1,6 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -38,17 +39,6 @@ public sealed class Session : ISubEntity
 	private sealed record SignOutResponse(string Message);
 	#endregion
 
-	#region Classes
-	public sealed class CreatedEventArgs : EventArgs;
-
-	public sealed class ClosedEventArgs : EventArgs;
-	#endregion
-
-	#region Delegated
-	public delegate void CreatedSessionHandler(CreatedEventArgs e);
-	public delegate void ClosedSessionHandler(ClosedEventArgs e);
-	#endregion
-
 	#region Events
 	public event CreatedSessionHandler? Created;
 	public event ClosedSessionHandler? Closed;
@@ -79,10 +69,10 @@ public sealed class Session : ISubEntity
 		return response.Message;
 	}
 
-	internal void OnCreated(CreatedEventArgs e)
+	internal void OnCreated(CreatedSessionEventArgs e)
 		=> Created?.Invoke(e: e);
 
-	internal void OnClosed(ClosedEventArgs e)
+	internal void OnClosed(ClosedSessionEventArgs e)
 		=> Closed?.Invoke(e: e);
 	#endregion
 }

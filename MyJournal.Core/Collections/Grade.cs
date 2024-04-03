@@ -45,12 +45,6 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	internal bool EstimationsAreCreated => _estimations.IsValueCreated;
 	#endregion
 
-	#region Delegates
-	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
-	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
-	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
-	#endregion
-
 	#region Events
 	public event CreatedAssessmentHandler CreatedAssessment;
 	public event ChangedAssessmentHandler ChangedAssessment;

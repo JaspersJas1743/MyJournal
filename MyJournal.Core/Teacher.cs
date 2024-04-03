@@ -70,19 +70,19 @@ public sealed class Teacher : User
 		_teacherHubConnection.On<int>(methodName: TeacherHubMethods.StudentCompletedTask, handler: async taskId =>
 		{
 			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCompletedTask(
-				e: new TaughtSubjectCollection.CompletedTaskEventArgs(taskId: taskId)
+				e: new CompletedTaskEventArgs(taskId: taskId)
 			));
 		});
 		_teacherHubConnection.On<int>(methodName: TeacherHubMethods.StudentUncompletedTask, handler: async taskId =>
 		{
 			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnUncompletedTask(
-				e: new TaughtSubjectCollection.UncompletedTaskEventArgs(taskId: taskId)
+				e: new UncompletedTaskEventArgs(taskId: taskId)
 			));
 		});
 		_teacherHubConnection.On<int, int>(methodName: TeacherHubMethods.CreatedTask, handler: async (taskId, subjectId) =>
 		{
 			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCreatedTask(
-				e: new TaughtSubjectCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId)
+				e: new CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: -1)
 			));
 		});
 		_teacherHubConnection.On<int, int, int>(methodName: TeacherHubMethods.CreatedAssessment, handler: async (assessmentId, studentId, subjectId) =>

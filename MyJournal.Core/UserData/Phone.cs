@@ -1,5 +1,6 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core.UserData;
@@ -17,18 +18,6 @@ public sealed class Phone(
 	#region Records
 	private sealed record ChangePhoneRequest(string NewPhone);
 	private sealed record ChangePhoneResponse(string Phone, string Message);
-	#endregion
-
-	#region Classes
-
-	public sealed class UpdatedPhoneEventArgs(string? phone) : EventArgs
-	{
-		public string? Phone { get; } = phone;
-	}
-	#endregion
-
-	#region Delegates
-	public delegate void UpdatedPhoneHandler(UpdatedPhoneEventArgs e);
 	#endregion
 
 	#region Events
