@@ -397,5 +397,315 @@ public class StudentTest
 		IEnumerable<Estimation> assessments = await grade.GetAssessments();
 		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
 	}
+
+	[Test]
+	public async Task StudentGetAssessments_AfterAddedAssessment_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Student? student = await service.SignIn(credentials: credentials) as Student;
+		StudyingSubjectCollection studyingSubjects = await student.GetStudyingSubjects();
+		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
+		StudyingSubject physicalEducation = await studyingSubjects.SingleAsync(predicate: s => s.Id == 47);
+		Assert.That(actual: physicalEducation.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Grade<Estimation> grade = await physicalEducation.GetGrade();
+		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
+		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
+		Estimation? firstEstimation = assessments.ElementAtOrDefault(index: 0);
+		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: firstEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:29:48.727")));
+		Assert.That(actual: firstEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: firstEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? secondEstimation = assessments.ElementAtOrDefault(index: 1);
+		Assert.That(actual: secondEstimation.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: secondEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:30:10.443")));
+		Assert.That(actual: secondEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: secondEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? thirdEstimation = assessments.ElementAtOrDefault(index: 2);
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+
+		IAuthorizationService<User> service2 = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials2 = new UserAuthorizationCredentials(
+			login: "test2",
+			password: "test2test2",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Teacher? teacher = await service2.SignIn(credentials: credentials2) as Teacher;
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		TaughtSubject subject = await taughtSubjects.GetByIndex(index: 1);
+		Assert.That(actual: subject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		TaughtClass @class = await subject.GetTaughtClass();
+		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
+		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
+		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
+		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
+		StudentInTaughtClass lastStudent = students.Last();
+		GradeOfStudent gradeOfLastStudent = await lastStudent.GetGrade();
+		await gradeOfLastStudent.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
+		await Task.Delay(millisecondsDelay: 50);
+
+		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));
+		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> estimations = await grade.GetAssessments();
+		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 4));
+		firstEstimation = estimations.ElementAtOrDefault(index: 0);
+		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: firstEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:29:48.727")));
+		Assert.That(actual: firstEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: firstEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		secondEstimation = estimations.ElementAtOrDefault(index: 1);
+		Assert.That(actual: secondEstimation.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: secondEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:30:10.443")));
+		Assert.That(actual: secondEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		thirdEstimation = estimations.ElementAtOrDefault(index: 2);
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? fourEstimation = estimations.ElementAtOrDefault(index: 3);
+		Assert.That(actual: fourEstimation.Assessment, expression: Is.EqualTo(expected: "3"));
+		Assert.That(actual: fourEstimation.Comment, expression: Is.EqualTo(expected: "КлР"));
+		Assert.That(actual: fourEstimation.Description, expression: Is.EqualTo(expected: "Классная работа"));
+		Assert.That(actual: fourEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+	}
+
+	[Test]
+	public async Task StudentGetAssessments_AfterChangedAssessment_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Student? student = await service.SignIn(credentials: credentials) as Student;
+		StudyingSubjectCollection studyingSubjects = await student.GetStudyingSubjects();
+		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
+		StudyingSubject physicalEducation = await studyingSubjects.SingleAsync(predicate: s => s.Id == 47);
+		Assert.That(actual: physicalEducation.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Grade<Estimation> grade = await physicalEducation.GetGrade();
+		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
+		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
+		Estimation? firstEstimation = assessments.ElementAtOrDefault(index: 0);
+		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: firstEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:29:48.727")));
+		Assert.That(actual: firstEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: firstEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? secondEstimation = assessments.ElementAtOrDefault(index: 1);
+		Assert.That(actual: secondEstimation.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: secondEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:30:10.443")));
+		Assert.That(actual: secondEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: secondEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? thirdEstimation = assessments.ElementAtOrDefault(index: 2);
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+
+		IAuthorizationService<User> service2 = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials2 = new UserAuthorizationCredentials(
+			login: "test2",
+			password: "test2test2",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Teacher? teacher = await service2.SignIn(credentials: credentials2) as Teacher;
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		TaughtSubject subject = await taughtSubjects.GetByIndex(index: 1);
+		Assert.That(actual: subject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		TaughtClass @class = await subject.GetTaughtClass();
+		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
+		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
+		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
+		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
+		StudentInTaughtClass lastStudent = students.Last();
+		GradeOfStudent gradeOfLastStudent = await lastStudent.GetGrade();
+		EstimationOfStudent lastAssessment = await gradeOfLastStudent.LastAsync();
+		await lastAssessment.Change(gradeId: 2, dateTime: lastAssessment.CreatedAt, commentId: 2);
+		await Task.Delay(millisecondsDelay: 50);
+
+		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));
+		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetAssessments();
+		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
+		firstEstimation = estimations.ElementAtOrDefault(index: 0);
+		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: firstEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:29:48.727")));
+		Assert.That(actual: firstEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: firstEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		secondEstimation = estimations.ElementAtOrDefault(index: 1);
+		Assert.That(actual: secondEstimation.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: secondEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:30:10.443")));
+		Assert.That(actual: secondEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		thirdEstimation = estimations.ElementAtOrDefault(index: 2);
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: "КлР"));
+		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Классная работа"));
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+	}
+
+	[Test]
+	public async Task StudentGetAssessments_AfterDeletedAssessment_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "Jaspers",
+			password: "JaspersJas1743",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Student? student = await service.SignIn(credentials: credentials) as Student;
+		StudyingSubjectCollection studyingSubjects = await student.GetStudyingSubjects();
+		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
+		StudyingSubject physicalEducation = await studyingSubjects.SingleAsync(predicate: s => s.Id == 47);
+		Assert.That(actual: physicalEducation.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		Grade<Estimation> grade = await physicalEducation.GetGrade();
+		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
+		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
+		Estimation? firstEstimation = assessments.ElementAtOrDefault(index: 0);
+		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: firstEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:29:48.727")));
+		Assert.That(actual: firstEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: firstEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? secondEstimation = assessments.ElementAtOrDefault(index: 1);
+		Assert.That(actual: secondEstimation.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: secondEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:30:10.443")));
+		Assert.That(actual: secondEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: secondEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? thirdEstimation = assessments.ElementAtOrDefault(index: 2);
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+
+		IAuthorizationService<User> service2 = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials2 = new UserAuthorizationCredentials(
+			login: "test2",
+			password: "test2test2",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Teacher? teacher = await service2.SignIn(credentials: credentials2) as Teacher;
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		TaughtSubject subject = await taughtSubjects.GetByIndex(index: 1);
+		Assert.That(actual: subject.Id, expression: Is.EqualTo(expected: 47));
+		Assert.That(actual: subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+		TaughtClass @class = await subject.GetTaughtClass();
+		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
+		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
+		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
+		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
+		StudentInTaughtClass lastStudent = students.Last();
+		GradeOfStudent gradeOfLastStudent = await lastStudent.GetGrade();
+
+		await gradeOfLastStudent.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
+
+		await Task.Delay(millisecondsDelay: 50);
+
+		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));
+		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
+		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetAssessments();
+		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 4));
+		firstEstimation = estimations.ElementAtOrDefault(index: 0);
+		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: firstEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:29:48.727")));
+		Assert.That(actual: firstEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: firstEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		secondEstimation = estimations.ElementAtOrDefault(index: 1);
+		Assert.That(actual: secondEstimation.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: secondEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:30:10.443")));
+		Assert.That(actual: secondEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		thirdEstimation = estimations.ElementAtOrDefault(index: 2);
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		Estimation? fourEstimation = estimations.ElementAtOrDefault(index: 3);
+		Assert.That(actual: fourEstimation.Assessment, expression: Is.EqualTo(expected: "3"));
+		Assert.That(actual: fourEstimation.Comment, expression: Is.EqualTo(expected: "КлР"));
+		Assert.That(actual: fourEstimation.Description, expression: Is.EqualTo(expected: "Классная работа"));
+		Assert.That(actual: fourEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+
+		EstimationOfStudent lastAssessment = await gradeOfLastStudent.LastAsync();
+		await lastAssessment.Delete();
+		await Task.Delay(millisecondsDelay: 50);
+
+		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
+		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
+		estimations = await gradeOfLastStudent.GetAssessments();
+		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
+		firstEstimation = estimations.ElementAtOrDefault(index: 0);
+		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+		Assert.That(actual: firstEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:29:48.727")));
+		Assert.That(actual: firstEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: firstEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		secondEstimation = estimations.ElementAtOrDefault(index: 1);
+		Assert.That(actual: secondEstimation.Id, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: secondEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: secondEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T13:30:10.443")));
+		Assert.That(actual: secondEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: secondEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+		thirdEstimation = estimations.ElementAtOrDefault(index: 2);
+		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 13));
+		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "4"));
+		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: null));
+		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
+		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+	}
 	#endregion
 }

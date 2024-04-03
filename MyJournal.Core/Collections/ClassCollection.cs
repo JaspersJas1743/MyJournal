@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.Collections;
 
@@ -43,12 +45,18 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
 	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
 	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
+	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
+	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
+	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
 	#endregion
 
 	#region Events
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	#region Methods
@@ -107,16 +115,46 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnCreatedTask(e: new StudyingSubjectInClass.CreatedTaskEventArgs(taskId: e.TaskId)),
 			classFilter: @class => @class.Id == e.ClassId,
-			subjectFilter: subject => subject.Id == 0 || subject.Id == e.SubjectId
+			subjectFilter: subject => (subject.Id == 0 || subject.Id == e.SubjectId) && subject.TasksAreCreated
 		);
 
 		CreatedTask?.Invoke(e: e);
 	}
 
+	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCreatedAssessment(e: e),
+			subjectFilter: subject => subject.Id == e.SubjectId
+		);
+
+		CreatedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedAssessment(ChangedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnChangedAssessment(e: e),
+			subjectFilter: subject => subject.Id == e.SubjectId
+		);
+
+		ChangedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnDeletedAssessment(DeletedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnDeletedAssessment(e: e),
+			subjectFilter: subject => subject.Id == e.SubjectId
+		);
+
+		DeletedAssessment?.Invoke(e: e);
+	}
+
 	private async Task InvokeIfSubjectsAreCreated(
 		Func<StudyingSubjectInClass, Task> invocation,
 		Predicate<Class> classFilter,
-		Predicate<StudyingSubjectInClass> subjectFilter
+		Func<StudyingSubjectInClass, bool> subjectFilter
 	)
 	{
 		if (!_classes.IsValueCreated)
@@ -129,10 +167,15 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 		);
 		foreach (StudyingSubjectInClassCollection subjects in subjectCollection)
 		{
-			await foreach (StudyingSubjectInClass subject in subjects.Where(predicate: s => s.TasksAreCreated && subjectFilter(obj: s)))
+			await foreach (StudyingSubjectInClass subject in subjects.Where(predicate: subjectFilter))
 				await invocation(arg: subject);
 		}
 	}
+
+	private async Task InvokeIfSubjectsAreCreated(
+		Func<StudyingSubjectInClass, Task> invocation,
+		Func<StudyingSubjectInClass, bool> subjectFilter
+	) => await InvokeIfSubjectsAreCreated(invocation: invocation, classFilter: _ => true, subjectFilter: subjectFilter);
 
 	private async Task InvokeIfSubjectsAreCreated(
 		Func<StudyingSubjectInClass, Task> invocation,
@@ -144,7 +187,8 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 
 		List<Class> collection = await _classes;
 		StudyingSubjectInClassCollection[] subjectCollection = await Task.WhenAll(
-			tasks: collection.FindAll(match: @class => @class.StudyingSubjectsAreCreated).Select(selector: async @class => await @class.GetStudyingSubjects())
+			tasks: collection.FindAll(match: @class => @class.StudyingSubjectsAreCreated)
+				.Select(selector: async @class => await @class.GetStudyingSubjects())
 		);
 		foreach (StudyingSubjectInClassCollection subjects in subjectCollection)
 		{

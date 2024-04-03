@@ -1,13 +1,14 @@
+using System.Diagnostics;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.SubEntities;
 
-public sealed class GradeOfStudent<T> : Grade<T> where T: Estimation
+public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 {
-	private readonly ApiClient _client;
 	private readonly int _subjectId;
 	private readonly int _studentId;
 
@@ -15,19 +16,18 @@ public sealed class GradeOfStudent<T> : Grade<T> where T: Estimation
 		ApiClient client,
 		int subjectId,
 		int studentId,
-		AsyncLazy<List<T>> estimations,
+		AsyncLazy<List<EstimationOfStudent>> estimations,
 		string average,
 		string? final = null
-	) : base(estimations: estimations, average: average, final: final)
+	) : base(client: client, estimations: estimations, average: average, final: final)
 	{
-		_client = client;
 		_subjectId = subjectId;
 		_studentId = studentId;
 	}
 
 	private sealed record CreateAssessmentRequest(int GradeId, DateTime Datetime, int CommentId, int SubjectId, int StudentId);
 
-	internal static async Task<GradeOfStudent<EstimationOfStudent>> Create(
+	internal static async Task<GradeOfStudent> Create(
 		ApiClient client,
 		int studentId,
 		int subjectId,
@@ -40,7 +40,7 @@ public sealed class GradeOfStudent<T> : Grade<T> where T: Estimation
 			argQuery: new GetAssessmentsRequest(PeriodId: periodId, SubjectId: subjectId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		return new GradeOfStudent<EstimationOfStudent>(
+		return new GradeOfStudent(
 			client: client,
 			subjectId: subjectId,
 			studentId: studentId,
@@ -71,5 +71,24 @@ public sealed class GradeOfStudent<T> : Grade<T> where T: Estimation
 			arg: new CreateAssessmentRequest(GradeId: gradeId, Datetime: dateTime, CommentId: commentId, SubjectId: _subjectId, StudentId: _studentId),
 			cancellationToken: cancellationToken
 		);
+	}
+
+	internal new async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
+	{
+		GetAssessmentResponse response = await _client.GetAsync<GetAssessmentResponse>(
+			apiMethod: e.ApiMethod
+		) ?? throw new InvalidOperationException();
+		_average = response.AverageAssessment;
+		List<EstimationOfStudent> estimations = await _estimations;
+		estimations.Add(item: await EstimationOfStudent.Create(
+			client: _client,
+			id: response.Assessment.Id,
+			assessment: response.Assessment.Assessment,
+			createdAt: response.Assessment.CreatedAt,
+			comment: response.Assessment.Comment,
+			description: response.Assessment.Description,
+			gradeType: response.Assessment.GradeType
+		));
+		InvokeCreatedAssessment(e: e);
 	}
 }

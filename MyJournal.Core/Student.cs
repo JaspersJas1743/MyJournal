@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
+using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.Constants.Hubs;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -80,6 +82,33 @@ public sealed class Student : User
 		{
 			await InvokeIfStudyingSubjectsAreCreated(invocation: async collection => await collection.OnCreatedTask(
 				e: new StudyingSubjectCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId)
+			));
+		});
+		_studentHubConnection.On<int, int, int>(methodName: StudentHubMethods.TeacherCreatedAssessment, handler: async (assessmentId, studentId, subjectId) =>
+		{
+			await InvokeIfStudyingSubjectsAreCreated(invocation: async collection => await collection.OnCreatedAssessment(
+				e: new CreatedAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId)
+				{
+					ApiMethod = AssessmentControllerMethods.Get(assessmentId: assessmentId)
+				}
+			));
+		});
+		_studentHubConnection.On<int, int, int>(methodName: StudentHubMethods.TeacherChangedAssessment, handler: async (assessmentId, studentId, subjectId) =>
+		{
+			await InvokeIfStudyingSubjectsAreCreated(invocation: async collection => await collection.OnChangedAssessment(
+				e: new ChangedAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId)
+				{
+					ApiMethod = AssessmentControllerMethods.Get(assessmentId: assessmentId)
+				}
+			));
+		});
+		_studentHubConnection.On<int, int, int>(methodName: StudentHubMethods.TeacherDeletedAssessment, handler: async (assessmentId, studentId, subjectId) =>
+		{
+			await InvokeIfStudyingSubjectsAreCreated(invocation: async collection => await collection.OnDeletedAssessment(
+				e: new DeletedAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId)
+				{
+					ApiMethod = AssessmentControllerMethods.GetAverageAssessment
+				}
 			));
 		});
 	}

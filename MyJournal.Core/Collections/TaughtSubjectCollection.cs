@@ -2,6 +2,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
@@ -54,12 +55,18 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
 	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
 	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
+	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
+	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
+	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
 	#endregion
 
 	#region Events
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	#region Methods
@@ -189,7 +196,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 			CreatedTaskCollection tasks = await subject.GetTasks();
 			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId));
-		}, filter: _ => true);
+		}, filter: subject => subject.TasksAreCreated);
 
 		CompletedTask?.Invoke(e: e);
 	}
@@ -201,7 +208,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 			CreatedTaskCollection tasks = await subject.GetTasks();
 			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnUncompletedTask(e: new TaughtSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
-		}, filter: _ => true);
+		}, filter: subject => subject.TasksAreCreated);
 
 		UncompletedTask?.Invoke(e: e);
 	}
@@ -210,19 +217,58 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnCompletedTask(e: new TaughtSubject.CompletedTaskEventArgs(taskId: e.TaskId)),
-			filter: subject => subject.Id == 0 || subject.Id == e.SubjectId
+			filter: subject => (subject.Id == 0 || subject.Id == e.SubjectId) && subject.TasksAreCreated
 		);
 
 		CreatedTask?.Invoke(e: e);
 	}
 
-	private async Task InvokeIfSubjectsAreCreated(Func<TaughtSubject, Task> invocation, Predicate<TaughtSubject> filter)
+	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			TaughtClass taughtClass = await subject.GetTaughtClass();
+			if (taughtClass.StudentsAreCreated)
+				await taughtClass.OnCreatedAssessment(e: e);
+		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
+
+		CreatedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedAssessment(ChangedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			TaughtClass taughtClass = await subject.GetTaughtClass();
+			if (taughtClass.StudentsAreCreated)
+				await taughtClass.OnChangedAssessment(e: e);
+		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
+
+		ChangedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnDeletedAssessment(DeletedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			TaughtClass taughtClass = await subject.GetTaughtClass();
+			if (taughtClass.StudentsAreCreated)
+				await taughtClass.OnDeletedAssessment(e: e);
+		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
+
+		DeletedAssessment?.Invoke(e: e);
+	}
+
+	private async Task InvokeIfSubjectsAreCreated(
+		Func<TaughtSubject, Task> invocation,
+		Predicate<TaughtSubject> filter
+	)
 	{
 		if (!_subjects.IsValueCreated)
 			return;
 
 		List<TaughtSubject> collection = await _subjects;
-		foreach (TaughtSubject subject in collection.FindAll(match: subject => subject.TasksAreCreated && filter(obj: subject)))
+		foreach (TaughtSubject subject in collection.FindAll(match: filter))
 			await invocation(arg: subject);
 	}
 	#endregion

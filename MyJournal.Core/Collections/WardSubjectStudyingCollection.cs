@@ -3,6 +3,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
@@ -52,12 +53,18 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
 	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
 	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
+	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
+	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
+	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
 	#endregion
 
 	#region Events
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	#region Methods
@@ -204,6 +211,36 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 		);
 
 		CreatedTask?.Invoke(e: e);
+	}
+
+	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCreatedAssessment(e: e),
+			filter: subject => subject.Id == e.SubjectId && subject.GradeIsCreated
+		);
+
+		CreatedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedAssessment(ChangedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnChangedAssessment(e: e),
+			filter: subject => subject.Id == e.SubjectId && subject.GradeIsCreated
+		);
+
+		ChangedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnDeletedAssessment(DeletedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnDeletedAssessment(e: e),
+			filter: subject => subject.Id == e.SubjectId && subject.GradeIsCreated
+		);
+
+		DeletedAssessment?.Invoke(e: e);
 	}
 
 	private async Task InvokeIfSubjectsAreCreated(

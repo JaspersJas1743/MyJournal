@@ -1,25 +1,41 @@
+using System.Diagnostics;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.SubEntities;
 
 public sealed class StudentInTaughtClass : BaseStudent
 {
-	private AsyncLazy<GradeOfStudent<EstimationOfStudent>> _grade;
+	private AsyncLazy<GradeOfStudent> _grade;
 
 	private StudentInTaughtClass(
 		int id,
 		string surname,
 		string name,
 		string? patronymic,
-		AsyncLazy<GradeOfStudent<EstimationOfStudent>> grade
+		AsyncLazy<GradeOfStudent> grade
 	) : base(id: id, surname: surname, name: name, patronymic: patronymic)
 	{
 		_grade = grade;
 	}
 
-	public async Task<GradeOfStudent<EstimationOfStudent>> GetGrade()
+	#region Delegates
+	internal delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
+	internal delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
+	internal delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
+	#endregion
+
+	#region Events
+	internal event CreatedAssessmentHandler CreatedAssessment;
+	internal event ChangedAssessmentHandler ChangedAssessment;
+	internal event DeletedAssessmentHandler DeletedAssessment;
+	#endregion
+
+	public async Task<GradeOfStudent> GetGrade()
 		=> await _grade;
+
+	internal bool GradeIsCreated => _grade.IsValueCreated;
 
 	internal static async Task<StudentInTaughtClass> Create(
 		ApiClient client,
@@ -37,7 +53,7 @@ public sealed class StudentInTaughtClass : BaseStudent
 			surname: surname,
 			name: name,
 			patronymic: patronymic,
-			grade: new AsyncLazy<GradeOfStudent<EstimationOfStudent>>(valueFactory: async () => await GradeOfStudent<EstimationOfStudent>.Create(
+			grade: new AsyncLazy<GradeOfStudent>(valueFactory: async () => await GradeOfStudent.Create(
 				client: client,
 				studentId: id,
 				subjectId: subjectId,
@@ -45,5 +61,26 @@ public sealed class StudentInTaughtClass : BaseStudent
 				cancellationToken: cancellationToken
 			))
 		);
+	}
+
+	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
+	{
+		GradeOfStudent grade = await _grade;
+		await grade.OnCreatedAssessment(e: e);
+		CreatedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedAssessment(ChangedAssessmentEventArgs e)
+	{
+		GradeOfStudent grade = await _grade;
+		await grade.OnChangedAssessment(e: e);
+		ChangedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnDeletedAssessment(DeletedAssessmentEventArgs e)
+	{
+		GradeOfStudent grade = await _grade;
+		await grade.OnDeletedAssessment(e: e);
+		DeletedAssessment?.Invoke(e: e);
 	}
 }

@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -45,7 +47,7 @@ public sealed class StudyingSubject : Subject
 
 	#region Properties
 	internal bool TasksAreCreated => _tasks.IsValueCreated;
-	internal bool AssessmentsAreCreated => _grade.IsValueCreated;
+	internal bool GradeIsCreated => _grade.IsValueCreated;
 	#endregion
 
 	#region Records
@@ -71,12 +73,18 @@ public sealed class StudyingSubject : Subject
 	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
 	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
 	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
+	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
+	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
+	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
 	#endregion
 
 	#region Events
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	#region Methods
@@ -196,6 +204,27 @@ public sealed class StudyingSubject : Subject
 		CreatedTask?.Invoke(e: e);
 	}
 
+	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
+	{
+		await InvokeIfGradeIsCreated(invocation: async grade => await grade.OnCreatedAssessment(e: e));
+
+		CreatedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedAssessment(ChangedAssessmentEventArgs e)
+	{
+		await InvokeIfGradeIsCreated(invocation: async grade => await grade.OnChangedAssessment(e: e));
+
+		ChangedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnDeletedAssessment(DeletedAssessmentEventArgs e)
+	{
+		await InvokeIfGradeIsCreated(invocation: async grade => await grade.OnDeletedAssessment(e: e));
+
+		DeletedAssessment?.Invoke(e: e);
+	}
+
 	private async Task InvokeIfTasksAreCreated(Func<AssignedTaskCollection, Task> invocation)
 	{
 		if (!_tasks.IsValueCreated)
@@ -203,6 +232,15 @@ public sealed class StudyingSubject : Subject
 
 		AssignedTaskCollection collection = await _tasks;
 		await invocation(arg: collection);
+	}
+
+	private async Task InvokeIfGradeIsCreated(Func<Grade<Estimation>, Task> invocation)
+	{
+		if (!_grade.IsValueCreated)
+			return;
+
+		Grade<Estimation> grade = await _grade;
+		await invocation(arg: grade);
 	}
 	#endregion
 	#endregion

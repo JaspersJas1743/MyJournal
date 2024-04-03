@@ -4,6 +4,7 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.Constants.Hubs;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
@@ -82,6 +83,33 @@ public sealed class Teacher : User
 		{
 			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCreatedTask(
 				e: new TaughtSubjectCollection.CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId)
+			));
+		});
+		_teacherHubConnection.On<int, int, int>(methodName: TeacherHubMethods.CreatedAssessment, handler: async (assessmentId, studentId, subjectId) =>
+		{
+			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCreatedAssessment(
+				e: new CreatedAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId)
+				{
+					ApiMethod = AssessmentControllerMethods.Get(assessmentId: assessmentId)
+				}
+			));
+		});
+		_teacherHubConnection.On<int, int, int>(methodName: TeacherHubMethods.ChangedAssessment, handler: async (assessmentId, studentId, subjectId) =>
+		{
+			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnChangedAssessment(
+				e: new ChangedAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId)
+				{
+					ApiMethod = AssessmentControllerMethods.Get(assessmentId: assessmentId)
+				}
+			));
+		});
+		_teacherHubConnection.On<int, int, int>(methodName: TeacherHubMethods.DeletedAssessment, handler: async (assessmentId, studentId, subjectId) =>
+		{
+			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnDeletedAssessment(
+				e: new DeletedAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId)
+				{
+					ApiMethod = AssessmentControllerMethods.GetAverageAssessmentById(studentId: studentId)
+				}
 			));
 		});
 	}

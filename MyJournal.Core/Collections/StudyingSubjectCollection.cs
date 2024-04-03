@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.Collections;
 
@@ -50,12 +52,18 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 	public delegate void CompletedTaskHandler(CompletedTaskEventArgs e);
 	public delegate void UncompletedTaskHandler(UncompletedTaskEventArgs e);
 	public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
+	public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
+	public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
+	public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
 	#endregion
 
 	#region Events
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	#region Methods
@@ -172,7 +180,7 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			AssignedTaskCollection tasks = await subject.GetTasks();
 			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnCompletedTask(e: new StudyingSubject.CompletedTaskEventArgs(taskId: e.TaskId));
-		}, filter: _ => true);
+		}, filter: subject => subject.TasksAreCreated);
 
 		CompletedTask?.Invoke(e: e);
 	}
@@ -184,7 +192,7 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			AssignedTaskCollection tasks = await subject.GetTasks();
 			if (await tasks.AnyAsync(predicate: task => task.Id == e.TaskId))
 				await subject.OnUncompletedTask(e: new StudyingSubject.UncompletedTaskEventArgs(taskId: e.TaskId));
-		}, filter: _ => true);
+		}, filter: subject => subject.TasksAreCreated);
 
 		UncompletedTask?.Invoke(e: e);
 	}
@@ -193,10 +201,40 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnCompletedTask(e: new StudyingSubject.CompletedTaskEventArgs(taskId: e.TaskId)),
-			filter: subject => subject.Id == 0 || subject.Id == e.SubjectId
+			filter: subject => subject.TasksAreCreated && (subject.Id == 0 || subject.Id == e.SubjectId)
 		);
 
 		CreatedTask?.Invoke(e: e);
+	}
+
+	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCreatedAssessment(e: e),
+			filter: subject => subject.Id == e.SubjectId && subject.GradeIsCreated
+		);
+
+		CreatedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedAssessment(ChangedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnChangedAssessment(e: e),
+			filter: subject => subject.Id == e.SubjectId && subject.GradeIsCreated
+		);
+
+		ChangedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnDeletedAssessment(DeletedAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnDeletedAssessment(e: e),
+			filter: subject => subject.Id == e.SubjectId && subject.GradeIsCreated
+		);
+
+		DeletedAssessment?.Invoke(e: e);
 	}
 
 	private async Task InvokeIfSubjectsAreCreated(
@@ -208,7 +246,7 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			return;
 
 		List<StudyingSubject> collection = await _subjects;
-		foreach (StudyingSubject subject in collection.FindAll(match: subject => subject.TasksAreCreated && filter(obj: subject)))
+		foreach (StudyingSubject subject in collection.FindAll(match: filter))
 			await invocation(arg: subject);
 	}
 	#endregion

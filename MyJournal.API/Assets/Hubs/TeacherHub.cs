@@ -17,12 +17,12 @@ public sealed class TeacherHub : Hub<ITeacherHub>
 	public async Task CreatedTask(int taskId, int subjectId, IEnumerable<string> studentIds)
 		=> await Clients.Users(userIds: studentIds).CreatedTask(taskId: taskId, subjectId: subjectId);
 
-	public async Task CreatedAssessment(int assessmentId)
-		=> await Clients.Caller.CreatedAssessment(assessmentId: assessmentId);
+	public async Task CreatedAssessment(int assessmentId, int studentId, int subjectId)
+		=> await Clients.Caller.CreatedAssessment(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 
-	public async Task ChangedAssessment(int assessmentId)
-		=> await Clients.Caller.ChangedAssessment(assessmentId: assessmentId);
+	public async Task ChangedAssessment(int assessmentId, int studentId, int subjectId)
+		=> await Clients.Caller.ChangedAssessment(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 
-	public async Task DeletedAssessment(int assessmentId)
-		=> await Clients.Caller.DeletedAssessment(assessmentId: assessmentId);
+	public async Task DeletedAssessment(int assessmentId, int studentId, int subjectId)
+		=> await Clients.Caller.DeletedAssessment(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 }

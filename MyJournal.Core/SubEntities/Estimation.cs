@@ -25,12 +25,12 @@ public class Estimation
 		GradeType = gradeType;
 	}
 
-	public int Id { get; }
-	public string Assessment { get; }
-	public DateTime CreatedAt { get; }
-	public string? Comment { get; }
-	public string? Description { get; }
-	public GradeTypes GradeType { get; }
+	public int Id { get; internal set; }
+	public string Assessment { get; internal set; }
+	public DateTime CreatedAt { get; internal set; }
+	public string? Comment { get; internal set; }
+	public string? Description { get; internal set; }
+	public GradeTypes GradeType { get; internal set; }
 
 	internal static async Task<Estimation> Create(
 		int id,
