@@ -633,9 +633,9 @@ public class UserTests
 		Chat firstChat = await chats.FirstAsync();
 		const string message = "Тестирование сообщения :)";
 		MessageCollection messages = await firstChat.GetMessages();
-		IMessageBuilder builder = messages.CreateMessage().WithText(text: message);
-		await builder.AddAttachment(pathToFile: @"C:\Users\JaspersJas1743\Downloads\985b88cf-5ee0-496f-98a9-88fb9e35cd32.docx");
-		await builder.Build().Send();
+		IMessageBuilder messageBuilder = messages.CreateMessage().WithText(text: message);
+		await messageBuilder.AddAttachment(pathToFile: @"C:\Users\JaspersJas1743\Downloads\985b88cf-5ee0-496f-98a9-88fb9e35cd32.docx");
+		await messageBuilder.Send();
 		await Task.Delay(millisecondsDelay: 50);
 		messages = await firstChat.GetMessages();
 		Message lastMessage = await messages.LastAsync();

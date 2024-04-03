@@ -1,5 +1,6 @@
 using System.Text;
 using MyJournal.Core.SubEntities;
+using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.MessageBuilder;
@@ -23,6 +24,8 @@ internal sealed class MessageBuilder : IMessageBuilder
 		_fileService = fileService;
 		_chatId = chatId;
 	}
+
+	internal sealed record SendMessageRequest(int ChatId, Message.MessageContent Content);
 
 	internal static MessageBuilder Create(
 		IFileService fileService,
@@ -63,20 +66,20 @@ internal sealed class MessageBuilder : IMessageBuilder
 		return this;
 	}
 
-	public IMessageSender Build()
+	public async Task Send(CancellationToken cancellationToken = default(CancellationToken))
 	{
-		return MessageSender.Create(
-			client: _fileService.ApiClient,
-			content: new Message.MessageContent(
-				Text: _text.ToString(),
-				Attachments: _attachments.Select(selector: a =>
+		await _fileService.ApiClient.PostAsync<SendMessageRequest>(
+			apiMethod: MessageControllerMethods.SendMessage,
+			arg: new SendMessageRequest(
+				ChatId: _chatId,
+				Content: new Message.MessageContent(Text: _text.ToString(), Attachments: _attachments.Select(selector: a =>
 					new Message.MessageAttachment(
 						LinkToFile: a.LinkToFile,
 						AttachmentType: a.Type
 					)
-				)
+				))
 			),
-			chatId: _chatId
+			cancellationToken: cancellationToken
 		);
 	}
 }

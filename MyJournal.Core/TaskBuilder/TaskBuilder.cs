@@ -1,5 +1,6 @@
 using System.Text;
 using MyJournal.Core.SubEntities;
+using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.TaskBuilder;
@@ -103,7 +104,10 @@ internal sealed class TaskBuilder : ITaskBuilder
 		return this;
 	}
 
-	public ITaskPreserver Build()
+	private sealed record CreateTasksRequest(int SubjectId, int ClassId, TaskContent Content, DateTime ReleasedAt);
+	private sealed record CreateTasksResponse(string Message);
+
+	public async Task<string> Save(CancellationToken cancellationToken = default(CancellationToken))
 	{
 		if (_classId == 0)
 			throw new ArgumentException(message: "Не указан класс, для которого создается задача.", paramName: nameof(_classId));
@@ -111,18 +115,19 @@ internal sealed class TaskBuilder : ITaskBuilder
 		if (_subjectId == 0)
 			throw new ArgumentException(message: "Не указана дисциплина, по которого создается задача.", paramName: nameof(_subjectId));
 
-		return TaskPreserver.Create(
-			client: _fileService.ApiClient,
-			content: new TaskContent(
-				Text: _text.ToString(),
-				Attachments: _attachments.Select(selector: a => new TaskAttachment(
-					LinkToFile: a.LinkToFile!,
-					AttachmentType: a.Type
-				))
+		CreateTasksResponse response = await _fileService.ApiClient.PostAsync<CreateTasksResponse, CreateTasksRequest>(
+			apiMethod: TaskControllerMethods.CreateTask,
+			arg: new CreateTasksRequest(
+				SubjectId: _subjectId,
+				ClassId: _classId,
+				Content: new TaskContent(Text: _text.ToString(), Attachments: _attachments.Select(selector: a => new TaskAttachment(
+					 LinkToFile: a.LinkToFile!,
+					 AttachmentType: a.Type
+				))),
+				ReleasedAt: _releasedAt
 			),
-			subjectId: _subjectId,
-			classId: _classId,
-			releasedAt: _releasedAt
-		);
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+		return response.Message;
 	}
 }

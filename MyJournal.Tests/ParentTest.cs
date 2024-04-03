@@ -542,7 +542,7 @@ public class ParentTest
 		StudentInTaughtClass lastStudent = students.Last();
 		GradeOfStudent gradeOfLastStudent = await lastStudent.GetGrade();
 		EstimationOfStudent lastAssessment = await gradeOfLastStudent.LastAsync();
-		await lastAssessment.Change(gradeId: 2, dateTime: lastAssessment.CreatedAt, commentId: 2);
+		await lastAssessment.Change().GradeTo(newGradeId: 2).CommentTo(newCommentId: 2).Save();
 		await Task.Delay(millisecondsDelay: 50);
 
 		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));

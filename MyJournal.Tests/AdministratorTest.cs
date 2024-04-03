@@ -519,7 +519,8 @@ public class AdministratorTest
 		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 
 		EstimationOfStudent lastAssessment = await secondStudentGrade.LastAsync();
-		await lastAssessment.Change(gradeId: 2, dateTime: lastAssessment.CreatedAt, commentId: 2);
+		// lastAssessment.Change(gradeId: 2, dateTime: lastAssessment.CreatedAt, commentId: 2);
+		await lastAssessment.Change().GradeTo(newGradeId: 2).CommentTo(newCommentId: 2).Save();
 
 		await Task.Delay(millisecondsDelay: 50);
 

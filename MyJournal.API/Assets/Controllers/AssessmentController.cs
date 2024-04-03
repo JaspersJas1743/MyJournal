@@ -818,9 +818,9 @@ public sealed class AssessmentController(
 			message: "Оценка с указанным идентификатором не найдена."
 		);
 
-		assessment.Datetime = request.Datetime;
-		assessment.CommentId = request.CommentId;
-		assessment.GradeId = request.NewGradeId;
+		assessment.Datetime = request.Datetime == DateTime.MinValue ? assessment.Datetime : request.Datetime;
+		assessment.CommentId = request.CommentId == -1 ? assessment.CommentId : request.CommentId;
+		assessment.GradeId = request.NewGradeId == -1 ? assessment.GradeId : request.NewGradeId;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)

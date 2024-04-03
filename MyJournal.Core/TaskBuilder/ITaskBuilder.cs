@@ -12,5 +12,5 @@ public interface ITaskBuilder
 	ITaskBuilder ForClass(Class @class);
 	ITaskBuilder ForSubject(int subjectId);
 	ITaskBuilder ForSubject(Subject subject);
-	ITaskPreserver Build();
+	Task<string> Save(CancellationToken cancellationToken = default(CancellationToken));
 }

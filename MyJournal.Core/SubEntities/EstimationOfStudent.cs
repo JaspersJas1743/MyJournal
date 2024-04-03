@@ -1,3 +1,4 @@
+using MyJournal.Core.EstimationChanger;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
@@ -27,7 +28,6 @@ public sealed class EstimationOfStudent : Estimation
 		_client = client;
 	}
 
-	private sealed record ChangeAssessmentRequest(int ChangedAssessmentId, int NewGradeId, DateTime Datetime, int CommentId);
 	private sealed record DeleteAssessmentRequest(int AssessmentId);
 
 	internal static async Task<EstimationOfStudent> Create(
@@ -51,19 +51,8 @@ public sealed class EstimationOfStudent : Estimation
 		);
 	}
 
-	public async Task Change(
-		int gradeId,
-		DateTime dateTime,
-		int commentId,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.PutAsync<ChangeAssessmentRequest>(
-			apiMethod: AssessmentControllerMethods.Change,
-			arg: new ChangeAssessmentRequest(ChangedAssessmentId: Id, NewGradeId: gradeId, Datetime: dateTime, CommentId: commentId),
-			cancellationToken: cancellationToken
-		);
-	}
+	public IEstimationChanger Change()
+		=> EstimationChanger.EstimationChanger.Create(client: _client, estimation: this);
 
 	public async Task Delete(
 		CancellationToken cancellationToken = default(CancellationToken)
