@@ -1,3 +1,4 @@
+using System.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -9,13 +10,15 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 {
 	private readonly ApiClient _client;
 	private readonly AsyncLazy<IEnumerable<StudentInTaughtClass>> _students;
+	private readonly AsyncLazy<IEnumerable<CommentsForAssessment>> _commentsForTruancy;
 
 	public static readonly TaughtClass Empty = new TaughtClass(
 		client: ApiClient.Empty,
 		subjectId: -1,
 		id: -1,
 		name: String.Empty,
-		students: new AsyncLazy<IEnumerable<StudentInTaughtClass>>(valueFactory: () => Enumerable.Empty<StudentInTaughtClass>())
+		students: new AsyncLazy<IEnumerable<StudentInTaughtClass>>(valueFactory: Enumerable.Empty<StudentInTaughtClass>),
+		commentsForTruancy: new AsyncLazy<IEnumerable<CommentsForAssessment>>(valueFactory: Enumerable.Empty<CommentsForAssessment>)
 	);
 
 	private TaughtClass(
@@ -23,7 +26,8 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 		int subjectId,
 		int id,
 		string name,
-		AsyncLazy<IEnumerable<StudentInTaughtClass>> students
+		AsyncLazy<IEnumerable<StudentInTaughtClass>> students,
+		AsyncLazy<IEnumerable<CommentsForAssessment>> commentsForTruancy
 	)
 	{
 		_client = client;
@@ -31,6 +35,7 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 		Id = id;
 		Name = name;
 		SubjectId = subjectId;
+		_commentsForTruancy = commentsForTruancy;
 	}
 
 	public int Id { get; init; }
@@ -80,9 +85,20 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 					educationPeriodId: educationPeriodId,
 					cancellationToken: cancellationToken
 				)
-			)))
+			))),
+			commentsForTruancy: new AsyncLazy<IEnumerable<CommentsForAssessment>>(valueFactory: async () =>
+			{
+				IEnumerable<CommentsForAssessment> response = await client.GetAsync<IEnumerable<CommentsForAssessment>>(
+					apiMethod: AssessmentControllerMethods.GetCommentsForTruancy,
+					cancellationToken: cancellationToken
+				) ?? throw new InvalidOperationException();
+				return response;
+			})
 		);
 	}
+
+	public async Task<IEnumerable<CommentsForAssessment>> GetCommentsForTruancy()
+		=> await _commentsForTruancy;
 
 	public async Task SetAttendance(
 		DateTime date,

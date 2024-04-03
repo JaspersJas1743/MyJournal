@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using MyJournal.Core.Collections;
 using MyJournal.Core.EstimationBuilder;
 using MyJournal.Core.Utilities.Api;
@@ -10,6 +9,7 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 {
+	private readonly AsyncLazy<IEnumerable<PossibleAssessment>> _possibleAssessments;
 	private readonly int _subjectId;
 	private readonly int _studentId;
 
@@ -17,13 +17,15 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 		ApiClient client,
 		int subjectId,
 		int studentId,
-		AsyncLazy<List<EstimationOfStudent>> estimations,
 		string average,
+		AsyncLazy<List<EstimationOfStudent>> estimations,
+		AsyncLazy<IEnumerable<PossibleAssessment>> possibleAssessments,
 		string? final = null
 	) : base(client: client, estimations: estimations, average: average, final: final)
 	{
 		_subjectId = subjectId;
 		_studentId = studentId;
+		_possibleAssessments = possibleAssessments;
 	}
 
 	internal static async Task<GradeOfStudent> Create(
@@ -54,12 +56,21 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 					gradeType: e.GradeType
 				))
 			))),
+			possibleAssessments: new AsyncLazy<IEnumerable<PossibleAssessment>>(
+				valueFactory: async () => await client.GetAsync<IEnumerable<PossibleAssessment>>(
+					apiMethod: AssessmentControllerMethods.GetPossibleAssessments,
+					cancellationToken: cancellationToken
+				) ?? throw new InvalidOperationException()
+			),
 			average: assessments.AverageAssessment
 		);
 	}
 
 	public IEstimationBuilder Add()
 		=> EstimationBuilder.EstimationBuilder.Create(client: _client, studentId: _studentId, subjectId: _subjectId);
+
+	public async Task<IEnumerable<PossibleAssessment>> GetPossibleAssessments()
+		=> await _possibleAssessments;
 
 	internal new async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{

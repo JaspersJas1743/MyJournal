@@ -80,12 +80,14 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 			client: client,
 			estimations: new AsyncLazy<List<Estimation>>(valueFactory: async () => new List<Estimation>(collection: await Task.WhenAll(
 				tasks: assessments.Assessments.Select(selector: async e => await Estimation.Create(
+					client: client,
 					id: e.Id,
 					assessment: e.Assessment,
 					createdAt: e.CreatedAt,
 					comment: e.Comment,
 					description: e.Description,
-					gradeType: e.GradeType
+					gradeType: e.GradeType,
+					cancellationToken: cancellationToken
 				))
 			))),
 			average: assessments.AverageAssessment,
@@ -107,6 +109,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		_average = response.AverageAssessment;
 		List<T> estimations = await _estimations;
 		estimations.Add(item: (T)await Estimation.Create(
+			client: _client,
 			id: response.Assessment.Id,
 			assessment: response.Assessment.Assessment,
 			createdAt: response.Assessment.CreatedAt,

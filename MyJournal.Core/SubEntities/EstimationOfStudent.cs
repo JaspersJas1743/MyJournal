@@ -15,14 +15,16 @@ public sealed class EstimationOfStudent : Estimation
 		DateTime createdAt,
 		string? comment,
 		string? description,
-		GradeTypes gradeType
+		GradeTypes gradeType,
+		IEnumerable<CommentsForAssessment> commentsForAssessments
 	) : base(
 		id: id,
 		assessment: assessment,
 		createdAt: createdAt,
 		comment: comment,
 		description: description,
-		gradeType: gradeType
+		gradeType: gradeType,
+		commentsForAssessments: commentsForAssessments
 	)
 	{
 		_client = client;
@@ -37,9 +39,14 @@ public sealed class EstimationOfStudent : Estimation
 		DateTime createdAt,
 		string? comment,
 		string? description,
-		GradeTypes gradeType
+		GradeTypes gradeType,
+		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		IEnumerable<CommentsForAssessment> commentsForAssessments = await client.GetAsync<IEnumerable<CommentsForAssessment>>(
+			apiMethod: AssessmentControllerMethods.GetCommentsForAssessments(assessmentId: id),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
 		return new EstimationOfStudent(
 			client: client,
 			id: id,
@@ -47,7 +54,8 @@ public sealed class EstimationOfStudent : Estimation
 			createdAt: createdAt,
 			comment: comment,
 			description: description,
-			gradeType: gradeType
+			gradeType: gradeType,
+			commentsForAssessments: commentsForAssessments
 		);
 	}
 
