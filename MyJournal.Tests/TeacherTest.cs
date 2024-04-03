@@ -111,6 +111,129 @@ public class TeacherTest
 
 	#region Tasks
 	[Test]
+	public async Task TeacherGetCreatedTasks_AfterAddedTask_ShouldPassed()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test2",
+			password: "test2test2",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		Teacher? teacher = await service.SignIn(credentials: credentials) as Teacher;
+		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
+		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
+		TaughtSubject allSubjects = await taughtSubjects.GetByIndex(index: 0);
+		CreatedTaskCollection allTasks = await allSubjects.GetTasks();
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 2));
+		CreatedTask firstTask = await allTasks.ElementAtAsync(index: 0);
+		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
+		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: firstTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-25T12:00:00")));
+		Assert.That(actual: firstTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
+		CreatedTask secondTask = await allTasks.ElementAtAsync(index: 1);
+		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
+		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: secondTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-22T12:00:00")));
+		Assert.That(actual: secondTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: secondTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
+		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
+		CreatedTaskCollection firstTaughtSubjectTasks = await firstTaughtSubject.GetTasks();
+		Assert.That(actual: firstTaughtSubjectTasks.Length, expression: Is.EqualTo(expected: 2));
+		firstTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 0);
+		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
+		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: firstTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-25T12:00:00")));
+		Assert.That(actual: firstTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
+		secondTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 1);
+		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
+		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: secondTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-22T12:00:00")));
+		Assert.That(actual: secondTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: secondTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
+
+		DateTime release = DateTime.Today.AddDays(3);
+		const string text = "Тестовое задание";
+		_ = await allSubjects.CreateTask()
+			.ForClass(classId: 11)
+			.ForSubject(subjectId: 47)
+			.AddReleaseDate(dateOfRelease: release)
+			.AddText(text: text)
+			.Save();
+		await Task.Delay(millisecondsDelay: 50);
+
+		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
+		firstTask = await allTasks.ElementAtAsync(index: 0);
+		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
+		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: firstTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-25T12:00:00")));
+		Assert.That(actual: firstTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
+		secondTask = await allTasks.ElementAtAsync(index: 1);
+		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
+		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: secondTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-22T12:00:00")));
+		Assert.That(actual: secondTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: secondTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
+		Assert.That(actual: firstTaughtSubjectTasks.Length, expression: Is.EqualTo(expected: 3));
+		CreatedTask thirdTask = await allTasks.ElementAtAsync(index: 2);
+		Assert.That(actual: thirdTask.Id, expression: Is.EqualTo(expected: 22));
+		Assert.That(actual: thirdTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: thirdTask.ReleasedAt, expression: Is.EqualTo(expected: release));
+		Assert.That(actual: thirdTask.Content.Text, expression: Is.EqualTo(expected: text));
+		Assert.That(actual: thirdTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: thirdTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: thirdTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
+		firstTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 0);
+		Assert.That(actual: firstTask.Id, expression: Is.EqualTo(expected: 5));
+		Assert.That(actual: firstTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: firstTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: firstTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-25T12:00:00")));
+		Assert.That(actual: firstTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: firstTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: firstTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 1));
+		Assert.That(actual: firstTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 1));
+		secondTask = await firstTaughtSubjectTasks.ElementAtAsync(index: 1);
+		Assert.That(actual: secondTask.Id, expression: Is.EqualTo(expected: 7));
+		Assert.That(actual: secondTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: secondTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: secondTask.ReleasedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-22T12:00:00")));
+		Assert.That(actual: secondTask.Content.Text, expression: Is.EqualTo(expected: "Тестовая задача"));
+		Assert.That(actual: secondTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: secondTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
+		thirdTask = await allTasks.ElementAtAsync(index: 2);
+		Assert.That(actual: thirdTask.Id, expression: Is.EqualTo(expected: 22));
+		Assert.That(actual: thirdTask.LessonName, expression: Is.EqualTo(expected: "Физическая культура"));
+		Assert.That(actual: thirdTask.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+		Assert.That(actual: thirdTask.ReleasedAt, expression: Is.EqualTo(expected: release));
+		Assert.That(actual: thirdTask.Content.Text, expression: Is.EqualTo(expected: text));
+		Assert.That(actual: thirdTask.Content.Attachments?.Count(), expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: thirdTask.CountOfCompletedTask, expression: Is.EqualTo(expected: 0));
+		Assert.That(actual: thirdTask.CountOfUncompletedTask, expression: Is.EqualTo(expected: 2));
+	}
+
+	[Test]
 	public async Task TeacherGetCreatedTasks_WithDefaultValues_ShouldPassed()
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
@@ -242,7 +365,7 @@ public class TeacherTest
 	}
 	#endregion
 
-	#region Test
+	#region Assessments
 	[Test]
 	public async Task TeacherGetAssessments_WithChangePeriod_ShouldPassed()
 	{

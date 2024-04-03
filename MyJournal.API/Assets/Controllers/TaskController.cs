@@ -231,23 +231,23 @@ public class TaskController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		int userId = GetAuthorizedUserId();
-		DatabaseModels.Task task = await _context.Tasks.Where(predicate: t => t.Id == taskId).SingleOrDefaultAsync(cancellationToken: cancellationToken)
-			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор задачи.");
+		GetCreatedTasksResponse task = await _context.Tasks.Where(predicate: t => t.Id == taskId)
+			.Select(selector: task => new GetCreatedTasksResponse(
+				task.Id,
+				task.Class.Name,
+				task.Lesson.Name,
+				task.ReleasedAt,
+				new TaskContent(task.Text, task.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
+				task.TaskCompletionResults.Count(
+					tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Completed
+				),
+				task.TaskCompletionResults.Count(
+					tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Uncompleted
+				)
+			)).SingleOrDefaultAsync(cancellationToken: cancellationToken)
+				?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор задачи.");
 
-		return Ok(value: new GetCreatedTasksResponse(
-			task.Id,
-			task.Class.Name,
-			task.Lesson.Name,
-			task.ReleasedAt,
-			new TaskContent(task.Text, task.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			task.TaskCompletionResults.Count(
-				tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Completed
-			),
-			task.TaskCompletionResults.Count(
-				tcr => tcr.TaskCompletionStatus.CompletionStatus == TaskCompletionStatuses.Uncompleted
-			)
-		));
+		return Ok(value: task);
 	}
 
 	/// <summary>
