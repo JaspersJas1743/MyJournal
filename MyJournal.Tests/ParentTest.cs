@@ -447,7 +447,7 @@ public class ParentTest
 		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
 		StudentInTaughtClass lastStudent = students.Last();
 		GradeOfStudent gradeOfLastStudent = await lastStudent.GetGrade();
-		await gradeOfLastStudent.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
+		await gradeOfLastStudent.Add().WithGrade(gradeId: 4).WithCreationDate(creationDate: DateTime.Now).WithComment(commentId: 2).Save();
 		await Task.Delay(millisecondsDelay: 50);
 
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));
@@ -632,8 +632,7 @@ public class ParentTest
 		StudentInTaughtClass lastStudent = students.Last();
 		GradeOfStudent gradeOfLastStudent = await lastStudent.GetGrade();
 
-		await gradeOfLastStudent.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
-
+		await gradeOfLastStudent.Add().WithGrade(gradeId: 4).WithCreationDate(creationDate: DateTime.Now).WithComment(commentId: 2).Save();
 		await Task.Delay(millisecondsDelay: 50);
 
 		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));

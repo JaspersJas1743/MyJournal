@@ -435,8 +435,7 @@ public class AdministratorTest
 		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 
-		await secondStudentGrade.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
-
+		await secondStudentGrade.Add().WithGrade(gradeId: 4).WithCreationDate(creationDate: DateTime.Now).WithComment(commentId: 2).Save();
 		await Task.Delay(millisecondsDelay: 50);
 
 		Assert.That(actual: secondStudentGrade.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));
@@ -519,7 +518,6 @@ public class AdministratorTest
 		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 
 		EstimationOfStudent lastAssessment = await secondStudentGrade.LastAsync();
-		// lastAssessment.Change(gradeId: 2, dateTime: lastAssessment.CreatedAt, commentId: 2);
 		await lastAssessment.Change().GradeTo(newGradeId: 2).CommentTo(newCommentId: 2).Save();
 
 		await Task.Delay(millisecondsDelay: 50);
@@ -598,7 +596,7 @@ public class AdministratorTest
 		Assert.That(actual: firstEstimation.Description, expression: Is.EqualTo(expected: "Без комментария"));
 		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 
-		await secondStudentGrade.Add(gradeId: 4, dateTime: DateTime.Now, commentId: 2);
+		await secondStudentGrade.Add().WithGrade(gradeId: 4).WithCreationDate(creationDate: DateTime.Now).WithComment(commentId: 2).Save();
 		await Task.Delay(millisecondsDelay: 50);
 
 		Assert.That(actual: secondStudentGrade.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));

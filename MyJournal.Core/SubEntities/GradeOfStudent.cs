@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using MyJournal.Core.Collections;
+using MyJournal.Core.EstimationBuilder;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -24,8 +25,6 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 		_subjectId = subjectId;
 		_studentId = studentId;
 	}
-
-	private sealed record CreateAssessmentRequest(int GradeId, DateTime Datetime, int CommentId, int SubjectId, int StudentId);
 
 	internal static async Task<GradeOfStudent> Create(
 		ApiClient client,
@@ -59,19 +58,8 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 		);
 	}
 
-	public async Task Add(
-		int gradeId,
-		DateTime dateTime,
-		int commentId,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		await _client.PostAsync<CreateAssessmentRequest>(
-			apiMethod: AssessmentControllerMethods.Create,
-			arg: new CreateAssessmentRequest(GradeId: gradeId, Datetime: dateTime, CommentId: commentId, SubjectId: _subjectId, StudentId: _studentId),
-			cancellationToken: cancellationToken
-		);
-	}
+	public IEstimationBuilder Add()
+		=> EstimationBuilder.EstimationBuilder.Create(client: _client, studentId: _studentId, subjectId: _subjectId);
 
 	internal new async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{
