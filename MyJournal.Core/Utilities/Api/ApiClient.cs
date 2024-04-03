@@ -24,6 +24,8 @@ public sealed class ApiClient : IDisposable
 		WriteIndented = true,
 		PropertyNamingPolicy = null
 	};
+
+	public static readonly ApiClient Empty = new ApiClient();
 	#endregion
 
 	#region Constructors

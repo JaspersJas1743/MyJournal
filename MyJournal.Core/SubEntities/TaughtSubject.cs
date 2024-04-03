@@ -110,7 +110,7 @@ public sealed class TaughtSubject : ISubEntity
 				subjectId: 0,
 				cancellationToken: cancellationToken
 			)),
-			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => null)
+			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => TaughtClass.Empty)
 		);
 	}
 
@@ -122,8 +122,8 @@ public sealed class TaughtSubject : ISubEntity
 		return new TaughtSubject(
 			fileService: fileService,
 			name: name,
-			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null),
-			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => null)
+			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => CreatedTaskCollection.Empty),
+			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => TaughtClass.Empty)
 		);
 	}
 
@@ -137,7 +137,7 @@ public sealed class TaughtSubject : ISubEntity
 		return new TaughtSubject(
 			fileService: fileService,
 			response: response,
-			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => null),
+			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => CreatedTaskCollection.Empty),
 			taughtClass: new AsyncLazy<TaughtClass>(valueFactory: async () => await TaughtClass.Create(
 				client: fileService.ApiClient,
 				subjectId: response.Id,

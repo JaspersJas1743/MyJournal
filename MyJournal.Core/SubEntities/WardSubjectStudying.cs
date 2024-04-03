@@ -112,7 +112,7 @@ public sealed class WardSubjectStudying : Subject
 	{
 		return new WardSubjectStudying(
 			response: response,
-			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null),
+			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => TaskAssignedToWardCollection.Empty),
 			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
 				client: client,
 				apiMethod: AssessmentControllerMethods.GetAssessmentsForWard,
@@ -129,7 +129,7 @@ public sealed class WardSubjectStudying : Subject
 	{
 		return new WardSubjectStudying(
 			name: name,
-			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => null),
+			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => TaskAssignedToWardCollection.Empty),
 			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
 		);
 	}

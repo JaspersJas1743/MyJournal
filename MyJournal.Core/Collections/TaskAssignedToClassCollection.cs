@@ -11,6 +11,15 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 	private readonly int _subjectId;
 	private readonly int _classId;
+
+	public static readonly TaskAssignedToClassCollection Empty = new TaskAssignedToClassCollection(
+		client: ApiClient.Empty,
+		subjectId: -1,
+		classId: -1,
+		count: -1,
+		offset: -1,
+		collection: new AsyncLazy<List<TaskAssignedToClass>>(valueFactory: () => new List<TaskAssignedToClass>())
+	);
 	#endregion
 
 	#region Constructor

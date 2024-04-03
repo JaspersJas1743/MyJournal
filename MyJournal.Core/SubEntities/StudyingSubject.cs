@@ -115,7 +115,7 @@ public sealed class StudyingSubject : Subject
 	{
 		return new StudyingSubject(
 			response: response,
-			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => null),
+			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => AssignedTaskCollection.Empty),
 			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
 				client: client,
 				periodId: periodId,
@@ -132,8 +132,8 @@ public sealed class StudyingSubject : Subject
 	{
 		return new StudyingSubject(
 			name: name,
-			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => null),
-			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => null)
+			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => AssignedTaskCollection.Empty),
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
 		);
 	}
 

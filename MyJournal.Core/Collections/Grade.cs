@@ -17,7 +17,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	protected string? _final;
 
 	internal static readonly Grade<Estimation> Empty = new Grade<Estimation>(
-		client: null,
+		client: ApiClient.Empty,
 		estimations: new AsyncLazy<List<Estimation>>(valueFactory: async () => new List<Estimation>()),
 		average: String.Empty,
 		final: String.Empty

@@ -10,6 +10,14 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	#region Fields
 	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 	private readonly int _subjectId;
+
+	public static readonly CreatedTaskCollection Empty = new CreatedTaskCollection(
+		client: ApiClient.Empty,
+		subjectId: -1,
+		count: -1,
+		offset: -1,
+		collection: new AsyncLazy<List<CreatedTask>>(valueFactory: () => new List<CreatedTask>())
+	);
 	#endregion
 
 	#region Constructor

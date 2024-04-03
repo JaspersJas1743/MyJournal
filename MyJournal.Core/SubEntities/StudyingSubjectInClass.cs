@@ -118,7 +118,7 @@ public sealed class StudyingSubjectInClass : Subject
 					cancellationToken: cancellationToken
 				)
 			),
-			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => null)
+			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => new List<StudentOfSubjectInClass>())
 		);
 	}
 
@@ -132,7 +132,7 @@ public sealed class StudyingSubjectInClass : Subject
 	{
 		return new StudyingSubjectInClass(
 			response: response,
-			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null),
+			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => TaskAssignedToClassCollection.Empty),
 			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () =>
 			{
 				IEnumerable<GetStudentsFromClassResponse> students = await client.GetAsync<IEnumerable<GetStudentsFromClassResponse>>(
@@ -161,8 +161,8 @@ public sealed class StudyingSubjectInClass : Subject
 	{
 		return new StudyingSubjectInClass(
 			name: name,
-			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => null),
-			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => null)
+			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => TaskAssignedToClassCollection.Empty),
+			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => new List<StudentOfSubjectInClass>())
 		);
 	}
 
