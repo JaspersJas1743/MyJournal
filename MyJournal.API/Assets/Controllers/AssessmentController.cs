@@ -575,8 +575,6 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-
-
 		return Ok(value: await _context.Assessments.Where(predicate: a => a.Id == assessmentId)
 			.Select(selector: a => new GetAssessmentResponse(
 				a.Student.Assessments.Where(asses => EF.Functions.IsNumeric(asses.Grade.Assessment) && asses.LessonId == a.LessonId)
@@ -886,7 +884,8 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Assessment assessment = await _context.Assessments.SingleOrDefaultAsync(predicate: a => a.Id == request.AssessmentId, cancellationToken: cancellationToken)
+		Assessment assessment = await _context.Assessments.Include(navigationPropertyPath: assessment => assessment.Student)
+			.SingleOrDefaultAsync(predicate: a => a.Id == request.AssessmentId, cancellationToken: cancellationToken)
 			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена.");
 
 		_context.Assessments.Remove(entity: assessment);
@@ -902,7 +901,7 @@ public sealed class AssessmentController(
 			studentId: assessment.StudentId,
 			subjectId: assessment.LessonId
 		);
-		await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherDeletedAssessment(
+		await studentHubContext.Clients.User(userId: assessment.Student.UserId.ToString()).TeacherDeletedAssessment(
 			assessmentId: assessment.Id,
 			studentId: assessment.StudentId,
 			subjectId: assessment.LessonId

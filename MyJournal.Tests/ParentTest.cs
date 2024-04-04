@@ -33,7 +33,7 @@ public class ParentTest
 	#endregion
 
 	#region Auxiliary methods
-	public async Task<Parent?> GetParent()
+	private async Task<Parent?> GetParent()
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
@@ -215,7 +215,6 @@ public class ParentTest
 	#endregion
 
 	#region Assessments
-
 	private async Task<Grade<Estimation>> GetGrade(WardSubjectStudyingCollection collection)
 	{
 		WardSubjectStudying physicalEducation = await collection.SingleAsync(predicate: s => s.Id == 47);
