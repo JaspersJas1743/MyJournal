@@ -486,7 +486,7 @@ public sealed class AssessmentController(
 	) => Ok(value: _context.Grades.Select(selector: g => new GetPossibleAssessmentsResponse(g.Id, g.Assessment)));
 
 	/// <summary>
-	/// [Преподаватель] Получение списка возможных комментариев к оценке
+	/// [Преподаватель/Администратор] Получение списка возможных комментариев к оценке
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -502,8 +502,8 @@ public sealed class AssessmentController(
 	/// </remarks>
 	/// <response code="200">Список возможных комментариев к оценке</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
-	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
 	[HttpGet(template: "{assessmentId:int}/comments/get")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetCommentsForAssessmentsResponse))]
