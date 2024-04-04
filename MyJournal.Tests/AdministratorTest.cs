@@ -33,7 +33,7 @@ public class AdministratorTest
 	#endregion
 
 	#region Auxiliary methods
-	public async Task<Administrator?> GetAdministrator()
+	private async Task<Administrator?> GetAdministrator()
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
 		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
@@ -44,7 +44,7 @@ public class AdministratorTest
 		return await service.SignIn(credentials: credentials) as Administrator;
 	}
 
-	public async Task<StudyingSubjectInClassCollection> GetStudyingSubjectInClassCollection(Administrator administrator)
+	private async Task<StudyingSubjectInClassCollection> GetStudyingSubjectInClassCollection(Administrator administrator)
 	{
 		ClassCollection classes = await administrator.GetClasses();
 		Class @class = await classes.GetByIndex(index: 10);
@@ -53,7 +53,7 @@ public class AdministratorTest
 	#endregion
 
 	#region Lessons
-	public async Task CheckStudyingSubjectsInClass(StudyingSubjectInClassCollection collection, int startIndex = 0)
+	public async Task CheckStudyingSubjectsInClass(StudyingSubjectInClassCollection collection, int startIndex)
 	{
 		StudyingSubjectInClass firstStudyingSubject = await collection.GetByIndex(index: startIndex);
         Assert.Multiple(testDelegate: () =>
@@ -128,7 +128,7 @@ public class AdministratorTest
 	#endregion
 
 	#region Tasks
-	public async Task CheckTaskWithIdEqualsFive(TaskAssignedToClass taskWithIdEqualsFive)
+	private async Task CheckTaskWithIdEqualsFive(TaskAssignedToClass taskWithIdEqualsFive)
 	{
         Assert.Multiple(testDelegate: () =>
         {
@@ -143,7 +143,7 @@ public class AdministratorTest
         });
     }
 
-	public async Task CheckTaskWithIdEqualsSix(TaskAssignedToClass taskWithIdEqualsSix)
+	private async Task CheckTaskWithIdEqualsSix(TaskAssignedToClass taskWithIdEqualsSix)
 	{
         Assert.Multiple(testDelegate: () =>
         {
@@ -158,7 +158,7 @@ public class AdministratorTest
         });
     }
 
-	public async Task CheckTaskWithIdEqualsSeven(TaskAssignedToClass taskWithIdEqualsSeven)
+	private async Task CheckTaskWithIdEqualsSeven(TaskAssignedToClass taskWithIdEqualsSeven)
 	{
         Assert.Multiple(testDelegate: () =>
         {
@@ -173,7 +173,7 @@ public class AdministratorTest
         });
     }
 
-	public async Task CheckAllTask(StudyingSubjectInClass subjectInClass)
+	private async Task CheckAllTask(StudyingSubjectInClass subjectInClass)
 	{
 		TaskAssignedToClassCollection allTasks = await subjectInClass.GetTasks();
 		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
@@ -240,7 +240,7 @@ public class AdministratorTest
 	#endregion
 
 	#region Assessments
-	public async Task<StudentOfSubjectInClass> GetStudentIfCorrect(StudyingSubjectInClassCollection collection)
+	private async Task<StudentOfSubjectInClass> GetStudentIfCorrect(StudyingSubjectInClassCollection collection)
 	{
 		StudyingSubjectInClass subject = await collection.SingleAsync(predicate: s => s.Id == 47);
 		IEnumerable<StudentOfSubjectInClass> students = await subject.GetStudents();
@@ -255,7 +255,7 @@ public class AdministratorTest
 		return student;
 	}
 
-	public async Task CheckEstimationWithIdEqualsOne(Estimation estimation)
+	private async Task CheckEstimationWithIdEqualsOne(Estimation estimation)
 	{
 		Assert.Multiple(testDelegate: () =>
 		{
@@ -268,7 +268,7 @@ public class AdministratorTest
 		});
 	}
 
-	public async Task CheckEstimationWithIdEqualsTwo(Estimation estimation)
+	private async Task CheckEstimationWithIdEqualsTwo(Estimation estimation)
 	{
 		Assert.Multiple(testDelegate: () =>
 		{
@@ -281,7 +281,7 @@ public class AdministratorTest
 		});
 	}
 
-	public async Task CheckEstimationWithIdEqualsThree(Estimation estimation)
+	private async Task CheckEstimationWithIdEqualsThree(Estimation estimation)
 	{
 		Assert.Multiple(testDelegate: () =>
 		{
@@ -294,35 +294,33 @@ public class AdministratorTest
 		});
 	}
 
-	public async Task CheckDefaultAssessments(GradeOfStudent grade)
+	private async Task CheckDefaultAssessments(GradeOfStudent grade)
 	{
         Assert.Multiple(testDelegate: () =>
         {
             Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
             Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
         });
-        IEnumerable<Estimation> assessments = await grade.GetAssessments();
-		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
-		await CheckEstimationWithIdEqualsOne(estimation: assessments.ElementAtOrDefault(index: 0));
-		await CheckEstimationWithIdEqualsTwo(estimation: assessments.ElementAtOrDefault(index: 1));
-		await CheckEstimationWithIdEqualsThree(estimation: assessments.ElementAtOrDefault(index: 2));
-    }
+        IEnumerable<Estimation> estimations = await grade.GetEstimations();
+		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
+		await CheckDefaultEstimations(estimations: estimations);
+	}
 
-	public async Task CheckDefaultEstimations(IEnumerable<Estimation> estimations)
+	private async Task CheckDefaultEstimations(IEnumerable<Estimation> estimations)
 	{
 		await CheckEstimationWithIdEqualsOne(estimation: estimations.ElementAtOrDefault(index: 0));
 		await CheckEstimationWithIdEqualsTwo(estimation: estimations.ElementAtOrDefault(index: 1));
 		await CheckEstimationWithIdEqualsThree(estimation: estimations.ElementAtOrDefault(index: 2));
 	}
 
-	public async Task CheckAssessmentsAfterAddition(GradeOfStudent grade)
+	private async Task CheckAssessmentsAfterAddition(GradeOfStudent grade)
 	{
         Assert.Multiple(testDelegate: () =>
         {
             Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));
             Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
         });
-        IEnumerable<Estimation> estimations = await grade.GetAssessments();
+        IEnumerable<Estimation> estimations = await grade.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 4));
 		await CheckDefaultEstimations(estimations: estimations);
         Estimation? addedAssessment = estimations.ElementAtOrDefault(index: 3);
@@ -358,7 +356,7 @@ public class AdministratorTest
             Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
             Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
         });
-        IEnumerable<Estimation> assessments = await grade.GetAssessments();
+        IEnumerable<Estimation> assessments = await grade.GetEstimations();
 		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
 	}
 
@@ -392,7 +390,7 @@ public class AdministratorTest
 
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));
 		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> estimations = await grade.GetAssessments();
+		IEnumerable<Estimation> estimations = await grade.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
 		await CheckEstimationWithIdEqualsOne(estimation: estimations.ElementAtOrDefault(index: 0));
 		await CheckEstimationWithIdEqualsTwo(estimation: estimations.ElementAtOrDefault(index: 1));

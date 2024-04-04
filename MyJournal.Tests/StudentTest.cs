@@ -351,7 +351,7 @@ public class StudentTest
 		Grade<Estimation> grade = await physicalEducation.GetGrade();
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
 		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		IEnumerable<Estimation> assessments = await grade.GetEstimations();
 		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
 		Estimation? firstEstimation = assessments.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
@@ -394,7 +394,7 @@ public class StudentTest
 		Grade<Estimation> grade = await physicalEducation.GetGrade();
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
 		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		IEnumerable<Estimation> assessments = await grade.GetEstimations();
 		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
 	}
 
@@ -415,7 +415,7 @@ public class StudentTest
 		Grade<Estimation> grade = await physicalEducation.GetGrade();
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
 		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		IEnumerable<Estimation> assessments = await grade.GetEstimations();
 		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
 		Estimation? firstEstimation = assessments.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
@@ -462,7 +462,7 @@ public class StudentTest
 
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));
 		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> estimations = await grade.GetAssessments();
+		IEnumerable<Estimation> estimations = await grade.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 4));
 		firstEstimation = estimations.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
@@ -509,7 +509,7 @@ public class StudentTest
 		Grade<Estimation> grade = await physicalEducation.GetGrade();
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
 		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		IEnumerable<Estimation> assessments = await grade.GetEstimations();
 		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
 		Estimation? firstEstimation = assessments.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
@@ -557,7 +557,7 @@ public class StudentTest
 
 		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));
 		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetAssessments();
+		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
 		firstEstimation = estimations.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
@@ -599,7 +599,7 @@ public class StudentTest
 		Grade<Estimation> grade = await physicalEducation.GetGrade();
 		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
 		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments = await grade.GetAssessments();
+		IEnumerable<Estimation> assessments = await grade.GetEstimations();
 		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 3));
 		Estimation? firstEstimation = assessments.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
@@ -647,7 +647,7 @@ public class StudentTest
 
 		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.00"));
 		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetAssessments();
+		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 4));
 		firstEstimation = estimations.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));
@@ -682,7 +682,7 @@ public class StudentTest
 
 		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.33"));
 		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
-		estimations = await gradeOfLastStudent.GetAssessments();
+		estimations = await gradeOfLastStudent.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
 		firstEstimation = estimations.ElementAtOrDefault(index: 0);
 		Assert.That(actual: firstEstimation.Id, expression: Is.EqualTo(expected: 1));

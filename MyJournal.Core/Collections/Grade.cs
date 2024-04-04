@@ -95,7 +95,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	#endregion
 
 	#region Instance
-	public async Task<IEnumerable<Estimation>> GetAssessments()
+	public async Task<IEnumerable<Estimation>> GetEstimations()
 		=> await _estimations;
 
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)

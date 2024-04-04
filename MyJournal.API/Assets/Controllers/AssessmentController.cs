@@ -486,7 +486,7 @@ public sealed class AssessmentController(
 	) => Ok(value: _context.Grades.Select(selector: g => new GetPossibleAssessmentsResponse(g.Id, g.Assessment)));
 
 	/// <summary>
-	/// [Преподаватель/Администратор] Получение списка возможных комментариев к оценке
+	/// Получение списка возможных комментариев к оценке
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -502,13 +502,11 @@ public sealed class AssessmentController(
 	/// </remarks>
 	/// <response code="200">Список возможных комментариев к оценке</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
-	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
+	[Authorize]
 	[HttpGet(template: "{assessmentId:int}/comments/get")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetCommentsForAssessmentsResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetCommentsForAssessmentsResponse>> GetCommentsForAssessments(
 		[FromRoute] int assessmentId,
 		CancellationToken cancellationToken = default(CancellationToken)
