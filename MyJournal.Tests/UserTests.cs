@@ -146,7 +146,7 @@ public class UserTests
 		string newEmail = "test@mail.ru";
 		Security security = await user.GetSecurity();
 		Email email = await security.GetEmail();
-		await email.Change(confirmationCode: "658228", newEmail: newEmail);
+		await email.Change(confirmationCode: "255282", newEmail: newEmail);
 		Assert.That(actual: email.Address, expression: Is.EqualTo(expected: newEmail));
 	}
 
@@ -164,7 +164,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
-			await email.Change(confirmationCode: "658228", newEmail: "test@mail.ru");
+			await email.Change(confirmationCode: "255282", newEmail: "test@mail.ru");
 		});
 	}
 
@@ -182,7 +182,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
-			await email.Change(confirmationCode: "658228", newEmail: "@mail.ru");
+			await email.Change(confirmationCode: "255282", newEmail: "@mail.ru");
 		});
 	}
 
@@ -200,7 +200,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
-			await email.Change(confirmationCode: "658228", newEmail: "test@.ru");
+			await email.Change(confirmationCode: "255282", newEmail: "test@.ru");
 		});
 	}
 
@@ -218,7 +218,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
-			await email.Change(confirmationCode: "658228", newEmail: "test@");
+			await email.Change(confirmationCode: "255282", newEmail: "test@");
 		});
 	}
 
@@ -236,7 +236,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
-			await email.Change(confirmationCode: "658228", newEmail: "testmail.ru");
+			await email.Change(confirmationCode: "255282", newEmail: "testmail.ru");
 		});
 	}
 
@@ -272,7 +272,7 @@ public class UserTests
 		User user = await service.SignIn(credentials: credentials);
 		Security security = await user.GetSecurity();
 		Phone phone = await security.GetPhone();
-		await phone.Change(confirmationCode: "025134", newPhone: "+7(777)777-7777");
+		await phone.Change(confirmationCode: "072587", newPhone: "+7(777)777-7777");
 	}
 
 	[Test]
@@ -289,7 +289,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
-			await phone.Change(confirmationCode: "025134", newPhone: "+7(777)777-7777");
+			await phone.Change(confirmationCode: "072587", newPhone: "+7(777)777-7777");
 		});
 	}
 
@@ -307,7 +307,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
-			await phone.Change(confirmationCode: "025134", newPhone: "123453");
+			await phone.Change(confirmationCode: "072587", newPhone: "123453");
 		});
 	}
 
@@ -325,7 +325,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
-			await phone.Change(confirmationCode: "025134", newPhone: "9999999999");
+			await phone.Change(confirmationCode: "072587", newPhone: "9999999999");
 		});
 	}
 
@@ -343,7 +343,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
-			await phone.Change(confirmationCode: "025134", newPhone: "7(999)999-9999");
+			await phone.Change(confirmationCode: "072587", newPhone: "7(999)999-9999");
 		});
 	}
 
@@ -361,7 +361,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
-			await phone.Change(confirmationCode: "025134", newPhone: "79999999999");
+			await phone.Change(confirmationCode: "072587", newPhone: "79999999999");
 		});
 	}
 
@@ -397,7 +397,7 @@ public class UserTests
 		User user = await service.SignIn(credentials: credentials);
 		Security security = await user.GetSecurity();
 		Password password = await security.GetPassword();
-		await password.Change(confirmationCode: "248771", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
+		await password.Change(confirmationCode: "370896", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
 	}
 
 	[Test]
@@ -414,7 +414,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
-			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
+			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
 		});
 	}
 
@@ -432,7 +432,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
-			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "Jaspers");
+			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "Jaspers");
 		});
 	}
 
@@ -450,7 +450,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
-			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "J");
+			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "J");
 		});
 	}
 
@@ -468,7 +468,7 @@ public class UserTests
 			User user = await service.SignIn(credentials: credentials);
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
-			await password.Change(confirmationCode: "248771", currentPassword: "Jaspers", newPassword: "Js");
+			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "Js");
 		});
 	}
 

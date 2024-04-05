@@ -10,10 +10,12 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	#region Fields
 	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 	private readonly int _subjectId;
+	private readonly int _classId;
 
 	public static readonly CreatedTaskCollection Empty = new CreatedTaskCollection(
 		client: ApiClient.Empty,
 		subjectId: -1,
+		classId: -1,
 		count: -1,
 		offset: -1,
 		collection: new AsyncLazy<List<CreatedTask>>(valueFactory: () => new List<CreatedTask>())
@@ -25,11 +27,13 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 		ApiClient client,
 		AsyncLazy<List<CreatedTask>> collection,
 		int subjectId,
+		int classId,
 		int count,
 		int offset
 	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
 		_subjectId = subjectId;
+		_classId = classId;
 	}
 	#endregion
 
@@ -43,8 +47,8 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	#endregion
 
 	#region Records
-	public sealed record GetAssignedToClassTasksRequest(TaskCompletionStatus CompletionStatus, int SubjectId, int Offset, int Count);
-	public sealed record GetAllAssignedToClassTasksRequest(TaskCompletionStatus CompletionStatus, int Offset, int Count);
+	public sealed record GetCreatedTasksRequest(TaskCompletionStatus CompletionStatus, int SubjectId, int ClassId, int Offset, int Count);
+	public sealed record GetAllCreatedTasksRequest(TaskCompletionStatus CompletionStatus, int Offset, int Count);
 	#endregion
 
 	#region Methods
@@ -57,9 +61,9 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await client.GetAsync<IEnumerable<CreatedTask.GetCreatedTasksResponse>, GetAllAssignedToClassTasksRequest>(
+		return await client.GetAsync<IEnumerable<CreatedTask.GetCreatedTasksResponse>, GetAllCreatedTasksRequest>(
 			apiMethod: TaskControllerMethods.GetAllCreatedTasks,
-			argQuery: new GetAllAssignedToClassTasksRequest(
+			argQuery: new GetAllCreatedTasksRequest(
 				CompletionStatus: completionStatus,
 				Offset: offset,
 				Count: count
@@ -71,16 +75,18 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 		ApiClient client,
 		TaskCompletionStatus completionStatus,
 		int subjectId,
+		int classId,
 		int offset,
 		int count,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await client.GetAsync<IEnumerable<CreatedTask.GetCreatedTasksResponse>, GetAssignedToClassTasksRequest>(
+		return await client.GetAsync<IEnumerable<CreatedTask.GetCreatedTasksResponse>, GetCreatedTasksRequest>(
 			apiMethod: TaskControllerMethods.GetCreatedTasks,
-			argQuery: new GetAssignedToClassTasksRequest(
+			argQuery: new GetCreatedTasksRequest(
 				CompletionStatus: completionStatus,
 				SubjectId: subjectId,
+				ClassId: classId,
 				Offset: offset,
 				Count: count
 			), cancellationToken: cancellationToken
@@ -90,6 +96,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	internal static async Task<CreatedTaskCollection> Create(
 		ApiClient client,
 		int subjectId,
+		int classId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -106,6 +113,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 				client: client,
 				completionStatus: TaskCompletionStatus.All,
 				subjectId: subjectId,
+				classId: classId,
 				offset: basedOffset,
 				count: basedCount,
 				cancellationToken: cancellationToken
@@ -119,6 +127,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 				))
 			))),
 			subjectId: subjectId,
+			classId: classId,
 			count: basedCount,
 			offset: tasks.Count()
 		);
@@ -178,6 +187,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 				client: Client,
 				completionStatus: _currentStatus,
 				subjectId: _subjectId,
+				classId: _classId,
 				offset: Offset,
 				count: Count,
 				cancellationToken: cancellationToken

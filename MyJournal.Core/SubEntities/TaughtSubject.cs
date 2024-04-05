@@ -79,8 +79,10 @@ public sealed class TaughtSubject : ISubEntity
 	{
 		return new TaughtSubject(
 			fileService: fileService,
-			response: response, tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
+			response: response,
+			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
+				classId: response.Class.Id,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
 			)),
