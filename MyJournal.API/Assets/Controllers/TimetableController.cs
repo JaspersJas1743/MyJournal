@@ -1,7 +1,9 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
+using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Validation;
 
 namespace MyJournal.API.Assets.Controllers;
@@ -18,7 +20,11 @@ public sealed class TimetableController(
 	#region Records
 	// [Validator<>]
 	public sealed record GetTimetableByDateRequest(DateOnly Day);
+
+	// [Validator<>]
 	public sealed record GetTimetableBySubjectRequest(int SubjectId);
+
+	// [Validator<>]
 	public sealed record GetTimetableBySubjectAndClassRequest(int SubjectId, int ClassId);
 
 	public sealed record Subject(int Id, int Number, string ClassName, string Name, DateOnly Date, TimeSpan Start, TimeSpan End);
@@ -54,13 +60,37 @@ public sealed class TimetableController(
 
 	public sealed record SubjectOnTimetable(int Id, int Number, TimeSpan Start, TimeSpan End);
 	public sealed record Shedule(int DayOfWeekId, IEnumerable<SubjectOnTimetable> Subjects);
+
+	// [Validator<>]
 	public sealed record CreateTimetableRequest(int ClassId, IEnumerable<Shedule> Timetable);
 	#endregion
 
 	#region Methods
 	#region GET
+	/// <summary>
+	/// [Ученик] Получение расписания ученика с группировкой по дате
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/date/student/get?Day=2024.04.01
+	///
+	/// Параметры:
+	///
+	///	Day - дата, за которую необходимо получить расписание
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание ученика</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
 	[HttpGet(template: "date/student/get")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableByDateForStudent(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -97,8 +127,30 @@ public sealed class TimetableController(
 		return Ok(value: timetable);
 	}
 
+	/// <summary>
+	/// [Ученик] Получение расписания ученика с группировкой по дисциплине
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/subject/student/get?SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	SubjectId - идентификатор дисциплины, расписание по которой необхоимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание ученика</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
 	[HttpGet(template: "subject/student/get")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableBySubjectForStudent(
 		[FromQuery] GetTimetableBySubjectRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -130,8 +182,30 @@ public sealed class TimetableController(
 		return Ok(value: timetable);
 	}
 
+	/// <summary>
+	/// [Родитель] Получение расписания подопечного с группировкой по дате
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/date/parent/get?Day=2024.04.01
+	///
+	/// Параметры:
+	///
+	///	Day - дата, на которую надо получить расписание
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание подопечного</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Parent</response>
 	[HttpGet(template: "date/parent/get")]
 	[Authorize(Policy = nameof(UserRoles.Parent))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableByDateForParent(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -168,8 +242,30 @@ public sealed class TimetableController(
 		return Ok(value: timetable);
 	}
 
+	/// <summary>
+	/// [Родитель] Получение расписания подопечного с группировкой по дисциплине
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/subject/parent/get?SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	SubjectId - идентификатор дисциплины, расписание по которой надо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание подопечного</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Parent</response>
 	[HttpGet(template: "subject/parent/get")]
 	[Authorize(Policy = nameof(UserRoles.Parent))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableBySubjectForParent(
 		[FromQuery] GetTimetableBySubjectRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -201,8 +297,30 @@ public sealed class TimetableController(
 		return Ok(value: timetable);
 	}
 
+	/// <summary>
+	/// [Преподаватель] Получение расписания преподавателя с группировкой по дате
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/date/teacher/get?Day=2024.04.01
+	///
+	/// Параметры:
+	///
+	///	Day - дата, на которую надо получить расписание
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание преподавателя</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
 	[HttpGet(template: "date/teacher/get")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithoutAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetTimetableWithoutAssessmentsResponse>> GetTimetableByDateForTeacher(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -234,8 +352,30 @@ public sealed class TimetableController(
 		return Ok(value: timetable);
 	}
 
+	/// <summary>
+	/// [Преподаватель] Получение расписания преподавателя с группировкой по дисциплине
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/subject/teacher/get?SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	SubjectId - идентификатор дисциплины, расписание по которой надо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание преподавателя</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
 	[HttpGet(template: "subject/teacher/get")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithoutAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetTimetableWithoutAssessmentsResponse>> GetTimetableBySubjectForTeacher(
 		[FromQuery] GetTimetableBySubjectAndClassRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -263,8 +403,30 @@ public sealed class TimetableController(
 		return Ok(value: timetable);
 	}
 
+	/// <summary>
+	/// [Администратор] Получение расписания класса
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/get?ClassId=0
+	///
+	/// Параметры:
+	///
+	///	ClassId - идентификатор класса, для которог онадо получить расписание
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание класса</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Administrator</response>
 	[HttpGet(template: "get")]
 	[Authorize(Policy = nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableByClassResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetTimetableByClassResponse>> GetTimetableForGroup(
 		[FromQuery] GetTimetableByClassRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -298,8 +460,51 @@ public sealed class TimetableController(
 	#endregion
 
 	#region PUT
+	/// <summary>
+	/// [Администратор] Создание и/или изменение расписания класса
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	PUT api/timetable/create
+	///	{
+	///		"ClassId": 1,
+	///		"Timetable": [
+	///			{
+	///				"DayOfWeekId": 0,
+	///				"Subjects": [
+	///					{
+	///						"Id": 0,
+	///						"Number": 0,
+	///						"Start": "00:00:00",
+	///						"End": "00:00:00"
+	///					}
+	///				]
+	///			}
+	///		]
+	///	}
+	///
+	/// Параметры:
+	///
+	///	ClassId - идентификатор класса, для которого создается расписание
+	///	Timetable.DayOfWeekId - идентификатор дня недели, на который будут записаны дисциплины из списка Subjects
+	///	Timetable.Subjects.Id - идентификатор проводимой дисциплины
+	///	Timetable.Subjects.Number - номер учебного занятия по порядку
+	///	Timetable.Subjects.Start - время начала заняти
+	///	Timetable.Subjects.End - время окончания занятия
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание сохранено успешно</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Administrator</response>
 	[HttpPut(template: "create")]
 	[Authorize(Policy = nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult> CreateTimetable(
 		[FromBody] CreateTimetableRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
