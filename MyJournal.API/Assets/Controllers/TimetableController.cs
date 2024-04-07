@@ -39,18 +39,22 @@ public sealed class TimetableController(
 	// [Validator<>]
 	public sealed record GetTimetableByClassRequest(int ClassId);
 	public sealed record DayOfWeekOnTimetable(int Id, string Name);
-	public sealed record SubjectInClass(int Number, string Name, TimeSpan Start, TimeSpan End);
-	public sealed record TimetableInClass(SubjectInClass Subject, Break? Break)
+	public sealed record ShortSubject(int Id, int Number, string Name, TimeSpan Start, TimeSpan End);
+	public sealed record SubjectInClass(ShortSubject ShortSubject, Break? Break)
 	{
-		public SubjectInClass Subject { get; set; } = Subject;
+		public ShortSubject ShortSubject { get; set; } = ShortSubject;
 		public Break? Break { get; set; } = Break;
 	}
-	public sealed record GetTimetableByClassResponse(DayOfWeekOnTimetable DayOfWeek, int TotalHours, IEnumerable<TimetableInClass> Timetable)
+	public sealed record GetTimetableByClassResponse(DayOfWeekOnTimetable DayOfWeek, int TotalHours, IEnumerable<SubjectInClass> Timetable)
 	{
 		public DayOfWeekOnTimetable DayOfWeek { get; set; } = DayOfWeek;
 		public int TotalHours { get; set; } = TotalHours;
-		public IEnumerable<TimetableInClass> Timetable { get; set; } = Timetable;
+		public IEnumerable<SubjectInClass> Timetable { get; set; } = Timetable;
 	}
+
+	public sealed record SubjectOnTimetable(int Id, int Number, TimeSpan Start, TimeSpan End);
+	public sealed record Shedule(int DayOfWeekId, IEnumerable<SubjectOnTimetable> Subjects);
+	public sealed record CreateTimetableRequest(int ClassId, IEnumerable<Shedule> Timetable);
 	#endregion
 
 	#region Methods
@@ -271,24 +275,54 @@ public sealed class TimetableController(
 				new DayOfWeekOnTimetable(d.Id, d.DayOfWeek),
 				d.LessonTimings.Count(t => t.ClassId == request.ClassId),
 				d.LessonTimings.Where(t => t.ClassId == request.ClassId)
-					.Select(t => new TimetableInClass(
-						new SubjectInClass(t.Number, t.Lesson.Name, t.StartTime, t.EndTime),
+					.Select(t => new SubjectInClass(
+						new ShortSubject(t.LessonId, t.Number, t.Lesson.Name, t.StartTime, t.EndTime),
 						null
-					)).OrderBy(t => t.Subject.Number)
+					))
 			)).ToArrayAsync(cancellationToken: cancellationToken);
 
 		foreach (GetTimetableByClassResponse timing in timings)
 		{
 			for (int i = 0; i < timing.Timetable.Count(); ++i)
 			{
-				TimetableInClass? currentTiming = timing.Timetable.ElementAtOrDefault(index: i);
-				TimetableInClass? nextTiming = timing.Timetable.ElementAtOrDefault(index: i + 1);
+				SubjectInClass? currentTiming = timing.Timetable.ElementAtOrDefault(index: i);
+				SubjectInClass? nextTiming = timing.Timetable.ElementAtOrDefault(index: i + 1);
 				if (nextTiming is not null)
-					currentTiming!.Break = new Break(CountMinutes: (nextTiming.Subject.Start - currentTiming.Subject.End).TotalMinutes);
+					currentTiming!.Break = new Break(CountMinutes: (nextTiming.ShortSubject.Start - currentTiming.ShortSubject.End).TotalMinutes);
 			}
+			timing.Timetable = timing.Timetable.OrderBy(t => t.ShortSubject.Number);
 		}
 
 		return Ok(value: timings);
+	}
+	#endregion
+
+	#region PUT
+	[HttpPut(template: "create")]
+	[Authorize(Policy = nameof(UserRoles.Administrator))]
+	public async Task<ActionResult> CreateTimetable(
+		[FromBody] CreateTimetableRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		IEnumerable<LessonTiming> addedTimings = request.Timetable.SelectMany(
+			selector: t => t.Subjects.Select(selector: s => new LessonTiming()
+			{
+				LessonId = s.Id,
+				ClassId = request.ClassId,
+				DayOfWeekId = t.DayOfWeekId,
+				StartTime = s.Start,
+				EndTime = s.End,
+				Number = s.Number
+			})
+		);
+
+		_context.RemoveRange(entities: _context.LessonTimings.AsNoTracking().Where(predicate: t => t.ClassId == request.ClassId));
+		await _context.LessonTimings.AddRangeAsync(entities: addedTimings, cancellationToken: cancellationToken);
+
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		return Ok();
 	}
 	#endregion
 	#endregion
