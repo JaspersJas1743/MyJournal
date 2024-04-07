@@ -96,8 +96,8 @@ public class TaskController(
 
 		return completionStatusRequest switch
 		{
-			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0),
-			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) >= 0),
+			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => DateTime.Now >= t.ReleasedAt),
+			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => DateTime.Now < t.ReleasedAt),
 			_ => tasks
 		};
 	}
@@ -144,8 +144,8 @@ public class TaskController(
 
 		return completionStatusRequest switch
 		{
-			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0),
-			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) >= 0),
+			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => DateTime.Now >= t.ReleasedAt),
+			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => DateTime.Now < t.ReleasedAt),
 			_ => tasks
 		};
 	}

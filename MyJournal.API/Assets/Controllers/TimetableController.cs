@@ -65,6 +65,9 @@ public sealed class TimetableController(
 		int userId = GetAuthorizedUserId();
 		GetTimetableWithAssessmentsResponse[] timings = await _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
+			.Where(predicate: s => !s.Class.EducationPeriodForClasses.Any(
+				epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < request.Day && h.EndDate > request.Day)
+			))
 			.SelectMany(selector: s => s.Class.LessonTimings)
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
@@ -72,8 +75,8 @@ public sealed class TimetableController(
 				new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
 				t.Lesson.Assessments.Where(a =>
 					DateOnly.FromDateTime(a.Datetime) == request.Day &&
-					EF.Functions.DateDiffMillisecond(t.StartTime, a.Datetime.TimeOfDay) >= 0 &&
-					EF.Functions.DateDiffMillisecond(t.EndTime, a.Datetime.TimeOfDay) <= 0 &&
+					t.StartTime <= a.Datetime.TimeOfDay &&
+					t.EndTime >= a.Datetime.TimeOfDay &&
 					a.Student.UserId == userId
 				).Select(a => new Estimation(a.Grade.Assessment)),
 				null
@@ -99,19 +102,22 @@ public sealed class TimetableController(
 	{
 		int userId = GetAuthorizedUserId();
 		IEnumerable<GetTimetableWithAssessmentsResponse> timetable = Enumerable.Range(start: -3, count: 10)
-			.Select(selector: offset => DateTime.Now.AddDays(value: offset))
+			.Select(selector: offset => DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(value: offset)))
 			.SelectMany(selector: d => _context.Students.AsNoTracking()
 				.Where(predicate: s => s.UserId == userId)
+				.Where(predicate: s => !s.Class.EducationPeriodForClasses.Any(
+					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < d && h.EndDate > d)
+				))
 				.SelectMany(selector: s => s.Class.LessonTimings)
 				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == d.DayOfWeek && t.LessonId == request.SubjectId)
 				.OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
 				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, DateOnly.FromDateTime(d), t.StartTime, t.EndTime),
+					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
 					t.Lesson.Assessments.Where(a =>
-						a.Datetime.Date == d.Date &&
-						EF.Functions.DateDiffMillisecond(t.StartTime, a.Datetime.TimeOfDay) >= 0 &&
-						EF.Functions.DateDiffMillisecond(t.EndTime, a.Datetime.TimeOfDay) <= 0 &&
+						DateOnly.FromDateTime(a.Datetime) == d &&
+						t.StartTime <= a.Datetime.TimeOfDay &&
+						t.EndTime >= a.Datetime.TimeOfDay &&
 						a.Student.UserId == userId
 					).Select(a => new Estimation(a.Grade.Assessment)),
 					null
@@ -130,6 +136,9 @@ public sealed class TimetableController(
 		int userId = GetAuthorizedUserId();
 		GetTimetableWithAssessmentsResponse[] timings = await _context.Parents.AsNoTracking()
 			.Where(predicate: p => p.UserId == userId)
+			.Where(predicate: p => !p.Children.Class.EducationPeriodForClasses.Any(
+				epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < request.Day && h.EndDate > request.Day)
+			))
 			.SelectMany(selector: p => p.Children.Class.LessonTimings)
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
@@ -137,8 +146,8 @@ public sealed class TimetableController(
 				new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
 				t.Lesson.Assessments.Where(a =>
 					DateOnly.FromDateTime(a.Datetime) == request.Day &&
-					EF.Functions.DateDiffMillisecond(t.StartTime, a.Datetime.TimeOfDay) >= 0 &&
-					EF.Functions.DateDiffMillisecond(t.EndTime, a.Datetime.TimeOfDay) <= 0 &&
+					t.StartTime <= a.Datetime.TimeOfDay &&
+					t.EndTime >= a.Datetime.TimeOfDay &&
 					a.Student.Parents.Any(p => p.UserId == userId)
 				).Select(a => new Estimation(a.Grade.Assessment)),
 				null
@@ -164,19 +173,22 @@ public sealed class TimetableController(
 	{
 		int userId = GetAuthorizedUserId();
 		IEnumerable<GetTimetableWithAssessmentsResponse> timetable = Enumerable.Range(start: -3, count: 10)
-			.Select(selector: offset => DateTime.Now.AddDays(value: offset))
+			.Select(selector: offset => DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(value: offset)))
 			.SelectMany(selector: d => _context.Parents.AsNoTracking()
 				.Where(predicate: p => p.UserId == userId)
+				.Where(predicate: p => !p.Children.Class.EducationPeriodForClasses.Any(
+					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < d && h.EndDate > d)
+				))
 				.SelectMany(selector: p => p.Children.Class.LessonTimings)
 				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == d.DayOfWeek && t.LessonId == request.SubjectId)
 				.OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
 				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, DateOnly.FromDateTime(d), t.StartTime, t.EndTime),
+					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
 					t.Lesson.Assessments.Where(a =>
-						a.Datetime.Date == d.Date &&
-						EF.Functions.DateDiffMillisecond(t.StartTime, a.Datetime.TimeOfDay) >= 0 &&
-						EF.Functions.DateDiffMillisecond(t.EndTime, a.Datetime.TimeOfDay) <= 0 &&
+						DateOnly.FromDateTime(a.Datetime) == d &&
+						t.StartTime <= a.Datetime.TimeOfDay &&
+						t.EndTime >= a.Datetime.TimeOfDay &&
 						a.Student.Parents.Any(p => p.UserId == userId)
 					).Select(a => new Estimation(a.Grade.Assessment)),
 					null
@@ -197,6 +209,9 @@ public sealed class TimetableController(
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
 			.SelectMany(selector: l => l.Lesson.LessonTimings.Intersect(l.Classes.SelectMany(c => c.LessonTimings)))
+			.Where(predicate: t => !t.Class.EducationPeriodForClasses.Any(
+				epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < request.Day && h.EndDate > request.Day)
+			))
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
 			.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
@@ -224,17 +239,20 @@ public sealed class TimetableController(
 	{
 		int userId = GetAuthorizedUserId();
 		IEnumerable<GetTimetableWithoutAssessmentsResponse> timetable = Enumerable.Range(start: -3, count: 10)
-			.Select(selector: offset => DateTime.Now.AddDays(value: offset))
-			.SelectMany(selector: day => _context.Teachers.AsNoTracking()
+			.Select(selector: offset => DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(value: offset)))
+			.SelectMany(selector: d => _context.Teachers.AsNoTracking()
 				.Where(predicate: t => t.UserId == userId)
 				.SelectMany(selector: t => t.TeachersLessons)
 				.SelectMany(selector: l => l.Lesson.LessonTimings.Intersect(l.Classes.SelectMany(c => c.LessonTimings)))
-				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == day.DayOfWeek &&
+				.Where(predicate: t => !t.Class.EducationPeriodForClasses.Any(
+					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < d && h.EndDate > d)
+				))
+				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == d.DayOfWeek &&
 					t.LessonId == request.SubjectId && t.ClassId == request.ClassId
 				).OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
 				.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
-					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, DateOnly.FromDateTime(day), t.StartTime, t.EndTime),
+					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
 					null
 				))
 			);

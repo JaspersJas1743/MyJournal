@@ -54,8 +54,8 @@ public sealed class LessonController(
 			.Where(predicate: s => s.UserId == userId)
 			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc =>
-				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
-				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
+				epfc.EducationPeriod.StartDate <= nowDate &&
+				epfc.EducationPeriod.EndDate >= nowDate
 			).SelectMany(selector: epfc => epfc.Lessons)
 			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
 				l.Id, l.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
@@ -143,8 +143,8 @@ public sealed class LessonController(
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
-				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
-				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
+				epfc.EducationPeriod.StartDate <= nowDate &&
+				epfc.EducationPeriod.EndDate >= nowDate
 			))).SelectMany(selector: tl => tl.Classes.Select(c => new GetTaughtSubjectsResponse(
 				tl.LessonId, tl.Lesson.Name, new Class(c.Id, c.Name)
 			)));
@@ -228,8 +228,8 @@ public sealed class LessonController(
 			.Where(predicate: p => p.UserId == userId)
 			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc =>
-				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
-				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
+				epfc.EducationPeriod.StartDate <= nowDate &&
+				epfc.EducationPeriod.EndDate >= nowDate
 			).SelectMany(selector: epfc => epfc.Lessons)
 			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id)
 				.Select(tl => new GetStudyingSubjectsResponse(
@@ -327,8 +327,8 @@ public sealed class LessonController(
 			.Where(predicate: c => c.Id == classId)
 			.SelectMany(selector: c => c.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
-				EF.Functions.DateDiffDay(epfc.EducationPeriod.StartDate, nowDate) >= 0 &&
-				EF.Functions.DateDiffDay(nowDate, epfc.EducationPeriod.EndDate) <= 0
+				epfc.EducationPeriod.StartDate <= nowDate &&
+				epfc.EducationPeriod.EndDate >= nowDate
 			))).Select(selector: tl => new GetStudyingSubjectsResponse(
 				tl.LessonId,
 				tl.Lesson.Name,
