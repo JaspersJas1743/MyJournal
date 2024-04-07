@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Validation;
+using MyJournal.API.Assets.Validation.Validators;
 
 namespace MyJournal.API.Assets.Controllers;
 
@@ -18,13 +19,13 @@ public sealed class TimetableController(
 	private readonly MyJournalContext _context = context;
 
 	#region Records
-	// [Validator<>]
+	[Validator<GetTimetableByDateRequestValidator>]
 	public sealed record GetTimetableByDateRequest(DateOnly Day);
 
-	// [Validator<>]
+	[Validator<GetTimetableBySubjectRequestValidator>]
 	public sealed record GetTimetableBySubjectRequest(int SubjectId);
 
-	// [Validator<>]
+	[Validator<GetTimetableBySubjectAndClassRequestValidator>]
 	public sealed record GetTimetableBySubjectAndClassRequest(int SubjectId, int ClassId);
 
 	public sealed record Subject(int Id, int Number, string ClassName, string Name, DateOnly Date, TimeSpan Start, TimeSpan End);
@@ -42,7 +43,7 @@ public sealed class TimetableController(
 		public Break? Break { get; set; } = Break;
 	}
 
-	// [Validator<>]
+	[Validator<GetTimetableByClassRequestValidator>]
 	public sealed record GetTimetableByClassRequest(int ClassId);
 	public sealed record DayOfWeekOnTimetable(int Id, string Name);
 	public sealed record ShortSubject(int Id, int Number, string Name, TimeSpan Start, TimeSpan End);
@@ -61,7 +62,7 @@ public sealed class TimetableController(
 	public sealed record SubjectOnTimetable(int Id, int Number, TimeSpan Start, TimeSpan End);
 	public sealed record Shedule(int DayOfWeekId, IEnumerable<SubjectOnTimetable> Subjects);
 
-	// [Validator<>]
+	[Validator<CreateTimetableRequestValidator>]
 	public sealed record CreateTimetableRequest(int ClassId, IEnumerable<Shedule> Timetable);
 	#endregion
 
