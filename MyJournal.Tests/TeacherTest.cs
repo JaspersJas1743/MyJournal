@@ -487,4 +487,45 @@ public class TeacherTest
 		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
 	}
 	#endregion
+
+	#region Timetable
+	private async Task CheckTimetable(TimetableForTeacher timetable)
+	{
+		Assert.Multiple(testDelegate: () =>
+		{
+			Assert.That(actual: timetable.Subject.Id, expression: Is.EqualTo(expected: 47));
+			Assert.That(actual: timetable.Subject.Number, expression: Is.AnyOf(1, 2));
+			Assert.That(actual: timetable.Subject.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+			Assert.That(actual: timetable.Subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+			Assert.That(actual: timetable.Subject.Date, expression: Is.AnyOf(
+				new DateOnly(year: 2024, month: 4, day: 5),
+				new DateOnly(year: 2024, month: 4, day: 8),
+				new DateOnly(year: 2024, month: 4, day: 9),
+				new DateOnly(year: 2024, month: 4, day: 10),
+				new DateOnly(year: 2024, month: 4, day: 11),
+				new DateOnly(year: 2024, month: 4, day: 12)
+			));
+			Assert.That(actual: timetable.Subject.Start, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 0, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 0, seconds: 0)
+			));
+			Assert.That(actual: timetable.Subject.End, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 45, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 45, seconds: 0)
+			));
+			Assert.That(actual: timetable.Break, expression: Is.EqualTo(expected: null));
+		});
+	}
+
+	[Test]
+	public async Task TeacherGetTimetable_WithDefaultValue_ShouldPassed()
+	{
+		Teacher? student = await GetTeacher();
+		TaughtSubjectCollection subjects = await student?.GetTaughtSubjects()!;
+		TaughtSubject subject = await subjects.SingleAsync(s => s.Id == 47);
+		IEnumerable<TimetableForTeacher> timetables = await subject.GetTimetable();
+		foreach (TimetableForTeacher timetable in timetables)
+			await CheckTimetable(timetable: timetable);
+	}
+	#endregion
 }
