@@ -57,8 +57,8 @@ public sealed class StudyingSubject : Subject
 
 	#region Records
 	internal sealed record StudyingSubjectResponse(int Id, string Name, SubjectTeacher Teacher);
-	internal sealed record GetTimetableWithAssessmentsResponse(SubjectOnTimetable Subject, IEnumerable<EstimationOnTimetable> Assessments, BreakAfterSubject? Break);
-	internal sealed record GetTimetableBySubjectRequest(int SubjectId);
+	private sealed record GetTimetableWithAssessmentsResponse(SubjectOnTimetable Subject, IEnumerable<EstimationOnTimetable> Assessments, BreakAfterSubject? Break);
+	private sealed record GetTimetableBySubjectRequest(int SubjectId);
 	#endregion
 
 	#region Events

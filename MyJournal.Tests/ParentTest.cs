@@ -411,4 +411,56 @@ public class ParentTest
 		await CheckGrade(grade: grade);
 	}
 	#endregion
+
+		#region Timetable
+	private async Task CheckTimetable(TimetableForStudent timetable, IEnumerable<string> expectedEstimations)
+	{
+		Assert.Multiple(testDelegate: () =>
+		{
+			Assert.That(actual: timetable.Subject.Id, expression: Is.EqualTo(expected: 47));
+			Assert.That(actual: timetable.Subject.Number, expression: Is.AnyOf(1, 2));
+			Assert.That(actual: timetable.Subject.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+			Assert.That(actual: timetable.Subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+			Assert.That(actual: timetable.Subject.Date, expression: Is.AnyOf(
+				new DateOnly(year: 2024, month: 4, day: 5),
+				new DateOnly(year: 2024, month: 4, day: 8),
+				new DateOnly(year: 2024, month: 4, day: 9),
+				new DateOnly(year: 2024, month: 4, day: 10),
+				new DateOnly(year: 2024, month: 4, day: 11),
+				new DateOnly(year: 2024, month: 4, day: 12)
+			));
+			Assert.That(actual: timetable.Subject.Start, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 0, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 0, seconds: 0)
+			));
+			Assert.That(actual: timetable.Subject.End, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 45, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 45, seconds: 0)
+			));
+			Assert.That(
+				actual: timetable.Estimations.Select(selector: e => e.Grade),
+				expression: Is.EquivalentTo(expected: expectedEstimations)
+			);
+			Assert.That(actual: timetable.Break, expression: Is.EqualTo(expected: null));
+		});
+	}
+
+	private async Task CheckTimetableForStudentWithEstimations(TimetableForStudent timetable)
+		=> await CheckTimetable(timetable: timetable, expectedEstimations: new string[] { "5", "4", "4" });
+
+	private async Task CheckTimetableForStudent(TimetableForStudent timetable)
+		=> await CheckTimetable(timetable: timetable, expectedEstimations: Enumerable.Empty<string>());
+
+	[Test]
+	public async Task ParentGetTimetable_WithDefaultValue_ShouldPassed()
+	{
+		Parent? student = await GetParent();
+		WardSubjectStudyingCollection subjects = await student?.GetWardSubjectsStudying()!;
+		WardSubjectStudying subject = await subjects.SingleAsync(s => s.Id == 47);
+		IEnumerable<TimetableForStudent> timetables = await subject.GetTimetable();
+		await CheckTimetableForStudentWithEstimations(timetable: timetables.First());
+		foreach (TimetableForStudent timetable in timetables.Skip(count: 1))
+			await CheckTimetableForStudent(timetable: timetable);
+	}
+	#endregion
 }
