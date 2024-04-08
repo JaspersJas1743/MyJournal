@@ -56,8 +56,6 @@ public sealed class TimetableController(
 	}
 	public sealed record GetTimetableByClassResponse(DayOfWeekOnTimetable DayOfWeek, int TotalHours, IEnumerable<SubjectInClass> Timetable)
 	{
-		public DayOfWeekOnTimetable DayOfWeek { get; set; } = DayOfWeek;
-		public int TotalHours { get; set; } = TotalHours;
 		public IEnumerable<SubjectInClass> Timetable { get; set; } = Timetable;
 	}
 

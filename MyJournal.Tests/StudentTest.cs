@@ -382,20 +382,26 @@ public class StudentTest
 		await lastAssessment.Change().GradeTo(newGradeId: 2).CommentTo(newCommentId: 2).Save();
 		await Task.Delay(millisecondsDelay: 50);
 
-		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));
-		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetEstimations();
+        Assert.Multiple(testDelegate: () =>
+        {
+            Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));
+            Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
+        });
+        IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
 		await CheckEstimationWithIdEqualsOne(estimation: estimations.ElementAtOrDefault(index: 0));
 		await CheckEstimationWithIdEqualsTwo(estimation: estimations.ElementAtOrDefault(index: 1));
 		Estimation? thirdEstimation = estimations.ElementAtOrDefault(index: 2);
-		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 66));
-		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
-		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
-		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: "КлР"));
-		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Классная работа"));
-		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
-	}
+        Assert.Multiple(testDelegate: () =>
+        {
+            Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 66));
+            Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+            Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+            Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: "КлР"));
+            Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Классная работа"));
+            Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+        });
+    }
 
 	[Test]
 	public async Task StudentGetAssessments_AfterDeletedAssessment_ShouldPassed()
@@ -416,6 +422,58 @@ public class StudentTest
 		await Task.Delay(millisecondsDelay: 50);
 
 		await CheckGrade(grade: grade);
+	}
+	#endregion
+
+	#region Timetable
+	private async Task CheckTimetable(TimetableForStudent timetable, IEnumerable<string> expectedEstimations)
+	{
+		Assert.Multiple(testDelegate: () =>
+		{
+			Assert.That(actual: timetable.Subject.Id, expression: Is.EqualTo(expected: 47));
+			Assert.That(actual: timetable.Subject.Number, expression: Is.AnyOf(1, 2));
+			Assert.That(actual: timetable.Subject.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+			Assert.That(actual: timetable.Subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+			Assert.That(actual: timetable.Subject.Date, expression: Is.AnyOf(
+				new DateOnly(year: 2024, month: 4, day: 5),
+				new DateOnly(year: 2024, month: 4, day: 8),
+				new DateOnly(year: 2024, month: 4, day: 9),
+				new DateOnly(year: 2024, month: 4, day: 10),
+				new DateOnly(year: 2024, month: 4, day: 11),
+				new DateOnly(year: 2024, month: 4, day: 12)
+			));
+			Assert.That(actual: timetable.Subject.Start, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 0, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 0, seconds: 0)
+			));
+			Assert.That(actual: timetable.Subject.End, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 45, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 45, seconds: 0)
+			));
+			Assert.That(
+				actual: timetable.Estimations.Select(selector: e => e.Grade),
+				expression: Is.EquivalentTo(expected: expectedEstimations)
+			);
+			Assert.That(actual: timetable.Break, expression: Is.EqualTo(expected: null));
+		});
+	}
+
+	private async Task CheckTimetableForStudentWithEstimations(TimetableForStudent timetable)
+		=> await CheckTimetable(timetable: timetable, expectedEstimations: new string[] { "5", "4", "4" });
+
+	private async Task CheckTimetableForStudent(TimetableForStudent timetable)
+		=> await CheckTimetable(timetable: timetable, expectedEstimations: Enumerable.Empty<string>());
+
+	[Test]
+	public async Task StudentGetTimetable_WithDefaultValue_ShouldPassed()
+	{
+		Student? student = await GetStudent();
+		StudyingSubjectCollection subjects = await student?.GetStudyingSubjects()!;
+		StudyingSubject subject = await subjects.SingleAsync(s => s.Id == 47);
+		IEnumerable<TimetableForStudent> timetables = await subject.GetTimetable();
+		await CheckTimetableForStudentWithEstimations(timetable: timetables.First());
+		foreach (TimetableForStudent timetable in timetables.Skip(count: 1))
+			await CheckTimetableForStudent(timetable: timetable);
 	}
 	#endregion
 }

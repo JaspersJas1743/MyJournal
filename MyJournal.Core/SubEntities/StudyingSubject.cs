@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Collections;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -12,23 +12,27 @@ public sealed class StudyingSubject : Subject
 	#region Fields
 	private readonly AsyncLazy<AssignedTaskCollection> _tasks;
 	private readonly AsyncLazy<Grade<Estimation>> _grade;
+	private readonly AsyncLazy<IEnumerable<TimetableForStudent>> _timetable;
 	#endregion
 
 	#region Constructors
 	private StudyingSubject(
 		AsyncLazy<AssignedTaskCollection> tasks,
-		AsyncLazy<Grade<Estimation>> grade
+		AsyncLazy<Grade<Estimation>> grade,
+		AsyncLazy<IEnumerable<TimetableForStudent>> timetable
 	)
 	{
 		_tasks = tasks;
 		_grade = grade;
+		_timetable = timetable;
 	}
 
 	private StudyingSubject(
 		string name,
 		AsyncLazy<AssignedTaskCollection> tasks,
-		AsyncLazy<Grade<Estimation>> grade
-	) : this(tasks: tasks, grade: grade)
+		AsyncLazy<Grade<Estimation>> grade,
+		AsyncLazy<IEnumerable<TimetableForStudent>> timetable
+	) : this(tasks: tasks, grade: grade, timetable: timetable)
 	{
 		Name = name;
 	}
@@ -36,8 +40,9 @@ public sealed class StudyingSubject : Subject
 	private StudyingSubject(
 		StudyingSubjectResponse response,
 		AsyncLazy<AssignedTaskCollection> tasks,
-		AsyncLazy<Grade<Estimation>> grade
-	) : this(tasks: tasks, grade: grade)
+		AsyncLazy<Grade<Estimation>> grade,
+		AsyncLazy<IEnumerable<TimetableForStudent>> timetable
+	) : this(tasks: tasks, grade: grade, timetable: timetable)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -52,6 +57,8 @@ public sealed class StudyingSubject : Subject
 
 	#region Records
 	internal sealed record StudyingSubjectResponse(int Id, string Name, SubjectTeacher Teacher);
+	internal sealed record GetTimetableWithAssessmentsResponse(SubjectOnTimetable Subject, IEnumerable<EstimationOnTimetable> Assessments, BreakAfterSubject? Break);
+	internal sealed record GetTimetableBySubjectRequest(int SubjectId);
 	#endregion
 
 	#region Events
@@ -85,7 +92,20 @@ public sealed class StudyingSubject : Subject
 				apiMethod: AssessmentControllerMethods.GetAssessments,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
-			))
+			)),
+			timetable: new AsyncLazy<IEnumerable<TimetableForStudent>>(valueFactory: async () =>
+			{
+				IEnumerable<GetTimetableWithAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithAssessmentsResponse>, GetTimetableBySubjectRequest>(
+					apiMethod: TimetableControllerMethods.GetTimetableBySubjectForStudent,
+					argQuery: new GetTimetableBySubjectRequest(SubjectId: response.Id),
+					cancellationToken: cancellationToken
+				);
+				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
+					 subject: t.Subject,
+					 estimations: t.Assessments,
+					 @break: t.Break
+				)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
+			})
 		);
 	}
 
@@ -102,7 +122,8 @@ public sealed class StudyingSubject : Subject
 				subjectId: 0,
 				cancellationToken: cancellationToken
 			)),
-			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty),
+			timetable: new AsyncLazy<IEnumerable<TimetableForStudent>>(valueFactory: async () => Enumerable.Empty<TimetableForStudent>())
 		);
 	}
 
@@ -122,7 +143,20 @@ public sealed class StudyingSubject : Subject
 				apiMethod: AssessmentControllerMethods.GetAssessments,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
-			))
+			)),
+			timetable: new AsyncLazy<IEnumerable<TimetableForStudent>>(valueFactory: async () =>
+			{
+				IEnumerable<GetTimetableWithAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithAssessmentsResponse>, GetTimetableBySubjectRequest>(
+					apiMethod: TimetableControllerMethods.GetTimetableBySubjectForStudent,
+					argQuery: new GetTimetableBySubjectRequest(SubjectId: response.Id),
+					cancellationToken: cancellationToken
+				);
+				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
+					subject: t.Subject,
+					estimations: t.Assessments,
+					@break: t.Break
+				)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
+			})
 		);
 	}
 
@@ -133,7 +167,8 @@ public sealed class StudyingSubject : Subject
 		return new StudyingSubject(
 			name: name,
 			tasks: new AsyncLazy<AssignedTaskCollection>(valueFactory: async () => AssignedTaskCollection.Empty),
-			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty)
+			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty),
+			timetable: new AsyncLazy<IEnumerable<TimetableForStudent>>(valueFactory: async () => Enumerable.Empty<TimetableForStudent>())
 		);
 	}
 
@@ -145,6 +180,9 @@ public sealed class StudyingSubject : Subject
 
 	public async Task<Grade<Estimation>> GetGrade()
 		=> await _grade;
+
+	public async Task<IEnumerable<TimetableForStudent>> GetTimetable()
+		=> await _timetable;
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
