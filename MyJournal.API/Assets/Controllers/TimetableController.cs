@@ -1,9 +1,11 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
+using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.Validation;
 using MyJournal.API.Assets.Validation.Validators;
 
@@ -13,7 +15,10 @@ namespace MyJournal.API.Assets.Controllers;
 [Route(template: "api/timetable")]
 public sealed class TimetableController(
 	MyJournalContext context,
-	ILogger<TimetableController> logger
+	IHubContext<TeacherHub, ITeacherHub> teacherHubContext,
+	IHubContext<StudentHub, IStudentHub> studentHubContext,
+	IHubContext<ParentHub, IParentHub> parentHubContext,
+	IHubContext<AdministratorHub, IAdministratorHub> administratorHubContext
 ) : MyJournalBaseController(context: context)
 {
 	private readonly MyJournalContext _context = context;
@@ -33,13 +38,10 @@ public sealed class TimetableController(
 	public sealed record Break(double CountMinutes);
 	public sealed record GetTimetableWithAssessmentsResponse(Subject Subject, IEnumerable<Estimation> Assessments, Break? Break)
 	{
-		public Subject Subject { get; set; } = Subject;
-		public IEnumerable<Estimation> Assessments { get; set; } = Assessments;
 		public Break? Break { get; set; } = Break;
 	}
 	public sealed record GetTimetableWithoutAssessmentsResponse(Subject Subject, Break? Break)
 	{
-		public Subject Subject { get; set; } = Subject;
 		public Break? Break { get; set; } = Break;
 	}
 
@@ -527,6 +529,23 @@ public sealed class TimetableController(
 		await _context.LessonTimings.AddRangeAsync(entities: addedTimings, cancellationToken: cancellationToken);
 
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		IQueryable<string> studentIds = _context.Students.AsNoTracking().Where(predicate: s => s.ClassId == request.ClassId)
+			.Select(selector: s => s.UserId.ToString());
+
+		IQueryable<string> teacherIds = _context.Teachers.AsNoTracking().Where(predicate: t => t.TeachersLessons.Any(
+			l => l.Classes.Any(c => c.Id == request.ClassId)
+		)).Select(selector: t => t.UserId.ToString());
+
+		IQueryable<string> parentIds = _context.Parents.AsNoTracking().Where(predicate: p => p.Children.ClassId == request.ClassId)
+			.Select(selector: p => p.UserId.ToString());
+
+		IQueryable<string> administratorIds = _context.Administrators.AsNoTracking().Select(selector: a => a.UserId.ToString());
+
+		await studentHubContext.Clients.Users(userIds: studentIds).ChangedTimetable();
+		await parentHubContext.Clients.Users(userIds: parentIds).ChangedTimetable();
+		await teacherHubContext.Clients.Users(userIds: teacherIds).ChangedTimetable(classId: request.ClassId);
+		await administratorHubContext.Clients.Users(userIds: administratorIds).ChangedTimetable(classId: request.ClassId);
 
 		return Ok();
 	}

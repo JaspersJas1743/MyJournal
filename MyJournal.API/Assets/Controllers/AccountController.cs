@@ -339,13 +339,9 @@ public sealed class AccountController(
     {
         int currentSessionId = GetCurrentSessionId();
         int userId = GetAuthorizedUserId();
-        SessionActivityStatus enableSessionActivityStatus = await FindSessionActivityStatus(
-            activityStatus: SessionActivityStatuses.Enable,
-            cancellationToken: cancellationToken
-        );
 
         GetSessionsResponse session = await _context.Sessions
-            .Where(predicate: s => s.UserId == userId && s.SessionActivityStatus.Equals(enableSessionActivityStatus) && s.Id == id)
+            .Where(predicate: s => s.UserId == userId && s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable && s.Id == id)
             .Select(selector: s => new GetSessionsResponse(
                 s.Id,
                 s.MyJournalClient.ClientName,

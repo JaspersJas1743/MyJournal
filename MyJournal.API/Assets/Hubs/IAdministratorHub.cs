@@ -8,4 +8,5 @@ public interface IAdministratorHub
 	Task CreatedAssessmentToStudent(int assessmentId, int studentId, int subjectId);
 	Task ChangedAssessmentToStudent(int assessmentId, int studentId, int subjectId);
 	Task DeletedAssessmentToStudent(int assessmentId, int studentId, int subjectId);
+	Task ChangedTimetable(int classId);
 }

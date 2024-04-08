@@ -8,4 +8,5 @@ public interface IStudentHub
 	Task TeacherCreatedAssessment(int assessmentId, int studentId, int subjectId);
 	Task TeacherChangedAssessment(int assessmentId, int studentId, int subjectId);
 	Task TeacherDeletedAssessment(int assessmentId, int studentId, int subjectId);
+	Task ChangedTimetable();
 }

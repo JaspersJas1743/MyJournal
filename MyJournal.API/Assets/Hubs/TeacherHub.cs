@@ -25,4 +25,7 @@ public sealed class TeacherHub : Hub<ITeacherHub>
 
 	public async Task DeletedAssessment(int assessmentId, int studentId, int subjectId)
 		=> await Clients.Caller.DeletedAssessment(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
+
+	public async Task ChangedTimetable(int classId)
+		=> await Clients.Caller.ChangedTimetable(classId: classId);
 }
