@@ -1,6 +1,8 @@
+using System.Collections;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
+using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -8,18 +10,21 @@ public class Class : ISubEntity
 {
 	#region Fields
 	private readonly AsyncLazy<StudyingSubjectInClassCollection> _studyingSubjects;
+	private readonly AsyncLazy<IEnumerable<TimetableForClass>> _timetable;
 	#endregion
 
 	#region Constructors
 	private Class(
 		int id,
 		string name,
-		AsyncLazy<StudyingSubjectInClassCollection> studyingSubjects
+		AsyncLazy<StudyingSubjectInClassCollection> studyingSubjects,
+		AsyncLazy<IEnumerable<TimetableForClass>> timetable
 	)
 	{
 		Id = id;
 		Name = name;
 		_studyingSubjects = studyingSubjects;
+		_timetable = timetable;
 	}
 	#endregion
 
@@ -29,6 +34,11 @@ public class Class : ISubEntity
 	internal bool StudyingSubjectsAreCreated => _studyingSubjects.IsValueCreated;
 	#endregion
 
+	#region Records
+	private sealed record GetTimetableByClassRequest(int ClassId);
+	private sealed record GetTimetableByClassResponse(DayOfWeek DayOfWeek, int TotalHours, IEnumerable<SubjectInClassOnTimetable> Subjects);
+	#endregion
+	
 	#region Methods
 	#region Static
 		internal static async Task<Class> Create(
@@ -45,7 +55,20 @@ public class Class : ISubEntity
 				client: client,
 				classId: classId,
 				cancellationToken: cancellationToken
-			))
+			)),
+			timetable: new AsyncLazy<IEnumerable<TimetableForClass>>(valueFactory: async () =>
+			{
+				IEnumerable<GetTimetableByClassResponse>? response = await client.GetAsync<IEnumerable<GetTimetableByClassResponse>, GetTimetableByClassRequest>(
+					apiMethod: TimetableControllerMethods.GetTimetableForClass,
+					argQuery: new GetTimetableByClassRequest(ClassId: classId),
+					cancellationToken: cancellationToken
+				);
+				return await Task.WhenAll(tasks: response?.Select(selector: async r => await TimetableForClass.Create(
+					dayOfWeek: r.DayOfWeek,
+					totalHours: r.TotalHours,
+					subjects: r.Subjects
+				)) ?? Enumerable.Empty<Task<TimetableForClass>>());
+			})
 		);
 	}
 	#endregion
@@ -53,6 +76,9 @@ public class Class : ISubEntity
 	#region Instance
 	public async Task<StudyingSubjectInClassCollection> GetStudyingSubjects()
 		=> await _studyingSubjects;
+
+	public async Task<IEnumerable<TimetableForClass>> GetTimetable()
+		=> await _timetable;
 	#endregion
 	#endregion
 }

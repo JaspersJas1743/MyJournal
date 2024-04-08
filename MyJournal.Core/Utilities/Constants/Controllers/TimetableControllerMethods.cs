@@ -8,6 +8,6 @@ public static class TimetableControllerMethods
 	public const string GetTimetableBySubjectForParent = "timetable/subject/parent/get";
 	public const string GetTimetableByDateForTeacher = "timetable/date/teacher/get";
 	public const string GetTimetableBySubjectForTeacher = "timetable/subject/teacher/get";
-	public const string GetTimetableForGroup = "timetable/get";
+	public const string GetTimetableForClass = "timetable/get";
 	public const string CreateTimetable = "timetable/create";
 }

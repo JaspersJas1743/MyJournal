@@ -19,3 +19,9 @@ public sealed class SubjectOnTimetable(int id, int number, TimeSpan start, TimeS
 	public string ClassName { get; init; } = className;
 	public DateOnly Date { get; init; } = date;
 }
+
+public sealed class SubjectInClassOnTimetable(SubjectOnTimetableByDay subject, BreakAfterSubject @break)
+{
+	public SubjectOnTimetableByDay Subject { get; set; } = subject;
+	public BreakAfterSubject? Break { get; set; } = @break;
+}
