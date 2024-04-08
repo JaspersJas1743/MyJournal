@@ -9,4 +9,5 @@ internal static class AdministratorHubMethod
 	internal const string CreatedAssessmentToStudent = nameof(CreatedAssessmentToStudent);
 	internal const string ChangedAssessmentToStudent = nameof(ChangedAssessmentToStudent);
 	internal const string DeletedAssessmentToStudent = nameof(DeletedAssessmentToStudent);
+	internal const string ChangedTimetable = nameof(ChangedTimetable);
 }

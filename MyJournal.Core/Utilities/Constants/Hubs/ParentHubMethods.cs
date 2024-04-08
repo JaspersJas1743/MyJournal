@@ -9,4 +9,5 @@ internal static class ParentHubMethods
 	internal const string CreatedAssessmentToWard = nameof(CreatedAssessmentToWard);
 	internal const string ChangedAssessmentToWard = nameof(ChangedAssessmentToWard);
 	internal const string DeletedAssessmentToWard = nameof(DeletedAssessmentToWard);
+	internal const string ChangedTimetable = nameof(ChangedTimetable);
 }

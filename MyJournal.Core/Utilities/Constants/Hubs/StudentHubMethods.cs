@@ -9,4 +9,5 @@ internal static class StudentHubMethods
 	internal const string TeacherCreatedAssessment = nameof(TeacherCreatedAssessment);
 	internal const string TeacherChangedAssessment = nameof(TeacherChangedAssessment);
 	internal const string TeacherDeletedAssessment = nameof(TeacherDeletedAssessment);
+	internal const string ChangedTimetable = nameof(ChangedTimetable);
 }
