@@ -57,7 +57,7 @@ public sealed class StudyingSubject : Subject
 
 	#region Records
 	internal sealed record StudyingSubjectResponse(int Id, string Name, SubjectTeacher Teacher);
-	private sealed record GetTimetableWithAssessmentsResponse(SubjectOnTimetable Subject, IEnumerable<EstimationOnTimetable> Assessments, BreakAfterSubject? Break);
+	private sealed record GetTimetableWithAssessmentsResponse(SubjectOnTimetable Subject, IEnumerable<EstimationOnTimetable> Estimations, BreakAfterSubject? Break);
 	private sealed record GetTimetableBySubjectRequest(int SubjectId);
 	#endregion
 
@@ -102,7 +102,7 @@ public sealed class StudyingSubject : Subject
 				);
 				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
 					 subject: t.Subject,
-					 estimations: t.Assessments,
+					 estimations: t.Estimations,
 					 @break: t.Break
 				)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
 			})
@@ -153,7 +153,7 @@ public sealed class StudyingSubject : Subject
 				);
 				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
 					subject: t.Subject,
-					estimations: t.Assessments,
+					estimations: t.Estimations,
 					@break: t.Break
 				)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
 			})

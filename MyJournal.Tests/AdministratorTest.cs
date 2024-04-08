@@ -471,7 +471,7 @@ public class AdministratorTest
 	}
 
 	[Test]
-	public async Task StudentGetTimetable_WithDefaultValue_ShouldPassed()
+	public async Task AdministratorGetTimetable_WithDefaultValue_ShouldPassed()
 	{
 		Administrator? administrator = await GetAdministrator();
 		ClassCollection classes = await administrator?.GetClasses()!;

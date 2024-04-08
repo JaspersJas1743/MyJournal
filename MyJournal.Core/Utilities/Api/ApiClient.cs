@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 
 namespace MyJournal.Core.Utilities.Api;
 
@@ -317,7 +318,12 @@ public sealed class ApiClient : IDisposable
 	{
 		StringBuilder uri = new StringBuilder(value: ServerAddress + apiMethod + '?');
 		foreach (PropertyInfo pair in typeof(T).GetProperties())
-			uri.Append(value: $"{pair.Name}={pair.GetValue(obj: arg)}&");
+		{
+			if (pair.PropertyType.IsEquivalentTo(other: typeof(DateOnly)))
+				uri.Append(value: $"{pair.Name}={pair.GetValue(obj: arg):yyyy.MM.dd}&");
+			else
+				uri.Append(value: $"{pair.Name}={pair.GetValue(obj: arg)}&");
+		}
 
 		uri.Remove(startIndex: uri.Length - 1, length: 1);
 		return new Uri(uriString: uri.ToString());

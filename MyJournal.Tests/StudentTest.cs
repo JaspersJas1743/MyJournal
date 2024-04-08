@@ -465,7 +465,7 @@ public class StudentTest
 		=> await CheckTimetable(timetable: timetable, expectedEstimations: Enumerable.Empty<string>());
 
 	[Test]
-	public async Task StudentGetTimetable_WithDefaultValue_ShouldPassed()
+	public async Task StudentGetTimetableBySubject_WithDefaultValue_ShouldPassed()
 	{
 		Student? student = await GetStudent();
 		StudyingSubjectCollection subjects = await student?.GetStudyingSubjects()!;
@@ -474,6 +474,15 @@ public class StudentTest
 		await CheckTimetableForStudentWithEstimations(timetable: timetables.First());
 		foreach (TimetableForStudent timetable in timetables.Skip(count: 1))
 			await CheckTimetableForStudent(timetable: timetable);
+	}
+
+	[Test]
+	public async Task StudentGetTimetableByDate_WithDefaultValue_ShouldPassed()
+	{
+		Student? student = await GetStudent();
+		TimetableForStudentCollection timetable = await student.GetTimetable();
+		Assert.That(actual: await timetable.CountAsync(), expression: Is.EqualTo(expected: 7));
+		TimetableForStudent[] timetableByDate = await timetable.GetByDate(date: new DateOnly(year: 2024, month: 4, day: 11));
 	}
 	#endregion
 }
