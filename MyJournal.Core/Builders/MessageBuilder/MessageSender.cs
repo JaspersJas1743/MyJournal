@@ -1,9 +1,8 @@
-using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
-namespace MyJournal.Core.MessageBuilder;
+namespace MyJournal.Core.Builders.MessageBuilder;
 
 internal sealed class MessageSender : IMessageSender
 {

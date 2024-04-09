@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
+using MyJournal.Core.Builders.TimetableBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
@@ -478,6 +479,21 @@ public class AdministratorTest
 		Class @class = await classes.SingleAsync(c => c.Id == 11);
 		IEnumerable<TimetableForClass> timetables = await @class.GetTimetable();
 		await CheckWorkWeek(timetable: timetables);
+	}
+
+	[Test]
+	public async Task Test()
+	{
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 10);
+		ITimetableBuilder timetable = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
+		day.AddSubject().WithNumber(number: 1).WithSubject(subjectId: 47).WithStartTime(time: TimeSpan.Parse("09:00:00")).WithEndTime(time: TimeSpan.Parse("09:45:00"));
+		day.AddSubject().WithNumber(number: 2).WithSubject(subjectId: 47).WithStartTime(time: TimeSpan.Parse("10:00:00")).WithEndTime(time: TimeSpan.Parse("10:45:00"));
+		day.AddSubject().WithNumber(number: 3).WithSubject(subjectId: 72).WithStartTime(time: TimeSpan.Parse("11:00:00")).WithEndTime(time: TimeSpan.Parse("11:45:00"));
+		day.AddSubject().WithNumber(number: 4).WithSubject(subjectId: 72).WithStartTime(time: TimeSpan.Parse("12:00:00")).WithEndTime(time: TimeSpan.Parse("12:45:00"));
+		await timetable.Save();
 	}
 	#endregion
 }

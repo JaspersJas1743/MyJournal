@@ -1,5 +1,5 @@
+using MyJournal.Core.Builders.EstimationBuilder;
 using MyJournal.Core.Collections;
-using MyJournal.Core.EstimationBuilder;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -67,7 +67,7 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 	}
 
 	public IEstimationBuilder Add()
-		=> EstimationBuilder.EstimationBuilder.Create(client: _client, studentId: _studentId, subjectId: _subjectId);
+		=> Builders.EstimationBuilder.EstimationBuilder.Create(client: _client, studentId: _studentId, subjectId: _subjectId);
 
 	public async Task<IEnumerable<PossibleAssessment>> GetPossibleAssessments()
 		=> await _possibleAssessments;

@@ -2,7 +2,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
-namespace MyJournal.Core.EstimationChanger;
+namespace MyJournal.Core.Builders.EstimationChanger;
 
 internal sealed class EstimationChanger : IEstimationChanger
 {

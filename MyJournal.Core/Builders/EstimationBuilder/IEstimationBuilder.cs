@@ -1,4 +1,4 @@
-namespace MyJournal.Core.EstimationBuilder;
+namespace MyJournal.Core.Builders.EstimationBuilder;
 
 public interface IEstimationBuilder
 {

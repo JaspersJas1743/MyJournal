@@ -2,7 +2,7 @@ using System.Text;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.FileService;
 
-namespace MyJournal.Core.TaskBuilder;
+namespace MyJournal.Core.Builders.TaskBuilder;
 
 internal sealed class InitTaskBuilder : IInitTaskBuilder
 {

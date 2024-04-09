@@ -1,4 +1,4 @@
-using System.Collections;
+using MyJournal.Core.Builders.TimetableBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -9,12 +9,14 @@ namespace MyJournal.Core.SubEntities;
 public class Class : ISubEntity
 {
 	#region Fields
+	private readonly ApiClient _client;
 	private readonly AsyncLazy<StudyingSubjectInClassCollection> _studyingSubjects;
 	private readonly AsyncLazy<IEnumerable<TimetableForClass>> _timetable;
 	#endregion
 
 	#region Constructors
 	private Class(
+		ApiClient client,
 		int id,
 		string name,
 		AsyncLazy<StudyingSubjectInClassCollection> studyingSubjects,
@@ -23,6 +25,7 @@ public class Class : ISubEntity
 	{
 		Id = id;
 		Name = name;
+		_client = client;
 		_studyingSubjects = studyingSubjects;
 		_timetable = timetable;
 	}
@@ -51,6 +54,7 @@ public class Class : ISubEntity
 		return new Class(
 			id: classId,
 			name: name,
+			client: client,
 			studyingSubjects: new AsyncLazy<StudyingSubjectInClassCollection>(valueFactory: async () => await StudyingSubjectInClassCollection.Create(
 				client: client,
 				classId: classId,
@@ -79,6 +83,9 @@ public class Class : ISubEntity
 
 	public async Task<IEnumerable<TimetableForClass>> GetTimetable()
 		=> await _timetable;
+
+	public async Task<ITimetableBuilder> CreateTimetable()
+		=> InitTimetableBuilder.Create(client: _client).ForClass(classId: Id);
 	#endregion
 	#endregion
 }

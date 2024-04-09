@@ -1,4 +1,4 @@
-namespace MyJournal.Core.MessageBuilder;
+namespace MyJournal.Core.Builders.MessageBuilder;
 
 public interface IMessageSender
 {

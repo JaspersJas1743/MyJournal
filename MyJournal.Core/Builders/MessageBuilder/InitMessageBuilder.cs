@@ -2,7 +2,7 @@ using System.Text;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.FileService;
 
-namespace MyJournal.Core.MessageBuilder;
+namespace MyJournal.Core.Builders.MessageBuilder;
 
 internal sealed class InitMessageBuilder : IInitMessageBuilder
 {
