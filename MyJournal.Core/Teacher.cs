@@ -13,6 +13,7 @@ namespace MyJournal.Core;
 public sealed class Teacher : User
 {
 	private readonly AsyncLazy<TaughtSubjectCollection> _taughtSubjectCollection;
+	private readonly AsyncLazy<TimetableForTeacherCollection> _timetable;
 	private readonly HubConnection _teacherHubConnection;
 
 	private Teacher(
@@ -20,7 +21,8 @@ public sealed class Teacher : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		AsyncLazy<TaughtSubjectCollection> taughtSubjects
+		AsyncLazy<TaughtSubjectCollection> taughtSubjects,
+		AsyncLazy<TimetableForTeacherCollection> timetable
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -33,10 +35,14 @@ public sealed class Teacher : User
 			url: TeacherHubMethods.HubEndpoint,
 			token: client.Token!
 		);
+		_timetable = timetable;
 	}
 
 	public async Task<TaughtSubjectCollection> GetTaughtSubjects()
 		=> await _taughtSubjectCollection;
+
+	public async Task<TimetableForTeacherCollection> GetTimetable()
+		=> await _timetable;
 
 	internal static async Task<Teacher> Create(
 		ApiClient client,
@@ -54,6 +60,10 @@ public sealed class Teacher : User
 			taughtSubjects: new AsyncLazy<TaughtSubjectCollection>(valueFactory: async () => await TaughtSubjectCollection.Create(
 				client: client,
 				fileService: fileService,
+				cancellationToken: cancellationToken
+			)),
+			timetable: new AsyncLazy<TimetableForTeacherCollection>(valueFactory: async () => await TimetableForTeacherCollection.Create(
+				client: client,
 				cancellationToken: cancellationToken
 			))
 		);

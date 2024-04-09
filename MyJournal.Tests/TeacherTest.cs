@@ -527,5 +527,14 @@ public class TeacherTest
 		foreach (TimetableForTeacher timetable in timetables)
 			await CheckTimetable(timetable: timetable);
 	}
+
+	[Test]
+	public async Task StudentGetTimetableByDate_WithDefaultValue_ShouldPassed()
+	{
+		Teacher? teacher = await GetTeacher();
+		TimetableForTeacherCollection timetable = await teacher.GetTimetable();
+		Assert.That(actual: await timetable.CountAsync(), expression: Is.EqualTo(expected: 7));
+		// TimetableForTeacher[] timetableByDate = await timetable.GetByDate(date: new DateOnly(year: 2024, month: 4, day: 11));
+	}
 	#endregion
 }
