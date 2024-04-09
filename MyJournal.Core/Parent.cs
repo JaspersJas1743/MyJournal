@@ -14,13 +14,15 @@ public sealed class Parent : User
 {
 	private readonly AsyncLazy<WardSubjectStudyingCollection> _wardSubjectsStudying;
 	private readonly HubConnection _parentHubConnection;
+	private readonly AsyncLazy<TimetableForWardCollection> _timetable;
 
 	private Parent(
 		ApiClient client,
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		AsyncLazy<WardSubjectStudyingCollection> wardSubjectsStudying
+		AsyncLazy<WardSubjectStudyingCollection> wardSubjectsStudying,
+		AsyncLazy<TimetableForWardCollection> timetable
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -33,10 +35,14 @@ public sealed class Parent : User
 			url: ParentHubMethods.HubEndpoint,
 			token: client.Token!
 		);
+		_timetable = timetable;
 	}
 
 	public async Task<WardSubjectStudyingCollection> GetWardSubjectsStudying()
 		=> await _wardSubjectsStudying;
+
+	public async Task<TimetableForWardCollection> GetTimetable()
+		=> await _timetable;
 
 	internal static async Task<Parent> Create(
 		ApiClient client,
@@ -52,6 +58,10 @@ public sealed class Parent : User
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
 			wardSubjectsStudying: new AsyncLazy<WardSubjectStudyingCollection>(valueFactory: async () => await WardSubjectStudyingCollection.Create(
+				client: client,
+				cancellationToken: cancellationToken
+			)),
+			timetable: new AsyncLazy<TimetableForWardCollection>(valueFactory: async () => await TimetableForWardCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			))

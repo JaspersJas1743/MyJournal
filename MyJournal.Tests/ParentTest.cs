@@ -412,7 +412,7 @@ public class ParentTest
 	}
 	#endregion
 
-		#region Timetable
+	#region Timetable
 	private async Task CheckTimetable(TimetableForStudent timetable, IEnumerable<string> expectedEstimations)
 	{
 		Assert.Multiple(testDelegate: () =>
@@ -461,6 +461,14 @@ public class ParentTest
 		await CheckTimetableForStudentWithEstimations(timetable: timetables.First());
 		foreach (TimetableForStudent timetable in timetables.Skip(count: 1))
 			await CheckTimetableForStudent(timetable: timetable);
+	}
+
+	[Test]
+	public async Task StudentGetTimetableByDate_WithDefaultValue_ShouldPassed()
+	{
+		Parent? parent = await GetParent();
+		TimetableForWardCollection timetable = await parent.GetTimetable();
+		Assert.That(actual: await timetable.CountAsync(), expression: Is.EqualTo(expected: 7));
 	}
 	#endregion
 }
