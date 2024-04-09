@@ -1,4 +1,5 @@
-using System.Diagnostics;
+using System.Collections;
+using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
@@ -20,23 +21,27 @@ internal sealed class TimetableBuilder : ITimetableBuilder
 		_days = new Dictionary<int, BaseTimetableForDayBuilder>();
 	}
 
-	private sealed record CreateTimetableRequest(int ClassId, IEnumerable<Timetable> Timetable)
+	private TimetableBuilder(
+		ApiClient client,
+		int classId,
+		IEnumerable<TimetableForClass> currentTimetable
+	) : this(client: client, classId: classId)
 	{
-		public override string ToString() => $"[ClassId={ClassId},Timetable={{{String.Join(", ", Timetable)}}}]";
+		_days = currentTimetable.ToDictionary(
+			keySelector: t => t.DayOfWeek.Id,
+			elementSelector: t => TimetableForDayBuilder.Create(t.Subjects)
+		);
 	}
 
-	private sealed record SubjectOnTimetable(int Id, int Number, TimeSpan Start, TimeSpan End)
-	{
-		public override string ToString() => $"[Id={Id},Number={Number},Start={Start},End={End}]";
-	}
-
-	private sealed record Timetable(int DayOfWeekId, IEnumerable<SubjectOnTimetable> Subjects)
-	{
-		public override string ToString() => $"[DayOfWeekId={DayOfWeekId},Subjects={{{String.Join(", ", Subjects)}}}]";
-	};
+	private sealed record CreateTimetableRequest(int ClassId, IEnumerable<Timetable> Timetable);
+	private sealed record SubjectOnTimetable(int Id, int Number, TimeSpan Start, TimeSpan End);
+	private sealed record Timetable(int DayOfWeekId, IEnumerable<SubjectOnTimetable> Subjects);
 
 	public BaseTimetableForDayBuilder ForDay(int dayOfWeekId)
 	{
+		if (_days.TryGetValue(key: dayOfWeekId, value: out BaseTimetableForDayBuilder? value))
+			return value;
+
 		BaseTimetableForDayBuilder builder = TimetableForDayBuilder.Create();
 		_days.Add(key: dayOfWeekId, value: builder);
 		return builder;
@@ -44,19 +49,26 @@ internal sealed class TimetableBuilder : ITimetableBuilder
 
 	public async Task Save(CancellationToken cancellationToken = default(CancellationToken))
 	{
-		var request = new CreateTimetableRequest(ClassId: _classId, Timetable: _days.Select(
-			selector: d => new Timetable(DayOfWeekId: d.Key, Subjects: d.Value.Subjects.Select(
-				selector: s => new SubjectOnTimetable(Id: s.SubjectId, Number: s.Number, Start: s.StartTime, End: s.EndTime)
-			))
-		));
-		Debug.WriteLine(request);
 		await _client.PutAsync<CreateTimetableRequest>(
 			apiMethod: TimetableControllerMethods.CreateTimetable,
-			arg: request,
+			arg: new CreateTimetableRequest(ClassId: _classId, Timetable: _days.Select(
+				selector: d => new Timetable(DayOfWeekId: d.Key, Subjects: d.Value.Subjects.Select(
+					selector: s => new SubjectOnTimetable(Id: s.SubjectId, Number: s.Number, Start: s.StartTime, End: s.EndTime)
+				))
+			)),
 			cancellationToken: cancellationToken
 		);
 	}
 
 	internal static ITimetableBuilder Create(ApiClient client, int classId)
 		=> new TimetableBuilder(client: client, classId: classId);
+
+	internal static ITimetableBuilder Create(ApiClient client, int classId, IEnumerable<TimetableForClass> currentTimetable)
+		=> new TimetableBuilder(client: client, classId: classId, currentTimetable: currentTimetable);
+
+	public IEnumerator<KeyValuePair<int, BaseTimetableForDayBuilder>> GetEnumerator()
+		=> _days.GetEnumerator();
+
+	IEnumerator IEnumerable.GetEnumerator() =>
+		GetEnumerator();
 }

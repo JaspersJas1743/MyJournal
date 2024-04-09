@@ -85,7 +85,7 @@ public class Class : ISubEntity
 		=> await _timetable;
 
 	public async Task<ITimetableBuilder> CreateTimetable()
-		=> InitTimetableBuilder.Create(client: _client).ForClass(classId: Id);
+		=> InitTimetableBuilder.Create(client: _client).ForClass(classId: Id, currentTimetable: await _timetable);
 	#endregion
 	#endregion
 }
