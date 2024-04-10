@@ -1,0 +1,11 @@
+﻿version: '3.9'
+services:
+  myjournal.api:
+    image: myjournal.api
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: MyJournal.API/Dockerfile
+    ports:
+      - "8080:8080"

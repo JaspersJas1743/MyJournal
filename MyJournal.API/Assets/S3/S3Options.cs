@@ -6,13 +6,19 @@ public sealed class S3Options
 	public string SecretAccessKey { get; init; } = null!;
 	public string Endpoint { get; init; } = null!;
 	public string BucketName { get; init; } = null!;
-}
 
-public static class S3OptionsExtension
-{
-	public static S3Options GetS3Options(this IConfiguration configuration)
+	public static S3Options GetFromEnvironmentVariables()
 	{
-		return configuration.GetSection(key: "AWS").Get<S3Options>()
-			?? throw new ArgumentNullException(message: "Данные для AWS S3 отсутствуют или некорректны.", paramName: nameof(S3Options));
+		return new S3Options()
+		{
+			Endpoint = Environment.GetEnvironmentVariable(variable: "AWSEndpoint")
+				?? throw new ArgumentException(message: "Параметр AWSEndpoint отсутствует или некорректен.", paramName: "AWSEndpoint"),
+			BucketName = Environment.GetEnvironmentVariable(variable: "AWSBucketName")
+				?? throw new ArgumentException(message: "Параметр AWSBucketName отсутствует или некорректен.", paramName: "AWSBucketName"),
+			AccessKeyId = Environment.GetEnvironmentVariable(variable: "AWSAccessKeyId")
+				?? throw new ArgumentException(message: "Параметр AWSAccessKeyId отсутствует или некорректен.", paramName: "AWSAccessKeyId"),
+			SecretAccessKey = Environment.GetEnvironmentVariable(variable: "AWSSecretAccessKey")
+				?? throw new ArgumentException(message: "Параметр AWSSecretAccessKey отсутствует или некорректен.", paramName: "AWSSecretAccessKey")
+		};
 	}
 }

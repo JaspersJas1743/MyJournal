@@ -31,14 +31,14 @@ public class Program
 	{
 		WebApplicationBuilder builder = WebApplication.CreateBuilder(args: args);
 
-		string dbConnectionString = builder.Configuration.GetConnectionString(name: "MyJournalDB")
+		string dbConnectionString = Environment.GetEnvironmentVariable(variable: "MyJournalDB")
 			?? throw new ArgumentException(message: "Строка подключения к MyJournalDB отсутствует или некорректна", paramName: nameof(dbConnectionString));
 
 		builder.Services.AddDbContext<MyJournalContext>(
 			optionsAction: options => options.UseSqlServer(connectionString: dbConnectionString)
 		);
 
-		S3Options configuration = builder.Configuration.GetS3Options();
+		S3Options configuration = S3Options.GetFromEnvironmentVariables();
 		AWSOptions awsOptions = new AWSOptions
 		{
 			DefaultClientConfig = { ServiceURL = configuration.Endpoint },
@@ -117,11 +117,18 @@ public class Program
 				   name: "MyJournal DB Context",
 				   tags: new string[] { "context", "db-context", "database" });
 
-		string healthDbConnectionString = builder.Configuration.GetConnectionString(name: "MyJournalHealthDB")
+		string healthDbConnectionString = Environment.GetEnvironmentVariable(variable: "MyJournalHealthDB")
 			?? throw new ArgumentException(message: "Строка подключения к MyJournalHealthDB отсутствует или некорректна", paramName: nameof(healthDbConnectionString));
-		builder.Services.AddHealthChecksUI().AddSqlServerStorage(connectionString: healthDbConnectionString);
+		builder.Services.AddHealthChecksUI(setupSettings: settings =>
+		{
+			settings.AddHealthCheckEndpoint(name: "Health for databases", uri: "http://127.0.0.1:8080/health/db");
+			settings.AddHealthCheckEndpoint(name: "Health for db context", uri: "http://127.0.0.1:8080/health/context");
+			settings.AddHealthCheckEndpoint(name: "Health for AWS", uri: "http://127.0.0.1:8080/health/aws");
+			settings.AddHealthCheckEndpoint(name: "Health for S3 Storage", uri: "http://127.0.0.1:8080/health/s3");
+			settings.SetEvaluationTimeInSeconds(seconds: 10);
+		}).AddSqlServerStorage(connectionString: healthDbConnectionString);
 
-		JwtOptions jwtOptions = builder.Configuration.GetJwtOptions();
+		JwtOptions jwtOptions = JwtOptions.GetFromEnvironmentVariables();
 		builder.Services.AddSingleton<JwtOptions>(implementationInstance: jwtOptions);
 		builder.Services.AddScoped<IJwtService, JwtService>();
 
@@ -168,7 +175,6 @@ public class Program
 				policyBuilder.RequireClaim(claimType: MyJournalClaimTypes.Role, allowedValues: new string[] { nameof(UserRoles.Teacher), nameof(UserRoles.Administrator) })
 			);
 		});
-
 		builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
 			.AddJwtBearer(configureOptions: options =>
 			{
@@ -208,8 +214,7 @@ public class Program
 
 		WebApplication app = builder.Build();
 
-		if (app.Environment.IsDevelopment())
-			app.UseSwagger().UseSwaggerUI();
+		app.UseSwagger().UseSwaggerUI();
 
 		app.MapHealthChecks(pattern: "/health", options: CreateHealthCheckOptions(predicate: _ => true));
 		app.MapHealthChecks(pattern: "/health/db", options: CreateHealthCheckOptions(predicate: reg => reg.Tags.Contains(item: "db")));
