@@ -1,4 +1,4 @@
-using MyJournal.Core.EstimationChanger;
+using MyJournal.Core.Builders.EstimationChanger;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
@@ -60,7 +60,7 @@ public sealed class EstimationOfStudent : Estimation
 	}
 
 	public IEstimationChanger Change()
-		=> EstimationChanger.EstimationChanger.Create(client: _client, estimation: this);
+		=> Builders.EstimationChanger.EstimationChanger.Create(client: _client, estimation: this);
 
 	public async Task Delete(
 		CancellationToken cancellationToken = default(CancellationToken)

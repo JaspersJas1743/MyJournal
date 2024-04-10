@@ -15,12 +15,15 @@ public sealed class Student : User
 	private readonly AsyncLazy<StudyingSubjectCollection> _studyingSubjects;
 	private readonly HubConnection _studentHubConnection;
 
+	private AsyncLazy<TimetableForStudentCollection> _timetable;
+
 	private Student(
 		ApiClient client,
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		AsyncLazy<StudyingSubjectCollection> studyingSubjects
+		AsyncLazy<StudyingSubjectCollection> studyingSubjects,
+		AsyncLazy<TimetableForStudentCollection> timetable
 	) : base(
 		client: client,
 		fileService: fileService,
@@ -33,10 +36,14 @@ public sealed class Student : User
 			url: StudentHubMethods.HubEndpoint,
 			token: client.Token!
 		);
+		_timetable = timetable;
 	}
 
 	public async Task<StudyingSubjectCollection> GetStudyingSubjects()
 		=> await _studyingSubjects;
+
+	public async Task<TimetableForStudentCollection> GetTimetable()
+		=> await _timetable;
 
 	internal static async Task<Student> Create(
 		ApiClient client,
@@ -52,6 +59,10 @@ public sealed class Student : User
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
 			studyingSubjects: new AsyncLazy<StudyingSubjectCollection>(valueFactory: async () => await StudyingSubjectCollection.Create(
+				client: client,
+				cancellationToken: cancellationToken
+			)),
+			timetable: new AsyncLazy<TimetableForStudentCollection>(valueFactory: async () => await TimetableForStudentCollection.Create(
 				client: client,
 				cancellationToken: cancellationToken
 			))
@@ -110,6 +121,16 @@ public sealed class Student : User
 					ApiMethod = AssessmentControllerMethods.GetAverageAssessment
 				}
 			));
+		});
+		_studentHubConnection.On<IEnumerable<int>>(methodName: StudentHubMethods.ChangedTimetable, handler: async (subjectIds) =>
+		{
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: -1, subjectIds: subjectIds);
+			await InvokeIfStudyingSubjectsAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
+			_timetable = new AsyncLazy<TimetableForStudentCollection>(valueFactory: async () => await TimetableForStudentCollection.Create(
+				client: Client,
+				cancellationToken: cancellationToken
+			));
+			OnChangedTimetable(e: e);
 		});
 	}
 

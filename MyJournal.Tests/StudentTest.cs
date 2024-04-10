@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
+using MyJournal.Core.Builders.TimetableBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
@@ -42,6 +44,17 @@ public class StudentTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		return await service.SignIn(credentials: credentials) as Student;
+	}
+
+	private async Task<Administrator?> GetAdministrator()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		return await service.SignIn(credentials: credentials) as Administrator;
 	}
 	#endregion
 
@@ -382,20 +395,26 @@ public class StudentTest
 		await lastAssessment.Change().GradeTo(newGradeId: 2).CommentTo(newCommentId: 2).Save();
 		await Task.Delay(millisecondsDelay: 50);
 
-		Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));
-		Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetEstimations();
+        Assert.Multiple(testDelegate: () =>
+        {
+            Assert.That(actual: gradeOfLastStudent.AverageAssessment, expression: Is.EqualTo(expected: "4.67"));
+            Assert.That(actual: gradeOfLastStudent.FinalAssessment, expression: Is.EqualTo(expected: null));
+        });
+        IEnumerable<Estimation> estimations = await gradeOfLastStudent.GetEstimations();
 		Assert.That(actual: estimations.Count(), expression: Is.EqualTo(expected: 3));
 		await CheckEstimationWithIdEqualsOne(estimation: estimations.ElementAtOrDefault(index: 0));
 		await CheckEstimationWithIdEqualsTwo(estimation: estimations.ElementAtOrDefault(index: 1));
 		Estimation? thirdEstimation = estimations.ElementAtOrDefault(index: 2);
-		Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 66));
-		Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
-		Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
-		Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: "КлР"));
-		Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Классная работа"));
-		Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
-	}
+        Assert.Multiple(testDelegate: () =>
+        {
+            Assert.That(actual: thirdEstimation.Id, expression: Is.EqualTo(expected: 66));
+            Assert.That(actual: thirdEstimation.Assessment, expression: Is.EqualTo(expected: "5"));
+            Assert.That(actual: thirdEstimation.CreatedAt, expression: Is.EqualTo(expected: DateTime.Parse(s: "2024-03-29T15:42:01.883")));
+            Assert.That(actual: thirdEstimation.Comment, expression: Is.EqualTo(expected: "КлР"));
+            Assert.That(actual: thirdEstimation.Description, expression: Is.EqualTo(expected: "Классная работа"));
+            Assert.That(actual: thirdEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
+        });
+    }
 
 	[Test]
 	public async Task StudentGetAssessments_AfterDeletedAssessment_ShouldPassed()
@@ -416,6 +435,130 @@ public class StudentTest
 		await Task.Delay(millisecondsDelay: 50);
 
 		await CheckGrade(grade: grade);
+	}
+	#endregion
+
+	#region Timetable
+	private async Task CheckTimetable(TimetableForStudent timetable)
+	{
+		Assert.Multiple(testDelegate: () =>
+		{
+			Assert.That(actual: timetable.Subject.Id, expression: Is.EqualTo(expected: 47));
+			Assert.That(actual: timetable.Subject.Number, expression: Is.AnyOf(1, 2));
+			Assert.That(actual: timetable.Subject.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+			Assert.That(actual: timetable.Subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+			Assert.That(actual: timetable.Subject.Date, expression: Is.AnyOf(
+				new DateOnly(year: 2024, month: 4, day: 8),
+				new DateOnly(year: 2024, month: 4, day: 9),
+				new DateOnly(year: 2024, month: 4, day: 10),
+				new DateOnly(year: 2024, month: 4, day: 11),
+				new DateOnly(year: 2024, month: 4, day: 12),
+				new DateOnly(year: 2024, month: 4, day: 13),
+				new DateOnly(year: 2024, month: 4, day: 14),
+				new DateOnly(year: 2024, month: 4, day: 15),
+				new DateOnly(year: 2024, month: 4, day: 16)
+			));
+			Assert.That(actual: timetable.Subject.Start, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 0, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 0, seconds: 0)
+			));
+			Assert.That(actual: timetable.Subject.End, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 45, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 45, seconds: 0)
+			));
+			Assert.That(
+				actual: timetable.Estimations.Select(selector: e => e.Grade),
+				expression: Is.EquivalentTo(expected: Enumerable.Empty<string>())
+			);
+			Assert.That(actual: timetable.Break, expression: Is.AnyOf(null, new BreakAfterSubject(countMinutes: 15)));
+		});
+	}
+
+	private async Task PrintTimetable(IEnumerable<TimetableForStudent> timetable)
+	{
+		foreach (TimetableForStudent t in timetable)
+		{
+			Debug.WriteLine(
+				$"timetable:\n" +
+				$"\tsubject=[Id={t.Subject.Id},Date={t.Subject.Date},Name={t.Subject.Name},ClassName={t.Subject.ClassName},Number={t.Subject.Number},Start={t.Subject.Start},End={t.Subject.End}]\n" +
+				$"\tbreak=[{t.Break?.CountMinutes}]"
+			);
+		}
+	}
+
+	private async Task PrintTimetable(TimetableForStudentCollection timetable)
+	{
+		await foreach (KeyValuePair<DateOnly, TimetableForStudent[]> t in timetable)
+		{
+			Debug.WriteLine($"date=[{t.Key}]");
+			foreach (TimetableForStudent tt in t.Value)
+			{
+				Debug.WriteLine(
+					$"timetable:\n" +
+					$"\tsubject=[Id={tt.Subject.Id},Date={tt.Subject.Date},Name={tt.Subject.Name},ClassName={tt.Subject.ClassName},Number={tt.Subject.Number},Start={tt.Subject.Start},End={tt.Subject.End}]\n" +
+					$"\tbreak=[{tt.Break?.CountMinutes}]"
+				);
+			}
+		}
+	}
+
+	[Test]
+	public async Task StudentGetTimetableBySubject_WithDefaultValue_ShouldPassed()
+	{
+		Student? student = await GetStudent();
+		StudyingSubjectCollection subjects = await student?.GetStudyingSubjects()!;
+		StudyingSubject subject = await subjects.SingleAsync(s => s.Id == 47);
+		IEnumerable<TimetableForStudent> timetables = await subject.GetTimetable();
+		foreach (TimetableForStudent timetable in timetables)
+			await CheckTimetable(timetable: timetable);
+	}
+
+	[Test]
+	public async Task StudentGetTimetableByDate_WithDefaultValue_ShouldPassed()
+	{
+		Student? student = await GetStudent();
+		TimetableForStudentCollection timetable = await student.GetTimetable();
+		Assert.That(actual: await timetable.CountAsync(), expression: Is.EqualTo(expected: 7));
+	}
+
+	[Test]
+	public async Task TeacherGetTimetableBySubject_AfterChangeTimetable_ShouldPassed()
+	{
+		Student? student = await GetStudent();
+		StudyingSubjectCollection subjects = await student?.GetStudyingSubjects()!;
+		StudyingSubject subject = await subjects.SingleAsync(s => s.Id == 47);
+		await PrintTimetable(timetable: await subject.GetTimetable());
+
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		ITimetableBuilder t = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = t.ForDay(dayOfWeekId: 1);
+		day.RemoveSubject(item: day.Last());
+		await t.Save();
+
+		await Task.Delay(millisecondsDelay: 50);
+
+		await PrintTimetable(timetable: await subject.GetTimetable());
+	}
+
+	[Test]
+	public async Task StudentGetTimetableByDate_AfterChangedTimetable_ShouldPassed()
+	{
+		Student? student = await GetStudent();
+		await PrintTimetable(await student.GetTimetable());
+
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		ITimetableBuilder builder = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = builder.ForDay(dayOfWeekId: 1);
+		day.RemoveSubject(item: day.Last());
+		await builder.Save();
+
+		await Task.Delay(millisecondsDelay: 50);
+
+		await PrintTimetable(await student.GetTimetable());
 	}
 	#endregion
 }

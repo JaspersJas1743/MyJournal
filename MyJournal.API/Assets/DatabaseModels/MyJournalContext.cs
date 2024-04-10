@@ -687,16 +687,18 @@ public partial class MyJournalContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__TypesOfD__3214EC07AC2C430C");
 
-            entity.Property(e => e.Type).HasConversion(
+            entity.Property(e => e.DayType).HasColumnName("TypeOfDay");
+
+            entity.Property(e => e.DayType).HasConversion(
                 v => v.ToString(),
                 v => Enum.Parse<TypesOfDay>(v)
             );
 
             entity.ToTable("TypesOfDay");
 
-            entity.HasIndex(e => e.Type, "UQ__TypesOfD__B0485BAA31595AF9").IsUnique();
+            entity.HasIndex(e => e.DayType, "UQ__TypesOfD__B0485BAA31595AF9").IsUnique();
 
-            entity.Property(e => e.Type).HasMaxLength(10);
+            entity.Property(e => e.DayType).HasMaxLength(10);
         });
 
         modelBuilder.Entity<User>(entity =>

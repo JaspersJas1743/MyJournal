@@ -25,4 +25,7 @@ public sealed class AdministratorHub : Hub<IAdministratorHub>
 
 	public async Task DeletedAssessmentToStudent(int assessmentId, int studentId, int subjectId)
 		=> await Clients.Caller.DeletedAssessmentToStudent(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
+
+	public async Task ChangedTimetable(int classId)
+		=> await Clients.Caller.ChangedTimetable(classId: classId);
 }

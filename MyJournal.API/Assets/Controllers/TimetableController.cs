@@ -1,9 +1,11 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
+using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.Validation;
 using MyJournal.API.Assets.Validation.Validators;
 
@@ -13,7 +15,11 @@ namespace MyJournal.API.Assets.Controllers;
 [Route(template: "api/timetable")]
 public sealed class TimetableController(
 	MyJournalContext context,
-	ILogger<TimetableController> logger
+	ILogger<TimetableController> logger,
+	IHubContext<TeacherHub, ITeacherHub> teacherHubContext,
+	IHubContext<StudentHub, IStudentHub> studentHubContext,
+	IHubContext<ParentHub, IParentHub> parentHubContext,
+	IHubContext<AdministratorHub, IAdministratorHub> administratorHubContext
 ) : MyJournalBaseController(context: context)
 {
 	private readonly MyJournalContext _context = context;
@@ -28,18 +34,15 @@ public sealed class TimetableController(
 	[Validator<GetTimetableBySubjectAndClassRequestValidator>]
 	public sealed record GetTimetableBySubjectAndClassRequest(int SubjectId, int ClassId);
 
-	public sealed record Subject(int Id, int Number, string ClassName, string Name, DateOnly Date, TimeSpan Start, TimeSpan End);
+	public sealed record GetTimetableResponseSubject(int Id, int Number, string ClassName, string Name, DateOnly Date, TimeSpan Start, TimeSpan End);
 	public sealed record Estimation(string Grade);
 	public sealed record Break(double CountMinutes);
-	public sealed record GetTimetableWithAssessmentsResponse(Subject Subject, IEnumerable<Estimation> Assessments, Break? Break)
+	public sealed record GetTimetableWithAssessmentsResponse(GetTimetableResponseSubject Subject, IEnumerable<Estimation> Estimations, Break? Break)
 	{
-		public Subject Subject { get; set; } = Subject;
-		public IEnumerable<Estimation> Assessments { get; set; } = Assessments;
 		public Break? Break { get; set; } = Break;
 	}
-	public sealed record GetTimetableWithoutAssessmentsResponse(Subject Subject, Break? Break)
+	public sealed record GetTimetableWithoutAssessmentsResponse(GetTimetableResponseSubject Subject, Break? Break)
 	{
-		public Subject Subject { get; set; } = Subject;
 		public Break? Break { get; set; } = Break;
 	}
 
@@ -47,23 +50,21 @@ public sealed class TimetableController(
 	public sealed record GetTimetableByClassRequest(int ClassId);
 	public sealed record DayOfWeekOnTimetable(int Id, string Name);
 	public sealed record ShortSubject(int Id, int Number, string Name, TimeSpan Start, TimeSpan End);
-	public sealed record SubjectInClass(ShortSubject ShortSubject, Break? Break)
+	public sealed record GetTimetableByClassResponseSubject(ShortSubject Subject, Break? Break)
 	{
-		public ShortSubject ShortSubject { get; set; } = ShortSubject;
+		public ShortSubject Subject { get; set; } = Subject;
 		public Break? Break { get; set; } = Break;
 	}
-	public sealed record GetTimetableByClassResponse(DayOfWeekOnTimetable DayOfWeek, int TotalHours, IEnumerable<SubjectInClass> Timetable)
-	{
-		public DayOfWeekOnTimetable DayOfWeek { get; set; } = DayOfWeek;
-		public int TotalHours { get; set; } = TotalHours;
-		public IEnumerable<SubjectInClass> Timetable { get; set; } = Timetable;
-	}
 
-	public sealed record SubjectOnTimetable(int Id, int Number, TimeSpan Start, TimeSpan End);
-	public sealed record Shedule(int DayOfWeekId, IEnumerable<SubjectOnTimetable> Subjects);
+	public sealed record GetTimetableByClassResponse(DayOfWeekOnTimetable DayOfWeek, int TotalHours, IEnumerable<GetTimetableByClassResponseSubject> Subjects)
+	{
+		public IEnumerable<GetTimetableByClassResponseSubject> Subjects { get; set; } = Subjects;
+	}
 
 	[Validator<CreateTimetableRequestValidator>]
 	public sealed record CreateTimetableRequest(int ClassId, IEnumerable<Shedule> Timetable);
+	public sealed record SubjectOnTimetable(int Id, int Number, TimeSpan Start, TimeSpan End);
+	public sealed record Shedule(int DayOfWeekId, IEnumerable<SubjectOnTimetable> Subjects);
 	#endregion
 
 	#region Methods
@@ -97,6 +98,7 @@ public sealed class TimetableController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		logger.LogCritical($"request={request.Day}");
 		int userId = GetAuthorizedUserId();
 		GetTimetableWithAssessmentsResponse[] timings = await _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
@@ -107,7 +109,7 @@ public sealed class TimetableController(
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
 			.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-				new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
+				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
 				t.Lesson.Assessments.Where(a =>
 					DateOnly.FromDateTime(a.Datetime) == request.Day &&
 					t.StartTime <= a.Datetime.TimeOfDay &&
@@ -170,7 +172,7 @@ public sealed class TimetableController(
 				.OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
 				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
 					t.Lesson.Assessments.Where(a =>
 						DateOnly.FromDateTime(a.Datetime) == d &&
 						t.StartTime <= a.Datetime.TimeOfDay &&
@@ -222,7 +224,7 @@ public sealed class TimetableController(
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
 			.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-				new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
+				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
 				t.Lesson.Assessments.Where(a =>
 					DateOnly.FromDateTime(a.Datetime) == request.Day &&
 					t.StartTime <= a.Datetime.TimeOfDay &&
@@ -285,7 +287,7 @@ public sealed class TimetableController(
 				.OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
 				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
 					t.Lesson.Assessments.Where(a =>
 						DateOnly.FromDateTime(a.Datetime) == d &&
 						t.StartTime <= a.Datetime.TimeOfDay &&
@@ -338,7 +340,7 @@ public sealed class TimetableController(
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
 			.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
-				new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
+				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
 				null
 			)).ToArrayAsync(cancellationToken: cancellationToken);
 
@@ -397,7 +399,7 @@ public sealed class TimetableController(
 				).OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
 				.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
-					new Subject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
 					null
 				))
 			);
@@ -428,17 +430,18 @@ public sealed class TimetableController(
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableByClassResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableByClassResponse>> GetTimetableForGroup(
+	public async Task<ActionResult<GetTimetableByClassResponse>> GetTimetableForClass(
 		[FromQuery] GetTimetableByClassRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		GetTimetableByClassResponse[] timings = await _context.DaysOfWeeks.AsNoTracking()
+			.Where(predicate: d => d.TypeOfDayNavigation.DayType == TypesOfDay.WorkingDay)
 			.Select(selector: d => new GetTimetableByClassResponse(
 				new DayOfWeekOnTimetable(d.Id, d.DayOfWeek),
 				d.LessonTimings.Count(t => t.ClassId == request.ClassId),
 				d.LessonTimings.Where(t => t.ClassId == request.ClassId)
-					.Select(t => new SubjectInClass(
+					.Select(t => new GetTimetableByClassResponseSubject(
 						new ShortSubject(t.LessonId, t.Number, t.Lesson.Name, t.StartTime, t.EndTime),
 						null
 					))
@@ -446,14 +449,14 @@ public sealed class TimetableController(
 
 		foreach (GetTimetableByClassResponse timing in timings)
 		{
-			for (int i = 0; i < timing.Timetable.Count(); ++i)
+			timing.Subjects = timing.Subjects.OrderBy(t => t.Subject.Number);
+			for (int i = 0; i < timing.Subjects.Count(); ++i)
 			{
-				SubjectInClass? currentTiming = timing.Timetable.ElementAtOrDefault(index: i);
-				SubjectInClass? nextTiming = timing.Timetable.ElementAtOrDefault(index: i + 1);
+				GetTimetableByClassResponseSubject? currentTiming = timing.Subjects.ElementAtOrDefault(index: i);
+				GetTimetableByClassResponseSubject? nextTiming = timing.Subjects.ElementAtOrDefault(index: i + 1);
 				if (nextTiming is not null)
-					currentTiming!.Break = new Break(CountMinutes: (nextTiming.ShortSubject.Start - currentTiming.ShortSubject.End).TotalMinutes);
+					currentTiming!.Break = new Break(CountMinutes: (nextTiming.Subject.Start - currentTiming.Subject.End).TotalMinutes);
 			}
-			timing.Timetable = timing.Timetable.OrderBy(t => t.ShortSubject.Number);
 		}
 
 		return Ok(value: timings);
@@ -527,6 +530,25 @@ public sealed class TimetableController(
 		await _context.LessonTimings.AddRangeAsync(entities: addedTimings, cancellationToken: cancellationToken);
 
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		IQueryable<string> studentIds = _context.Students.AsNoTracking().Where(predicate: s => s.ClassId == request.ClassId)
+			.Select(selector: s => s.UserId.ToString());
+
+		IQueryable<string> teacherIds = _context.Teachers.AsNoTracking().Where(predicate: t => t.TeachersLessons.Any(
+			l => l.Classes.Any(c => c.Id == request.ClassId)
+		)).Select(selector: t => t.UserId.ToString());
+
+		IQueryable<string> parentIds = _context.Parents.AsNoTracking().Where(predicate: p => p.Children.ClassId == request.ClassId)
+			.Select(selector: p => p.UserId.ToString());
+
+		IQueryable<string> administratorIds = _context.Administrators.AsNoTracking().Select(selector: a => a.UserId.ToString());
+
+		IEnumerable<int> subjectIds = request.Timetable.SelectMany(selector: s => s.Subjects).Select(selector: s => s.Id).Distinct();
+
+		await studentHubContext.Clients.Users(userIds: studentIds).ChangedTimetable(subjectIds: subjectIds);
+		await parentHubContext.Clients.Users(userIds: parentIds).ChangedTimetable(subjectIds: subjectIds);
+		await teacherHubContext.Clients.Users(userIds: teacherIds).ChangedTimetable(classId: request.ClassId, subjectIds: subjectIds);
+		await administratorHubContext.Clients.Users(userIds: administratorIds).ChangedTimetable(classId: request.ClassId);
 
 		return Ok();
 	}

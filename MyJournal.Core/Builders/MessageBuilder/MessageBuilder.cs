@@ -3,7 +3,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
-namespace MyJournal.Core.MessageBuilder;
+namespace MyJournal.Core.Builders.MessageBuilder;
 
 internal sealed class MessageBuilder : IMessageBuilder
 {

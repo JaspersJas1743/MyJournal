@@ -218,6 +218,14 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 		DeletedAssessment?.Invoke(e: e);
 	}
 
+	internal async Task OnChangedTimetable(ChangedTimetableEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnChangedTimetable(e: e),
+			filter: subject => e.SubjectIds.Contains(value: subject.Id)
+		);
+	}
+
 	private async Task InvokeIfSubjectsAreCreated(
 		Func<WardSubjectStudying, Task> invocation,
 		Predicate<WardSubjectStudying> filter

@@ -1,6 +1,6 @@
 using MyJournal.Core.SubEntities;
 
-namespace MyJournal.Core.TaskBuilder;
+namespace MyJournal.Core.Builders.TaskBuilder;
 
 public interface IInitTaskBuilder
 {

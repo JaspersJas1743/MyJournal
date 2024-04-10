@@ -42,6 +42,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	public event CreatedAssessmentHandler CreatedAssessment;
 	public event ChangedAssessmentHandler ChangedAssessment;
 	public event DeletedAssessmentHandler DeletedAssessment;
+	public event ChangedTimetableHandler ChangedTimetable;
 	#endregion
 
 	#region Methods
@@ -232,6 +233,14 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
 
 		DeletedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedTimetable(ChangedTimetableEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnChangedTimetable(e: e),
+			filter: subject => subject.ClassId == e.ClassId && e.SubjectIds.Contains(value: subject.Id)
+		);
 	}
 
 	private async Task InvokeIfSubjectsAreCreated(

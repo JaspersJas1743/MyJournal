@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
+using MyJournal.Core.Builders.TimetableBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
@@ -42,6 +44,17 @@ public class ParentTest
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
 		return await service.SignIn(credentials: credentials) as Parent;
+	}
+
+	private async Task<Administrator?> GetAdministrator()
+	{
+		IAuthorizationService<User> service = _serviceProvider.GetService<IAuthorizationService<User>>()!;
+		UserAuthorizationCredentials credentials = new UserAuthorizationCredentials(
+			login: "test4",
+			password: "test4test4",
+			client: UserAuthorizationCredentials.Clients.Windows
+		);
+		return await service.SignIn(credentials: credentials) as Administrator;
 	}
 	#endregion
 
@@ -409,6 +422,130 @@ public class ParentTest
 		await Task.Delay(millisecondsDelay: 50);
 
 		await CheckGrade(grade: grade);
+	}
+	#endregion
+
+	#region Timetable
+	private async Task CheckTimetable(TimetableForStudent timetable)
+	{
+		Assert.Multiple(testDelegate: () =>
+		{
+			Assert.That(actual: timetable.Subject.Id, expression: Is.EqualTo(expected: 47));
+			Assert.That(actual: timetable.Subject.Number, expression: Is.AnyOf(1, 2));
+			Assert.That(actual: timetable.Subject.ClassName, expression: Is.EqualTo(expected: "11 класс"));
+			Assert.That(actual: timetable.Subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
+			Assert.That(actual: timetable.Subject.Date, expression: Is.AnyOf(
+				new DateOnly(year: 2024, month: 4, day: 8),
+				new DateOnly(year: 2024, month: 4, day: 9),
+				new DateOnly(year: 2024, month: 4, day: 10),
+				new DateOnly(year: 2024, month: 4, day: 11),
+				new DateOnly(year: 2024, month: 4, day: 12),
+				new DateOnly(year: 2024, month: 4, day: 13),
+				new DateOnly(year: 2024, month: 4, day: 14),
+				new DateOnly(year: 2024, month: 4, day: 15),
+				new DateOnly(year: 2024, month: 4, day: 16)
+			));
+			Assert.That(actual: timetable.Subject.Start, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 0, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 0, seconds: 0)
+			));
+			Assert.That(actual: timetable.Subject.End, expression: Is.AnyOf(
+				new TimeSpan(hours: 9, minutes: 45, seconds: 0),
+				new TimeSpan(hours: 10, minutes: 45, seconds: 0)
+			));
+			Assert.That(
+				actual: timetable.Estimations.Select(selector: e => e.Grade),
+				expression: Is.EquivalentTo(expected: Enumerable.Empty<string>())
+			);
+			Assert.That(actual: timetable.Break, expression: Is.EqualTo(expected: null));
+		});
+	}
+
+	private async Task PrintTimetable(IEnumerable<TimetableForStudent> timetable)
+	{
+		foreach (TimetableForStudent t in timetable)
+		{
+			Debug.WriteLine(
+				$"timetable:\n" +
+				$"\tsubject=[Id={t.Subject.Id},Date={t.Subject.Date},Name={t.Subject.Name},ClassName={t.Subject.ClassName},Number={t.Subject.Number},Start={t.Subject.Start},End={t.Subject.End}]\n" +
+				$"\tbreak=[{t.Break?.CountMinutes}]"
+			);
+		}
+	}
+
+	private async Task PrintTimetable(TimetableForWardCollection timetable)
+	{
+		await foreach (KeyValuePair<DateOnly, TimetableForStudent[]> t in timetable)
+		{
+			Debug.WriteLine($"date=[{t.Key}]");
+			foreach (TimetableForStudent tt in t.Value)
+			{
+				Debug.WriteLine(
+					$"timetable:\n" +
+					$"\tsubject=[Id={tt.Subject.Id},Date={tt.Subject.Date},Name={tt.Subject.Name},ClassName={tt.Subject.ClassName},Number={tt.Subject.Number},Start={tt.Subject.Start},End={tt.Subject.End}]\n" +
+					$"\tbreak=[{tt.Break?.CountMinutes}]"
+				);
+			}
+		}
+	}
+
+	[Test]
+	public async Task ParentGetTimetableBySubject_WithDefaultValue_ShouldPassed()
+	{
+		Parent? student = await GetParent();
+		WardSubjectStudyingCollection subjects = await student?.GetWardSubjectsStudying()!;
+		WardSubjectStudying subject = await subjects.SingleAsync(s => s.Id == 47);
+		IEnumerable<TimetableForStudent> timetables = await subject.GetTimetable();
+		foreach (TimetableForStudent timetable in timetables)
+			await CheckTimetable(timetable: timetable);
+	}
+
+	[Test]
+	public async Task StudentGetTimetableByDate_WithDefaultValue_ShouldPassed()
+	{
+		Parent? parent = await GetParent();
+		TimetableForWardCollection timetable = await parent.GetTimetable();
+		Assert.That(actual: await timetable.CountAsync(), expression: Is.EqualTo(expected: 7));
+	}
+
+	[Test]
+	public async Task ParentGetTimetableBySubject_AfterChangeTimetable_ShouldPassed()
+	{
+		Parent? parent = await GetParent();
+		WardSubjectStudyingCollection subjects = await parent?.GetWardSubjectsStudying()!;
+		WardSubjectStudying subject = await subjects.SingleAsync(s => s.Id == 47);
+		await PrintTimetable(timetable: await subject.GetTimetable());
+
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		ITimetableBuilder t = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = t.ForDay(dayOfWeekId: 1);
+		day.RemoveSubject(item: day.Last());
+		await t.Save();
+
+		await Task.Delay(millisecondsDelay: 50);
+
+		await PrintTimetable(timetable: await subject.GetTimetable());
+	}
+
+	[Test]
+	public async Task ParentGetTimetableByDate_AfterChangedTimetable_ShouldPassed()
+	{
+		Parent? parent = await GetParent();
+		await PrintTimetable(await parent.GetTimetable());
+
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		ITimetableBuilder builder = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = builder.ForDay(dayOfWeekId: 1);
+		day.RemoveSubject(item: day.Last());
+		await builder.Save();
+
+		await Task.Delay(millisecondsDelay: 50);
+
+		await PrintTimetable(await parent.GetTimetable());
 	}
 	#endregion
 }

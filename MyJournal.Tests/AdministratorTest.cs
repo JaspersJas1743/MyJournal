@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
+using MyJournal.Core.Builders.TimetableBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
@@ -422,6 +424,137 @@ public class AdministratorTest
 		await Task.Delay(millisecondsDelay: 50);
 
 		await CheckDefaultAssessments(grade: grade);
+	}
+	#endregion
+
+	#region Timetable
+	private readonly SubjectInClassOnTimetable[] _subjects = new SubjectInClassOnTimetable[]
+	{
+		new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 47, number: 1, name: "Физическая культура", start: TimeSpan.Parse("09:00:00"), end: TimeSpan.Parse("09:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+		new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 47, number: 2, name: "Физическая культура", start: TimeSpan.Parse("10:00:00"), end: TimeSpan.Parse("10:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+		new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 72, number: 3, name: "Проектная деятельность", start: TimeSpan.Parse("11:00:00"), end: TimeSpan.Parse("11:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+		new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 72, number: 4, name: "Проектная деятельность", start: TimeSpan.Parse("12:00:00"), end: TimeSpan.Parse("12:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+		new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 37, number: 5, name: "Русский язык", start: TimeSpan.Parse("13:00:00"), end: TimeSpan.Parse("13:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+	};
+
+	private async Task CheckTimetable(TimetableForClass timetable, int id, string dayName, int totalHours, IEnumerable<SubjectInClassOnTimetable> subjects)
+	{
+		Assert.Multiple(testDelegate: () =>
+		{
+			Assert.That(actual: timetable.DayOfWeek.Id, expression: Is.EqualTo(expected: id));
+			Assert.That(actual: timetable.DayOfWeek.Name, expression: Is.EqualTo(expected: dayName));
+			Assert.That(actual: timetable.TotalHours, expression: Is.EqualTo(expected: totalHours));
+			Assert.That(actual: timetable.Subjects, expression: Is.EquivalentTo(expected: subjects));
+		});
+	}
+
+	private async Task CheckMonday(TimetableForClass timetable)
+		=> await CheckTimetable(timetable: timetable, id: 1, dayName: "Понедельник", totalHours: 6, subjects: _subjects.Append(element: new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 37, number: 6, name: "Русский язык", start: TimeSpan.Parse("14:00:00"), end: TimeSpan.Parse("14:45:00")), @break: null)));
+
+	private async Task CheckMondayAfterChanged(TimetableForClass timetable)
+	{
+		await CheckTimetable(timetable: timetable, id: 1, dayName: "Понедельник", totalHours: 5, subjects: new SubjectInClassOnTimetable[]
+		{
+			new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 47, number: 1, name: "Физическая культура", start: TimeSpan.Parse("09:00:00"), end: TimeSpan.Parse("09:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+			new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 47, number: 2, name: "Физическая культура", start: TimeSpan.Parse("10:00:00"), end: TimeSpan.Parse("10:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+			new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 72, number: 3, name: "Проектная деятельность", start: TimeSpan.Parse("11:00:00"), end: TimeSpan.Parse("11:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+			new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 72, number: 4, name: "Проектная деятельность", start: TimeSpan.Parse("12:00:00"), end: TimeSpan.Parse("12:45:00")), @break: new BreakAfterSubject(countMinutes: 15)),
+			new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 37, number: 5, name: "Русский язык", start: TimeSpan.Parse("13:00:00"), end: TimeSpan.Parse("13:45:00")), @break: null)
+		});
+	}
+
+	private async Task CheckTuesday(TimetableForClass timetable)
+		=> await CheckTimetable(timetable: timetable, id: 2, dayName: "Вторник", totalHours: 6, _subjects.Append(element: new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 37, number: 6, name: "Русский язык", start: TimeSpan.Parse("14:00:00"), end: TimeSpan.Parse("14:45:00")), @break: null)));
+
+	private async Task CheckWednesday(TimetableForClass timetable)
+		=> await CheckTimetable(timetable: timetable, id: 3, dayName: "Среда", totalHours: 6, _subjects.Append(element: new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 37, number: 6, name: "Русский язык", start: TimeSpan.Parse("14:00:00"), end: TimeSpan.Parse("14:45:00")), @break: null)));
+
+	private async Task CheckThursday(TimetableForClass timetable)
+		=> await CheckTimetable(timetable: timetable, id: 4, dayName: "Четверг", totalHours: 6, _subjects.Append(element: new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 37, number: 6, name: "Русский язык", start: TimeSpan.Parse("14:00:00"), end: TimeSpan.Parse("14:45:00")), @break: null)));
+
+	private async Task CheckFriday(TimetableForClass timetable)
+		=> await CheckTimetable(timetable: timetable, id: 5, dayName: "Пятница", totalHours: 6, _subjects.Append(element: new SubjectInClassOnTimetable(subject: new SubjectOnTimetableByDay(id: 37, number: 6, name: "Русский язык", start: TimeSpan.Parse("14:00:00"), end: TimeSpan.Parse("14:45:00")), @break: null)));
+
+	private async Task CheckWorkWeek(IEnumerable<TimetableForClass> timetable)
+	{
+		await CheckMonday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 1));
+		await CheckTuesday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 2));
+		await CheckWednesday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 3));
+		await CheckThursday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 4));
+		await CheckFriday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 5));
+	}
+
+	private async Task CheckWorkWeekAfterChanged(IEnumerable<TimetableForClass> timetable)
+	{
+		await CheckMondayAfterChanged(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 1));
+		await CheckTuesday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 2));
+		await CheckWednesday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 3));
+		await CheckThursday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 4));
+		await CheckFriday(timetable: timetable.Single(predicate: t => t.DayOfWeek.Id == 5));
+	}
+
+	[Test]
+	public async Task AdministratorGetTimetable_WithDefaultValue_ShouldPassed()
+	{
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		IEnumerable<TimetableForClass> timetables = await @class.GetTimetable();
+		await CheckWorkWeek(timetable: timetables);
+	}
+
+	[Test]
+	public async Task AdministratorChangeTimetable_WithChangeSubject_ShouldPassed()
+	{
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		ITimetableBuilder timetable = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
+		_ = day.First().WithNumber(7).WithStartTime(TimeSpan.Parse("15:00:00")).WithEndTime(TimeSpan.Parse("15:45:00"));
+		await timetable.Save();
+	}
+
+	[Test]
+	public async Task AdministratorChangeTimetable_WithRemoveSubject_ShouldPassed()
+	{
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		ITimetableBuilder timetable = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
+		day.RemoveSubject(item: day.Last());
+		await timetable.Save();
+	}
+
+	[Test]
+	public async Task AdministratorChangeTimetable_WithAppendSubject_ShouldPassed()
+	{
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+		ITimetableBuilder timetable = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
+		day.AddSubject().WithNumber(number: 1).WithSubject(subjectId: 47).WithStartTime(time: TimeSpan.Parse("09:00:00")).WithEndTime(time: TimeSpan.Parse("09:45:00"));
+		day.AddSubject().WithNumber(number: 2).WithSubject(subjectId: 47).WithStartTime(time: TimeSpan.Parse("10:00:00")).WithEndTime(time: TimeSpan.Parse("10:45:00"));
+		await timetable.Save();
+	}
+
+	[Test]
+	public async Task AdministratorGetTimetable_AfterChangedTimetable_ShouldPassed()
+	{
+		Administrator? administrator = await GetAdministrator();
+		ClassCollection classes = await administrator?.GetClasses()!;
+		Class @class = await classes.SingleAsync(c => c.Id == 11);
+
+		ITimetableBuilder timetable = await @class.CreateTimetable();
+		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
+		day.RemoveSubject(item: day.Last());
+		await timetable.Save();
+
+		await Task.Delay(millisecondsDelay: 50);
+
+		await CheckWorkWeekAfterChanged(timetable: await @class.GetTimetable());
 	}
 	#endregion
 }

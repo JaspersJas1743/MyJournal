@@ -1,7 +1,7 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 
-namespace MyJournal.Core.EstimationBuilder;
+namespace MyJournal.Core.Builders.EstimationBuilder;
 
 public sealed class EstimationBuilder : IEstimationBuilder
 {

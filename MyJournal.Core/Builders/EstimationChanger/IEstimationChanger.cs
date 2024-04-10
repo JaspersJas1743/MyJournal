@@ -1,4 +1,4 @@
-namespace MyJournal.Core.EstimationChanger;
+namespace MyJournal.Core.Builders.EstimationChanger;
 
 public interface IEstimationChanger
 {

@@ -39,3 +39,7 @@ public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
 public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
 public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);
 #endregion
+
+#region Timetable
+public delegate void ChangedTimetableHandler(ChangedTimetableEventArgs e);
+#endregion

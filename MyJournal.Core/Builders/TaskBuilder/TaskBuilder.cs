@@ -3,7 +3,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
 
-namespace MyJournal.Core.TaskBuilder;
+namespace MyJournal.Core.Builders.TaskBuilder;
 
 internal sealed class TaskBuilder : ITaskBuilder
 {

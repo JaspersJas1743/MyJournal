@@ -1,4 +1,4 @@
-using MyJournal.Core.MessageBuilder;
+using MyJournal.Core.Builders.MessageBuilder;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
