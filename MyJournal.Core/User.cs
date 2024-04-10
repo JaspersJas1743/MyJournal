@@ -14,9 +14,7 @@ namespace MyJournal.Core;
 public class User
 {
 	#region Fields
-	private readonly ApiClient _client;
 	private readonly HubConnection _userHubConnection;
-
 	private readonly AsyncLazy<PersonalData> _personalData;
 	private readonly AsyncLazy<ChatCollection> _chats;
 	private readonly AsyncLazy<InterlocutorCollection> _interlocutors;
@@ -24,6 +22,8 @@ public class User
 	private readonly AsyncLazy<Security> _security;
 	private readonly AsyncLazy<ProfilePhoto> _photo;
 	private readonly AsyncLazy<Activity> _activity;
+
+	protected readonly ApiClient Client;
 	#endregion
 
 	#region Constructors
@@ -36,7 +36,7 @@ public class User
 	{
 		client.ClientId = information.Id;
 		fileService.ApiClient = client;
-		_client = client;
+		Client = client;
 		_userHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
 			url: UserHubMethods.HubEndpoint,
 			token: client.Token!
@@ -89,7 +89,7 @@ public class User
 		));
 	}
 
-	~User() => _client.Dispose();
+	~User() => Client.Dispose();
 	#endregion
 
 	#region Records
@@ -99,6 +99,7 @@ public class User
 	#region Events
 	public event JoinedInChatHandler? JoinedInChat;
 	public event ReceivedMessageHandler? ReceivedMessage;
+	public event ChangedTimetableHandler ChangedTimetable;
 	#endregion
 
 	#region Methods
@@ -175,7 +176,7 @@ public class User
 		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: async sessionIds =>
 		{
 			await InvokeIfSessionsAreCreated(invocation: async collection => await collection.OnClosedSession(
-				e: new ClosedSessionEventArgs(sessionIds: sessionIds, currentSessionAreClosed: sessionIds.Contains(value: _client.SessionId)),
+				e: new ClosedSessionEventArgs(sessionIds: sessionIds, currentSessionAreClosed: sessionIds.Contains(value: Client.SessionId)),
 				cancellationToken: cancellationToken
 			));
 		});
@@ -266,5 +267,8 @@ public class User
 		ChatCollection chatCollection = await GetChats();
 		await invocation(arg: chatCollection);
 	}
+
+	protected void OnChangedTimetable(ChangedTimetableEventArgs e)
+		=> ChangedTimetable?.Invoke(e: e);
 	#endregion
 }

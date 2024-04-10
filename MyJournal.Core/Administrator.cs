@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
@@ -110,6 +111,12 @@ public sealed class Administrator : User
 					ApiMethod = AssessmentControllerMethods.GetAverageAssessmentById(studentId: studentId)
 				}
 			));
+		});
+		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.ChangedTimetable, handler: async (classId) =>
+		{
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: classId, subjectIds: Enumerable.Empty<int>());
+			await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
+			OnChangedTimetable(e: e);
 		});
 	}
 

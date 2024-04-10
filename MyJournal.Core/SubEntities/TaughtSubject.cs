@@ -15,7 +15,7 @@ public sealed class TaughtSubject : ISubEntity
 	private readonly IFileService _fileService;
 	private readonly AsyncLazy<CreatedTaskCollection> _tasks;
 	private readonly AsyncLazy<TaughtClass> _taughtClass;
-	private readonly AsyncLazy<IEnumerable<TimetableForTeacher>> _timetable;
+	private AsyncLazy<IEnumerable<TimetableForTeacher>> _timetable;
 	#endregion
 
 	#region Constructors
@@ -53,12 +53,14 @@ public sealed class TaughtSubject : ISubEntity
 	{
 		Id = response.Id;
 		Name = response.Name;
+		ClassId = response.Class.Id;
 	}
 	#endregion
 
 	#region Properties
 	public int Id { get; init; }
 	public string Name { get; init; }
+	internal int ClassId { get; init; }
 	internal bool TaughtClassIsCreated => _taughtClass.IsValueCreated;
 	internal bool TasksAreCreated => _tasks.IsValueCreated;
 	#endregion
@@ -74,10 +76,32 @@ public sealed class TaughtSubject : ISubEntity
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event ChangedTimetableHandler ChangedTimetable;
 	#endregion
 
 	#region Methods
 	#region Static
+
+	private static async Task<AsyncLazy<IEnumerable<TimetableForTeacher>>> GetTimetable(
+		ApiClient client,
+		GetTimetableBySubjectRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return new AsyncLazy<IEnumerable<TimetableForTeacher>>(valueFactory: async () =>
+		{
+			IEnumerable<GetTimetableWithoutAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithoutAssessmentsResponse>, GetTimetableBySubjectRequest>(
+				apiMethod: TimetableControllerMethods.GetTimetableBySubjectForTeacher,
+				argQuery: request,
+				cancellationToken: cancellationToken
+			);
+			return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForTeacher.Create(
+				subject: t.Subject,
+				@break: t.Break
+			)) ?? Enumerable.Empty<Task<TimetableForTeacher>>());
+		});
+	}
+
 	internal static async Task<TaughtSubject> Create(
 		ApiClient client,
 		IFileService fileService,
@@ -103,18 +127,11 @@ public sealed class TaughtSubject : ISubEntity
 				educationPeriodId: educationPeriodId,
 				cancellationToken: cancellationToken
 			)),
-			timetable: new AsyncLazy<IEnumerable<TimetableForTeacher>>(valueFactory: async () =>
-			{
-				IEnumerable<GetTimetableWithoutAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithoutAssessmentsResponse>, GetTimetableBySubjectRequest>(
-					apiMethod: TimetableControllerMethods.GetTimetableBySubjectForTeacher,
-					argQuery: new GetTimetableBySubjectRequest(SubjectId: response.Id, ClassId: response.Class.Id),
-					cancellationToken: cancellationToken
-				);
-				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForTeacher.Create(
-					subject: t.Subject,
-					@break: t.Break
-				)) ?? Enumerable.Empty<Task<TimetableForTeacher>>());
-			})
+			timetable: await GetTimetable(
+				client: client,
+				request: new GetTimetableBySubjectRequest(SubjectId: response.Id, ClassId: response.Class.Id),
+				cancellationToken: cancellationToken
+			)
 		);
 	}
 
@@ -171,18 +188,11 @@ public sealed class TaughtSubject : ISubEntity
 				educationPeriodId: educationPeriodId,
 				cancellationToken: cancellationToken
 			)),
-			timetable: new AsyncLazy<IEnumerable<TimetableForTeacher>>(valueFactory: async () =>
-			{
-				IEnumerable<GetTimetableWithoutAssessmentsResponse>? timetable = await fileService.ApiClient.GetAsync<IEnumerable<GetTimetableWithoutAssessmentsResponse>, GetTimetableBySubjectRequest>(
-					apiMethod: TimetableControllerMethods.GetTimetableBySubjectForTeacher,
-					argQuery: new GetTimetableBySubjectRequest(SubjectId: response.Id, ClassId: response.Class.Id),
-					cancellationToken: cancellationToken
-				);
-				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForTeacher.Create(
-					subject: t.Subject,
-					@break: t.Break
-				)) ?? Enumerable.Empty<Task<TimetableForTeacher>>());
-			})
+			timetable: await GetTimetable(
+				client: fileService.ApiClient,
+				request: new GetTimetableBySubjectRequest(SubjectId: response.Id, ClassId: response.Class.Id),
+				cancellationToken: cancellationToken
+			)
 		);
 	}
 
@@ -244,6 +254,13 @@ public sealed class TaughtSubject : ISubEntity
 
 		CreatedTaskCollection collection = await _tasks;
 		await invocation(arg: collection);
+	}
+
+	internal async Task OnChangedTimetable(ChangedTimetableEventArgs e)
+	{
+		_timetable = await GetTimetable(client: _fileService.ApiClient, request: new GetTimetableBySubjectRequest(SubjectId: Id, ClassId: ClassId));
+
+		ChangedTimetable?.Invoke(e: e);
 	}
 	#endregion
 	#endregion

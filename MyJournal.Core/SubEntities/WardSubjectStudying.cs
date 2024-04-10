@@ -10,29 +10,34 @@ namespace MyJournal.Core.SubEntities;
 public sealed class WardSubjectStudying : Subject
 {
 	#region Fields
+	private readonly ApiClient _client;
 	private readonly AsyncLazy<TaskAssignedToWardCollection> _tasks;
 	private readonly AsyncLazy<Grade<Estimation>> _grade;
-	private readonly AsyncLazy<IEnumerable<TimetableForStudent>> _timetable;
+
+	private AsyncLazy<IEnumerable<TimetableForStudent>> _timetable;
 	#endregion
 
 	#region Constructors
 	private WardSubjectStudying(
 		AsyncLazy<TaskAssignedToWardCollection> tasks,
 		AsyncLazy<Grade<Estimation>> grade,
-		AsyncLazy<IEnumerable<TimetableForStudent>> timetable
+		AsyncLazy<IEnumerable<TimetableForStudent>> timetable,
+		ApiClient client
 	)
 	{
 		_tasks = tasks;
 		_grade = grade;
 		_timetable = timetable;
+		_client = client;
 	}
 
 	private WardSubjectStudying(
 		string name,
 		AsyncLazy<TaskAssignedToWardCollection> tasks,
 		AsyncLazy<Grade<Estimation>> grade,
-		AsyncLazy<IEnumerable<TimetableForStudent>> timetable
-	) : this(tasks: tasks, grade: grade, timetable: timetable)
+		AsyncLazy<IEnumerable<TimetableForStudent>> timetable,
+		ApiClient client
+	) : this(tasks: tasks, grade: grade, timetable: timetable, client: client)
 	{
 		Name = name;
 	}
@@ -41,8 +46,9 @@ public sealed class WardSubjectStudying : Subject
 		StudyingSubjectResponse response,
 		AsyncLazy<TaskAssignedToWardCollection> tasks,
 		AsyncLazy<Grade<Estimation>> grade,
-		AsyncLazy<IEnumerable<TimetableForStudent>> timetable
-	) : this(tasks: tasks, grade: grade, timetable: timetable)
+		AsyncLazy<IEnumerable<TimetableForStudent>> timetable,
+		ApiClient client
+	) : this(tasks: tasks, grade: grade, timetable: timetable, client: client)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -68,10 +74,33 @@ public sealed class WardSubjectStudying : Subject
 	public event CreatedAssessmentHandler CreatedAssessment;
 	public event ChangedAssessmentHandler ChangedAssessment;
 	public event DeletedAssessmentHandler DeletedAssessment;
+	public event ChangedTimetableHandler ChangedTimetable;
 	#endregion
 
 	#region Methods
 	#region Static
+
+	private static async Task<AsyncLazy<IEnumerable<TimetableForStudent>>> GetTimetable(
+		ApiClient client,
+		int subjectId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return new AsyncLazy<IEnumerable<TimetableForStudent>>(valueFactory: async () =>
+		{
+			IEnumerable<GetTimetableWithAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithAssessmentsResponse>, GetTimetableBySubjectRequest>(
+				apiMethod: TimetableControllerMethods.GetTimetableBySubjectForParent,
+				argQuery: new GetTimetableBySubjectRequest(SubjectId: subjectId),
+				cancellationToken: cancellationToken
+			);
+			return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
+				subject: t.Subject,
+				estimations: t.Estimations,
+				@break: t.Break
+			)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
+		});
+	}
+
 	internal static async Task<WardSubjectStudying> Create(
 		ApiClient client,
 		StudyingSubjectResponse response,
@@ -79,6 +108,7 @@ public sealed class WardSubjectStudying : Subject
 	)
 	{
 		return new WardSubjectStudying(
+			client: client,
 			response: response,
 			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
@@ -91,19 +121,7 @@ public sealed class WardSubjectStudying : Subject
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
 			)),
-			timetable: new AsyncLazy<IEnumerable<TimetableForStudent>>(valueFactory: async () =>
-			{
-				IEnumerable<GetTimetableWithAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithAssessmentsResponse>, GetTimetableBySubjectRequest>(
-					apiMethod: TimetableControllerMethods.GetTimetableBySubjectForParent,
-					argQuery: new GetTimetableBySubjectRequest(SubjectId: response.Id),
-					cancellationToken: cancellationToken
-				);
-				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
-					subject: t.Subject,
-					estimations: t.Estimations,
-					@break: t.Break
-				)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
-			})
+			timetable: await GetTimetable(client: client, subjectId: response.Id, cancellationToken: cancellationToken)
 		);
 	}
 
@@ -114,6 +132,7 @@ public sealed class WardSubjectStudying : Subject
 	)
 	{
 		return new WardSubjectStudying(
+			client: client,
 			name: name,
 			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
@@ -133,6 +152,7 @@ public sealed class WardSubjectStudying : Subject
 	)
 	{
 		return new WardSubjectStudying(
+			client: client,
 			response: response,
 			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => TaskAssignedToWardCollection.Empty),
 			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => await Grade<Estimation>.Create(
@@ -142,19 +162,7 @@ public sealed class WardSubjectStudying : Subject
 				periodId: educationPeriodId,
 				cancellationToken: cancellationToken
 			)),
-			timetable: new AsyncLazy<IEnumerable<TimetableForStudent>>(valueFactory: async () =>
-			{
-				IEnumerable<GetTimetableWithAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithAssessmentsResponse>, GetTimetableBySubjectRequest>(
-					apiMethod: TimetableControllerMethods.GetTimetableBySubjectForParent,
-					argQuery: new GetTimetableBySubjectRequest(SubjectId: response.Id),
-					cancellationToken: cancellationToken
-				);
-				return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
-					subject: t.Subject,
-					estimations: t.Estimations,
-					@break: t.Break
-				)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
-			})
+			timetable: await GetTimetable(client: client, subjectId: response.Id, cancellationToken: cancellationToken)
 		);
 	}
 
@@ -163,6 +171,7 @@ public sealed class WardSubjectStudying : Subject
 	)
 	{
 		return new WardSubjectStudying(
+			client: null,
 			name: name,
 			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => TaskAssignedToWardCollection.Empty),
 			grade: new AsyncLazy<Grade<Estimation>>(valueFactory: async () => Grade<Estimation>.Empty),
@@ -255,6 +264,12 @@ public sealed class WardSubjectStudying : Subject
 
 		Grade<Estimation> grade = await _grade;
 		await invocation(arg: grade);
+	}
+
+	internal async Task OnChangedTimetable(ChangedTimetableEventArgs e)
+	{
+		_timetable = await GetTimetable(client: _client, subjectId: Id);
+		ChangedTimetable?.Invoke(e: e);
 	}
 	#endregion
 	#endregion

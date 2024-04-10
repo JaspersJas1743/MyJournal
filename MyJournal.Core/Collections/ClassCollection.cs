@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -123,6 +122,12 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 		);
 
 		DeletedAssessment?.Invoke(e: e);
+	}
+
+	internal async Task OnChangedTimetable(ChangedTimetableEventArgs e)
+	{
+		List<Class> classes = await _classes;
+		await classes.Find(match: c => c.Id == e.ClassId)!.OnChangedTimetable(e: e);
 	}
 
 	private async Task InvokeIfSubjectsAreCreated(

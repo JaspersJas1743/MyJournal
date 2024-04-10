@@ -14,7 +14,8 @@ public sealed class Parent : User
 {
 	private readonly AsyncLazy<WardSubjectStudyingCollection> _wardSubjectsStudying;
 	private readonly HubConnection _parentHubConnection;
-	private readonly AsyncLazy<TimetableForWardCollection> _timetable;
+
+	private AsyncLazy<TimetableForWardCollection> _timetable;
 
 	private Parent(
 		ApiClient client,
@@ -120,6 +121,16 @@ public sealed class Parent : User
 					ApiMethod = AssessmentControllerMethods.GetAverageAssessmentsForWard
 				}
 			));
+		});
+		_parentHubConnection.On<IEnumerable<int>>(methodName: ParentHubMethods.ChangedTimetable, handler: async (subjectIds) =>
+		{
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: -1, subjectIds: subjectIds);
+			await InvokeIfWardSubjectStudyingAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
+			_timetable = new AsyncLazy<TimetableForWardCollection>(valueFactory: async () => await TimetableForWardCollection.Create(
+				client: Client,
+				cancellationToken: cancellationToken
+			));
+			OnChangedTimetable(e: e);
 		});
 	}
 

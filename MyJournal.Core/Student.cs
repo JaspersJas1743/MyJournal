@@ -13,8 +13,9 @@ namespace MyJournal.Core;
 public sealed class Student : User
 {
 	private readonly AsyncLazy<StudyingSubjectCollection> _studyingSubjects;
-	private readonly AsyncLazy<TimetableForStudentCollection> _timetable;
 	private readonly HubConnection _studentHubConnection;
+
+	private AsyncLazy<TimetableForStudentCollection> _timetable;
 
 	private Student(
 		ApiClient client,
@@ -120,6 +121,16 @@ public sealed class Student : User
 					ApiMethod = AssessmentControllerMethods.GetAverageAssessment
 				}
 			));
+		});
+		_studentHubConnection.On<IEnumerable<int>>(methodName: StudentHubMethods.ChangedTimetable, handler: async (subjectIds) =>
+		{
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: -1, subjectIds: subjectIds);
+			await InvokeIfStudyingSubjectsAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
+			_timetable = new AsyncLazy<TimetableForStudentCollection>(valueFactory: async () => await TimetableForStudentCollection.Create(
+				client: Client,
+				cancellationToken: cancellationToken
+			));
+			OnChangedTimetable(e: e);
 		});
 	}
 

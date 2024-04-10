@@ -26,6 +26,6 @@ public sealed class ParentHub : Hub<IParentHub>
 	public async Task DeletedAssessmentToWard(int assessmentId, int studentId, int subjectId)
 		=> await Clients.Caller.DeletedAssessmentToWard(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 
-	public async Task ChangedTimetable()
-		=> await Clients.Caller.ChangedTimetable();
+	public async Task ChangedTimetable(IEnumerable<int> subjectIds)
+		=> await Clients.Caller.ChangedTimetable(subjectIds: subjectIds);
 }

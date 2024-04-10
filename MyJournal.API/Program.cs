@@ -139,7 +139,7 @@ public class Program
 				{
 					Endpoint = "*",
 					PeriodTimespan = TimeSpan.FromSeconds(value: 1),
-					Limit = 10,
+					Limit = 20,
 				}
 			};
 		});

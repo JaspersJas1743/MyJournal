@@ -449,6 +449,7 @@ public sealed class TimetableController(
 
 		foreach (GetTimetableByClassResponse timing in timings)
 		{
+			timing.Subjects = timing.Subjects.OrderBy(t => t.Subject.Number);
 			for (int i = 0; i < timing.Subjects.Count(); ++i)
 			{
 				GetTimetableByClassResponseSubject? currentTiming = timing.Subjects.ElementAtOrDefault(index: i);
@@ -456,7 +457,6 @@ public sealed class TimetableController(
 				if (nextTiming is not null)
 					currentTiming!.Break = new Break(CountMinutes: (nextTiming.Subject.Start - currentTiming.Subject.End).TotalMinutes);
 			}
-			timing.Subjects = timing.Subjects.OrderBy(t => t.Subject.Number);
 		}
 
 		return Ok(value: timings);
@@ -543,9 +543,11 @@ public sealed class TimetableController(
 
 		IQueryable<string> administratorIds = _context.Administrators.AsNoTracking().Select(selector: a => a.UserId.ToString());
 
-		await studentHubContext.Clients.Users(userIds: studentIds).ChangedTimetable();
-		await parentHubContext.Clients.Users(userIds: parentIds).ChangedTimetable();
-		await teacherHubContext.Clients.Users(userIds: teacherIds).ChangedTimetable(classId: request.ClassId);
+		IEnumerable<int> subjectIds = request.Timetable.SelectMany(selector: s => s.Subjects).Select(selector: s => s.Id).Distinct();
+
+		await studentHubContext.Clients.Users(userIds: studentIds).ChangedTimetable(subjectIds: subjectIds);
+		await parentHubContext.Clients.Users(userIds: parentIds).ChangedTimetable(subjectIds: subjectIds);
+		await teacherHubContext.Clients.Users(userIds: teacherIds).ChangedTimetable(classId: request.ClassId, subjectIds: subjectIds);
 		await administratorHubContext.Clients.Users(userIds: administratorIds).ChangedTimetable(classId: request.ClassId);
 
 		return Ok();
