@@ -403,7 +403,7 @@ public sealed class AccountController(
         Session currentSession = new Session()
         {
             User = user,
-            Ip = GetSenderIp().ToString(),
+            Ip = GetSenderIp(),
             MyJournalClient = await FindMyJournalClientByClientType(
                 clientType: request.Client,
                 cancellationToken: cancellationToken

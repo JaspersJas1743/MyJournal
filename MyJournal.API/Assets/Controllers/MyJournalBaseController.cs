@@ -54,11 +54,8 @@ public class MyJournalBaseController(
 		return session;
 	}
 
-	protected IPAddress GetSenderIp()
-    {
-        return HttpContext.Connection.RemoteIpAddress?.MapToIPv4() ??
-			throw new NullReferenceException(message: "HttpContext.Connection.RemoteIpAddress is null");
-    }
+	protected string GetSenderIp()
+		=> HttpContext.Request.Headers[key: "X-Forwarded-For"].ToString();
 
 	protected async Task<User?> FindUserByIdAsync(
         int id,

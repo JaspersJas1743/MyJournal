@@ -7,6 +7,7 @@ using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -228,8 +229,6 @@ public class Program
 
 		app.UseAuthentication();
 
-		app.UseHttpsRedirection();
-
 		app.UseAuthorization();
 
 		app.MapControllers();
@@ -240,6 +239,11 @@ public class Program
 		app.MapHub<StudentHub>(pattern: "/hub/student");
 		app.MapHub<ParentHub>(pattern: "/hub/parent");
 		app.MapHub<AdministratorHub>(pattern: "/hub/administrator");
+
+		app.UseForwardedHeaders(options: new ForwardedHeadersOptions()
+		{
+			ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+		});
 
 		app.UseExceptionHandler();
 
