@@ -8,8 +8,8 @@ services:
       context: .
       dockerfile: MyJournal.API/Dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_ENVIRONMENT=Release
+      - ASPNETCORE_URLS=http://*:80/;http://*:8080/;https://*:443/;https://*:8081/
     ports:
       - "8081:80"
       - "8082:443"

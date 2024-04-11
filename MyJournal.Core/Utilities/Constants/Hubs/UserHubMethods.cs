@@ -2,7 +2,7 @@ namespace MyJournal.Core.Utilities.Constants.Hubs;
 
 internal static class UserHubMethods
 {
-	internal const string HubEndpoint = "https://localhost:7267/hub/user";
+	internal const string HubEndpoint = "https://my-journal.ru/hub/user";
 	internal const string SetOnline = nameof(SetOnline);
 	internal const string SetOffline = nameof(SetOffline);
 	internal const string UpdatedProfilePhoto = nameof(UpdatedProfilePhoto);

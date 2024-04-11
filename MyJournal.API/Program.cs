@@ -122,10 +122,10 @@ public class Program
 			?? throw new ArgumentException(message: "Строка подключения к MyJournalHealthDB отсутствует или некорректна", paramName: nameof(healthDbConnectionString));
 		builder.Services.AddHealthChecksUI(setupSettings: settings =>
 		{
-			settings.AddHealthCheckEndpoint(name: "Health for databases", uri: "https://localhost:8082/health/db");
-			settings.AddHealthCheckEndpoint(name: "Health for db context", uri: "https://localhost:8082/health/context");
-			settings.AddHealthCheckEndpoint(name: "Health for AWS", uri: "https://localhost:8082/health/aws");
-			settings.AddHealthCheckEndpoint(name: "Health for S3 Storage", uri: "https://localhost:8082/health/s3");
+			settings.AddHealthCheckEndpoint(name: "Health for databases", uri: "https://my-journal.ru/health/db");
+			settings.AddHealthCheckEndpoint(name: "Health for db context", uri: "https://localhost:443/health/context");
+			settings.AddHealthCheckEndpoint(name: "Health for AWS", uri: "https://localhost:443/health/aws");
+			settings.AddHealthCheckEndpoint(name: "Health for S3 Storage", uri: "https://localhost:443/health/s3");
 			settings.SetEvaluationTimeInSeconds(seconds: 10);
 		}).AddSqlServerStorage(connectionString: healthDbConnectionString);
 

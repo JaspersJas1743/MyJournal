@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -7,14 +6,13 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Primitives;
 
 namespace MyJournal.Core.Utilities.Api;
 
 public sealed class ApiClient : IDisposable
 {
 	#region Fields
-	private const string ServerAddress = "https://localhost:7267/api/";
+	private const string ServerAddress = "https://my-journal.ru/api/";
 
 	private readonly HttpClient _client = new HttpClient()
 	{
