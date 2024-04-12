@@ -139,7 +139,7 @@ public class Program
 			options.EnableEndpointRateLimiting = true;
 			options.StackBlockedRequests = false;
 			options.HttpStatusCode = StatusCodes.Status429TooManyRequests;
-			options.RealIpHeader = "X-Real-IP";
+			options.RealIpHeader = "X-Forwarded-For";
 			options.ClientIdHeader = "X-ClientId";
 			options.GeneralRules = new List<RateLimitRule>
 			{
