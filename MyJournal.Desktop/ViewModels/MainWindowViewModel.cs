@@ -1,8 +1,16 @@
-﻿namespace MyJournal.Desktop.ViewModels;
+﻿using MyJournal.Desktop.Models;
+using MyJournal.Desktop.Views;
 
-public class MainWindowViewModel : ViewModelBase
+namespace MyJournal.Desktop.ViewModels;
+
+public class MainWindowViewModel : ViewModelBase<MainWindowView>
 {
-#pragma warning disable CA1822 // Mark members as static
-	public string Greeting => "Welcome to Avalonia!";
-#pragma warning restore CA1822 // Mark members as static
+	private readonly MainWindowModel _model;
+
+	public MainWindowViewModel(MainWindowModel model)
+	{
+		_model = model;
+	}
+
+	public MainViewModel MainViewModel => _model.MainViewModel;
 }

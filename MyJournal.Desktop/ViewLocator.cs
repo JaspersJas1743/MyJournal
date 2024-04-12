@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using MyJournal.Desktop.ViewModels;
@@ -12,21 +14,20 @@ public class ViewLocator : IDataTemplate
 		if (data is null)
 			return null;
 
-		var name = data.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
-		var type = Type.GetType(name);
+		Type viewType = data.GetType().BaseType!.GenericTypeArguments.Single();
 
-		if (type != null)
-		{
-			var control = (Control)Activator.CreateInstance(type)!;
-			control.DataContext = data;
-			return control;
-		}
-
-		return new TextBlock { Text = "Not Found: " + name };
+		App currentApplication = Application.Current as App ?? throw new Exception(message: "Неизвестная ошибка.");
+		UserControl control = currentApplication.GetService(serviceType: viewType) as UserControl ??
+			throw new ArgumentException(message: $"Некорректный тип UserControl: {viewType.Name}", paramName: nameof(data));
+		control.DataContext = data;
+		return control;
 	}
 
 	public bool Match(object? data)
 	{
-		return data is ViewModelBase;
+		if (data is null)
+			return false;
+
+		return data.GetType().BaseType!.IsGenericType && data.GetType().BaseType!.GetGenericTypeDefinition() == typeof(ViewModelBase<>);
 	}
 }

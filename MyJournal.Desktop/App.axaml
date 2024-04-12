@@ -3,8 +3,6 @@
              x:Class="MyJournal.Desktop.App"
              xmlns:local="using:MyJournal.Desktop"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
