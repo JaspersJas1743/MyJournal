@@ -1,13 +1,34 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="MyJournal.Desktop.App"
-             xmlns:local="using:MyJournal.Desktop"
+             xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities"
+             xmlns:colors="clr-namespace:MyJournal.Desktop.Assets.Resources.ColorThemes"
              RequestedThemeVariant="Default">
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <utilities:ViewLocator/>
     </Application.DataTemplates>
-  
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <FontFamily x:Key="Raleway">avares://MyJournal.Desktop/Assets/Resources/Fonts#Raleway</FontFamily>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"></ResourceInclude>
+                <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"></ResourceInclude>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
+
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Window.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBlock.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/XamlSvg.axaml"/>
+
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"></StyleInclude>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"></StyleInclude>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Maximize.axaml"></StyleInclude>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Restore.axaml"></StyleInclude>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Close.axaml"></StyleInclude>
     </Application.Styles>
 </Application>

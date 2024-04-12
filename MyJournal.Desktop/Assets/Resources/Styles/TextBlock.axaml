@@ -1,0 +1,16 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Style Selector="TextBlock">
+		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+	</Style>
+
+	<Style Selector="TextBlock.WindowHeader">
+		<Setter Property="FontSize" Value="16"/>
+	</Style>
+
+	<Style Selector="TextBlock.CenteredTextBlock">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+</Styles>

@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using MyJournal.Desktop.ViewModels;
 
-namespace MyJournal.Desktop;
+namespace MyJournal.Desktop.Assets.Utilities;
 
 public class ViewLocator : IDataTemplate
 {

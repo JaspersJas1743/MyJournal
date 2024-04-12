@@ -1,0 +1,28 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg">
+
+	<Style Selector="controls|XamlSvg.Maximize">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Margin="2">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V429 H429 V0 H0 Z">
+										<DrawingGroup Opacity="1" Transform="0.1,0,0,-0.1,0,429">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=Foreground}" Geometry="F1 M429,429z M0,0z M492,4260C367,4227 295,4185 200,4090 104,3994 63,3923 30,3794 10,3719 10,3679 10,2150 10,621 10,581 30,506 63,377 104,306 200,210 296,114 367,73 496,40 571,20 611,20 2140,20 3669,20 3709,20 3784,40 3913,73 3984,114 4080,210 4176,306 4217,377 4250,506 4270,581 4270,621 4270,2150 4270,3679 4270,3719 4250,3794 4217,3923 4176,3994 4080,4090 3984,4186 3913,4227 3784,4260 3709,4280 3670,4280 2136,4279 620,4279 562,4278 492,4260z M3695,3849C3748,3834 3824,3758 3839,3705 3854,3648 3854,652 3839,595 3824,542 3748,466 3695,451 3638,436 642,436 585,451 532,466 456,542 441,595 426,651 425,3648 441,3704 455,3754 524,3827 575,3845 609,3857 850,3859 2135,3860 3217,3860 3667,3857 3695,3849z" />
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</Styles>

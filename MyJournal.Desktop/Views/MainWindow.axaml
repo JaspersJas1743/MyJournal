@@ -6,14 +6,8 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="MyJournal.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="MyJournal.Desktop">
-        <Grid>
-                <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
-                        <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0">MainWindow</TextBlock>
-                <TransitioningContentControl Grid.Row="1" Content="{Binding MainViewModel,Mode=OneWay}"/>
-        </Grid>
+        Icon="/Assets/Resources/Images/logo.ico"
+        Classes="MainWindow"
+        Title="Электронный журнал">
+        <TransitioningContentControl Content="{Binding Path=MainViewModel,Mode=OneWay}"/>
 </Window>

@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="BackgroundColor" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="HeaderColor" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SubheaderColor" Color="#9C9C9C"/>
+    <SolidColorBrush x:Key="InputBackgroundColor" Color="#242424"/>
+    <SolidColorBrush x:Key="StrokeColor" Color="#434343"/>
+    <SolidColorBrush x:Key="MainAccentColor" Color="#00A3FF"/>
+    <SolidColorBrush x:Key="SecondaryAccentColor" Color="#37C16E"/>
+    <SolidColorBrush x:Key="ErrorColor" Color="#FF4E4E"/>
+    <SolidColorBrush x:Key="TextOnControlColor" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TextOnSelectedControlColor" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="WatermarkOnTextControlColor" Color="#636363"/>
+    <SolidColorBrush x:Key="TransparentControlPointeroverColor" Color="#242424"/>
+    <SolidColorBrush x:Key="ConfirmationDataColor" Color="#4FB84D"/>
+    <SolidColorBrush x:Key="ControlPointeroverColor" Color="#303030"/>
+    <SolidColorBrush x:Key="DateTimeColor" Color="#9C9C9C"/>
+    <SolidColorBrush x:Key="SelectionControlColor" Color="#00A3FF"/>
+    <SolidColorBrush x:Key="ChatBackgroundColor" Color="#242424"/>
+    <SolidColorBrush x:Key="MessageColor" Color="#003B66"/>
+    <SolidColorBrush x:Key="ExcellentGradeColor" Color="#009D06"/>
+    <SolidColorBrush x:Key="GoodGradeColor" Color="#88C800"/>
+    <SolidColorBrush x:Key="SatisfactoryGradeColor" Color="#C4C800"/>
+    <SolidColorBrush x:Key="UnsatisfactoryGradeColor" Color="#FF4F4F"/>
+    <SolidColorBrush x:Key="TruancyColor" Color="#434343"/>
+    <SolidColorBrush x:Key="EmptyInputStrokeColor" Color="#434343"/>
+    <SolidColorBrush x:Key="WorkingDayColor" Color="#0066FF"/>
+    <SolidColorBrush x:Key="WeekendColor" Color="#FF3F3F"/>
+    <SolidColorBrush x:Key="ExpiredTaskColor" Color="#434343"/>
+    <SolidColorBrush x:Key="CompletedTaskColor" Color="#37C16E"/>
+    <SolidColorBrush x:Key="UncompletedTaskColor" Color="#FF4E4E"/>
+	<SolidColorBrush x:Key="MinimizePointeroverColor" Color="#169DFF" Opacity="0.8"/>
+	<SolidColorBrush x:Key="MaximizePointeroverColor" Color="#303030"/>
+	<SolidColorBrush x:Key="RestorePointeroverColor" Color="#303030"/>
+	<SolidColorBrush x:Key="ClosePointeroverColor" Color="#F35454"/>
+</ResourceDictionary>

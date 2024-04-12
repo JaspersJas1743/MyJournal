@@ -1,0 +1,28 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg">
+
+	<Style Selector="controls|XamlSvg.Restore">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Margin="2">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V470 H471 V0 H0 Z">
+										<DrawingGroup Opacity="1" Transform="0.1,0,0,-0.1,0,470">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=Foreground}" Geometry="F1 M471,470z M0,0z M1340,4674C1105,4611 923,4423 874,4191 866,4152 860,4066 860,3983L860,3840 718,3840C634,3840 548,3834 509,3826 321,3786 151,3651 70,3478 6,3341 9,3432 12,1899L15,505 42,430C108,251,252,108,431,42L505,15 1899,12C3432,9 3341,6 3478,70 3651,151 3786,321 3826,509 3834,548 3840,634 3840,718L3840,860 3983,860C4066,860 4152,866 4191,874 4379,914 4549,1049 4630,1222 4694,1359 4691,1268 4688,2801L4685,4195 4658,4270C4592,4449,4448,4592,4269,4658L4195,4685 2795,4687C1588,4689,1387,4687,1340,4674z M4145,4251C4195,4229 4246,4172 4260,4123 4268,4096 4270,3693 4268,2753L4265,1422 4235,1378C4215,1350 4186,1326 4151,1308 4100,1282 4088,1280 3968,1280L3840,1280 3840,2278C3840,3241 3839,3280 3820,3354 3787,3483 3746,3554 3650,3650 3554,3746 3483,3787 3354,3820 3280,3839 3241,3840 2278,3840L1280,3840 1280,3968C1280,4081 1283,4101 1304,4146 1327,4197 1372,4240 1420,4259 1436,4265 1925,4269 2775,4269 4041,4270 4107,4269 4145,4251z M3265,3409C3318,3394 3394,3318 3409,3265 3417,3237 3420,2842 3420,1914L3420,602 3392,549C3375,515,3348,484,3321,465L3278,435 1942,432C449,429 555,424 486,500 467,521 446,556 440,577 432,604 430,997 432,1947L435,3278 465,3321C484,3348,515,3375,549,3392L602,3420 1914,3420C2842,3420,3237,3417,3265,3409z" />
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</Styles>

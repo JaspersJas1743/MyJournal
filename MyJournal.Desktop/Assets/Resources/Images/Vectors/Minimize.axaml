@@ -1,0 +1,28 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg">
+
+	<Style Selector="controls|XamlSvg.Minimize">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Margin="1">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V296 H512 V0 H0 Z">
+										<DrawingGroup Opacity="1" Transform="0.1,0,0,-0.1,0,296">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=Foreground}" Geometry="F1 M512,296z M0,0z M555,591C387,513 391,277 562,206 595,192 810,190 2562,190 4451,190 4527,191 4565,209 4730,285 4730,515 4565,591 4526,609 4452,610 2560,610 668,610 594,609 555,591z" />
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</Styles>

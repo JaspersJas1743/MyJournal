@@ -2,6 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.ViewModels;
