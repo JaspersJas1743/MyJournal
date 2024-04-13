@@ -2,8 +2,8 @@ using Avalonia.Controls;
 
 namespace MyJournal.Desktop.Views;
 
-public partial class MainWindowView : Window
+public partial class WelcomeView : UserControl
 {
-	public MainWindowView()
+	public WelcomeView()
 		=> InitializeComponent();
 }

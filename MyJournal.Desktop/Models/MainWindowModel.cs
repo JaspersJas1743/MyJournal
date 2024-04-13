@@ -6,20 +6,11 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.Models;
 
-public class MainWindowModel
+public class MainWindowModel(WelcomeVM model, MainWindowView mainWindowView)
 {
-	public MainWindowModel(MainViewModel model, MainWindow mainWindow)
-	{
-		MainViewModel = model;
-		Minimize = ReactiveCommand.Create(execute: () => mainWindow.WindowState = WindowState.Minimized);
-		Maximize = ReactiveCommand.Create(execute: () => mainWindow.WindowState = WindowState.Maximized);
-		Restore = ReactiveCommand.Create(execute: () => mainWindow.WindowState = WindowState.Normal);
-		Close = ReactiveCommand.Create(execute: mainWindow.Close);
-	}
-
-	public ReactiveCommand<Unit, WindowState> Minimize { get; }
-	public ReactiveCommand<Unit, WindowState> Maximize { get; }
-	public ReactiveCommand<Unit, WindowState> Restore { get; }
-	public ReactiveCommand<Unit, Unit> Close { get; }
-	public MainViewModel MainViewModel { get; }
+	public ReactiveCommand<Unit, WindowState> Minimize { get; } = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Minimized);
+	public ReactiveCommand<Unit, WindowState> Maximize { get; } = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Maximized);
+	public ReactiveCommand<Unit, WindowState> Restore { get; } = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Normal);
+	public ReactiveCommand<Unit, Unit> Close { get; } = ReactiveCommand.Create(execute: mainWindowView.Close);
+	public WelcomeVM WelcomeVM { get; } = model;
 }

@@ -1,0 +1,105 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <TextBox>Left</TextBox>
+        <TextBox IsEnabled="False">Disabled</TextBox>
+        <TextBox TextAlignment="Center">Center</TextBox>
+        <TextBox Classes="clearButton">Clear</TextBox>
+        <TextBox PasswordChar="*" Height="12" Classes="RevealPasswordButton">Reveal Password</TextBox>
+        <TextBox PasswordChar="*" Height="12" Classes="RevealPasswordButton" RevealPassword="True">Password Revealed</TextBox>
+        <TextBox Watermark="Watermark"/>
+        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True"/>
+        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True">Content</TextBox>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="TextBox">
+    <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+    <Setter Property="BorderThickness" Value="5"/>
+    <Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+    <Setter Property="FontFeatures" Value="+lnum"></Setter>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+
+    <Style Selector="^ /template/ TextBlock#PART_Watermark">
+      <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
+    </Style>
+
+    <Style Selector="^.RevealPasswordButton[IsReadOnly=False]">
+      <Setter Property="PasswordChar" Value="•"/>
+      <Setter Property="InnerRightContent">
+        <Setter.Value>
+          <Template>
+            <Grid Margin="0 0 20 0">
+              <CheckBox Classes="RevealPassword" ClipToBounds="True" Focusable="False"
+                        IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}"/>
+            </Grid>
+          </Template>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource TextOnControlColor}"/>
+      <Style Selector="^ /template/ TextBlock#PART_Watermark">
+        <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
+      </Style>
+      <Style Selector="^ /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <Style Selector="^:focus">
+      <Setter Property="Foreground" Value="{DynamicResource TextOnControlColor}"/>
+      <Style Selector="^ /template/ TextBlock#PART_Watermark">
+        <Setter Property="Opacity" Value="0.5"/>
+        <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
+      </Style>
+      <Style Selector="^ /template/ Border#PART_BorderElement">
+        <Setter Property="BorderThickness" Value="5" />
+        <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+      </Style>
+    </Style>
+  </Style>
+
+  <Style Selector="CheckBox.RevealPassword">
+    <Style Selector="^:checked">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate>
+            <Grid Background="{TemplateBinding Background}" RowDefinitions="0.25*, 0.5*, 0.25*">
+              <controls:XamlSvg Grid.Row="1" Classes="OpenedEye"/>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style Selector="^:unchecked">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate>
+            <Grid Background="{TemplateBinding Background}" RowDefinitions="0.25*, 0.5*, 0.25*">
+              <controls:XamlSvg Grid.Row="1" Classes="ClosedEye"/>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style Selector="^[IsFocused=True]">
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+  </Style>
+
+</Styles>

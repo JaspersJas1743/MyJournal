@@ -13,12 +13,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.0.10"/>
-        <PackageReference Include="Avalonia.Desktop" Version="11.0.10"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10"/>
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10"/>
-        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.10"/>
+        <PackageReference Include="Avalonia" Version="11.1.0-beta1" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.1.0-beta1" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.0-beta1" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.0-beta1" />
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.0-beta1" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.1.0-beta1" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     </ItemGroup>
@@ -31,8 +31,16 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Views\MainView.axaml.cs">
+      <Compile Update="Views\WelcomeView.axaml.cs">
         <DependentUpon>MainView.axaml</DependentUpon>
       </Compile>
+      <Compile Update="Views\MainWindow.axaml.cs">
+        <DependentUpon>MainWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MyJournal.Core\MyJournal.Core.csproj" />
     </ItemGroup>
 </Project>
