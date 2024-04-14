@@ -5,5 +5,14 @@
 	<Style Selector="controls|XamlSvg.CenteredSvg">
 		<Setter Property="VerticalAlignment" Value="Center"/>
 		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="FocusAdorner" Value="{x:Null}" />
+	</Style>
+
+	<Style Selector="controls|XamlSvg.TransitionForeground">
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
 	</Style>
 </Styles>

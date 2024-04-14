@@ -1,24 +1,20 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<Design.PreviewWith>
-		<Border Padding="20">
-			<StackPanel Spacing="20">
-				<Button Content="Click Me!" />
-				<Button Classes="accent" Content="Click Me!" />
-				<Button Classes="TextButton" Content="Забыли пароль?" />
-			</StackPanel>
-		</Border>
-	</Design.PreviewWith>
-
 	<Style Selector="Button">
 		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
 		<Setter Property="FontFeatures" Value="+lnum"></Setter>
 		<Setter Property="FontWeight" Value="SemiBold"/>
 		<Setter Property="HorizontalContentAlignment" Value="Center"/>
 		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="FocusAdorner" Value="{x:Null}" />
 
 		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="{TemplateBinding Background}" />
+		</Style>
+
+		<Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{TemplateBinding Background}" />
+			<Setter Property="Opacity" Value="0.7"/>
 		</Style>
 	</Style>
 
@@ -41,7 +37,6 @@
 			</ControlTemplate>
 		</Setter>
 	</Style>
-
 
 	<Style Selector="Button.HeaderContent">
 		<Setter Property="FontSize" Value="36"></Setter>

@@ -13,6 +13,7 @@
 		<Setter Property="FontWeight" Value="SemiBold"/>
 		<Setter Property="FontFeatures" Value="+lnum"/>
 		<Setter Property="FontSize" Value="24"/>
+		<Setter Property="FocusAdorner" Value="{x:Null}" />
 		<Setter Property="CornerRadius" Value="10"></Setter>
 		<Setter Property="Template">
 			<ControlTemplate>

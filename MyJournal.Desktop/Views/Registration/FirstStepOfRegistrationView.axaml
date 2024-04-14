@@ -4,7 +4,7 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
 			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-			x:DataType="vm:RegistrationVM"
-			x:Class="MyJournal.Desktop.Views.Registration.RegistrationView">
+			x:DataType="vm:FirstStepOfRegistrationVM"
+			x:Class="MyJournal.Desktop.Views.Registration.FirstStepOfRegistrationView">
 	<Button Content="К авторизации" Command="{Binding ToAuthorization}"></Button>
 </UserControl>

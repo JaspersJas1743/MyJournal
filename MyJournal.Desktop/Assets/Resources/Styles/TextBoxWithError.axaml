@@ -1,0 +1,193 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+    <Style Selector="controls|TextBoxWithError">
+        <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+        <Setter Property="BorderThickness" Value="5"/>
+        <Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+        <Setter Property="FontFeatures" Value="+lnum"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource TextOnControlColor}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DataValidationErrors>
+                    <Panel>
+                        <Border Name="PART_BorderElement" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                                MinWidth="{TemplateBinding MinWidth}" MinHeight="{TemplateBinding MinHeight}"
+                                Classes="TransitionBorderBrush"/>
+                        <Border Margin="{TemplateBinding BorderThickness}">
+                            <Grid ColumnDefinitions="Auto,*,Auto" >
+                                <ContentPresenter Grid.Column="0" Content="{TemplateBinding InnerLeftContent}" x:Name="PART_InnerLeftContent"
+                                                  Foreground="{DynamicResource MainAccentColor}"/>
+                                <DockPanel x:Name="PART_InnerDockPanel" Grid.Column="1" Margin="{TemplateBinding Padding}">
+                                    <TextBlock  Name="PART_FloatingWatermark" Foreground="{DynamicResource SystemAccentColor}"
+                                                IsVisible="False" Text="{TemplateBinding Watermark}" DockPanel.Dock="Top" />
+                                    <ScrollViewer Name="PART_ScrollViewer" AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                                                  HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                  VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                                                  IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                                                  BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
+                                        <Panel>
+                                            <TextBlock  Name="PART_Watermark" Opacity="0.5" Text="{TemplateBinding Watermark}"
+                                                        TextAlignment="{TemplateBinding TextAlignment}"
+                                                        TextWrapping="{TemplateBinding TextWrapping}"
+                                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                                <TextBlock.IsVisible>
+                                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                        <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                                                    </MultiBinding>
+                                                </TextBlock.IsVisible>
+                                            </TextBlock>
+                                            <TextPresenter  Name="PART_TextPresenter" Text="{TemplateBinding Text, Mode=TwoWay}"
+                                                            CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                                                            CaretIndex="{TemplateBinding CaretIndex}"
+                                                            SelectionStart="{TemplateBinding SelectionStart}"
+                                                            SelectionEnd="{TemplateBinding SelectionEnd}"
+                                                            TextAlignment="{TemplateBinding TextAlignment}"
+                                                            TextWrapping="{TemplateBinding TextWrapping}"
+                                                            LineHeight="{TemplateBinding LineHeight}"
+                                                            LetterSpacing="{TemplateBinding LetterSpacing}"
+                                                            PasswordChar="{TemplateBinding PasswordChar}"
+                                                            RevealPassword="{TemplateBinding RevealPassword}"
+                                                            SelectionBrush="{TemplateBinding SelectionBrush}"
+                                                            SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                                            CaretBrush="{TemplateBinding CaretBrush}"
+                                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        </Panel>
+                                        <ScrollViewer.Styles>
+                                            <Style Selector="ScrollContentPresenter#PART_ContentPresenter">
+                                                <Setter Property="Cursor" Value="IBeam" />
+                                            </Style>
+                                        </ScrollViewer.Styles>
+                                    </ScrollViewer>
+                                </DockPanel>
+                                <ContentPresenter Grid.Column="2" x:Name="PART_InnerRightContent" Content="{TemplateBinding InnerRightContent}"
+                                                  Foreground="{DynamicResource MainAccentColor}"/>
+                            </Grid>
+                        </Border>
+                    </Panel>
+                </DataValidationErrors>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^ /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
+        </Style>
+
+        <Style Selector="^[HaveError=True]">
+            <Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+            <Setter Property="Tag" Value="{DynamicResource ErrorColor}"/>
+            <Style Selector="^ /template/ ContentPresenter#PART_InnerLeftContent">
+				<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#PART_BorderElement">
+                <Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+            </Style>
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource TextOnControlColor}"/>
+            <Style Selector="^ /template/ TextBlock#PART_Watermark">
+	    		<Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
+                <Setter Property="Opacity" Value="0.45"/>
+            </Style>
+            <Style Selector="^ /template/ Border#PART_BorderElement">
+                <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+            </Style>
+            <Style Selector="^[HaveError=True]">
+                <Style Selector="^ /template/ Border#PART_BorderElement">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+                </Style>
+            </Style>
+            <Style Selector="^[HaveError=False]">
+                <Style Selector="^ /template/ Border#PART_BorderElement">
+                    <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+                </Style>
+            </Style>
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+
+        <Style Selector="^:focus">
+            <Setter Property="Foreground" Value="{DynamicResource TextOnControlColor}"/>
+            <Style Selector="^ /template/ TextBlock#PART_Watermark">
+                <Setter Property="Opacity" Value="0.4"/>
+                <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#PART_BorderElement">
+                <Setter Property="BorderThickness" Value="5" />
+                <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+            </Style>
+            <Style Selector="^[HaveError=True]">
+                <Style Selector="^ /template/ Border#PART_BorderElement">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+                </Style>
+            </Style>
+            <Style Selector="^[HaveError=False]">
+                <Style Selector="^ /template/ Border#PART_BorderElement">
+                    <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+                </Style>
+            </Style>
+        </Style>
+
+        <Style Selector="^:focused /template/ TextBlock#PART_Watermark">
+            <Setter Property="Opacity" Value="0.4"/>
+        </Style>
+
+        <Style Selector="^.PasswordBoxWithError[IsReadOnly=False]">
+            <Setter Property="PasswordChar" Value="•"/>
+            <Setter Property="InnerRightContent">
+                <Setter.Value>
+                    <Template>
+                        <Grid Margin="0 0 20 0">
+                            <CheckBox Foreground="{DynamicResource MainAccentColor}" x:Name="RevealPasswordButton"
+                                      Classes="RevealPasswordTextBoxWithError" ClipToBounds="True" FocusAdorner="{x:Null}"
+                                      IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}"/>
+                        </Grid>
+                    </Template>
+                </Setter.Value>
+            </Setter>
+            <Style Selector="^[HaveError=True] CheckBox#RevealPasswordButton">
+                <Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+            </Style>
+            <Style Selector="^[HaveError=False] CheckBox#RevealPasswordButton">
+                <Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
+            </Style>
+        </Style>
+    </Style>
+
+    <Style Selector="CheckBox.RevealPasswordTextBoxWithError">
+        <Style Selector="^:checked">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Grid Background="{TemplateBinding Background}" RowDefinitions="0.25*, 0.5*, 0.25*">
+                            <controls:XamlSvg Grid.Row="1" Classes="OpenedEye TransitionForeground" Foreground="{TemplateBinding Foreground}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="^:unchecked">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Grid Background="{TemplateBinding Background}" RowDefinitions="0.25*, 0.5*, 0.25*">
+                            <controls:XamlSvg Grid.Row="1" Classes="ClosedEye TransitionForeground" Foreground="{TemplateBinding Foreground}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Style>
+</Styles>

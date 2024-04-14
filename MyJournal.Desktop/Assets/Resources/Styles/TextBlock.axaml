@@ -27,4 +27,17 @@
 		<Setter Property="TextAlignment" Value="Center"/>
 		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=SubheaderColor}"/>
 	</Style>
+
+	<Style Selector="TextBlock.ErrorMessage">
+		<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+		<Setter Property="FontSize" Value="24"/>
+	</Style>
+
+	<Style Selector="TextBlock.OpacityTransition">
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
+	</Style>
 </Styles>

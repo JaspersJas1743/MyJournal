@@ -3,6 +3,7 @@
              x:Class="MyJournal.Desktop.App"
              xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities"
              xmlns:colors="clr-namespace:MyJournal.Desktop.Assets.Resources.ColorThemes"
+             xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
              RequestedThemeVariant="Default">
     <Application.DataTemplates>
         <utilities:ViewLocator/>
@@ -11,6 +12,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <FontFamily x:Key="Raleway">avares://MyJournal.Desktop/Assets/Resources/Fonts#Raleway</FontFamily>
+            <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"></ResourceInclude>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"></ResourceInclude>
@@ -24,9 +26,11 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Window.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBlock.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/XamlSvg.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBoxWithError.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBox.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Button.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/CheckBox.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Border.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"/>

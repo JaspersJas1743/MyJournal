@@ -9,12 +9,17 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 using MyJournal.Desktop.Models;
+using MyJournal.Desktop.Models.Authorization;
+using MyJournal.Desktop.Models.Registration;
+using MyJournal.Desktop.Models.RestoringAccess;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
 using MyJournal.Desktop.ViewModels.Registration;
+using MyJournal.Desktop.ViewModels.RestoringAccess;
 using MyJournal.Desktop.Views;
 using MyJournal.Desktop.Views.Authorization;
 using MyJournal.Desktop.Views.Registration;
+using MyJournal.Desktop.Views.RestoringAccess;
 
 namespace MyJournal.Desktop;
 
@@ -48,9 +53,14 @@ public partial class App : Application
 			.AddSingleton<AuthorizationModel>()
 			#endregion
 			#region Registration
-			.AddSingleton<RegistrationView>()
-			.AddSingleton<RegistrationVM>()
+			.AddSingleton<FirstStepOfRegistrationView>()
+			.AddSingleton<FirstStepOfRegistrationVM>()
 			.AddSingleton<RegistrationModel>()
+			#endregion
+			#region Restoring Access
+			.AddSingleton<RestoringAccessThroughEmailView>()
+			.AddSingleton<RestoringAccessThroughEmailVM>()
+			.AddSingleton<RestoringAccessThroughEmailModel>()
 			#endregion
 			.BuildServiceProvider();
 	}
