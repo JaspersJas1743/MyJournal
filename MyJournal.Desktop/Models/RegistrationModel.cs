@@ -13,7 +13,7 @@ public class RegistrationModel : ModelBase
 		ToAuthorization = ReactiveCommand.Create(execute: () =>
 		{
 			AuthorizationVM authorizationVM = (Application.Current as App)!.GetService<AuthorizationVM>();
-			authorizationVM.Presenter = Presenter;
+			authorizationVM.Presenter = Presenter!;
 			return Presenter!.Content = authorizationVM;
 		});
 	}

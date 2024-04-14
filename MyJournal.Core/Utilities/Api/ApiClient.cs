@@ -338,9 +338,9 @@ public sealed class ApiClient : IDisposable
 
 public static class ApiClientExtension
 {
-	public static void AddApiClient(this IServiceCollection serviceCollection)
+	public static IServiceCollection AddApiClient(this IServiceCollection serviceCollection)
 		=> serviceCollection.AddTransient<ApiClient>();
 
-	public static void AddKeyedApiClient(this IServiceCollection serviceCollection, string key)
+	public static IServiceCollection AddKeyedApiClient(this IServiceCollection serviceCollection, string key)
 		=> serviceCollection.AddKeyedTransient<ApiClient>(serviceKey: key);
 }

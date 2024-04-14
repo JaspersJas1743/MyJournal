@@ -1,0 +1,65 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<StackPanel Spacing="20">
+				<Button Content="Click Me!" />
+				<Button Classes="accent" Content="Click Me!" />
+				<Button Classes="TextButton" Content="Забыли пароль?" />
+			</StackPanel>
+		</Border>
+	</Design.PreviewWith>
+
+	<Style Selector="Button">
+		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="FontFeatures" Value="+lnum"></Setter>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+
+		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{TemplateBinding Background}" />
+		</Style>
+	</Style>
+
+	<Style Selector="Button.TextButton">
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid RowDefinitions="auto, auto">
+					<TextBlock Grid.Row="0" Text="{TemplateBinding Content}"
+								Foreground="{TemplateBinding Foreground}"
+								Padding="{TemplateBinding Padding}">
+					</TextBlock>
+					<Border Grid.Row="1" Height="1" Background="{TemplateBinding Foreground}"
+							Margin="0 -3 0 0"></Border>
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+
+	<Style Selector="Button.HeaderContent">
+		<Setter Property="FontSize" Value="36"></Setter>
+	</Style>
+
+	<Style Selector="Button.SubheaderContent">
+		<Setter Property="FontSize" Value="24"></Setter>
+	</Style>
+
+	<Style Selector="Button.Corner30">
+		<Setter Property="CornerRadius" Value="30"></Setter>
+	</Style>
+
+	<Style Selector="Button.MainAccentColor">
+		<Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
+	</Style>
+
+	<Style Selector="Button.SecondaryAccentColor">
+		<Setter Property="Background" Value="{DynamicResource SecondaryAccentColor}"/>
+	</Style>
+</Styles>

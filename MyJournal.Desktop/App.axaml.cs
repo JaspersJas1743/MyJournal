@@ -1,9 +1,13 @@
 using System;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core;
+using MyJournal.Core.Authorization;
+using MyJournal.Core.Utilities.Api;
+using MyJournal.Core.Utilities.FileService;
+using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
@@ -31,8 +35,15 @@ public partial class App : Application
 			.AddSingleton<WelcomeVM>()
 			.AddSingleton<WelcomeModel>()
 			#endregion
+			#region Utilities
+			.AddApiClient()
+			.AddGoogleAuthenticator()
+			.AddFileService()
+			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()
+			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: nameof(AuthorizationWithCredentialsService))
+			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithTokenService>(serviceKey: nameof(AuthorizationWithTokenService))
 			.AddSingleton<AuthorizationVM>()
 			.AddSingleton<AuthorizationModel>()
 			#endregion

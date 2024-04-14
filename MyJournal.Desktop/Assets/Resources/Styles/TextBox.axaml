@@ -1,22 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Design.PreviewWith>
-    <Border Padding="20">
-      <StackPanel Spacing="20">
-        <TextBox>Left</TextBox>
-        <TextBox IsEnabled="False">Disabled</TextBox>
-        <TextBox TextAlignment="Center">Center</TextBox>
-        <TextBox Classes="clearButton">Clear</TextBox>
-        <TextBox PasswordChar="*" Height="12" Classes="RevealPasswordButton">Reveal Password</TextBox>
-        <TextBox PasswordChar="*" Height="12" Classes="RevealPasswordButton" RevealPassword="True">Password Revealed</TextBox>
-        <TextBox Watermark="Watermark"/>
-        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True"/>
-        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True">Content</TextBox>
-      </StackPanel>
-    </Border>
-  </Design.PreviewWith>
-
   <Style Selector="TextBox">
     <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
     <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
@@ -29,7 +13,7 @@
       <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
     </Style>
 
-    <Style Selector="^.RevealPasswordButton[IsReadOnly=False]">
+    <Style Selector="^.PasswordBox[IsReadOnly=False]">
       <Setter Property="PasswordChar" Value="•"/>
       <Setter Property="InnerRightContent">
         <Setter.Value>
@@ -95,10 +79,6 @@
           </ControlTemplate>
         </Setter.Value>
       </Setter>
-    </Style>
-
-    <Style Selector="^[IsFocused=True]">
-      <Setter Property="BorderThickness" Value="0"/>
     </Style>
   </Style>
 
