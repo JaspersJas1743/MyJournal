@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -14,20 +13,17 @@ public class ViewLocator : IDataTemplate
 		if (data is null)
 			return null;
 
-		Type viewType = data.GetType().BaseType!.GenericTypeArguments.Single();
-
-		App currentApplication = Application.Current as App ?? throw new Exception(message: "Неизвестная ошибка.");
-		UserControl control = currentApplication.GetService(serviceType: viewType) as UserControl ??
-			throw new ArgumentException(message: $"Некорректный тип UserControl: {viewType.Name}", paramName: nameof(data));
+		string vmTypeName = data.GetType().FullName!;
+		Type viewType = Type.GetType(typeName: vmTypeName.Replace(oldValue: "ViewModels", newValue: "Views").Replace(oldValue: "VM", newValue: "View")) ??
+			throw new ArgumentException(message: $"View для {vmTypeName} не найдена.", paramName: nameof(data));
+		App currentApplication = Application.Current as App
+			?? throw new InvalidCastException(message: $"Не удалось преобразовать экземпля текущего приложения к типу {typeof(App)}.");
+		Control control = currentApplication.GetService(serviceType: viewType) as Control ??
+			throw new ArgumentException(message: $"Некорректный тип Control: {viewType.FullName}.", paramName: nameof(data));
 		control.DataContext = data;
 		return control;
 	}
 
 	public bool Match(object? data)
-	{
-		if (data is null)
-			return false;
-
-		return data.GetType().BaseType!.IsGenericType && data.GetType().BaseType!.GetGenericTypeDefinition() == typeof(ViewModelBase<>);
-	}
+		=> data is not null && data.GetType().IsSubclassOf(c: typeof(BaseVM));
 }

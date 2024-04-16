@@ -1,0 +1,95 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+	<Style Selector="CheckBox">
+		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="FontFeatures" Value="+lnum"/>
+		<Setter Property="FontSize" Value="24"/>
+		<Setter Property="FocusAdorner" Value="{x:Null}" />
+		<Setter Property="CornerRadius" Value="10"></Setter>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid x:Name="RootGrid" ColumnDefinitions="30,*">
+					<Border Grid.Column="0" x:Name="PART_Border" Grid.ColumnSpan="2"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding CornerRadius}" />
+
+					<Grid Grid.Column="0" VerticalAlignment="Top" Height="32">
+						<Border x:Name="NormalRectangle" UseLayoutRounding="False" Height="30" Width="30"
+								BorderBrush="{DynamicResource CheckBoxCheckBackgroundStrokeUnchecked}"
+								Background="{DynamicResource CheckBoxCheckBackgroundFillUnchecked}"
+								BorderThickness="{DynamicResource CheckBoxBorderThemeThickness}"
+								CornerRadius="{TemplateBinding CornerRadius}"/>
+
+						<Viewbox UseLayoutRounding="False">
+							<controls:XamlSvg	x:Name="CheckGlyph" Opacity="0"
+												Margin="8 8 7 7"
+												Classes="CheckMark"
+												Foreground="{DynamicResource ContentOnControlColor}"
+												Width="15" Height="15"
+												VerticalAlignment="Center"
+												HorizontalAlignment="Center"/>
+						</Viewbox>
+					</Grid>
+					<ContentPresenter	x:Name="PART_ContentPresenter" RecognizesAccessKey="True"
+										ContentTemplate="{TemplateBinding ContentTemplate}"
+										Content="{TemplateBinding Content}" TextWrapping="Wrap"
+										Margin="{TemplateBinding Padding}" FontSize="24" Grid.Column="1"
+										HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+										VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^ /template/ Border#NormalRectangle">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="^ /template/ controls|XamlSvg#CheckGlyph">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="^:checked">
+			<Style Selector="^ /template/ Border#NormalRectangle">
+				<Setter Property="BorderBrush" Value="{DynamicResource MainAccentColor}" />
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+			</Style>
+			<Style Selector="^ /template/ controls|XamlSvg#CheckGlyph">
+				<Setter Property="Opacity" Value="1"/>
+			</Style>
+			<Style Selector="^:pressed">
+				<Style Selector="^ /template/ Border#PART_Border">
+					<Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushChecked}" />
+				</Style>
+				<Style Selector="^ /template/ Border#NormalRectangle">
+					<Setter Property="BorderBrush" Value="{DynamicResource MainAccentColor}" />
+					<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^:unchecked">
+			<Style Selector="^ /template/ controls|XamlSvg#CheckGlyph">
+				<Setter Property="Opacity" Value="0"/>
+			</Style>
+			<Style Selector="^ /template/ Border#NormalRectangle">
+				<Setter Property="BorderThickness" Value="1.5" />
+			</Style>
+			<Style Selector="^:pressed">
+				<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+					<Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedPressed}" />
+				</Style>
+				<Style Selector="^ /template/ Border#PART_Border">
+					<Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
+				</Style>
+			</Style>
+		</Style>
+	</Style>
+</Styles>

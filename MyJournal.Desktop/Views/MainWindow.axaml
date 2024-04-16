@@ -3,11 +3,11 @@
         xmlns:vm="using:MyJournal.Desktop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="MyJournal.Desktop.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
+        mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+        x:DataType="vm:MainWindowVM" Classes="MainWindow"
+        x:Class="MyJournal.Desktop.Views.MainWindowView"
         Icon="/Assets/Resources/Images/logo.ico"
-        Classes="MainWindow"
+        MinWidth="1200" MinHeight="700"
         Title="Электронный журнал">
-        <TransitioningContentControl Content="{Binding Path=MainViewModel,Mode=OneWay}"/>
+        <TransitioningContentControl Content="{Binding Path=WelcomeVm,Mode=OneWay}"/>
 </Window>

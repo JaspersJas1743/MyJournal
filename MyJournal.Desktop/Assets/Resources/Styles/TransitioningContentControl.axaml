@@ -1,0 +1,28 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:transitions="clr-namespace:MyJournal.Desktop.Assets.Resources.Transitions"
+		>
+	<Style Selector="TransitioningContentControl">
+		<Setter Property="PageTransition">
+			<Setter.Value>
+				<CrossFade Duration="0:0:0.1" />
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style Selector="TransitioningContentControl.LeftDirection">
+		<Setter Property="PageTransition">
+			<Setter.Value>
+				<transitions:PageTransition AnimationDirection="Left" Duration="0:0:0.4"/>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style Selector="TransitioningContentControl.RightDirection">
+		<Setter Property="PageTransition">
+			<Setter.Value>
+				<transitions:PageTransition AnimationDirection="Right" Duration="0:0:0.4"/>
+			</Setter.Value>
+		</Setter>
+	</Style>
+</Styles>

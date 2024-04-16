@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Authorization"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			d:DesignWidth="1020" d:DesignHeight="1025" x:DataType="vm:AuthorizationVM"
+			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Authorization.AuthorizationView">
+	<Viewbox Width="750" Height="800" VerticalAlignment="Center" HorizontalAlignment="Center">
+		<Grid	VerticalAlignment="Center" HorizontalAlignment="Center" Margin="25 0 25 0"
+				RowDefinitions="auto, 130, 30, 10, 90, 15, 90, 15, 30, 15, 90, 80, 90">
+			<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!"
+						Classes="CenteredTextBlock Header"/>
+			<TextBlock	Grid.Row="1" Text="Введите логин и пароль для входа в Ваш аккаунт"
+						Classes="CenteredTextBlock Subheader" Grid.RowSpan="3"/>
+			<TextBlock	Grid.Row="2" Text="{Binding Error}" Classes="CenteredTextBlock ErrorMessage OpacityTransition"
+						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}">
+			</TextBlock>
+			<controls:TextBoxWithError	Text="{Binding Login,Mode=TwoWay}"
+										Grid.Row="4" CornerRadius="30" Watermark="Логин"
+										HaveError="{Binding HaveError}"
+										VerticalContentAlignment="Center">
+				<TextBox.InnerLeftContent>
+					<Grid RowDefinitions="0.275* 0.45* 0.275*">
+						<controls:XamlSvg Grid.Row="1" Margin="20 0 5 0" Classes="Login TransitionForeground"/>
+					</Grid>
+				</TextBox.InnerLeftContent>
+			</controls:TextBoxWithError>
+			<controls:TextBoxWithError	CornerRadius="30" Watermark="Пароль" Classes="PasswordBoxWithError"
+										Text="{Binding Password,Mode=TwoWay}"
+										HaveError="{Binding HaveError}"
+										Grid.Row="6" VerticalContentAlignment="Center">
+				<TextBox.InnerLeftContent>
+					<Grid RowDefinitions="0.275* 0.45* 0.275*">
+						<controls:XamlSvg Grid.Row="1" Margin="20 0 5 0" Classes="Password TransitionForeground"/>
+					</Grid>
+				</TextBox.InnerLeftContent>
+			</controls:TextBoxWithError>
+			<Grid Grid.Row="8">
+				<CheckBox	HorizontalAlignment="Left" Content="Не выходить из аккаунта"
+							IsChecked="{Binding SaveCredential,Mode=TwoWay}"/>
+				<Button HorizontalAlignment="Right" Command="{Binding ToRestoringAccess}"
+						Content="Забыли пароль?" Classes="SubheaderContent TextButton"/>
+			</Grid>
+			<Viewbox Grid.Row="10">
+				<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor"
+													Content="Войти" Width="800" Height="90"
+													Command="{Binding SignIn}"/>
+			</Viewbox>
+			<TextBlock Grid.Row="11" Text="Нет аккаунта?" Classes="CenteredTextBlock Subheader"/>
+			<Viewbox Grid.Row="12">
+				<controls:ButtonWithAnimatedCommand Content="Зарегистрироваться →" Width="800" Height="90"
+													Classes="HeaderContent Corner30 SecondaryAccentColor"
+													Command="{Binding ToRegistration}"/>
+			</Viewbox>
+		</Grid>
+	</Viewbox>
+</UserControl>

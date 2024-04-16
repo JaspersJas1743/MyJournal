@@ -1,8 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<Style Selector="TextBlock">
-		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=Raleway}"/>
 		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="FontFeatures" Value="+lnum"></Setter>
 	</Style>
 
 	<Style Selector="TextBlock.WindowHeader">
@@ -12,5 +13,31 @@
 	<Style Selector="TextBlock.CenteredTextBlock">
 		<Setter Property="HorizontalAlignment" Value="Center"/>
 		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+
+	<Style Selector="TextBlock.Header">
+		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
+		<Setter Property="FontSize" Value="48"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+		<Setter Property="TextAlignment" Value="Center"/>
+	</Style>
+
+	<Style Selector="TextBlock.Subheader">
+		<Setter Property="FontSize" Value="24"/>
+		<Setter Property="TextAlignment" Value="Center"/>
+		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=SubheaderColor}"/>
+	</Style>
+
+	<Style Selector="TextBlock.ErrorMessage">
+		<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+		<Setter Property="FontSize" Value="24"/>
+	</Style>
+
+	<Style Selector="TextBlock.OpacityTransition">
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
 	</Style>
 </Styles>

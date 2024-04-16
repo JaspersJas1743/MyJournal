@@ -1,0 +1,32 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg">
+
+	<Style Selector="controls|XamlSvg.CheckMark">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V50 H50 V0 H0 Z">
+										<DrawingGroup Opacity="1">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Geometry="F1 M50,50z M0,0z M40.267,14.628L20.974,33.921 11.681,24.628C11.29,24.237 10.658,24.237 10.267,24.628 9.876,25.019 9.876,25.651 10.267,26.042L20.267,36.042C20.462,36.237 20.718,36.335 20.974,36.335 21.23,36.335 21.486,36.237 21.681,36.042L41.681,16.042C42.072,15.651 42.072,15.019 41.681,14.628 41.29,14.237 40.657,14.237 40.267,14.628z">
+												<GeometryDrawing.Pen>
+													<Pen Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Thickness="3" LineCap="Flat" LineJoin="Miter" />
+												</GeometryDrawing.Pen>
+											</GeometryDrawing>
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</Styles>

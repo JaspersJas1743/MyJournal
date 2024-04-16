@@ -65,9 +65,9 @@ public sealed class FileService(
 
 public static class FileServiceExtensions
 {
-	public static void AddFileService(this IServiceCollection serviceCollection)
+	public static IServiceCollection AddFileService(this IServiceCollection serviceCollection)
 		=> serviceCollection.AddTransient<IFileService, FileService>();
 
-	public static void AddKeyedFileService(this IServiceCollection serviceCollection, string key)
+	public static IServiceCollection AddKeyedFileService(this IServiceCollection serviceCollection, string key)
 		=> serviceCollection.AddKeyedTransient<IFileService, FileService>(serviceKey: key);
 }

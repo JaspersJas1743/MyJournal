@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels" mc:Ignorable="d"
+			 d:DesignWidth="1920" d:DesignHeight="1025" x:DataType="vm:WelcomeVM"
+             x:Class="MyJournal.Desktop.Views.WelcomeView">
+	<Viewbox>
+		<Grid ColumnDefinitions="900, 1020">
+			<Image	Grid.Column="0" Margin="150 0 50 0" VerticalAlignment="Center"
+					Source="avares://MyJournal.Desktop/Assets/Resources/Images/WelcomeImage.png"/>
+			<TransitioningContentControl Classes="RightDirection" Grid.Column="1" Content="{Binding Path=Content}"/>
+		</Grid>
+	</Viewbox>
+</UserControl>

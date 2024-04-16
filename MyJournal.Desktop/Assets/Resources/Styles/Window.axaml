@@ -1,23 +1,22 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:vm="using:MyJournal.Desktop.ViewModels"
-		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-	>
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
 
 	<Style Selector="Window">
 		<Setter Property="ExtendClientAreaChromeHints" Value="NoChrome"/>
         <Setter Property="ExtendClientAreaTitleBarHeightHint" Value="35"/>
         <Setter Property="ExtendClientAreaToDecorationsHint" Value="True"/>
-        <Setter Property="TransparencyBackgroundFallback" Value="Transparent"/>
+        <Setter Property="SystemDecorations" Value="BorderOnly"/>
 	</Style>
 
 	<Style Selector="Window.MainWindow">
 		<Setter Property="WindowStartupLocation" Value="CenterScreen"/>
 		<Setter Property="Template">
-			<ControlTemplate x:DataType="vm:MainWindowViewModel">
+			<ControlTemplate x:DataType="vm:MainWindowVM">
 				<Grid Margin="{TemplateBinding Property=OffScreenMargin}">
 					<Border x:Name="WindowBorder" Background="{DynamicResource ResourceKey=BackgroundColor}" CornerRadius="15" IsHitTestVisible="False"/>
-					<Border x:Name="PART_TransparencyFallback" IsHitTestVisible="False"/>
+					<Border x:Name="PART_TransparencyFallback" Background="Transparent" IsHitTestVisible="False"/>
 					<VisualLayerManager>
 						<Grid RowDefinitions="35, *" ColumnDefinitions="35, *">
 							<controls:XamlSvg IsHitTestVisible="False" Grid.Column="0" Grid.Row="0" Height="20"
@@ -31,10 +30,10 @@
 										<controls:XamlSvg Classes="Minimize"></controls:XamlSvg>
 									</Button>
 									<Button x:Name="MaximizeButton" Classes="WindowButton MaximizeButton" Command="{Binding Path=Maximize}">
-										<controls:XamlSvg Classes="Maximize"></controls:XamlSvg>
+										<controls:XamlSvg Classes="Maximize" Margin="2"></controls:XamlSvg>
 									</Button>
 									<Button x:Name="RestoreButton" Classes="WindowButton RestoreButton" Command="{Binding Path=Restore}">
-										<controls:XamlSvg Classes="Restore"></controls:XamlSvg>
+										<controls:XamlSvg Classes="Restore" Margin="2"></controls:XamlSvg>
 									</Button>
 									<Button x:Name="CloseButton" Classes="WindowButton CloseButton" Command="{Binding Path=Close}">
 										<controls:XamlSvg Classes="Close"></controls:XamlSvg>
@@ -42,10 +41,10 @@
 								</StackPanel>
 							</Grid>
 							<ContentPresenter HorizontalContentAlignment="{TemplateBinding Property=HorizontalContentAlignment}"
+							                  Margin="{TemplateBinding Property=Padding}" Grid.Column="0" Grid.ColumnSpan="2"
 							                  VerticalContentAlignment="{TemplateBinding Property=VerticalContentAlignment}"
 											  x:Name="PART_ContentPresenter" Content="{TemplateBinding Property=Content}"
-							                  Margin="{TemplateBinding Property=Padding}" Grid.Row="1" Grid.Column="0"
-							                  ContentTemplate="{TemplateBinding Property=ContentTemplate}"/>
+											  Grid.Row="1" ContentTemplate="{TemplateBinding Property=ContentTemplate}"/>
 						</Grid>
 					</VisualLayerManager>
 				</Grid>
@@ -83,9 +82,11 @@
 				</Border>
 			</ControlTemplate>
 		</Setter>
-		<Style Selector="^:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ResourceKey=ControlPointeroverColor}"/>
-		</Style>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.05"/>
+			</Transitions>
+		</Setter>
 	</Style>
 
 	<Style Selector="Button.MinimizeButton">
