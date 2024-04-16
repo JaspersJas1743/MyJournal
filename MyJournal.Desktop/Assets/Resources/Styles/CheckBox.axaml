@@ -1,13 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-		>
-	<Design.PreviewWith>
-		<Border Padding="20">
-			<CheckBox Content="Не выходить из аккаунта"/>
-		</Border>
-	</Design.PreviewWith>
-
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
 	<Style Selector="CheckBox">
 		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
 		<Setter Property="FontWeight" Value="SemiBold"/>
@@ -35,17 +28,18 @@
 							<controls:XamlSvg	x:Name="CheckGlyph" Opacity="0"
 												Margin="8 8 7 7"
 												Classes="CheckMark"
+												Foreground="{DynamicResource ContentOnControlColor}"
 												Width="15" Height="15"
 												VerticalAlignment="Center"
 												HorizontalAlignment="Center"/>
 						</Viewbox>
 					</Grid>
-					<ContentPresenter x:Name="PART_ContentPresenter" RecognizesAccessKey="True"
-									ContentTemplate="{TemplateBinding ContentTemplate}"
-									Content="{TemplateBinding Content}" TextWrapping="Wrap"
-									Margin="{TemplateBinding Padding}" FontSize="24" Grid.Column="1"
-									HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-									VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+					<ContentPresenter	x:Name="PART_ContentPresenter" RecognizesAccessKey="True"
+										ContentTemplate="{TemplateBinding ContentTemplate}"
+										Content="{TemplateBinding Content}" TextWrapping="Wrap"
+										Margin="{TemplateBinding Padding}" FontSize="24" Grid.Column="1"
+										HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+										VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 				</Grid>
 			</ControlTemplate>
 		</Setter>

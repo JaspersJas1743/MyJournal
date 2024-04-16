@@ -1,5 +1,4 @@
 using System.Reactive;
-using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
 using ReactiveUI;
 

@@ -1,0 +1,99 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+    xmlns:lottie="using:Avalonia.Labs.Lottie">
+    <Style Selector="controls|ButtonWithAnimatedCommand" >
+        <Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+        <Setter Property="FontFeatures" Value="+lnum"></Setter>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="RenderTransform" Value="none" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />
+            </Transitions>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter x:Name="PART_ContentPresenter"
+                                  Background="{TemplateBinding Background}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Padding="{TemplateBinding Padding}"
+                                  RecognizesAccessKey="True"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^[CommandIsExecuting=True] /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Content">
+            	<Template>
+            		<lottie:Lottie Margin="0 -75 0 -75" Path="/Assets/Resources/Animations/Loading.json"/>
+            	</Template>
+            </Setter>
+        </Style>
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+            <Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
+        </Style>
+        <Style Selector="^:pressed">
+			<Setter Property="RenderTransform" Value="scale(0.98)" />
+        </Style>
+        <Style Selector="^:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
+            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
+        </Style>
+        <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
+            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        <Style Selector="^.TextButton">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid RowDefinitions="auto, auto">
+                        <TextBlock Grid.Row="0" Text="{TemplateBinding Content}"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   Padding="{TemplateBinding Padding}"/>
+                        <Border Grid.Row="1" Height="1" Background="{TemplateBinding Foreground}" Margin="0 -3 0 0"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="^.HeaderContent">
+            <Setter Property="FontSize" Value="36"/>
+        </Style>
+        <Style Selector="^.SubheaderContent">
+            <Setter Property="FontSize" Value="24"/>
+        </Style>
+        <Style Selector="^.Corner30">
+            <Setter Property="CornerRadius" Value="30"/>
+        </Style>
+        <Style Selector="^.MainAccentColor">
+            <Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
+        </Style>
+        <Style Selector="^.SecondaryAccentColor">
+			<Setter Property="Background" Value="{DynamicResource SecondaryAccentColor}"/>
+        </Style>
+    </Style>
+</Styles>

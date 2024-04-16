@@ -2,6 +2,7 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<Style Selector="Button">
 		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
 		<Setter Property="FontFeatures" Value="+lnum"></Setter>
 		<Setter Property="FontWeight" Value="SemiBold"/>
 		<Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -10,6 +11,7 @@
 
 		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="{TemplateBinding Background}" />
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
 		</Style>
 
 		<Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">

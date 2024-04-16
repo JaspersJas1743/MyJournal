@@ -36,7 +36,7 @@
 	<Style Selector="TextBlock.OpacityTransition">
 		<Setter Property="Transitions">
 			<Transitions>
-				<DoubleTransition Property="Opacity" Duration="0:0:0.1"/>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
 			</Transitions>
 		</Setter>
 	</Style>
