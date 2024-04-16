@@ -9,12 +9,12 @@
         <Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
         <Setter Property="FontFeatures" Value="+lnum"></Setter>
         <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource MainAccentColor}"/>
         <Setter Property="CaretBrush" Value="{DynamicResource ForegroundColor}"/>
-
         <Style Selector="^ /template/ TextBlock#PART_Watermark">
             <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
         </Style>
-
         <Style Selector="^.PasswordBox[IsReadOnly=False]">
             <Setter Property="PasswordChar" Value="•"/>
             <Setter Property="InnerRightContent">
@@ -28,7 +28,12 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
+        <Style Selector="^[RevealPassword=False]">
+            <Setter Property="FontSize" Value="32"/>
+            <Style Selector="^ /template/ TextBlock#PART_Watermark">
+                <Setter Property="FontSize" Value="24"/>
+            </Style>
+        </Style>
         <Style Selector="^:pointerover">
             <Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
             <Style Selector="^ /template/ TextBlock#PART_Watermark">
@@ -39,11 +44,9 @@
                 <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
             </Style>
         </Style>
-
         <Style Selector="^:disabled">
 			<Setter Property="Opacity" Value="0.5"/>
         </Style>
-
         <Style Selector="^:focus">
             <Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
             <Style Selector="^ /template/ TextBlock#PART_Watermark">
@@ -57,7 +60,6 @@
             </Style>
         </Style>
     </Style>
-
     <Style Selector="CheckBox.RevealPassword">
         <Style Selector="^:checked">
             <Setter Property="Template">

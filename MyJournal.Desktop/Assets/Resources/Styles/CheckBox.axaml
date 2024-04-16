@@ -43,43 +43,49 @@
 				</Grid>
 			</ControlTemplate>
 		</Setter>
-
+		<Style Selector="^ /template/ Border#NormalRectangle">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="^ /template/ controls|XamlSvg#CheckGlyph">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
 		<Style Selector="^:checked">
 			<Style Selector="^ /template/ Border#NormalRectangle">
 				<Setter Property="BorderBrush" Value="{DynamicResource MainAccentColor}" />
 				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
 			</Style>
-
 			<Style Selector="^ /template/ controls|XamlSvg#CheckGlyph">
 				<Setter Property="Opacity" Value="1"/>
 			</Style>
-
 			<Style Selector="^:pressed">
 				<Style Selector="^ /template/ Border#PART_Border">
 					<Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushChecked}" />
 				</Style>
-
 				<Style Selector="^ /template/ Border#NormalRectangle">
 					<Setter Property="BorderBrush" Value="{DynamicResource MainAccentColor}" />
 					<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
 				</Style>
 			</Style>
 		</Style>
-
 		<Style Selector="^:unchecked">
 			<Style Selector="^ /template/ controls|XamlSvg#CheckGlyph">
 				<Setter Property="Opacity" Value="0"/>
 			</Style>
-
 			<Style Selector="^ /template/ Border#NormalRectangle">
 				<Setter Property="BorderThickness" Value="1.5" />
 			</Style>
-
 			<Style Selector="^:pressed">
 				<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
 					<Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedPressed}" />
 				</Style>
-
 				<Style Selector="^ /template/ Border#PART_Border">
 					<Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
 				</Style>

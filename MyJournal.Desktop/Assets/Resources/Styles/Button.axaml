@@ -8,6 +8,11 @@
 		<Setter Property="HorizontalContentAlignment" Value="Center"/>
 		<Setter Property="VerticalContentAlignment" Value="Center"/>
 		<Setter Property="FocusAdorner" Value="{x:Null}" />
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
 
 		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="{TemplateBinding Background}" />

@@ -5,6 +5,26 @@ namespace MyJournal.Desktop.Assets.Utilities;
 
 public static class PlatformDetector
 {
+	static PlatformDetector()
+	{
+		CurrentPlatform = Environment.OSVersion.Platform;
+		CurrentOperatingSystem = GetNameOfCurrentOperationSystem();
+	}
+
+	public static PlatformID CurrentPlatform { get; }
+	public static string CurrentOperatingSystem { get; }
+
+	private static string GetNameOfCurrentOperationSystem()
+	{
+		return CurrentPlatform switch
+		{
+			PlatformID.Unix => "Linux",
+			PlatformID.Win32NT => "Windows",
+			PlatformID.MacOSX => "MacOS",
+			_ => throw new NotSupportedException()
+		};
+	}
+
 	private static void RunIfCurrentPlatform(Action action, Func<bool> predicate)
 	{
 		if (predicate())
@@ -54,33 +74,44 @@ public static class PlatformDetector
 
 	public static void Run(Action action)
 	{
-		switch (Environment.OSVersion.Platform)
+		switch (CurrentPlatform)
 		{
 			case PlatformID.Unix: action(); break;
+			case PlatformID.Win32S:
+			case PlatformID.Win32Windows:
+			case PlatformID.WinCE:
 			case PlatformID.Win32NT: action(); break;
 			case PlatformID.MacOSX: action(); break;
+			case PlatformID.Xbox:
+			case PlatformID.Other:
 			default: throw new NotSupportedException();
 		};
 	}
 
 	public static async Task Run(Func<Task> action)
 	{
-		switch (Environment.OSVersion.Platform)
+		switch (CurrentPlatform)
 		{
 			case PlatformID.Unix: await action(); break;
+			case PlatformID.Win32S:
+			case PlatformID.Win32Windows:
+			case PlatformID.WinCE:
 			case PlatformID.Win32NT: await action(); break;
 			case PlatformID.MacOSX: await action(); break;
+			case PlatformID.Xbox:
+			case PlatformID.Other:
 			default: throw new NotSupportedException();
 		};
 	}
 
 	public static async Task<T?> Run<T>(Func<Task<T>> action)
 	{
-		return Environment.OSVersion.Platform switch
+		return CurrentPlatform switch
 		{
 			PlatformID.Unix => await action(),
 			PlatformID.Win32NT => await action(),
 			PlatformID.MacOSX => await action(),
+			_ => throw new NotSupportedException()
 		};
 	}
 }

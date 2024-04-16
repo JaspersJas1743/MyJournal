@@ -16,10 +16,10 @@
 			<TextBlock	Grid.Row="2" Text="{Binding Error}" Classes="CenteredTextBlock ErrorMessage OpacityTransition"
 						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}">
 			</TextBlock>
-			<controls:TextBoxWithError	Grid.Row="4" CornerRadius="30" Watermark="Логин"
-										FontSize="24" VerticalContentAlignment="Center"
+			<controls:TextBoxWithError	Text="{Binding Login,Mode=TwoWay}"
+										Grid.Row="4" CornerRadius="30" Watermark="Логин"
 										HaveError="{Binding HaveError}"
-										Text="{Binding Login,Mode=TwoWay}">
+										VerticalContentAlignment="Center">
 				<TextBox.InnerLeftContent>
 					<Grid RowDefinitions="0.275* 0.45* 0.275*">
 						<controls:XamlSvg Grid.Row="1" Margin="20 0 5 0" Classes="Login TransitionForeground"/>
@@ -27,9 +27,9 @@
 				</TextBox.InnerLeftContent>
 			</controls:TextBoxWithError>
 			<controls:TextBoxWithError	CornerRadius="30" Watermark="Пароль" Classes="PasswordBoxWithError"
-										Grid.Row="6" FontSize="24" VerticalContentAlignment="Center"
+										Text="{Binding Password,Mode=TwoWay}"
 										HaveError="{Binding HaveError}"
-										Text="{Binding Password,Mode=TwoWay}">
+										Grid.Row="6" VerticalContentAlignment="Center">
 				<TextBox.InnerLeftContent>
 					<Grid RowDefinitions="0.275* 0.45* 0.275*">
 						<controls:XamlSvg Grid.Row="1" Margin="20 0 5 0" Classes="Password TransitionForeground"/>
@@ -44,7 +44,7 @@
 			</Grid>
 			<Viewbox Grid.Row="10">
 				<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor"
-													Content="Войти →" Width="800" Height="90"
+													Content="Войти" Width="800" Height="90"
 													Command="{Binding SignIn}"/>
 			</Viewbox>
 			<TextBlock Grid.Row="11" Text="Нет аккаунта?" Classes="CenteredTextBlock Subheader"/>

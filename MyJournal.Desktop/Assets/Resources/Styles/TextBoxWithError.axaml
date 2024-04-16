@@ -8,9 +8,10 @@
         <Setter Property="BorderThickness" Value="5"/>
         <Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
         <Setter Property="FontFeatures" Value="+lnum"/>
+        <Setter Property="FontSize" Value="24"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FocusAdorner" Value="{x:Null}" />
-        <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource MainAccentColor}"/>
         <Setter Property="CaretBrush" Value="{DynamicResource ForegroundColor}"/>
         <Setter Property="Template">
             <ControlTemplate>
@@ -23,7 +24,7 @@
                         <Border Margin="{TemplateBinding BorderThickness}">
                             <Grid ColumnDefinitions="Auto,*,Auto" >
                                 <ContentPresenter Grid.Column="0" Content="{TemplateBinding InnerLeftContent}" x:Name="PART_InnerLeftContent"
-                                                  Foreground="{DynamicResource MainAccentColor}"/>
+                                                  Foreground="{DynamicResource MainAccentColor}" Margin="0 0 5 0"/>
                                 <DockPanel x:Name="PART_InnerDockPanel" Grid.Column="1" Margin="{TemplateBinding Padding}">
                                     <TextBlock  Name="PART_FloatingWatermark" Foreground="{DynamicResource SystemAccentColor}"
                                                 IsVisible="False" Text="{TemplateBinding Watermark}" DockPanel.Dock="Top" />
@@ -174,6 +175,12 @@
                     </Template>
                 </Setter.Value>
             </Setter>
+            <Style Selector="^[RevealPassword=False]">
+                <Setter Property="FontSize" Value="32"/>
+                <Style Selector="^ /template/ TextBlock#PART_Watermark">
+                    <Setter Property="FontSize" Value="24"/>
+                </Style>
+            </Style>
             <Style Selector="^[HaveError=True] CheckBox#RevealPasswordButton">
                 <Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
             </Style>

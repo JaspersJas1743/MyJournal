@@ -7,7 +7,7 @@
 		<Setter Property="ExtendClientAreaChromeHints" Value="NoChrome"/>
         <Setter Property="ExtendClientAreaTitleBarHeightHint" Value="35"/>
         <Setter Property="ExtendClientAreaToDecorationsHint" Value="True"/>
-        <Setter Property="SystemDecorations" Value="None"/>
+        <Setter Property="SystemDecorations" Value="BorderOnly"/>
 	</Style>
 
 	<Style Selector="Window.MainWindow">
@@ -82,9 +82,11 @@
 				</Border>
 			</ControlTemplate>
 		</Setter>
-		<Style Selector="^:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ResourceKey=ControlPointeroverColor}"/>
-		</Style>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.05"/>
+			</Transitions>
+		</Setter>
 	</Style>
 
 	<Style Selector="Button.MinimizeButton">

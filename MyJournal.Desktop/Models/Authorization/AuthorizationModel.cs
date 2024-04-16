@@ -14,6 +14,7 @@ using MsBox.Avalonia.Enums;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.ViewModels.Registration;
 using MyJournal.Desktop.ViewModels.RestoringAccess;
@@ -105,7 +106,7 @@ public class AuthorizationModel : Drawable
 				credentials: new UserAuthorizationCredentials(
 					login: Login,
 					password: Password,
-					client: UserAuthorizationCredentials.Clients.Windows
+					client: Enum.Parse<UserAuthorizationCredentials.Clients>(value: PlatformDetector.CurrentOperatingSystem)
 				),
 				cancellationToken: cancellationToken
 			);
