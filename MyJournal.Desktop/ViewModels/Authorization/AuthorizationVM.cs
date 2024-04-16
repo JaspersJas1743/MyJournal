@@ -9,7 +9,7 @@ public sealed class AuthorizationVM(AuthorizationModel model) : Renderer(model: 
 {
 	public ReactiveCommand<Unit, Unit> ToRegistration => model.ToRegistration;
 	public ReactiveCommand<Unit, Unit> ToRestoringAccess => model.ToRestoringAccess;
-	public ReactiveCommand<Unit, Unit> LogIn => model.LogIn;
+	public ReactiveCommand<Unit, Unit> SignIn => model.SignIn;
 
 	public string Login
 	{

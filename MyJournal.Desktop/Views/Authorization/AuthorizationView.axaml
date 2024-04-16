@@ -45,7 +45,7 @@
 			<Viewbox Grid.Row="10">
 				<Button Classes="HeaderContent Corner30 MainAccentColor"
 						Content="Войти →" Width="800" Height="90"
-						Command="{Binding LogIn}"/>
+						Command="{Binding SignIn}"/>
 			</Viewbox>
 			<TextBlock Grid.Row="11" Text="Нет аккаунта?" Classes="CenteredTextBlock Subheader"/>
 			<Viewbox Grid.Row="12">

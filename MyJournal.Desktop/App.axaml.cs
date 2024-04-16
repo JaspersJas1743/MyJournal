@@ -3,11 +3,15 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
+using MyJournal.Desktop.Assets.Utilities;
+using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
 using MyJournal.Desktop.Models.Registration;
@@ -29,7 +33,7 @@ public partial class App : Application
 
 	public App()
 	{
-		_services = new ServiceCollection()
+		IServiceCollection services = new ServiceCollection()
 			#region MainWindow
 			.AddSingleton<MainWindowView>()
 			.AddSingleton<MainWindowVM>()
@@ -60,9 +64,13 @@ public partial class App : Application
 			#region Restoring Access
 			.AddSingleton<RestoringAccessThroughEmailView>()
 			.AddSingleton<RestoringAccessThroughEmailVM>()
-			.AddSingleton<RestoringAccessThroughEmailModel>()
+			.AddSingleton<RestoringAccessThroughEmailModel>();
 			#endregion
-			.BuildServiceProvider();
+
+		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddSingleton<ICredentialStorageService, WindowsCredentialStorageService>());
+		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddSingleton<ICredentialStorageService, LinuxCredentialStorageService>());
+
+		_services = services.BuildServiceProvider();
 	}
 
 	public T GetService<T>()
@@ -91,7 +99,7 @@ public partial class App : Application
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			desktop.MainWindow = GetService<MainWindowView>();
-			desktop.MainWindow!.DataContext = GetService<MainWindowVM>();
+			desktop.MainWindow.DataContext = GetService<MainWindowVM>();
 		}
 
 		base.OnFrameworkInitializationCompleted();
