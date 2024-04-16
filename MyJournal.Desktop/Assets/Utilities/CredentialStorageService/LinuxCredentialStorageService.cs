@@ -1,8 +1,11 @@
 using System;
-using GnomeStack.Secrets;
+using System.Runtime.Versioning;
 using GnomeStack.Standard;
+using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 
+[Untested]
+[SupportedOSPlatform(platformName: "Linux")]
 public class LinuxCredentialStorageService : ICredentialStorageService
 {
     private const string MyJournalService = nameof(MyJournalService);

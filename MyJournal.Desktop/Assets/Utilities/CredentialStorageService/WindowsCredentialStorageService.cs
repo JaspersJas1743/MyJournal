@@ -1,9 +1,10 @@
-using System;
 using System.Net;
+using System.Runtime.Versioning;
 using AdysTech.CredentialManager;
 
 namespace MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 
+[SupportedOSPlatform(platformName: "Windows")]
 public class WindowsCredentialStorageService : ICredentialStorageService
 {
 	private const string CredentialKey = "MyJournalUser";

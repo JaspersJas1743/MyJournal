@@ -69,6 +69,7 @@ public partial class App : Application
 
 		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddSingleton<ICredentialStorageService, WindowsCredentialStorageService>());
 		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddSingleton<ICredentialStorageService, LinuxCredentialStorageService>());
+		PlatformDetector.RunIfCurrentPlatformIsMacOS(action: () => services.AddSingleton<ICredentialStorageService, MacOsCredentialStorageService>());
 
 		_services = services.BuildServiceProvider();
 	}
