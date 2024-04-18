@@ -2,9 +2,9 @@ namespace MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 
 public interface IConfigurationService
 {
-	T? Get<T>(string? key) where T : class;
-	string? Get(string? key);
+	T? Get<T>(ConfigurationKeys? key) where T : class;
+	string? Get(ConfigurationKeys? key);
 
-	void Set(string key, object? value);
-	void Set(string key, string? value);
+	void Set(ConfigurationKeys key, object? value);
+	void Set(ConfigurationKeys key, string? value);
 }

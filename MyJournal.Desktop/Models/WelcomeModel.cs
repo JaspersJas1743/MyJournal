@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using DynamicData.Binding;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
