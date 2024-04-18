@@ -14,8 +14,7 @@
 			<TextBlock	Grid.Row="1" Text="Введите логин и пароль для входа в Ваш аккаунт"
 						Classes="CenteredTextBlock Subheader" Grid.RowSpan="3"/>
 			<TextBlock	Grid.Row="2" Text="{Binding Error}" Classes="CenteredTextBlock ErrorMessage OpacityTransition"
-						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}">
-			</TextBlock>
+						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
 			<controls:TextBoxWithError	Text="{Binding Login,Mode=TwoWay}"
 										Grid.Row="4" CornerRadius="30" Watermark="Логин"
 										HaveError="{Binding HaveError}"

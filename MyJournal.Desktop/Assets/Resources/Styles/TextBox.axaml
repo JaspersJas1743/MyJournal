@@ -59,6 +59,31 @@
                 <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
             </Style>
         </Style>
+        <Style Selector="^.CodeEntryCell">
+		    <Setter Property="CornerRadius" Value="30"/>
+		    <Setter Property="CaretBrush" Value="Transparent"/>
+		    <Setter Property="Padding" Value="0"/>
+		    <Setter Property="Margin" Value="5 0 5 0"/>
+		    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+		    <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="SelectionBrush" Value="Transparent"/>
+		    <Setter Property="TextAlignment" Value="Center"/>
+		    <Setter Property="MaxLength" Value="1"/>
+		    <Setter Property="FontSize" Value="48"/>
+		    <Setter Property="Transitions">
+			    <Transitions>
+				    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"></BrushTransition>
+			    </Transitions>
+		    </Setter>
+		    <Style Selector="^:focus /template/ Border#PART_BorderElement">
+			    <Setter Property="BorderBrush" Value="{DynamicResource CodeEntrySelection}"/>
+		    </Style>
+	    </Style>
+        <Style Selector="^.ErrorCodeEntryCell">
+		    <Style Selector="^:pointerover /template/ Border#PART_BorderElement">
+			    <Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+		    </Style>
+	    </Style>
     </Style>
     <Style Selector="CheckBox.RevealPassword">
         <Style Selector="^:checked">

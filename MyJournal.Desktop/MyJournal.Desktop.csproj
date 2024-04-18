@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**"/>
+        <AvaloniaResource Include="Assets\Resources\**"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -34,7 +34,8 @@
       <UpToDateCheckInput Remove="Views\MainView.axaml" />
       <UpToDateCheckInput Remove="Views\MainWindow.axaml" />
       <UpToDateCheckInput Remove="Views\MainWindowView.axaml" />
-      <UpToDateCheckInput Remove="Assets\MVVM\Models\MainWindowModel.cs" />
+      <UpToDateCheckInput Remove="Controls\CodeInput.axaml" />
+      <UpToDateCheckInput Remove="Assets\Resources\Controls\ButtonWithAnimatedCommand.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -49,5 +50,9 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MyJournal.Core\MyJournal.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Assets\Controls\CodeInput.axaml" />
     </ItemGroup>
 </Project>

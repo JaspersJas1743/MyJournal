@@ -5,8 +5,7 @@ namespace MyJournal.Desktop.Assets.Controls;
 
 public class TextBoxWithError : TextBox
 {
-	public static readonly StyledProperty<bool> HaveErrorProperty =
-		AvaloniaProperty.Register<TextBoxWithError, bool>(name: nameof(HaveError));
+	public static readonly StyledProperty<bool> HaveErrorProperty = AvaloniaProperty.Register<TextBoxWithError, bool>(name: nameof(HaveError));
 
 	public bool HaveError
 	{

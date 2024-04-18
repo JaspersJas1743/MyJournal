@@ -85,7 +85,6 @@
 
         <Style Selector="^[HaveError=True]">
             <Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
-            <Setter Property="Tag" Value="{DynamicResource ErrorColor}"/>
             <Style Selector="^ /template/ ContentPresenter#PART_InnerLeftContent">
 				<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
             </Style>

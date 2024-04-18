@@ -27,6 +27,6 @@ public sealed class ButtonWithAnimatedCommand : Button
 		if (_isSubscribed)
 			return;
 		_isSubscribed = !_isSubscribed;
-		(Command as IReactiveCommand)!.IsExecuting.Subscribe(onNext: value => CommandIsExecuting = value);
+		(Command as IReactiveCommand)?.IsExecuting.Subscribe(onNext: value => CommandIsExecuting = value);
 	}
 }

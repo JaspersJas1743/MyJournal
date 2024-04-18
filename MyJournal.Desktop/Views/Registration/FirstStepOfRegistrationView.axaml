@@ -3,8 +3,31 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-			x:DataType="vm:FirstStepOfRegistrationVM"
-			x:Class="MyJournal.Desktop.Views.Registration.FirstStepOfRegistrationView">
-	<Button Content="К авторизации" Command="{Binding ToAuthorization}"></Button>
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			d:DesignWidth="1020" d:DesignHeight="1025" x:DataType="vm:FirstStepOfRegistrationVM"
+			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.FirstStepOfRegistrationView">
+	<Viewbox Width="750" Height="650" VerticalAlignment="Center" HorizontalAlignment="Center">
+		<Grid	VerticalAlignment="Center" HorizontalAlignment="Center" Margin="25 50 25 50"
+				RowDefinitions="auto, 130, 30, 10, 90, 15, 90, 80, 90" Width="750" Height="650">
+			<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock Header"/>
+			<TextBlock	Grid.Row="1" Text="Введите регистрационный код, выданный Вашим учебным заведением, для регистрации аккаунта"
+						Classes="CenteredTextBlock Subheader" Grid.RowSpan="3"/>
+			<TextBlock	Grid.Row="2" Classes="CenteredTextBlock ErrorMessage OpacityTransition" Text="Неверный регистрационный код"
+						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
+			<controls:CodeInput Grid.Row="4" Height="100" HaveError="{Binding HaveError,Mode=TwoWay}"
+								EntryCode="{Binding EntryCode}"/>
+			<Viewbox Grid.Row="6">
+				<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor"
+													Content="Продолжить →" Width="800" Height="90"
+													Command="{Binding ToNextStep}"
+													/>
+			</Viewbox>
+			<TextBlock Grid.Row="7" Text="Уже есть аккаунт?" Classes="CenteredTextBlock Subheader"/>
+			<Viewbox Grid.Row="8">
+				<controls:ButtonWithAnimatedCommand Content="← Вход" Width="800" Height="90"
+													Classes="HeaderContent Corner30 SecondaryAccentColor"
+													Command="{Binding ToAuthorization}"/>
+			</Viewbox>
+		</Grid>
+	</Viewbox>
 </UserControl>

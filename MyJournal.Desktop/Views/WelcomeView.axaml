@@ -9,7 +9,9 @@
 		<Grid ColumnDefinitions="900, 1020">
 			<Image	Grid.Column="0" Margin="150 0 50 0" VerticalAlignment="Center"
 					Source="avares://MyJournal.Desktop/Assets/Resources/Images/WelcomeImage.png"/>
-			<TransitioningContentControl Classes="RightDirection" Grid.Column="1" Content="{Binding Path=Content}"/>
+			<TransitioningContentControl	Classes.LeftDirection="{Binding HaveLeftDirection}"
+											Classes.RightDirection="{Binding HaveRightDirection}"
+											Grid.Column="1" Content="{Binding Path=Content}"/>
 		</Grid>
 	</Viewbox>
 </UserControl>

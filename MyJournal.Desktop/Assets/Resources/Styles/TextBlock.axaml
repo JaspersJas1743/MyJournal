@@ -24,6 +24,7 @@
 
 	<Style Selector="TextBlock.Subheader">
 		<Setter Property="FontSize" Value="24"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
 		<Setter Property="TextAlignment" Value="Center"/>
 		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=SubheaderColor}"/>
 	</Style>

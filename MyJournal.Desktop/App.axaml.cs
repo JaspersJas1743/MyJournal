@@ -3,10 +3,10 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
+using MyJournal.Core.Registration;
+using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
@@ -50,16 +50,20 @@ public partial class App : Application
 			.AddFileService()
 			#endregion
 			#region Authorization
-			.AddSingleton<AuthorizationView>()
 			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: nameof(AuthorizationWithCredentialsService))
 			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithTokenService>(serviceKey: nameof(AuthorizationWithTokenService))
+			.AddSingleton<AuthorizationView>()
 			.AddSingleton<AuthorizationVM>()
 			.AddSingleton<AuthorizationModel>()
 			#endregion
 			#region Registration
+			.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>()
 			.AddSingleton<FirstStepOfRegistrationView>()
 			.AddSingleton<FirstStepOfRegistrationVM>()
-			.AddSingleton<RegistrationModel>()
+			.AddSingleton<FirstStepOfRegistrationModel>()
+			.AddSingleton<SecondStepOfRegistrationView>()
+			.AddSingleton<SecondStepOfRegistrationVM>()
+			.AddSingleton<SecondStepOfRegistrationModel>()
 			#endregion
 			#region Restoring Access
 			.AddSingleton<RestoringAccessThroughEmailView>()
@@ -67,9 +71,11 @@ public partial class App : Application
 			.AddSingleton<RestoringAccessThroughEmailModel>();
 			#endregion
 
+#pragma warning disable CA1416
 		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddSingleton<ICredentialStorageService, WindowsCredentialStorageService>());
 		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddSingleton<ICredentialStorageService, LinuxCredentialStorageService>());
 		PlatformDetector.RunIfCurrentPlatformIsMacOS(action: () => services.AddSingleton<ICredentialStorageService, MacOsCredentialStorageService>());
+#pragma warning restore CA1416
 
 		_services = services.BuildServiceProvider();
 	}

@@ -8,6 +8,7 @@
     <SolidColorBrush x:Key="StrokeColor" Color="#E1E1E1"/>
     <SolidColorBrush x:Key="MainAccentColor" Color="#00A3FF"/>
     <SolidColorBrush x:Key="SecondaryAccentColor" Color="#37C16E"/>
+    <SolidColorBrush x:Key="CodeEntrySelection" Color="#5CB554"/>
     <SolidColorBrush x:Key="ErrorColor" Color="#FF4E4E"/>
     <SolidColorBrush x:Key="ContentOnControlColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="TextOnSelectedControlColor" Color="#FFFFFF"/>
