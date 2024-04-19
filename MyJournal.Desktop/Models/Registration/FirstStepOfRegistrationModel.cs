@@ -6,13 +6,15 @@ using MyJournal.Core;
 using MyJournal.Core.Registration;
 using MyJournal.Core.Utilities;
 using MyJournal.Desktop.Assets.Controls;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels.Authorization;
 using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.Registration;
 
-public class FirstStepOfRegistrationModel : Drawable
+public class FirstStepOfRegistrationModel : ModelBase
 {
 	private readonly IVerificationService<Credentials<User>> _verificationService;
 
@@ -42,8 +44,6 @@ public class FirstStepOfRegistrationModel : Drawable
 		set => this.RaiseAndSetIfChanged(backingField: ref _haveError, newValue: value);
 	}
 
-	public bool HasMoveToNextStep { get; private set; }
-
 	public ReactiveCommand<Unit, Unit> ToNextStep { get; }
 	public ReactiveCommand<Unit, Unit> ToAuthorization { get; }
 
@@ -54,8 +54,10 @@ public class FirstStepOfRegistrationModel : Drawable
 			Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);
 		else
 		{
-			HasMoveToNextStep = true;
-			MoveTo<SecondStepOfRegistrationVM>();
+			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+				newVMType: typeof(SecondStepOfRegistrationVM),
+				directionOfTransitionAnimation: PageTransition.Direction.Left
+			));
 		}
 	}
 
@@ -66,5 +68,10 @@ public class FirstStepOfRegistrationModel : Drawable
 	}
 
 	public void MoveToAuthorization()
-		=> MoveTo<AuthorizationVM>();
+	{
+		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+			newVMType: typeof(AuthorizationVM),
+			directionOfTransitionAnimation: PageTransition.Direction.Right
+		));
+	}
 }

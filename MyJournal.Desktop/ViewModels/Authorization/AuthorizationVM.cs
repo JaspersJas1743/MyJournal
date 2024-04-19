@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.ViewModels.Authorization;
 
-public sealed class AuthorizationVM(AuthorizationModel model) : Renderer(model: model)
+public sealed class AuthorizationVM(AuthorizationModel model) : BaseVM(model: model)
 {
 	public ReactiveCommand<Unit, Unit> ToRegistration => model.ToRegistration;
 	public ReactiveCommand<Unit, Unit> ToRestoringAccess => model.ToRestoringAccess;

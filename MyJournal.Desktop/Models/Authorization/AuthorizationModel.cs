@@ -10,6 +10,8 @@ using MsBox.Avalonia.Enums;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities.Api;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
@@ -19,7 +21,7 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.Authorization;
 
-public class AuthorizationModel : Drawable
+public class AuthorizationModel : ModelBase
 {
 	private readonly IAuthorizationService<User> _authorizationService;
 	private readonly ICredentialStorageService _credentialStorageService;
@@ -92,10 +94,20 @@ public class AuthorizationModel : Drawable
 	public ReactiveCommand<Unit, Unit> SignIn { get; }
 
 	private void MoveToRegistration()
-		=> MoveTo<FirstStepOfRegistrationVM>();
+	{
+		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+			newVMType: typeof(FirstStepOfRegistrationVM),
+			directionOfTransitionAnimation: PageTransition.Direction.Left
+		));
+	}
 
 	private void MoveToRestoringAccess()
-		=> MoveTo<RestoringAccessThroughEmailVM>();
+	{
+		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+			newVMType: typeof(RestoringAccessThroughEmailVM),
+			directionOfTransitionAnimation: PageTransition.Direction.Left
+		));
+	}
 
 	private async Task SignInWithCredentials(CancellationToken cancellationToken)
 	{
