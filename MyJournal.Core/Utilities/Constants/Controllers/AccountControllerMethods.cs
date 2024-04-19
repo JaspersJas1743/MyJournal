@@ -3,6 +3,7 @@ namespace MyJournal.Core.Utilities.Constants.Controllers;
 internal static class AccountControllerMethods
 {
 	internal const string VerifyRegistrationCode = "account/registration-code/verify";
+	internal const string VerifyLogin = "account/login/verify";
 	internal const string SignInWithCredentials = "account/sign-in/credentials";
 	internal const string SignInWithToken = "account/sign-in/token";
 	internal const string SignUp = "account/sign-up";

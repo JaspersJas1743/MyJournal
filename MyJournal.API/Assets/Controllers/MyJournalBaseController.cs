@@ -23,7 +23,7 @@ public class MyJournalBaseController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		User user = await context.Users
+		User user = await context.Users.AsNoTracking()
 			.Include(navigationPropertyPath: user => user.Sessions)
 			.ThenInclude(navigationPropertyPath: session => session.SessionActivityStatus)
 			.SingleOrDefaultAsync(
@@ -44,7 +44,7 @@ public class MyJournalBaseController(
 	)
 	{
 		int sessionId = GetCurrentSessionId();
-		Session session = await context.Sessions
+		Session session = await context.Sessions.AsNoTracking()
 			.Include(navigationPropertyPath: s => s.SessionActivityStatus)
 			.Include(navigationPropertyPath: s => s.User.UserRole)
 			.SingleOrDefaultAsync(
@@ -62,7 +62,7 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users
+        IQueryable<User> users = context.Users.AsNoTracking()
 			.Include(navigationPropertyPath: u => u.UserRole)
 			.Include(navigationPropertyPath: u => u.UserActivityStatus);
 
@@ -77,7 +77,7 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users
+        IQueryable<User> users = context.Users.AsNoTracking()
 			.Include(navigationPropertyPath: user => user.UserRole)
             .Where(predicate: user => !String.IsNullOrEmpty(user.Login));
 
@@ -92,7 +92,7 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> users = context.Users
+        IQueryable<User> users = context.Users.AsNoTracking()
 			.Include(navigationPropertyPath: user => user.UserRole)
 			.Where(predicate: user => !String.IsNullOrEmpty(user.RegistrationCode));
 
@@ -107,7 +107,7 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        return await context.MyJournalClients.FirstAsync(
+        return await context.MyJournalClients.AsNoTracking().FirstAsync(
             predicate: client => client.Client.ClientName.Equals(clientType),
             cancellationToken: cancellationToken
         );
@@ -118,7 +118,7 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        return await context.SessionActivityStatuses.FirstAsync(
+        return await context.SessionActivityStatuses.AsNoTracking().FirstAsync(
             predicate: status => status.ActivityStatus.Equals(activityStatus),
             cancellationToken: cancellationToken
         );
@@ -129,7 +129,7 @@ public class MyJournalBaseController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await context.UserActivityStatuses.FirstAsync(
+		return await context.UserActivityStatuses.AsNoTracking().FirstAsync(
 			predicate: status => status.ActivityStatus.Equals(activityStatus),
 			cancellationToken: cancellationToken
 		);
@@ -140,7 +140,7 @@ public class MyJournalBaseController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		User user = await context.Users
+		User user = await context.Users.AsNoTracking()
 			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
 			.SingleAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken);
 		return user.Chats.SelectMany(selector: c => c.Users.Except(second: new User[] { user })).Select(selector: u => u.Id.ToString());

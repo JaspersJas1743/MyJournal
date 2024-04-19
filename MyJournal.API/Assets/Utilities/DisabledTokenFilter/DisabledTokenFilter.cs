@@ -24,7 +24,7 @@ public sealed class DisabledTokenFilter(MyJournalContext dbContext) : IAuthoriza
 
 		int sessionId = Int32.Parse(s: context.HttpContext.User.FindFirstValue(claimType: MyJournalClaimTypes.Session)
 			?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен."));
-		Session session = dbContext.Sessions.Include(navigationPropertyPath: session => session.SessionActivityStatus)
+		Session session = dbContext.Sessions.AsNoTracking().Include(navigationPropertyPath: session => session.SessionActivityStatus)
 			.SingleOrDefault(predicate: session => session.Id.Equals(sessionId))
 			?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
 		if (session.SessionActivityStatus.ActivityStatus.Equals(SessionActivityStatuses.Enable))

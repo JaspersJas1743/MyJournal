@@ -20,11 +20,11 @@ public sealed class UserRegistrationService(
 
 	public async Task<bool> Register(
 		Credentials<User> credentials,
-		IVerificationService<Credentials<User>>? verifier = default(IVerificationService<Credentials<User>>),
+		IVerificationService<Credentials<User>>? registrationCodeVerifier = default(IVerificationService<Credentials<User>>),
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		if (verifier is not null && !await verifier.Verify(toVerifying: credentials, cancellationToken: cancellationToken))
+		if (registrationCodeVerifier is not null && !await registrationCodeVerifier.Verify(toVerifying: credentials, cancellationToken: cancellationToken))
 			return false;
 
 		try

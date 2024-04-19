@@ -81,7 +81,7 @@ public class RegistrationTests
 			RegistrationCode = "testtes"
 		};
 		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
-		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, verifier: registrationCodeVerificationService);
+		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, registrationCodeVerifier: registrationCodeVerificationService);
 		Assert.That(actual: isRegistered, expression: Is.True);
 	}
 
@@ -96,7 +96,7 @@ public class RegistrationTests
 			RegistrationCode = "1111111"
 		};
 		IVerificationService<Credentials<User>> registrationCodeVerificationService = _serviceProvider.GetService<IVerificationService<Credentials<User>>>()!;
-		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, verifier: registrationCodeVerificationService);
+		bool isRegistered = await userRegistrationService.Register(credentials: userCredentials, registrationCodeVerifier: registrationCodeVerificationService);
 		Assert.That(actual: isRegistered, expression: Is.False);
 	}
 }
