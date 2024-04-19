@@ -35,6 +35,10 @@ public sealed class AccountController(
     public record VerifyRegistrationCodeRequest(string RegistrationCode);
     public record VerifyRegistrationCodeResponse(bool IsVerified);
 
+    [Validator<VerifyLoginRequestValidator>]
+    public record VerifyLoginRequest(string Login);
+    public record VerifyLoginResponse(bool IsVerified);
+
     [Validator<SignInRequestValidator>]
     public record SignInRequest(string Login, string Password, Clients Client);
     public record SignInResponse(int SessionId, string Token, UserRoles Role);
@@ -125,6 +129,38 @@ public sealed class AccountController(
 
         return Ok(value: new VerifyRegistrationCodeResponse(
             IsVerified: user is not null && user.RegistrationCode!.Equals(request.RegistrationCode)
+        ));
+    }
+
+    /// <summary>
+    /// Проверка логина на коррекность и доступность для занятия
+    /// </summary>
+    /// <remarks>
+    /// <![CDATA[
+    /// Пример запроса к API:
+    ///
+    ///	GET api/account/login/verify?Login=LoginForUser
+    ///
+    /// Параметры:
+    ///
+    ///	Login - логин, который необходимо проверить на корректность и доступность
+    ///
+    /// ]]>
+    /// </remarks>
+    /// <response code="200">Статус логина: true - корректен и свободен, false - не доступен и/или некорректен</response>
+    /// <response code="404">Некорректный логин</response>
+    [HttpGet(template: "login/verify")]
+    [Produces(contentType: MediaTypeNames.Application.Json)]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(VerifyLoginResponse))]
+    public async Task<ActionResult<VerifyLoginResponse>> VerifyLogin(
+        [FromQuery] VerifyLoginRequest request,
+        CancellationToken cancellationToken = default(CancellationToken)
+    )
+    {
+        return Ok(value: new VerifyLoginResponse(
+            IsVerified: !await _context.Users.AsNoTracking().Where(
+                predicate: u => u.Login == request.Login
+            ).AnyAsync(cancellationToken: cancellationToken)
         ));
     }
 
@@ -581,7 +617,7 @@ public sealed class AccountController(
     )
     {
         int userId = GetAuthorizedUserId();
-        Session session = await _context.Sessions.Where(predicate: s => s.Id == id && s.UserId == userId)
+        Session session = await _context.Sessions.AsNoTracking().Where(predicate: s => s.Id == id && s.UserId == userId)
             .SingleOrDefaultAsync(cancellationToken: cancellationToken)
             ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Указанная сессия не найдена.");
 
@@ -625,7 +661,7 @@ public sealed class AccountController(
     {
         int userId = GetAuthorizedUserId();
 
-        IQueryable<Session> sessionsToDisable = _context.Users
+        IQueryable<Session> sessionsToDisable = _context.Users.AsNoTracking()
             .Where(u => u.Id.Equals(userId))
             .SelectMany(u => u.Sessions.Where(
                 s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable
@@ -666,7 +702,7 @@ public sealed class AccountController(
         int userId = GetAuthorizedUserId();
         int currentSessionId = GetCurrentSessionId();
 
-        IQueryable<Session> sessionsToDisable = _context.Users
+        IQueryable<Session> sessionsToDisable = _context.Users.AsNoTracking()
             .Where(u => u.Id.Equals(userId))
             .SelectMany(u => u.Sessions.Where(
                 s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable && !s.Id.Equals(currentSessionId)
@@ -714,7 +750,7 @@ public sealed class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        if (await _context.Users.AnyAsync(predicate: user => user.Phone != null && user.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
+        if (await _context.Users.AsNoTracking().AnyAsync(predicate: user => user.Phone != null && user.Phone.Equals(request.NewPhone), cancellationToken: cancellationToken))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный номер телефона не может быть занят.");
 
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
@@ -757,7 +793,7 @@ public sealed class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        if (await _context.Users.AnyAsync(predicate: user => user.Email != null && user.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
+        if (await _context.Users.AsNoTracking().AnyAsync(predicate: user => user.Email != null && user.Email.Equals(request.NewEmail), cancellationToken: cancellationToken))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный адрес электронной почты не может быть занят.");
 
         User user = await FindUserByIdAsync(id: id, cancellationToken: cancellationToken) ??
@@ -800,7 +836,7 @@ public sealed class AccountController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        IQueryable<User> usersWithPassword = _context.Users.Where(predicate: user => !String.IsNullOrEmpty(user.Password));
+        IQueryable<User> usersWithPassword = _context.Users.AsNoTracking().Where(predicate: user => !String.IsNullOrEmpty(user.Password));
         if (usersWithPassword.AsEnumerable().Any(predicate: user => hash.Verify(text: request.NewPassword, hashedText: user.Password)))
             throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный пароль не может быть занят.");
 

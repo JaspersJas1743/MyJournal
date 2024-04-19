@@ -118,7 +118,7 @@ public class MyJournalBaseController(
         CancellationToken cancellationToken = default(CancellationToken)
     )
     {
-        return await context.SessionActivityStatuses.FirstAsync(
+		return await context.SessionActivityStatuses.FirstAsync(
             predicate: status => status.ActivityStatus.Equals(activityStatus),
             cancellationToken: cancellationToken
         );
