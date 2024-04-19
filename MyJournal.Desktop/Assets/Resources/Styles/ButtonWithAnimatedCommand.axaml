@@ -45,22 +45,12 @@
             </Setter>
         </Style>
         <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{TemplateBinding Background}" />
-            <Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
         </Style>
         <Style Selector="^:pressed">
 			<Setter Property="RenderTransform" Value="scale(0.98)" />
         </Style>
-        <Style Selector="^:pressed  /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{TemplateBinding Background}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
-            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
-        </Style>
         <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
-            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
-            <Setter Property="Background" Value="{TemplateBinding Background}" />
             <Setter Property="Opacity" Value="0.6"/>
         </Style>
         <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
@@ -71,6 +61,7 @@
             </Setter>
         </Style>
         <Style Selector="^.TextButton">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>

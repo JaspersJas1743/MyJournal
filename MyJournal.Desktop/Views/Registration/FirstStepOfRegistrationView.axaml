@@ -12,7 +12,7 @@
 			<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock Header"/>
 			<TextBlock	Grid.Row="1" Text="Введите регистрационный код, выданный Вашим учебным заведением, для регистрации аккаунта"
 						Classes="CenteredTextBlock Subheader" Grid.RowSpan="3"/>
-			<TextBlock	Grid.Row="2" Classes="CenteredTextBlock ErrorMessage OpacityTransition" Text="Неверный регистрационный код"
+			<TextBlock	Grid.Row="2" Classes="CenteredTextBlock ErrorMessage OpacityTransition" Text="Неверный регистрационный код."
 						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
 			<controls:CodeInput Grid.Row="4" Height="100" HaveError="{Binding HaveError,Mode=TwoWay}"
 								EntryCode="{Binding EntryCode}"/>

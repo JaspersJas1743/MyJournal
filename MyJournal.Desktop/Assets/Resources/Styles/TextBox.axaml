@@ -78,6 +78,12 @@
 		    <Style Selector="^:focus /template/ Border#PART_BorderElement">
 			    <Setter Property="BorderBrush" Value="{DynamicResource CodeEntrySelection}"/>
 		    </Style>
+            <Style Selector="^:pointerover">
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+            </Style>
+            <Style Selector="^:focus">
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+            </Style>
 	    </Style>
         <Style Selector="^.ErrorCodeEntryCell">
 		    <Style Selector="^:pointerover /template/ Border#PART_BorderElement">

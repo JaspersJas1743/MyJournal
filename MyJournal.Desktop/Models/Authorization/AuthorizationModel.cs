@@ -16,6 +16,7 @@ using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
+using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.ViewModels.Registration;
 using MyJournal.Desktop.ViewModels.RestoringAccess;
 using MyJournal.Desktop.Views;
@@ -27,6 +28,7 @@ public class AuthorizationModel : Drawable
 {
 	private readonly IAuthorizationService<User> _authorizationService;
 	private readonly ICredentialStorageService _credentialStorageService;
+	private readonly IMessageService _messageService;
 
 	private string _login = String.Empty;
 	private string _password = String.Empty;
@@ -36,11 +38,13 @@ public class AuthorizationModel : Drawable
 
 	public AuthorizationModel(
 		[FromKeyedServices(key: nameof(AuthorizationWithCredentialsService))] IAuthorizationService<User> authorizationService,
-		ICredentialStorageService credentialStorageService
+		ICredentialStorageService credentialStorageService,
+		IMessageService messageService
 	)
 	{
 		_authorizationService = authorizationService;
 		_credentialStorageService = credentialStorageService;
+		_messageService = messageService;
 
 		this.WhenValueChanged(propertyAccessor: model => model.Error)
 			.Select(selector: error => !String.IsNullOrEmpty(value: error))
@@ -131,27 +135,20 @@ public class AuthorizationModel : Drawable
 	{
 		if (_credentialStorageService.GetType().IsEquivalentTo(other: typeof(LinuxCredentialStorageService)))
 		{
-			ButtonResult dialogResult = await MessageBoxManager.GetMessageBoxStandard(@params: new MessageBoxStandardParams()
-			{
-				ContentTitle = "Установка зависимостей",
-				ContentMessage = "Для сохранения учетных данных на Linux приложение MyJournal использует libsecret.\n" +
-								 "Для корректной работы необходимо установить необходимые зависимости. Установить?",
-				Icon = Icon.Question,
-				HyperLinkParams = new HyperLinkParams()
-				{
-					Text = "Сайт libsecret.",
-					Action = () => Process.Start(fileName: "x-www-browser", arguments: "https://wiki.gnome.org/Projects/Libsecret")
-				},
-				ButtonDefinitions = ButtonEnum.YesNo,
-				EnterDefaultButton = ClickEnum.Yes,
-				EscDefaultButton = ClickEnum.No,
-				ShowInCenter = true,
-				WindowStartupLocation = WindowStartupLocation.CenterOwner
-			}).ShowWindowDialogAsync(owner: (Application.Current as App)!.GetService<MainWindowView>());
+			ButtonResult dialogResult = await _messageService.ShowWindow(
+				text: "Для сохранения учетных данных на Linux приложение MyJournal использует libsecret.\n" +
+					  "Для корректной работы необходимо установить необходимые зависимости. Установить?",
+				title: "Установка зависимостей",
+				buttons: ButtonEnum.YesNo,
+				image: Icon.Question
+			);
 			if (dialogResult == ButtonResult.Yes)
 				Process.Start(startInfo: new ProcessStartInfo(fileName: "bash", arguments: "sudo apt-get install libsecret-1-dev"));
 			else
-				await MessageBoxManager.GetMessageBoxStandard(title: String.Empty, text: "Учетные данные не будут сохранены.").ShowAsync();
+			{
+				_ = _messageService.ShowMessageWindow(text: "Учетные данные не будут сохранены.");
+				return;
+			}
 		}
 
 		_credentialStorageService.Set(credential: new UserCredential(Login: Login, Password: Password));

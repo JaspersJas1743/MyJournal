@@ -13,6 +13,7 @@ using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
+using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
 using MyJournal.Desktop.Models.Registration;
@@ -50,6 +51,7 @@ public partial class App : Application
 			.AddGoogleAuthenticator()
 			.AddFileService()
 			.AddConfigurationService()
+			.AddMessageService()
 			#endregion
 			#region Authorization
 			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: nameof(AuthorizationWithCredentialsService))

@@ -26,6 +26,7 @@
 	</Style>
 
 	<Style Selector="Button.TextButton">
+		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 		<Setter Property="Padding" Value="0"/>
 		<Setter Property="VerticalContentAlignment" Value="Center"/>
 		<Setter Property="HorizontalContentAlignment" Value="Center"/>
