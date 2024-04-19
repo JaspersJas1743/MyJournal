@@ -43,7 +43,8 @@ public class AdministratorTest
 			password: "test4test4",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		return await service.SignIn(credentials: credentials) as Administrator;
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		return authorizedUser.Instance as Administrator;
 	}
 
 	private async Task<StudyingSubjectInClassCollection> GetStudyingSubjectInClassCollection(Administrator administrator)

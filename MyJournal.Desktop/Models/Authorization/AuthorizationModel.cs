@@ -113,7 +113,7 @@ public class AuthorizationModel : ModelBase
 	{
 		try
 		{
-			User user = await _authorizationService.SignIn(
+			Authorized<User> authorizedUser = await _authorizationService.SignIn(
 				credentials: new UserAuthorizationCredentials(
 					login: Login,
 					password: Password,

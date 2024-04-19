@@ -44,7 +44,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		Security security = await user.GetSecurity();
 		SessionCollection sessions = await security.GetSessions();
 		_ = await sessions.CloseThis();
@@ -62,7 +63,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			SessionCollection sessions = await security.GetSessions();
 			_ = await sessions.CloseThis();
@@ -82,8 +84,10 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
-			User user2 = await service2.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
+			Authorized<User> authorizedUser2 = await service2.SignIn(credentials: credentials);
+			User user2 = authorizedUser2.Instance;
 			Security security = await user.GetSecurity();
 			SessionCollection sessions = await security.GetSessions();
 			_ = await sessions.CloseAll();
@@ -104,8 +108,10 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
-			User user2 = await service2.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
+			Authorized<User> authorizedUser2 = await service.SignIn(credentials: credentials);
+			User user2 = authorizedUser2.Instance;
 			Security security = await user.GetSecurity();
 			SessionCollection sessions = await security.GetSessions();
 			_ = await sessions.CloseOthers();
@@ -123,7 +129,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		Security security = await user.GetSecurity();
 		SessionCollection sessions = await security.GetSessions();
 		_ = await sessions.CloseOthers();
@@ -142,7 +149,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		string newEmail = "test@mail.ru";
 		Security security = await user.GetSecurity();
 		Email email = await security.GetEmail();
@@ -161,7 +169,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
 			await email.Change(confirmationCode: "255282", newEmail: "test@mail.ru");
@@ -179,7 +188,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
 			await email.Change(confirmationCode: "255282", newEmail: "@mail.ru");
@@ -197,7 +207,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
 			await email.Change(confirmationCode: "255282", newEmail: "test@.ru");
@@ -215,7 +226,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
 			await email.Change(confirmationCode: "255282", newEmail: "test@");
@@ -233,7 +245,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
 			await email.Change(confirmationCode: "255282", newEmail: "testmail.ru");
@@ -251,7 +264,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Email email = await security.GetEmail();
 			await email.Change(confirmationCode: "000000", newEmail: "testmail.ru");
@@ -269,7 +283,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		Security security = await user.GetSecurity();
 		Phone phone = await security.GetPhone();
 		await phone.Change(confirmationCode: "072587", newPhone: "+7(777)777-7777");
@@ -286,7 +301,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
 			await phone.Change(confirmationCode: "072587", newPhone: "+7(777)777-7777");
@@ -304,7 +320,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
 			await phone.Change(confirmationCode: "072587", newPhone: "123453");
@@ -322,7 +339,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
 			await phone.Change(confirmationCode: "072587", newPhone: "9999999999");
@@ -340,7 +358,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
 			await phone.Change(confirmationCode: "072587", newPhone: "7(999)999-9999");
@@ -358,7 +377,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
 			await phone.Change(confirmationCode: "072587", newPhone: "79999999999");
@@ -376,7 +396,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Phone phone = await security.GetPhone();
 			await phone.Change(confirmationCode: "000000", newPhone: "+7(999)999-9999");
@@ -394,7 +415,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		Security security = await user.GetSecurity();
 		Password password = await security.GetPassword();
 		await password.Change(confirmationCode: "370896", currentPassword: "JaspersJas1743", newPassword: "Jaspers");
@@ -411,7 +433,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
 			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "JaspersJas1743");
@@ -429,7 +452,8 @@ public class UserTests
 				password: "Jaspers",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
 			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "Jaspers");
@@ -447,7 +471,8 @@ public class UserTests
 				password: "Jaspers",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
 			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "J");
@@ -465,7 +490,8 @@ public class UserTests
 				password: "Jaspers",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
 			await password.Change(confirmationCode: "370896", currentPassword: "Jaspers", newPassword: "Js");
@@ -483,7 +509,8 @@ public class UserTests
 				password: "Jaspers",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			Security security = await user.GetSecurity();
 			Password password = await security.GetPassword();
 			await password.Change(confirmationCode: "000000", currentPassword: "JaspersJas1743", newPassword: "Js");
@@ -501,7 +528,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		ChatCollection chats = await user.GetChats();
 		await chats.SetFilter(filter: null);
 	}
@@ -515,7 +543,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		ChatCollection chats = await user.GetChats();
 		await chats.SetFilter(filter: String.Empty);
 	}
@@ -529,7 +558,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		ChatCollection chats = await user.GetChats();
 		await chats.SetFilter(filter: "    ");
 	}
@@ -545,7 +575,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		IntendedInterlocutorCollection intendedInterlocutors = await user.GetIntendedInterlocutors();
 		await intendedInterlocutors.SetFilter(filter: null);
 		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.FindById(id: 5);
@@ -564,7 +595,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		IntendedInterlocutorCollection intendedInterlocutors = await user.GetIntendedInterlocutors();
 		await intendedInterlocutors.SetFilter(filter: String.Empty);
 		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.FindById(id: 5);
@@ -583,7 +615,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		IntendedInterlocutorCollection intendedInterlocutors = await user.GetIntendedInterlocutors();
 		await intendedInterlocutors.SetFilter(filter: "   ");
 		IntendedInterlocutor intendedInterlocutorWithFiveId = await intendedInterlocutors.FindById(id: 5);
@@ -604,7 +637,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		ChatCollection chats = await user.GetChats();
 		Chat firstChat = await chats.FirstAsync();
 		MessageCollection messages = await firstChat.GetMessages();
@@ -628,7 +662,8 @@ public class UserTests
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		User user = await service.SignIn(credentials: credentials);
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		User user = authorizedUser.Instance;
 		ChatCollection chats = await user.GetChats();
 		Chat firstChat = await chats.FirstAsync();
 		const string message = "Тестирование сообщения :)";
@@ -660,7 +695,8 @@ public class UserTests
 				password: "JaspersJas1743",
 				client: UserAuthorizationCredentials.Clients.Windows
 			);
-			User user = await service.SignIn(credentials: credentials);
+			Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+			User user = authorizedUser.Instance;
 			ChatCollection chats = await user.GetChats();
 			Chat firstChat = await chats.FirstAsync();
 			const string message = "Тестирование сообщения";

@@ -43,7 +43,8 @@ public class StudentTest
 			password: "JaspersJas1743",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		return await service.SignIn(credentials: credentials) as Student;
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		return authorizedUser.Instance as Student;
 	}
 
 	private async Task<Administrator?> GetAdministrator()
@@ -54,7 +55,8 @@ public class StudentTest
 			password: "test4test4",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		return await service.SignIn(credentials: credentials) as Administrator;
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		return authorizedUser.Instance as Administrator;
 	}
 	#endregion
 
@@ -304,7 +306,8 @@ public class StudentTest
 			password: "test2test2",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		Teacher? teacher = await service2.SignIn(credentials: credentials2) as Teacher;
+		Authorized<User> authorizedUser = await service2.SignIn(credentials: credentials2);
+		Teacher? teacher = authorizedUser.Instance as Teacher;
 		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
 		TaughtSubject subject = await taughtSubjects.GetByIndex(index: 1);
 		Assert.That(actual: subject.Id, expression: Is.EqualTo(expected: 47));

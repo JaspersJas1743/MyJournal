@@ -43,7 +43,8 @@ public class TeacherTest
 			password: "test2test2",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		return await service.SignIn(credentials: credentials) as Teacher;
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		return authorizedUser.Instance as Teacher;
 	}
 
 	private async Task<Administrator?> GetAdministrator()
@@ -54,7 +55,8 @@ public class TeacherTest
 			password: "test4test4",
 			client: UserAuthorizationCredentials.Clients.Windows
 		);
-		return await service.SignIn(credentials: credentials) as Administrator;
+		Authorized<User> authorizedUser = await service.SignIn(credentials: credentials);
+		return authorizedUser.Instance as Administrator;
 	}
 	#endregion
 
