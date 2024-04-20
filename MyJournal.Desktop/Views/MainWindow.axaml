@@ -9,5 +9,5 @@
         Icon="/Assets/Resources/Images/logo.ico"
         MinWidth="1200" MinHeight="700"
         Title="Электронный журнал">
-        <TransitioningContentControl Content="{Binding Path=WelcomeVM,Mode=OneWay}"/>
+        <TransitioningContentControl Content="{Binding Path=MainVM,Mode=OneWay}"/>
 </Window>

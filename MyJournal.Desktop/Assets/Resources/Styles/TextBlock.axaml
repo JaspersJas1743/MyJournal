@@ -15,14 +15,14 @@
 		<Setter Property="VerticalAlignment" Value="Center"/>
 	</Style>
 
-	<Style Selector="TextBlock.Header">
+	<Style Selector="TextBlock.PageHeader">
 		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
 		<Setter Property="FontSize" Value="48"/>
 		<Setter Property="TextWrapping" Value="Wrap"/>
 		<Setter Property="TextAlignment" Value="Center"/>
 	</Style>
 
-	<Style Selector="TextBlock.Subheader">
+	<Style Selector="TextBlock.PageSubheader">
 		<Setter Property="FontSize" Value="24"/>
 		<Setter Property="TextWrapping" Value="Wrap"/>
 		<Setter Property="TextAlignment" Value="Center"/>

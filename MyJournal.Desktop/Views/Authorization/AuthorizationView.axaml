@@ -10,9 +10,9 @@
 		<Grid	VerticalAlignment="Center" HorizontalAlignment="Center" Margin="25 0 25 0"
 				RowDefinitions="auto, 130, 30, 10, 90, 15, 90, 15, 30, 15, 90, 80, 90">
 			<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!"
-						Classes="CenteredTextBlock Header"/>
+						Classes="CenteredTextBlock PageHeader"/>
 			<TextBlock	Grid.Row="1" Text="Введите логин и пароль для входа в Ваш аккаунт"
-						Classes="CenteredTextBlock Subheader" Grid.RowSpan="3"/>
+						Classes="CenteredTextBlock PageSubheader" Grid.RowSpan="3"/>
 			<TextBlock	Grid.Row="2" Text="{Binding Error}" Classes="CenteredTextBlock ErrorMessage OpacityTransition"
 						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
 			<controls:TextBoxWithError	Text="{Binding Login,Mode=TwoWay}"
@@ -46,7 +46,7 @@
 													Content="Войти" Width="800" Height="90"
 													Command="{Binding SignIn}"/>
 			</Viewbox>
-			<TextBlock Grid.Row="11" Text="Нет аккаунта?" Classes="CenteredTextBlock Subheader"/>
+			<TextBlock Grid.Row="11" Text="Нет аккаунта?" Classes="CenteredTextBlock PageSubheader"/>
 			<Viewbox Grid.Row="12">
 				<controls:ButtonWithAnimatedCommand Content="Зарегистрироваться →" Width="800" Height="90"
 													Classes="HeaderContent Corner30 SecondaryAccentColor"

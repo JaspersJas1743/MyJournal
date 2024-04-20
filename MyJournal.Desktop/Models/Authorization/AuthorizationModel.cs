@@ -18,10 +18,11 @@ using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.ViewModels.Registration;
 using MyJournal.Desktop.ViewModels.RestoringAccess;
 using ReactiveUI;
+using ReactiveUI.Validation.Extensions;
 
 namespace MyJournal.Desktop.Models.Authorization;
 
-public class AuthorizationModel : ModelBase
+public class AuthorizationModel : ValidatableModel
 {
 	private readonly IAuthorizationService<User> _authorizationService;
 	private readonly ICredentialStorageService _credentialStorageService;
@@ -55,8 +56,9 @@ public class AuthorizationModel : ModelBase
 		ToRestoringAccess = ReactiveCommand.Create(execute: MoveToRestoringAccess);
 		SignIn = ReactiveCommand.CreateFromTask(
 			execute: SignInWithCredentials,
-			canExecute: SignInWithCredentialsCanExecute()
+			canExecute: ValidationContext.Valid
 		);
+
 	}
 
 	public string Login
@@ -123,7 +125,7 @@ public class AuthorizationModel : ModelBase
 			);
 
 			if (SaveCredential)
-				await SaveCorrectCredential();
+				await SaveCorrectCredential(accessToken: authorizedUser.Token);
 		}
 		catch (ApiException e)
 		{
@@ -132,13 +134,7 @@ public class AuthorizationModel : ModelBase
 		}
 	}
 
-	private IObservable<bool> SignInWithCredentialsCanExecute()
-	{
-		return this.WhenAnyValue(property1: model => model.Login, property2: model => model.Password)
-			.Select(selector: tuple => tuple.Item1.Length >= 4 && tuple.Item2.Length >= 6);
-	}
-
-	private async Task SaveCorrectCredential()
+	private async Task SaveCorrectCredential(string accessToken)
 	{
 		if (_credentialStorageService.GetType().IsEquivalentTo(other: typeof(LinuxCredentialStorageService)))
 		{
@@ -158,6 +154,21 @@ public class AuthorizationModel : ModelBase
 			}
 		}
 
-		_credentialStorageService.Set(credential: new UserCredential(Login: Login, Password: Password));
+		_credentialStorageService.Set(credential: new UserCredential(Login: Login, AccessToken: accessToken));
+	}
+
+	protected override void SetValidationRule()
+	{
+		this.ValidationRule(
+			viewModelProperty: model => model.Login,
+			isPropertyValid: login => login?.Length >= 4,
+			message: "Минимальная длина логина - 4 символа."
+		);
+
+		this.ValidationRule(
+			viewModelProperty: model => model.Password,
+			isPropertyValid: password => password?.Length >= 6,
+			message: "Минимальная длина пароля - 4 символа."
+		);
 	}
 }

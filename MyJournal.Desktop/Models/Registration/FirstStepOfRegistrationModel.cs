@@ -11,10 +11,11 @@ using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels.Authorization;
 using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
+using ReactiveUI.Validation.Extensions;
 
 namespace MyJournal.Desktop.Models.Registration;
 
-public class FirstStepOfRegistrationModel : ModelBase
+public class FirstStepOfRegistrationModel : ValidatableModel
 {
 	private readonly IVerificationService<Credentials<User>> _verificationService;
 
@@ -27,7 +28,7 @@ public class FirstStepOfRegistrationModel : ModelBase
 
 		ToNextStep = ReactiveCommand.CreateFromTask(
 			execute: MoveToNextStep,
-			canExecute: MoveToNextStepCanExecute()
+			canExecute: ValidationContext.Valid
 		);
 		ToAuthorization = ReactiveCommand.Create(execute: MoveToAuthorization);
 	}
@@ -61,17 +62,20 @@ public class FirstStepOfRegistrationModel : ModelBase
 		}
 	}
 
-	public IObservable<bool> MoveToNextStepCanExecute()
-	{
-		return this.WhenAnyValue(property1: model => model.EntryCode)
-			.Select(selector: code => code.Length == CodeInput.CountOfCell);
-	}
-
 	public void MoveToAuthorization()
 	{
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 			newVMType: typeof(AuthorizationVM),
 			directionOfTransitionAnimation: PageTransition.Direction.Right
 		));
+	}
+
+	protected override void SetValidationRule()
+	{
+		this.ValidationRule(
+			viewModelProperty: model => model.EntryCode,
+			isPropertyValid: code => code?.Length == CodeInput.CountOfCell,
+			message: "Регистрационный код имеет некорректный формат."
+		);
 	}
 }

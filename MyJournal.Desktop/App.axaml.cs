@@ -72,14 +72,17 @@ public partial class App : Application
 			#region Restoring Access
 			.AddSingleton<RestoringAccessThroughEmailView>()
 			.AddSingleton<RestoringAccessThroughEmailVM>()
-			.AddSingleton<RestoringAccessThroughEmailModel>();
+			.AddSingleton<RestoringAccessThroughEmailModel>()
+			#endregion
+			#region Main
+			.AddSingleton<MainView>()
+			.AddSingleton<MainVM>()
+			.AddSingleton<MainModel>();
 			#endregion
 
-#pragma warning disable CA1416
-		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddSingleton<ICredentialStorageService, WindowsCredentialStorageService>());
-		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddSingleton<ICredentialStorageService, LinuxCredentialStorageService>());
-		PlatformDetector.RunIfCurrentPlatformIsMacOS(action: () => services.AddSingleton<ICredentialStorageService, MacOsCredentialStorageService>());
-#pragma warning restore CA1416
+		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddWindowsCredentialStorageService());
+		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddLinuxCredentialStorageService());
+		PlatformDetector.RunIfCurrentPlatformIsMacOS(action: () => services.AddMacOsCredentialStorageService());
 
 		_services = services.BuildServiceProvider();
 	}
@@ -110,7 +113,14 @@ public partial class App : Application
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			desktop.MainWindow = GetService<MainWindowView>();
-			desktop.MainWindow.DataContext = GetService<MainWindowVM>();
+			MainWindowVM mainWindowVM = GetService<MainWindowVM>();
+			// TODO: Сделать проверку токена
+			// ICredentialStorageService credentialStorageService = GetService<ICredentialStorageService>();
+			// UserCredential credential = credentialStorageService.Get();
+			// if (credential != UserCredential.Empty)
+			// 	mainWindowVM.MainVM = GetService<MainVM>();
+
+			desktop.MainWindow.DataContext = mainWindowVM;
 		}
 
 		base.OnFrameworkInitializationCompleted();

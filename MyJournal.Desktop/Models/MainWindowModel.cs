@@ -31,6 +31,6 @@ public class MainWindowModel : ModelBase
 	public BaseVM MainVM
 	{
 		get => _mainVM;
-		private set => this.RaiseAndSetIfChanged(backingField: ref _mainVM, newValue: value);
+		set => this.RaiseAndSetIfChanged(backingField: ref _mainVM, newValue: value);
 	}
 }
