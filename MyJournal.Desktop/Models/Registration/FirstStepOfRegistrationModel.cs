@@ -17,12 +17,11 @@ using ReactiveUI.Validation.Extensions;
 
 namespace MyJournal.Desktop.Models.Registration;
 
-public class FirstStepOfRegistrationModel : ValidatableModel
+public class FirstStepOfRegistrationModel : ModelWithErrorMessage
 {
 	private readonly IVerificationService<Credentials<User>> _verificationService;
 
 	private string _entryCode = String.Empty;
-	private bool _haveError = false;
 
 	public FirstStepOfRegistrationModel(
 		[FromKeyedServices(key: nameof(RegistrationCodeVerificationService))] IVerificationService<Credentials<User>> verificationService
@@ -39,13 +38,7 @@ public class FirstStepOfRegistrationModel : ValidatableModel
 		get => _entryCode;
 		set => this.RaiseAndSetIfChanged(backingField: ref _entryCode, newValue: value);
 	}
-
-	public bool HaveError
-	{
-		get => _haveError;
-		set => this.RaiseAndSetIfChanged(backingField: ref _haveError, newValue: value);
-	}
-
+	
 	public ReactiveCommand<Unit, Unit> ToNextStep { get; }
 	public ReactiveCommand<Unit, Unit> ToAuthorization { get; }
 

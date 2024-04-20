@@ -23,7 +23,7 @@ using ReactiveUI.Validation.Extensions;
 
 namespace MyJournal.Desktop.Models.Authorization;
 
-public class AuthorizationModel : ValidatableModel
+public class AuthorizationModel : ModelWithErrorMessage
 {
 	private readonly IAuthorizationService<User> _authorizationService;
 	private readonly ICredentialStorageService _credentialStorageService;
@@ -31,9 +31,7 @@ public class AuthorizationModel : ValidatableModel
 
 	private string _login = String.Empty;
 	private string _password = String.Empty;
-	private string _error = String.Empty;
-	private bool _haveError = false;
-	private bool _saveCredential = true;
+		private bool _saveCredential = true;
 
 	public AuthorizationModel(
 		[FromKeyedServices(key: nameof(AuthorizationWithCredentialsService))] IAuthorizationService<User> authorizationService,
@@ -45,18 +43,9 @@ public class AuthorizationModel : ValidatableModel
 		_credentialStorageService = credentialStorageService;
 		_messageService = messageService;
 
-		this.WhenValueChanged(propertyAccessor: model => model.Error)
-			.Select(selector: error => !String.IsNullOrEmpty(value: error))
-			.Subscribe(onNext: hasError => HaveError = hasError);
-
-		this.WhenValueChanged(propertyAccessor: model => model.HaveError)
-			.Where(predicate: hasError => !hasError)
-			.Subscribe(onNext: _ => Error = String.Empty);
-
 		ToRegistration = ReactiveCommand.Create(execute: MoveToRegistration);
 		ToRestoringAccess = ReactiveCommand.Create(execute: MoveToRestoringAccess);
 		SignIn = ReactiveCommand.CreateFromTask(execute: SignInWithCredentials, canExecute: ValidationContext.Valid);
-
 	}
 
 	public string Login
@@ -71,22 +60,10 @@ public class AuthorizationModel : ValidatableModel
 		set => this.RaiseAndSetIfChanged(backingField: ref _password, newValue: value);
 	}
 
-	public string Error
-	{
-		get => _error;
-		set => this.RaiseAndSetIfChanged(backingField: ref _error, newValue: value);
-	}
-
 	public bool SaveCredential
 	{
 		get => _saveCredential;
 		set => this.RaiseAndSetIfChanged(backingField: ref _saveCredential, newValue: value);
-	}
-
-	public bool HaveError
-	{
-		get => _haveError;
-		private set => this.RaiseAndSetIfChanged(ref _haveError, value);
 	}
 
 	public ReactiveCommand<Unit, Unit> ToRegistration { get; }

@@ -11,7 +11,6 @@ public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 {
 	private string _password = String.Empty;
 	private string _confirmationPassword = String.Empty;
-	private bool _haveError = false;
 
 	public ThirdStepOfRegistrationModel()
 	{
@@ -36,9 +35,6 @@ public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 
 	public async Task MoveToNextStep()
 	{
-		Debug.WriteLine($"Registration code: {RegistrationCode}\n" +
-								$"Login: {Login}\n" +
-								$"Password: {Password}");
 		// MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 		// 	newVMType: typeof(ThirdStepOfRegistrationVM),
 		// 	directionOfTransitionAnimation: PageTransition.Direction.Right
@@ -49,19 +45,16 @@ public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 	{
 		this.ValidationRule(
 			viewModelProperty: model => model.Password,
-			isPropertyValid: password => password?.Length >= 6 && password == _confirmationPassword,
+			isPropertyValid: password => password?.Length >= 6,
 			message: "Минимальная длина пароля - 6 символов."
 		);
 
 		IObservable<bool> passwordsObservable = this.WhenAnyValue(
-			property1: x => x.Password,
-			property2: x => x.ConfirmationPassword,
-			selector: (password, confirmation) => password == confirmation);
-
-		this.ValidationRule(
-			viewModelProperty: model => model.ConfirmationPassword,
-			viewModelObservable: passwordsObservable,
-			message: "Пароли не совпадают."
+			property1: model => model.Password,
+			property2: model => model.ConfirmationPassword,
+			selector: (password, confirmation) => password == confirmation
 		);
+
+		this.ValidationRule(validationObservable: passwordsObservable, message: "Пароли не совпадают.");
 	}
 }

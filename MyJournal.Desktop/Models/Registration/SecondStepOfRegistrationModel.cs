@@ -9,19 +9,17 @@ using MyJournal.Core.Registration;
 using MyJournal.Core.Utilities;
 using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Resources.Transitions;
-using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
 
 namespace MyJournal.Desktop.Models.Registration;
 
-public sealed class SecondStepOfRegistrationModel : ValidatableModel
+public sealed class SecondStepOfRegistrationModel : ModelWithErrorMessage
 {
 	private readonly IVerificationService<Credentials<User>> _verificationService;
 
 	private string _login = String.Empty;
-	private bool _haveError = false;
 
 	public SecondStepOfRegistrationModel(
 		[FromKeyedServices(key: nameof(LoginVerificationService))] IVerificationService<Credentials<User>> verificationService
@@ -39,12 +37,6 @@ public sealed class SecondStepOfRegistrationModel : ValidatableModel
 	{
 		get => _login;
 		set => this.RaiseAndSetIfChanged(backingField: ref _login, newValue: value);
-	}
-
-	public bool HaveError
-	{
-		get => _haveError;
-		set => this.RaiseAndSetIfChanged(backingField: ref _haveError, newValue: value);
 	}
 
 	public async Task MoveToNextStep()
