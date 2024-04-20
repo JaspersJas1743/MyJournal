@@ -4,30 +4,24 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-			d:DesignWidth="1020" d:DesignHeight="1025" x:DataType="vm:FirstStepOfRegistrationVM"
+			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:FirstStepOfRegistrationVM"
 			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.FirstStepOfRegistrationView">
-	<Viewbox Width="750" Height="650" VerticalAlignment="Center" HorizontalAlignment="Center">
-		<Grid	VerticalAlignment="Center" HorizontalAlignment="Center" Margin="25 50 25 50"
-				RowDefinitions="auto, 130, 30, 10, 90, 15, 90, 80, 90" Width="750" Height="650">
-			<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
-			<TextBlock	Grid.Row="1" Text="Введите регистрационный код, выданный Вашим учебным заведением, для регистрации аккаунта"
-						Classes="CenteredTextBlock PageSubheader" Grid.RowSpan="3"/>
-			<TextBlock	Grid.Row="2" Classes="CenteredTextBlock ErrorMessage OpacityTransition" Text="Неверный регистрационный код."
-						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
-			<controls:CodeInput Grid.Row="4" Height="100" HaveError="{Binding HaveError,Mode=TwoWay}"
-								EntryCode="{Binding EntryCode}"/>
-			<Viewbox Grid.Row="6">
-				<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor"
-													Content="Продолжить →" Width="800" Height="90"
-													Command="{Binding ToNextStep}"
-													/>
-			</Viewbox>
-			<TextBlock Grid.Row="7" Text="Уже есть аккаунт?" Classes="CenteredTextBlock PageSubheader"/>
-			<Viewbox Grid.Row="8">
-				<controls:ButtonWithAnimatedCommand Content="← Вход" Width="800" Height="90"
-													Classes="HeaderContent Corner30 SecondaryAccentColor"
-													Command="{Binding ToAuthorization}"/>
-			</Viewbox>
-		</Grid>
-	</Viewbox>
+	<Grid Margin="25 0 25 0" RowDefinitions="auto, 130*, 30*, 10*, 90*, 15*, 90*, 80*, 90*">
+		<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
+		<TextBlock	Grid.Row="1" Text="Введите регистрационный код, выданный Вашим учебным заведением, для регистрации аккаунта"
+					Classes="CenteredTextBlock PageSubheader" Grid.RowSpan="3"/>
+		<TextBlock	Grid.Row="2" Classes="CenteredTextBlock ErrorMessage OpacityTransition" Text="Неверный регистрационный код."
+					Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
+		<controls:CodeInput Grid.Row="4" Height="100" HaveError="{Binding HaveError,Mode=TwoWay}"
+							EntryCode="{Binding EntryCode}"/>
+		<Viewbox Grid.Row="6">
+			<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor" Content="Продолжить →" Width="800"
+												Height="90" Command="{Binding ToNextStep}"/>
+		</Viewbox>
+		<TextBlock Grid.Row="7" Text="Уже есть аккаунт?" Classes="CenteredTextBlock PageSubheader"/>
+		<Viewbox Grid.Row="8">
+			<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 SecondaryAccentColor" Content="← Вход" Width="800"
+												Height="90" Command="{Binding ToAuthorization}"/>
+		</Viewbox>
+	</Grid>
 </UserControl>

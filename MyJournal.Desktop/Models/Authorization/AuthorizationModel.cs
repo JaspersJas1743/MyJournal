@@ -15,6 +15,7 @@ using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Registration;
 using MyJournal.Desktop.ViewModels.RestoringAccess;
 using ReactiveUI;
@@ -126,6 +127,11 @@ public class AuthorizationModel : ValidatableModel
 
 			if (SaveCredential)
 				await SaveCorrectCredential(accessToken: authorizedUser.Token);
+
+			MessageBus.Current.SendMessage(message: new ChangeMainWindowVMEventArgs(
+				newVMType: typeof(MainVM),
+				directionOfTransitionAnimation: PageTransition.Direction.Left
+			));
 		}
 		catch (ApiException e)
 		{
@@ -168,7 +174,7 @@ public class AuthorizationModel : ValidatableModel
 		this.ValidationRule(
 			viewModelProperty: model => model.Password,
 			isPropertyValid: password => password?.Length >= 6,
-			message: "Минимальная длина пароля - 4 символа."
+			message: "Минимальная длина пароля - 6 символов."
 		);
 	}
 }

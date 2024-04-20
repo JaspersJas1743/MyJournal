@@ -1,20 +1,29 @@
-﻿using System.Reactive;
+﻿using System.Diagnostics;
+using System.Reactive;
 using Avalonia.Controls;
 using MyJournal.Desktop.Models;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.ViewModels;
 
-public sealed class MainWindowVM(MainWindowModel windowModel) : BaseVM
+public sealed class MainWindowVM(MainWindowModel model) : BaseVM(model: model)
 {
-	public ReactiveCommand<Unit, WindowState> Minimize => windowModel.Minimize;
-	public ReactiveCommand<Unit, WindowState> Maximize => windowModel.Maximize;
-	public ReactiveCommand<Unit, WindowState> Restore => windowModel.Restore;
-	public ReactiveCommand<Unit, Unit> Close => windowModel.Close;
+	public ReactiveCommand<Unit, WindowState> Minimize => model.Minimize;
+	public ReactiveCommand<Unit, WindowState> Maximize => model.Maximize;
+	public ReactiveCommand<Unit, WindowState> Restore => model.Restore;
+	public ReactiveCommand<Unit, Unit> Close => model.Close;
 
-	public BaseVM MainVM
+	public BaseVM Content => model.Content;
+
+	public bool HaveLeftDirection
 	{
-		get => windowModel.MainVM;
-		set => windowModel.MainVM = value;
+		get => model.HaveLeftDirection;
+		set => model.HaveLeftDirection = value;
+	}
+
+	public bool HaveRightDirection
+	{
+		get => model.HaveRightDirection;
+		set => model.HaveRightDirection = value;
 	}
 }

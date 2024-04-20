@@ -1,17 +1,56 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels" mc:Ignorable="d"
-			 d:DesignWidth="1920" d:DesignHeight="1025" x:DataType="vm:WelcomeVM"
-             x:Class="MyJournal.Desktop.Views.WelcomeView">
-	<Viewbox>
-		<Grid ColumnDefinitions="900, 1020">
-			<Image	Grid.Column="0" Margin="150 0 50 0" VerticalAlignment="Center"
-					Source="avares://MyJournal.Desktop/Assets/Resources/Images/WelcomeImage.png"/>
-			<TransitioningContentControl	Classes.LeftDirection="{Binding HaveLeftDirection}"
-											Classes.RightDirection="{Binding HaveRightDirection}"
-											Grid.Column="1" Content="{Binding Path=Content}"/>
-		</Grid>
-	</Viewbox>
+<UserControl    xmlns="https://github.com/avaloniaui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+				xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+				xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+				xmlns:responsive="clr-namespace:Avalonia.Xaml.Interactions.Responsive;assembly=Avalonia.Xaml.Interactions.Responsive"
+				xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels" mc:Ignorable="d"
+				d:DesignWidth="1920" d:DesignHeight="1025" x:DataType="vm:WelcomeVM"
+				x:Class="MyJournal.Desktop.Views.WelcomeView">
+	<UserControl.Styles>
+		<Style Selector="Image.Invisible">
+			<Setter Property="IsVisible" Value="False"/>
+		</Style>
+		<Style Selector="Image.Visible">
+			<Setter Property="IsVisible" Value="True"/>
+		</Style>
+		<Style Selector="Viewbox.FullScreen">
+			<Setter Property="Grid.Column" Value="1"/>
+			<Setter Property="Grid.ColumnSpan" Value="3"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="Viewbox.HalfOfScreen">
+			<Setter Property="Grid.Column" Value="3"/>
+			<Setter Property="Grid.ColumnSpan" Value="1"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
+		</Style>
+	</UserControl.Styles>
+
+	<Grid RowDefinitions="113*, 50*, 700*, 50*, 113*" ColumnDefinitions="150*, 700*, 210*, 700*, 160*" x:Name="Grid">
+		<Image	Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" x:Name="WelcomeImage" HorizontalAlignment="Right"
+				Source="avares://MyJournal.Desktop/Assets/Resources/Images/WelcomeImage.png">
+			<interactivity:Interaction.Behaviors>
+				<responsive:AdaptiveBehavior SourceControl="{Binding $parent[Window]}" TargetControl="WelcomeImage">
+					<responsive:AdaptiveClassSetter	MinWidth="0" MinWidthOperator="GreaterThanOrEqual" MaxWidth="1250"
+													MaxWidthOperator="LessThan" ClassName="Invisible" />
+					<responsive:AdaptiveClassSetter	MinWidth="1250" MinWidthOperator="GreaterThanOrEqual" MaxWidth="Infinity"
+													MaxWidthOperator="LessThan" ClassName="Visible" />
+				</responsive:AdaptiveBehavior>
+			</interactivity:Interaction.Behaviors>
+		</Image>
+		<Viewbox Grid.Row="1" Grid.RowSpan="3" x:Name="ContentOnView" >
+			<TransitioningContentControl	Classes.RightDirection="{Binding HaveRightDirection}"
+											Height="800" Width="750" Content="{Binding Path=Content}"
+											Classes.LeftDirection="{Binding HaveLeftDirection}">
+				<interactivity:Interaction.Behaviors>
+					<responsive:AdaptiveBehavior SourceControl="{Binding $parent[Window]}" TargetControl="ContentOnView">
+						<responsive:AdaptiveClassSetter	MinWidth="0" MinWidthOperator="GreaterThanOrEqual" MaxWidth="1250"
+														MaxWidthOperator="LessThan" ClassName="FullScreen" />
+						<responsive:AdaptiveClassSetter	MinWidth="1250" MinWidthOperator="GreaterThanOrEqual" MaxWidth="Infinity"
+														MaxWidthOperator="LessThan" ClassName="HalfOfScreen" />
+					</responsive:AdaptiveBehavior>
+				</interactivity:Interaction.Behaviors>
+			</TransitioningContentControl>
+		</Viewbox>
+	</Grid>
 </UserControl>
