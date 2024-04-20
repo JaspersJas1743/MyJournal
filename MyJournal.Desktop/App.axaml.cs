@@ -61,13 +61,23 @@ public partial class App : Application
 			.AddSingleton<AuthorizationModel>()
 			#endregion
 			#region Registration
-			.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>()
+			#region First step
+			.AddKeyedRegistrationCodeVerificationService(key: nameof(RegistrationCodeVerificationService))
 			.AddSingleton<FirstStepOfRegistrationView>()
 			.AddSingleton<FirstStepOfRegistrationVM>()
 			.AddSingleton<FirstStepOfRegistrationModel>()
+			#endregion
+			#region Second step
+			.AddKeyedLoginVerificationService(key: nameof(LoginVerificationService))
 			.AddSingleton<SecondStepOfRegistrationView>()
 			.AddSingleton<SecondStepOfRegistrationVM>()
 			.AddSingleton<SecondStepOfRegistrationModel>()
+			#endregion
+			#region Third step
+			.AddSingleton<ThirdStepOfRegistrationView>()
+			.AddSingleton<ThirdStepOfRegistrationVM>()
+			.AddSingleton<ThirdStepOfRegistrationModel>()
+			#endregion
 			#endregion
 			#region Restoring Access
 			.AddSingleton<RestoringAccessThroughEmailView>()
@@ -114,7 +124,6 @@ public partial class App : Application
 		{
 			desktop.MainWindow = GetService<MainWindowView>();
 			MainWindowVM mainWindowVM = GetService<MainWindowVM>();
-			// TODO: Сделать проверку токена
 			// ICredentialStorageService credentialStorageService = GetService<ICredentialStorageService>();
 			// UserCredential credential = credentialStorageService.Get();
 			// if (credential != UserCredential.Empty)

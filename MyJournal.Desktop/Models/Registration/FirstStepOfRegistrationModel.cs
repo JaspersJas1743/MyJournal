@@ -2,6 +2,8 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia;
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Registration;
 using MyJournal.Core.Utilities;
@@ -22,14 +24,13 @@ public class FirstStepOfRegistrationModel : ValidatableModel
 	private string _entryCode = String.Empty;
 	private bool _haveError = false;
 
-	public FirstStepOfRegistrationModel(IVerificationService<Credentials<User>> verificationService)
+	public FirstStepOfRegistrationModel(
+		[FromKeyedServices(key: nameof(RegistrationCodeVerificationService))] IVerificationService<Credentials<User>> verificationService
+	)
 	{
 		_verificationService = verificationService;
 
-		ToNextStep = ReactiveCommand.CreateFromTask(
-			execute: MoveToNextStep,
-			canExecute: ValidationContext.Valid
-		);
+		ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep, canExecute: ValidationContext.Valid);
 		ToAuthorization = ReactiveCommand.Create(execute: MoveToAuthorization);
 	}
 
@@ -55,9 +56,11 @@ public class FirstStepOfRegistrationModel : ValidatableModel
 			Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);
 		else
 		{
+			SecondStepOfRegistrationVM newVM = (Application.Current as App)!.GetService<SecondStepOfRegistrationVM>();
+			newVM.SetRegistrationCode(code: EntryCode);
+
 			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-				newVMType: typeof(SecondStepOfRegistrationVM),
-				directionOfTransitionAnimation: PageTransition.Direction.Left
+				newVM: newVM, directionOfTransitionAnimation: PageTransition.Direction.Left
 			));
 		}
 	}

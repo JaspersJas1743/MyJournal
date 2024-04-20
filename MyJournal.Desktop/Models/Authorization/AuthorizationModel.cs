@@ -55,10 +55,7 @@ public class AuthorizationModel : ValidatableModel
 
 		ToRegistration = ReactiveCommand.Create(execute: MoveToRegistration);
 		ToRestoringAccess = ReactiveCommand.Create(execute: MoveToRestoringAccess);
-		SignIn = ReactiveCommand.CreateFromTask(
-			execute: SignInWithCredentials,
-			canExecute: ValidationContext.Valid
-		);
+		SignIn = ReactiveCommand.CreateFromTask(execute: SignInWithCredentials, canExecute: ValidationContext.Valid);
 
 	}
 

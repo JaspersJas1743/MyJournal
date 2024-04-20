@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -19,4 +20,13 @@ public sealed class RegistrationCodeVerificationService(ApiClient client) : IVer
 
 		return response.IsVerified;
 	}
+}
+
+public static class RegistrationCodeVerificationServiceExtension
+{
+	public static IServiceCollection AddRegistrationCodeVerificationService(this IServiceCollection serviceCollection)
+		=> serviceCollection.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>();
+
+	public static IServiceCollection AddKeyedRegistrationCodeVerificationService(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>(serviceKey: key);
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -19,4 +20,13 @@ public sealed class LoginVerificationService(ApiClient client) : IVerificationSe
 
 		return response.IsVerified;
 	}
+}
+
+public static class LoginVerificationServiceExtension
+{
+	public static IServiceCollection AddLoginVerificationService(this IServiceCollection serviceCollection)
+		=> serviceCollection.AddTransient<IVerificationService<Credentials<User>>, LoginVerificationService>();
+
+	public static IServiceCollection AddKeyedLoginVerificationService(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedTransient<IVerificationService<Credentials<User>>, LoginVerificationService>(serviceKey: key);
 }

@@ -161,8 +161,29 @@
             <Setter Property="Opacity" Value="0.4"/>
         </Style>
 
+        <Style Selector="^.Login">
+            <Setter Property="InnerLeftContent">
+                <Setter.Value>
+                    <Template>
+                        <Grid RowDefinitions="0.275* 0.45* 0.275*">
+                            <controls:XamlSvg Grid.Row="1" Margin="20 0 5 0" Classes="Login TransitionForeground"/>
+                        </Grid>
+                    </Template>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style Selector="^.PasswordBoxWithError[IsReadOnly=False]">
             <Setter Property="PasswordChar" Value="•"/>
+            <Setter Property="InnerLeftContent">
+                <Setter.Value>
+                    <Template>
+                        <Grid RowDefinitions="0.275* 0.45* 0.275*">
+                            <controls:XamlSvg Grid.Row="1" Margin="20 0 5 0" Classes="Password TransitionForeground"/>
+                        </Grid>
+                    </Template>
+                </Setter.Value>
+            </Setter>
             <Setter Property="InnerRightContent">
                 <Setter.Value>
                     <Template>

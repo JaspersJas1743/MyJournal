@@ -5,11 +5,20 @@ using MyJournal.Desktop.ViewModels;
 
 namespace MyJournal.Desktop.Assets.MessageBusEvents;
 
-public sealed class ChangeWelcomeVMContentEventArgs(
-	Type newVMType,
-	PageTransition.Direction directionOfTransitionAnimation
-) : EventArgs
+public sealed class ChangeWelcomeVMContentEventArgs : EventArgs
 {
-	public BaseVM NewVM { get; } = ((Application.Current as App)!.GetService(serviceType: newVMType) as BaseVM)!;
-	public PageTransition.Direction DirectionOfTransitionAnimation { get; } = directionOfTransitionAnimation;
+	public ChangeWelcomeVMContentEventArgs(Type newVMType, PageTransition.Direction directionOfTransitionAnimation)
+	{
+		NewVM = ((Application.Current as App)!.GetService(serviceType: newVMType) as BaseVM)!;
+		DirectionOfTransitionAnimation = directionOfTransitionAnimation;
+	}
+
+	public ChangeWelcomeVMContentEventArgs(BaseVM newVM, PageTransition.Direction directionOfTransitionAnimation)
+	{
+		NewVM = newVM;
+		DirectionOfTransitionAnimation = directionOfTransitionAnimation;
+	}
+
+	public BaseVM NewVM { get; }
+	public PageTransition.Direction DirectionOfTransitionAnimation { get; }
 }

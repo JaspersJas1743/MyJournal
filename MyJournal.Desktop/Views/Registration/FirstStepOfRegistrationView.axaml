@@ -6,7 +6,7 @@
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
 			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:FirstStepOfRegistrationVM"
 			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.FirstStepOfRegistrationView">
-	<Grid Margin="25 0 25 0" RowDefinitions="auto, 130*, 30*, 10*, 90*, 15*, 90*, 80*, 90*">
+	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 130*, 30*, 10*, 90*, 15*, 90*, 80*, 90*" MaxHeight="650">
 		<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
 		<TextBlock	Grid.Row="1" Text="Введите регистрационный код, выданный Вашим учебным заведением, для регистрации аккаунта"
 					Classes="CenteredTextBlock PageSubheader" Grid.RowSpan="3"/>
