@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -41,4 +42,13 @@ public sealed class AuthorizationWithCredentialsService(
 		};
 		return new Authorized<User>(instance: user, typeOfInstance: user.GetType(), token: response.Token);
 	}
+}
+
+public static class AuthorizationWithCredentialsServiceExtension
+{
+	public static IServiceCollection AddAuthorizationWithCredentialsService(this IServiceCollection serviceCollection)
+		=> serviceCollection.AddTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>();
+
+	public static IServiceCollection AddKeyedAuthorizationWithCredentialsService(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: key);
 }

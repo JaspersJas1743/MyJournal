@@ -1,7 +1,13 @@
 using System;
-using System.Diagnostics;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia;
+using MyJournal.Core;
+using MyJournal.Core.Registration;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Resources.Transitions;
+using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
 
@@ -9,11 +15,20 @@ namespace MyJournal.Desktop.Models.Registration;
 
 public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 {
+	private readonly IRegistrationService<User> _registrationService;
+	private readonly IMessageService _messageService;
+
 	private string _password = String.Empty;
 	private string _confirmationPassword = String.Empty;
 
-	public ThirdStepOfRegistrationModel()
+	public ThirdStepOfRegistrationModel(
+		IRegistrationService<User> registrationService,
+		IMessageService messageService
+	)
 	{
+		_registrationService = registrationService;
+		_messageService = messageService;
+
 		ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep, canExecute: ValidationContext.Valid);
 	}
 
@@ -35,10 +50,26 @@ public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 
 	public async Task MoveToNextStep()
 	{
-		// MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-		// 	newVMType: typeof(ThirdStepOfRegistrationVM),
-		// 	directionOfTransitionAnimation: PageTransition.Direction.Right
-		// ));
+		bool registrationIsSuccessful = await _registrationService.Register(credentials: new UserCredentials()
+		{
+			Login = Login,
+			Password = Password,
+			RegistrationCode = RegistrationCode
+		});
+		if (!registrationIsSuccessful)
+		{
+			await _messageService.ShowErrorAsPopup(text: "В процессе регистрации произошла ошибка. Обратитесь к Вашей учебной организации.");
+			return;
+		}
+
+		IRegistrationService<User>.AuthenticationData codes = await _registrationService.CreateGoogleAuthenticator();
+		FourStepOfRegistrationVM nextStep = (Application.Current as App)!.GetService<FourStepOfRegistrationVM>();
+		nextStep.QRCode = codes.QrCodeBase64;
+		nextStep.Code = codes.AuthenticationCode;
+
+		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+			newVM: nextStep, directionOfTransitionAnimation: PageTransition.Direction.Left
+		));
 	}
 
 	protected override void SetValidationRule()

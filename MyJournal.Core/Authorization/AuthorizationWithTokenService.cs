@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -44,4 +45,13 @@ public class AuthorizationWithTokenService(
 		};
 		return new Authorized<User>(instance: user, typeOfInstance: user.GetType(), token: token);
 	}
+}
+
+public static class AuthorizationWithTokenServiceExtension
+{
+	public static IServiceCollection AddAuthorizationWithTokenService(this IServiceCollection serviceCollection)
+		=> serviceCollection.AddTransient<IAuthorizationService<User>, AuthorizationWithTokenService>();
+
+	public static IServiceCollection AddKeyedAuthorizationWithTokenService(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedTransient<IAuthorizationService<User>, AuthorizationWithTokenService>(serviceKey: key);
 }

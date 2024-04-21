@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:FourStepOfRegistrationVM"
+			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.FourStepOfRegistrationView">
+	<UserControl.Styles>
+		<Style Selector="Viewbox.RowAndRowSpan">
+			<Setter Property="Grid.Row" Value="5"/>
+			<Setter Property="Grid.RowSpan" Value="3"/>
+		</Style>
+		<Style Selector="Viewbox.Row">
+			<Setter Property="Grid.Row" Value="7"/>
+		</Style>
+	</UserControl.Styles>
+
+	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 120*, 260*, 10*, 25*, 75, 30*, 90*" MaxHeight="700" ColumnDefinitions="125*, 450*, 150*">
+		<TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
+		<TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Classes="CenteredTextBlock PageSubheader" xml:space="preserve">Для последующего восстановления доступа к Вашему аккаунту в случае его утери необходимо добавить
+Google Authenticator, отсканировав QR-код.
+		</TextBlock>
+		<Image	Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Source="{Binding QRCode, Converter={StaticResource Base64ToBitmapConverter}}"/>
+		<Button Content="Код не считывается?" Classes="SubheaderContent TextButton" FontSize="20"
+				IsVisible="{Binding !CodeIsDisplayed}" VerticalAlignment="Top"
+				Grid.Column="1" Grid.Row="4" HorizontalAlignment="Center" MaxHeight="30"
+				Command="{Binding ShowCode}"/>
+		<Grid	Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" RowDefinitions="50*, 10*, 40*"
+				IsVisible="{Binding CodeIsDisplayed}">
+			<TextBlock	Grid.Row="0" Classes="PageSubheader" FontSize="20" HorizontalAlignment="Center" TextWrapping="Wrap"
+						Text="Если код не считывается, выберите ручной ввод, введите Ваше имя, фамилию и код"/>
+			<StackPanel Grid.Row="2" Spacing="5" HorizontalAlignment="Center" Orientation="Horizontal">
+				<TextBlock FontSize="28" Text="{Binding Code}"/>
+				<Button Width="20" Height="20" Classes="CopyButton" Foreground="{DynamicResource SubheaderColor}"
+						Command="{Binding CopyToClipboard}"
+						CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}">
+					<Button.Flyout>
+						<Flyout ShowMode="TransientWithDismissOnPointerMoveAway" Placement="Bottom"
+								Content="Аутентификационный код скопирован в буфер обмена"/>
+					</Button.Flyout>
+				</Button>
+			</StackPanel>
+		</Grid>
+		<Viewbox Grid.Column="0" Grid.ColumnSpan="3"
+				Classes.RowAndRowSpan="{Binding !CodeIsDisplayed}"
+				Classes.Row="{Binding CodeIsDisplayed}">
+			<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor" Content="Продолжить →" Width="800"
+												Height="90" Command="{Binding ToNextStep}"/>
+		</Viewbox>
+	</Grid>
+</UserControl>

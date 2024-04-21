@@ -30,7 +30,7 @@ namespace MyJournal.Desktop;
 
 public partial class App : Application
 {
-	private readonly IServiceProvider _services;
+	private readonly ServiceProvider _services;
 
 	public App()
 	{
@@ -49,25 +49,26 @@ public partial class App : Application
 			.AddApiClient()
 			.AddGoogleAuthenticator()
 			.AddFileService()
+			.AddKeyedAuthorizationWithCredentialsService(key: nameof(AuthorizationWithCredentialsService))
+			.AddKeyedAuthorizationWithTokenService(key: nameof(AuthorizationWithTokenService))
 			.AddConfigurationService()
 			.AddMessageService()
+			.AddKeyedRegistrationCodeVerificationService(key: nameof(RegistrationCodeVerificationService))
+			.AddKeyedLoginVerificationService(key: nameof(LoginVerificationService))
+			.AddUserRegistrationService()
 			#endregion
 			#region Authorization
-			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: nameof(AuthorizationWithCredentialsService))
-			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithTokenService>(serviceKey: nameof(AuthorizationWithTokenService))
 			.AddSingleton<AuthorizationView>()
 			.AddSingleton<AuthorizationVM>()
 			.AddSingleton<AuthorizationModel>()
 			#endregion
 			#region Registration
 			#region First step
-			.AddKeyedRegistrationCodeVerificationService(key: nameof(RegistrationCodeVerificationService))
 			.AddSingleton<FirstStepOfRegistrationView>()
 			.AddSingleton<FirstStepOfRegistrationVM>()
 			.AddSingleton<FirstStepOfRegistrationModel>()
 			#endregion
 			#region Second step
-			.AddKeyedLoginVerificationService(key: nameof(LoginVerificationService))
 			.AddSingleton<SecondStepOfRegistrationView>()
 			.AddSingleton<SecondStepOfRegistrationVM>()
 			.AddSingleton<SecondStepOfRegistrationModel>()
@@ -76,6 +77,11 @@ public partial class App : Application
 			.AddSingleton<ThirdStepOfRegistrationView>()
 			.AddSingleton<ThirdStepOfRegistrationVM>()
 			.AddSingleton<ThirdStepOfRegistrationModel>()
+			#endregion
+			#region Four step
+			.AddSingleton<FourStepOfRegistrationView>()
+			.AddSingleton<FourStepOfRegistrationVM>()
+			.AddSingleton<FourStepOfRegistrationModel>()
 			#endregion
 			#endregion
 			#region Restoring Access
