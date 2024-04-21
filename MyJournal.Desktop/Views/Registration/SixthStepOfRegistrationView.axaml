@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:SixthStepOfRegistrationVM"
+			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.SixthStepOfRegistrationView">
+	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 170*, 200*, 30*, 90*" MaxHeight="600">
+		<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
+		<TextBlock	Grid.Row="1" Classes="CenteredTextBlock PageSubheader">
+			Выберите способ для идентификации Вашего аккаунта при восстановлении доступа в случае его утери
+		</TextBlock>
+		<StackPanel Grid.Row="2" Spacing="15" Orientation="Horizontal" HorizontalAlignment="Center">
+			<controls:SelectionCard Header="Телефон" Width="165" Height="200" GroupName="IdentifierVariant"
+									Command="{Binding SelectPhone}" IsChecked="True">
+				<controls:SelectionCard.Content>
+					<controls:XamlSvg Classes="Phone"/>
+				</controls:SelectionCard.Content>
+			</controls:SelectionCard>
+			<controls:SelectionCard Header="Эл. почта" Width="165" Height="200" GroupName="IdentifierVariant"
+									Command="{Binding SelectEmail}">
+				<controls:SelectionCard.Content>
+					<controls:XamlSvg Classes="Email"/>
+				</controls:SelectionCard.Content>
+			</controls:SelectionCard>
+		</StackPanel>
+		<Viewbox Grid.Row="4">
+			<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor" Content="Продолжить →" Width="800"
+												Height="90" Command="{Binding ToNextStep}"/>
+		</Viewbox>
+	</Grid>
+</UserControl>

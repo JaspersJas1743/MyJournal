@@ -62,6 +62,18 @@
         <DependentUpon>FiveStepOfRegistrationView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Registration\SixthStepOfRegistrationView.axaml.cs">
+        <DependentUpon>SixthStepOfRegistrationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\SeventhStepOfRegistrationViaPhoneView.axaml.cs">
+        <DependentUpon>SeventhStepOfRegistrationViaPhoneView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\SeventhStepOfRegistrationViaEmailView.axaml.cs">
+        <DependentUpon>SeventhStepOfRegistrationViaEmailView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

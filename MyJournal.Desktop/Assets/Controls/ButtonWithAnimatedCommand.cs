@@ -8,19 +8,19 @@ namespace MyJournal.Desktop.Assets.Controls;
 
 public sealed class ButtonWithAnimatedCommand : Button
 {
-	private bool _isSubscribed = false;
-
-	public ButtonWithAnimatedCommand()
-		=> Click += OnButtonClick;
-
 	public static readonly StyledProperty<bool> CommandIsExecutingProperty =
 		AvaloniaProperty.Register<Button, bool>(name: nameof(CommandIsExecuting));
+
+	private bool _isSubscribed = false;
 
 	public bool CommandIsExecuting
 	{
 		get => GetValue(CommandIsExecutingProperty);
 		private set => SetValue(property: CommandIsExecutingProperty, value: value);
 	}
+
+	public ButtonWithAnimatedCommand()
+		=> Click += OnButtonClick;
 
 	private void OnButtonClick(object? o, RoutedEventArgs routedEventArgs)
 	{

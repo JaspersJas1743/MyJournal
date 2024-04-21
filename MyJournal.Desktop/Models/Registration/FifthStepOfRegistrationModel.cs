@@ -1,10 +1,12 @@
 using System;
-using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MyJournal.Core;
 using MyJournal.Core.Registration;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Resources.Transitions;
+using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
 
@@ -38,15 +40,14 @@ public sealed class FifthStepOfRegistrationModel : ModelWithErrorMessage
 	public async Task MoveToNextStep()
 	{
 		HaveError = !await _registrationService.VerifyAuthenticationCode(code: EntryCode);
-		Debug.WriteLine($"HaveError: {HaveError}");
 		if (HaveError)
 			Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);
 		else
 		{
-			// MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-			// 	newVMType: typeof(SixStepOfRegistrationVM),
-			// 	directionOfTransitionAnimation: PageTransition.Direction.Left
-			// ));
+			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+				newVMType: typeof(SixthStepOfRegistrationVM),
+				directionOfTransitionAnimation: PageTransition.Direction.Left
+			));
 		}
 	}
 

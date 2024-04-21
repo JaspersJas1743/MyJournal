@@ -78,15 +78,30 @@ public partial class App : Application
 			.AddSingleton<ThirdStepOfRegistrationVM>()
 			.AddSingleton<ThirdStepOfRegistrationModel>()
 			#endregion
-			#region Four step
+			#region Fourth step
 			.AddSingleton<FourthStepOfRegistrationView>()
 			.AddSingleton<FourthStepOfRegistrationVM>()
 			.AddSingleton<FourthStepOfRegistrationModel>()
 			#endregion
-			#region Five step
+			#region Fifth step
 			.AddSingleton<FifthStepOfRegistrationView>()
 			.AddSingleton<FifthStepOfRegistrationVM>()
 			.AddSingleton<FifthStepOfRegistrationModel>()
+			#endregion
+			#region Sixth step
+			.AddSingleton<SixthStepOfRegistrationView>()
+			.AddSingleton<SixthStepOfRegistrationVM>()
+			.AddSingleton<SixthStepOfRegistrationModel>()
+			#endregion
+			#region Seventh step via phone
+			.AddSingleton<SeventhStepOfRegistrationViaPhoneView>()
+			.AddSingleton<SeventhStepOfRegistrationViaPhoneVM>()
+			.AddSingleton<SeventhStepOfRegistrationViaPhoneModel>()
+			#endregion
+			#region Seventh step via email
+			.AddSingleton<SeventhStepOfRegistrationViaEmailView>()
+			.AddSingleton<SeventhStepOfRegistrationViaEmailVM>()
+			.AddSingleton<SeventhStepOfRegistrationViaEmailModel>()
 			#endregion
 			#endregion
 			#region Restoring Access
