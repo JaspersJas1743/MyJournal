@@ -38,7 +38,9 @@ public class FirstStepOfRegistrationModel : ModelWithErrorMessage
 		get => _entryCode;
 		set => this.RaiseAndSetIfChanged(backingField: ref _entryCode, newValue: value);
 	}
-	
+
+	public int CountOfCell { get; } = 7;
+
 	public ReactiveCommand<Unit, Unit> ToNextStep { get; }
 	public ReactiveCommand<Unit, Unit> ToAuthorization { get; }
 
@@ -70,7 +72,7 @@ public class FirstStepOfRegistrationModel : ModelWithErrorMessage
 	{
 		this.ValidationRule(
 			viewModelProperty: model => model.EntryCode,
-			isPropertyValid: code => code?.Length == CodeInput.CountOfCell,
+			isPropertyValid: code => code?.Length == CountOfCell,
 			message: "Регистрационный код имеет некорректный формат."
 		);
 	}

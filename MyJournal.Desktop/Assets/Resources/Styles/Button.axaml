@@ -56,7 +56,12 @@
 		<Setter Property="VerticalAlignment" Value="Center"/>
 		<Setter Property="Template">
 			<ControlTemplate>
-				<controls:XamlSvg Classes="CopyToClipboard"/>
+				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+					<TextBlock	Foreground="{DynamicResource ForegroundColor}"
+								FontSize="28" Text="{TemplateBinding Content}"
+								VerticalAlignment="Center"/>
+					<controls:XamlSvg Classes="CopyToClipboard" Margin="10" VerticalAlignment="Center"/>
+				</StackPanel>
 			</ControlTemplate>
 		</Setter>
 	</Style>

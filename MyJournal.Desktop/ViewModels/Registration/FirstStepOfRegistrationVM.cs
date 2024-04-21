@@ -14,4 +14,6 @@ public sealed class FirstStepOfRegistrationVM(FirstStepOfRegistrationModel model
 		get => model.EntryCode;
 		set => model.EntryCode = value;
 	}
+
+	public int CountOfCell => model.CountOfCell;
 }

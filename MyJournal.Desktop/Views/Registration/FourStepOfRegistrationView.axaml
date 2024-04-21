@@ -18,7 +18,8 @@
 
 	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 120*, 260*, 10*, 25*, 75, 30*, 90*" MaxHeight="700" ColumnDefinitions="125*, 450*, 150*">
 		<TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
-		<TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Classes="CenteredTextBlock PageSubheader" xml:space="preserve">Для последующего восстановления доступа к Вашему аккаунту в случае его утери необходимо добавить
+		<TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Classes="CenteredTextBlock PageSubheader" xml:space="preserve"
+		>Для последующего восстановления доступа к Вашему аккаунту в случае его утери необходимо добавить
 Google Authenticator, отсканировав QR-код.
 		</TextBlock>
 		<Image	Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Source="{Binding QRCode, Converter={StaticResource Base64ToBitmapConverter}}"/>
@@ -28,19 +29,19 @@ Google Authenticator, отсканировав QR-код.
 				Command="{Binding ShowCode}"/>
 		<Grid	Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" RowDefinitions="50*, 10*, 40*"
 				IsVisible="{Binding CodeIsDisplayed}">
-			<TextBlock	Grid.Row="0" Classes="PageSubheader" FontSize="20" HorizontalAlignment="Center" TextWrapping="Wrap"
-						Text="Если код не считывается, выберите ручной ввод, введите Ваше имя, фамилию и код"/>
-			<StackPanel Grid.Row="2" Spacing="5" HorizontalAlignment="Center" Orientation="Horizontal">
-				<TextBlock FontSize="28" Text="{Binding Code}"/>
-				<Button Width="20" Height="20" Classes="CopyButton" Foreground="{DynamicResource SubheaderColor}"
-						Command="{Binding CopyToClipboard}"
-						CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}">
-					<Button.Flyout>
-						<Flyout ShowMode="TransientWithDismissOnPointerMoveAway" Placement="Bottom"
-								Content="Аутентификационный код скопирован в буфер обмена"/>
-					</Button.Flyout>
-				</Button>
-			</StackPanel>
+			<TextBlock	Grid.Row="0" Classes="PageSubheader" FontSize="20" HorizontalAlignment="Center" TextWrapping="Wrap">
+				Если код не считывается, выберите ручной ввод, введите Ваше имя, фамилию и код
+			</TextBlock>
+			<Button Content="{Binding Code}" Classes="CopyButton" HorizontalAlignment="Center"
+					CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"
+					Foreground="{DynamicResource SubheaderColor}"
+					Command="{Binding CopyToClipboard}" Grid.Row="2">
+				<Button.Flyout>
+					<Flyout ShowMode="TransientWithDismissOnPointerMoveAway" Placement="Bottom">
+						Аутентификационный код скопирован в буфер обмена
+					</Flyout>
+				</Button.Flyout>
+			</Button>
 		</Grid>
 		<Viewbox Grid.Column="0" Grid.ColumnSpan="3"
 				Classes.RowAndRowSpan="{Binding !CodeIsDisplayed}"
