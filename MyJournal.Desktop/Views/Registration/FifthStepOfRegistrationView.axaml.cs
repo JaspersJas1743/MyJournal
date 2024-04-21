@@ -2,8 +2,8 @@ using Avalonia.Controls;
 
 namespace MyJournal.Desktop.Views.Registration;
 
-public partial class FourStepOfRegistrationView : UserControl
+public partial class FifthStepOfRegistrationView : UserControl
 {
-	public FourStepOfRegistrationView()
+	public FifthStepOfRegistrationView()
 		=> InitializeComponent();
 }

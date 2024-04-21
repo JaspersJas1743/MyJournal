@@ -4,8 +4,8 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:FourStepOfRegistrationVM"
-			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.FourStepOfRegistrationView">
+			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:FourthStepOfRegistrationVM"
+			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.FourthStepOfRegistrationView">
 	<UserControl.Styles>
 		<Style Selector="Viewbox.RowAndRowSpan">
 			<Setter Property="Grid.Row" Value="5"/>

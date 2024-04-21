@@ -39,7 +39,7 @@ public class FirstStepOfRegistrationModel : ModelWithErrorMessage
 		set => this.RaiseAndSetIfChanged(backingField: ref _entryCode, newValue: value);
 	}
 
-	public int CountOfCell { get; } = 7;
+	public int CountOfCell => 7;
 
 	public ReactiveCommand<Unit, Unit> ToNextStep { get; }
 	public ReactiveCommand<Unit, Unit> ToAuthorization { get; }

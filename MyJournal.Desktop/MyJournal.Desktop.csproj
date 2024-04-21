@@ -54,8 +54,12 @@
         <DependentUpon>ThirdStepOfRegistrationView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="Views\Registration\FourStepOfRegistrationView.axaml.cs">
+      <Compile Update="Views\Registration\FourthStepOfRegistrationView.axaml.cs">
         <DependentUpon>FourStepOfRegistrationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\FifthStepOfRegistrationView.axaml.cs">
+        <DependentUpon>FiveStepOfRegistrationView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

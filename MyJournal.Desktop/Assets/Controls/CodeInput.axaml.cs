@@ -24,8 +24,14 @@ public partial class CodeInput : UserControl
 		defaultValue: String.Empty,
 		defaultBindingMode: BindingMode.OneWayToSource
 	);
-	public static readonly StyledProperty<bool> HaveErrorProperty = AvaloniaProperty.Register<CodeInput, bool>(name: nameof(HaveError));
-	public static readonly StyledProperty<int> CountOfCellProperty = AvaloniaProperty.Register<CodeInput, int>(name: nameof(CountOfCell), defaultValue: 7);
+	public static readonly StyledProperty<bool> HaveErrorProperty = AvaloniaProperty.Register<CodeInput, bool>(
+		name: nameof(HaveError),
+		defaultBindingMode: BindingMode.TwoWay
+	);
+	public static readonly StyledProperty<int> CountOfCellProperty = AvaloniaProperty.Register<CodeInput, int>(
+		name: nameof(CountOfCell),
+		defaultValue: 7
+	);
 
 	private IEnumerable<TextBox> _codeCells;
 
@@ -56,7 +62,7 @@ public partial class CodeInput : UserControl
 
 		CodeEntryPanel.Width = 100 * CountOfCell;
 		CodeEntryPanel.ColumnDefinitions = new AutoScaleColumnDefinitions(columnCount: CountOfCell, owner: CodeEntryPanel);
-		_codeCells = Enumerable.Range(start: 0, count: CountOfCell).Select(selector: column =>
+		CodeEntryPanel.Children.AddRange(items: Enumerable.Range(start: 0, count: CountOfCell).Select(selector: column =>
 		{
 			TextBox tb = new TextBox();
 			Grid.SetColumn(element: tb, value: column);
@@ -64,21 +70,26 @@ public partial class CodeInput : UserControl
 			this.WhenAnyValue(property1: code => code.HaveError)
 				.Where(predicate: hasError => hasError)
 				.Subscribe(onNext: _ => tb.Classes.Add(name: ClassForErrorCell));
-			tb.GotFocus += OnCellGotFocus;
-			tb.PastingFromClipboard += OnPastingToCellFromClipboard;
+			this.WhenAnyValue(property1: code => code.HaveError)
+				.Where(predicate: hasError => !hasError)
+				.Subscribe(onNext: _ => tb.Classes.Remove(name: ClassForErrorCell));
+
+			tb.AddHandler(routedEvent: GotFocusEvent, handler: OnCellGotFocus);
+			tb.AddHandler(routedEvent: TextBox.PastingFromClipboardEvent, handler: OnPastingToCellFromClipboard);
 			tb.AddHandler(routedEvent: KeyDownEvent, handler: OnKeyDownInCell, routes: RoutingStrategies.Tunnel);
+
 			tb.WhenAnyValue(property1: textBox => textBox.Text)
 			  .Where(predicate: text => text is not null)
 			  .Subscribe(onNext: _ => EntryCode = String.Concat(values: _codeCells.Select(selector: textBox => textBox.Text)).Trim());
 			return tb;
-		});
-		CodeEntryPanel.Children.AddRange(items: _codeCells);
+		}));
+		_codeCells = CodeEntryPanel.Children.OfType<TextBox>();
 	}
 
 	protected override void OnLoaded(RoutedEventArgs e)
 	{
 		base.OnLoaded(e: e);
-		_codeCells.First().Focus();
+		(_codeCells.FirstOrDefault(predicate: tb => String.IsNullOrEmpty(value: tb.Text)) ?? _codeCells.Last()).Focus();
 	}
 
 	private void OnKeyDownInCell(object? sender, KeyEventArgs e)

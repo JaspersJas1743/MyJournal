@@ -63,7 +63,7 @@ public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 		}
 
 		IRegistrationService<User>.AuthenticationData codes = await _registrationService.CreateGoogleAuthenticator();
-		FourStepOfRegistrationVM nextStep = (Application.Current as App)!.GetService<FourStepOfRegistrationVM>();
+		FourthStepOfRegistrationVM nextStep = (Application.Current as App)!.GetService<FourthStepOfRegistrationVM>();
 		nextStep.QRCode = codes.QrCodeBase64;
 		nextStep.Code = codes.AuthenticationCode;
 

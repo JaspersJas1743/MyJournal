@@ -103,8 +103,8 @@ public sealed class UserRegistrationService(
 public static class UserRegistrationServiceExtension
 {
 	public static IServiceCollection AddUserRegistrationService(this IServiceCollection serviceCollection)
-		=> serviceCollection.AddTransient<IRegistrationService<User>, UserRegistrationService>();
+		=> serviceCollection.AddScoped<IRegistrationService<User>, UserRegistrationService>();
 
 	public static IServiceCollection AddKeyedUserRegistrationService(this IServiceCollection serviceCollection, string key)
-		=> serviceCollection.AddKeyedTransient<IRegistrationService<User>, UserRegistrationService>(serviceKey: key);
+		=> serviceCollection.AddKeyedScoped<IRegistrationService<User>, UserRegistrationService>(serviceKey: key);
 }

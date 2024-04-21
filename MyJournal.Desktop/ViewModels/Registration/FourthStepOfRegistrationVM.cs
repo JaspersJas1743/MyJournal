@@ -5,7 +5,7 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.ViewModels.Registration;
 
-public sealed class FourStepOfRegistrationVM(FourStepOfRegistrationModel model) : BaseVM(model: model)
+public sealed class FourthStepOfRegistrationVM(FourthStepOfRegistrationModel model) : BaseVM(model: model)
 {
 	public ReactiveCommand<Unit, Unit> ToNextStep => model.ToNextStep;
 	public ReactiveCommand<Unit, Unit> ShowCode => model.ShowCode;

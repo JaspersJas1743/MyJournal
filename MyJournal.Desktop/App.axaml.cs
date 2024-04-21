@@ -79,9 +79,14 @@ public partial class App : Application
 			.AddSingleton<ThirdStepOfRegistrationModel>()
 			#endregion
 			#region Four step
-			.AddSingleton<FourStepOfRegistrationView>()
-			.AddSingleton<FourStepOfRegistrationVM>()
-			.AddSingleton<FourStepOfRegistrationModel>()
+			.AddSingleton<FourthStepOfRegistrationView>()
+			.AddSingleton<FourthStepOfRegistrationVM>()
+			.AddSingleton<FourthStepOfRegistrationModel>()
+			#endregion
+			#region Five step
+			.AddSingleton<FifthStepOfRegistrationView>()
+			.AddSingleton<FifthStepOfRegistrationVM>()
+			.AddSingleton<FifthStepOfRegistrationModel>()
 			#endregion
 			#endregion
 			#region Restoring Access

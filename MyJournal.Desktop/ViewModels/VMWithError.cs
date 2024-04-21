@@ -10,5 +10,9 @@ public class VMWithError(ModelWithErrorMessage model) : BaseVM(model: model)
 		set => model.Error = value;
 	}
 
-	public bool HaveError => model.HaveError;
+	public bool HaveError
+	{
+		get => model.HaveError;
+		set => model.HaveError = value;
+	}
 }
