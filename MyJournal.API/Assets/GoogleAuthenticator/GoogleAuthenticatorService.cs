@@ -7,7 +7,7 @@ public class GoogleAuthenticatorService : IGoogleAuthenticatorService
 	private const string Base32Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 	public async Task<string> GenerateAuthenticationCode()
-		=> String.Concat(Guid.NewGuid().ToString().ToUpper().Where(x => Base32Alphabet.Contains(x)).Take(10));
+		=> String.Concat(values: Guid.NewGuid().ToString().ToUpper().Where(predicate: x => Base32Alphabet.Contains(value: x)).Take(count: 16));
 
 	public async Task<IGoogleAuthenticatorService.AuthenticationData> GenerateQrCode(string username, string authCode)
 	{
@@ -19,8 +19,6 @@ public class GoogleAuthenticatorService : IGoogleAuthenticatorService
 			qrPixelsPerModule: 25,
 			generateQrCode: true
 		);
-		byte[] imageBytes = Convert.FromBase64String(code.QrCodeSetupImageUrl.Split(',')[1]);
-		using MemoryStream stream = new MemoryStream(imageBytes);
 		return new IGoogleAuthenticatorService.AuthenticationData(
 			QrCodeUrl: code.QrCodeSetupImageUrl,
 			Code: code.ManualEntryKey
