@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ public partial class PhoneNumberInput : UserControl
 	public static readonly StyledProperty<string> EntryPhoneProperty = AvaloniaProperty.Register<PhoneNumberInput, string>(
 		name: nameof(EntryPhone),
 		defaultValue: String.Empty,
-		defaultBindingMode: BindingMode.OneWayToSource
+		defaultBindingMode: BindingMode.TwoWay
 	);
 
 	public static readonly StyledProperty<bool> HaveErrorProperty = AvaloniaProperty.Register<CodeInput, bool>(
@@ -49,6 +50,10 @@ public partial class PhoneNumberInput : UserControl
 		base.OnInitialized();
 
 		_cells = Panel.Children.OfType<MaskedTextBox>();
+
+		if (!String.IsNullOrWhiteSpace(value: EntryPhone))
+			SetPhone(phone: EntryPhone);
+
 		foreach (MaskedTextBox mtb in _cells)
 		{
 			mtb.AddHandler(routedEvent: GotFocusEvent, handler: OnCellGotFocus);
@@ -63,6 +68,12 @@ public partial class PhoneNumberInput : UserControl
 			mtb.WhenAnyValue(property1: textBox => textBox.Text).Where(predicate: text => text is not null && text.Any(predicate: c => c != '_'))
 			   .Subscribe(onNext: _ => mtb.Classes.Remove(name: "Empty"));
 		}
+	}
+
+	protected override void OnLoaded(RoutedEventArgs e)
+	{
+		base.OnLoaded(e);
+		(_cells.FirstOrDefault(predicate: tb => tb.Text?.Contains(value: '_') ?? false) ?? _cells.Last()).Focus();
 	}
 
 	private async void OnKeyDownToCell(object? sender, KeyEventArgs e)
@@ -104,7 +115,11 @@ public partial class PhoneNumberInput : UserControl
 	{
 		e.Handled = true;
 		IClipboard? clipboard = TopLevel.GetTopLevel(visual: this)?.Clipboard;
-		string? phone = await clipboard?.GetTextAsync();
+		SetPhone(phone: await clipboard?.GetTextAsync()!);
+	}
+
+	private void SetPhone(string? phone)
+	{
 		if (phone is null)
 			return;
 

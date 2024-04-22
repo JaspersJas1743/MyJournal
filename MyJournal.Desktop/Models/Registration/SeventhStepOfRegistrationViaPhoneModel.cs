@@ -57,7 +57,7 @@ public sealed class SeventhStepOfRegistrationViaPhoneModel : ModelWithErrorMessa
 		this.ValidationRule(
 			viewModelProperty: model => model.Phone,
 			isPropertyValid: phone => Regex.IsMatch(input: phone, pattern: @"\+7\(\d{3}\)\d{3}-\d{4}"),
-			message: "Неверный формат номера"
+			message: "Неверный формат номера."
 		);
 	}
 }

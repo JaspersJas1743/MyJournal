@@ -22,7 +22,7 @@ public partial class CodeInput : UserControl
 	public static readonly StyledProperty<string> EntryCodeProperty = AvaloniaProperty.Register<CodeInput, string>(
 		name: nameof(EntryCode),
 		defaultValue: String.Empty,
-		defaultBindingMode: BindingMode.OneWayToSource
+		defaultBindingMode: BindingMode.TwoWay
 	);
 	public static readonly StyledProperty<bool> HaveErrorProperty = AvaloniaProperty.Register<CodeInput, bool>(
 		name: nameof(HaveError),
@@ -84,6 +84,11 @@ public partial class CodeInput : UserControl
 			return tb;
 		}));
 		_codeCells = CodeEntryPanel.Children.OfType<TextBox>();
+		string codeCopy = EntryCode;
+		int iterationCount = Math.Min(val1: _codeCells.Count(), val2: codeCopy.Length);
+		for (int i = 0; i < iterationCount; ++i)
+			_codeCells.ElementAt(index: i).Text = codeCopy[index: i].ToString();
+		_codeCells.ElementAt(index: iterationCount - 1).Focus();
 	}
 
 	protected override void OnLoaded(RoutedEventArgs e)
