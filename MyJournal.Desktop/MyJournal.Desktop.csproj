@@ -74,6 +74,10 @@
         <DependentUpon>SeventhStepOfRegistrationViaEmailView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Registration\EndOfRegistrationView.axaml.cs">
+        <DependentUpon>EndOfRegistrationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

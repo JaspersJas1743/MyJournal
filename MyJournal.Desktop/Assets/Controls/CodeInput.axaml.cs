@@ -107,13 +107,11 @@ public partial class CodeInput : UserControl
 		switch (e)
 		{
 			case { Key: Key.Back, KeyModifiers: KeyModifiers.Control }:
-			{
 				foreach(TextBox textBox in _codeCells.Take(count: _codeCells.IndexOf(item: tb) + 1))
 					textBox.Text = String.Empty;
 				_codeCells.First().Focus();
 				e.Handled = true;
 				return;
-			}
 			case { Key: Key.Left, KeyModifiers: KeyModifiers.Control }:
 				_codeCells.First().Focus();
 				e.Handled = true;
@@ -128,7 +126,12 @@ public partial class CodeInput : UserControl
 			GetPreviousTextBox(current: tb)?.Focus();
 
 		if (new Key[] { Key.Delete, Key.Right }.Contains(value: e.Key) && _codeCells.IndexOf(item: tb) < _codeCells.Count())
+		{
+			if (e.Key == Key.Delete)
+				tb.Text = String.Empty;
+			e.Handled = true;
 			GetNextTextBox(current: tb)?.Focus();
+		}
 	}
 
 	private TextBox? GetNextTextBox(TextBox current)
@@ -155,7 +158,9 @@ public partial class CodeInput : UserControl
 
 		TextBox tb = (sender as TextBox)!;
 		int index = _codeCells.IndexOf(item: tb);
-		for (int i = 0; i < _codeCells.Count() - index; ++i)
+		int iterationCount = Math.Min(val1: _codeCells.Count() - index, val2: code.Length);
+		for (int i = 0; i < iterationCount; ++i)
 			_codeCells.ElementAt(index: i + index).Text = code[index: i].ToString();
+		_codeCells.ElementAt(index: iterationCount - 1).Focus();
 	}
 }

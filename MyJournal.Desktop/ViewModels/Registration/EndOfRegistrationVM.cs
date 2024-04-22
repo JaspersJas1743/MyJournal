@@ -4,13 +4,7 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.ViewModels.Registration;
 
-public sealed class SeventhStepOfRegistrationViaPhoneVM(SeventhStepOfRegistrationViaPhoneModel model) : VMWithError(model: model)
+public sealed class EndOfRegistrationVM(EndOfRegistrationModel model) : BaseVM(model: model)
 {
 	public ReactiveCommand<Unit, Unit> ToNextStep => model.ToNextStep;
-
-	public string Phone
-	{
-		get => model.Phone;
-		set => model.Phone = value;
-	}
 }

@@ -103,6 +103,11 @@ public partial class App : Application
 			.AddSingleton<SeventhStepOfRegistrationViaEmailVM>()
 			.AddSingleton<SeventhStepOfRegistrationViaEmailModel>()
 			#endregion
+			#region End of registration
+			.AddSingleton<EndOfRegistrationView>()
+			.AddSingleton<EndOfRegistrationVM>()
+			.AddSingleton<EndOfRegistrationModel>()
+			#endregion
 			#endregion
 			#region Restoring Access
 			.AddSingleton<RestoringAccessThroughEmailView>()

@@ -29,6 +29,7 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ButtonWithAnimatedCommand.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/CodeInput.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/SelectionCard.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/PhoneNumberInput.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Window.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBlock.axaml"/>
