@@ -39,6 +39,8 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Border.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TransitioningContentControl.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Grid.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ComboBox.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ComboBoxItem.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"/>
@@ -53,5 +55,6 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/CopyToClipboard.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Phone.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Email.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/DownArrow.axaml"/>
     </Application.Styles>
 </Application>

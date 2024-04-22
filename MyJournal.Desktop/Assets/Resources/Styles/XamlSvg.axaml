@@ -15,4 +15,12 @@
 			</Transitions>
 		</Setter>
 	</Style>
+
+	<Style Selector="controls|XamlSvg.RenderTransformTransitions">
+		<Setter Property="Transitions">
+			<Transitions>
+				<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
+	</Style>
 </Styles>

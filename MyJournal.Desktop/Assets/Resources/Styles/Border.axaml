@@ -7,4 +7,11 @@
 			</Transitions>
 		</Setter>
 	</Style>
+	<Style Selector="Border.OpacityTransition">
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
+	</Style>
 </Styles>

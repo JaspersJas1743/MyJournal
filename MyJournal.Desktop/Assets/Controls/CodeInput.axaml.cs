@@ -88,7 +88,7 @@ public partial class CodeInput : UserControl
 		int iterationCount = Math.Min(val1: _codeCells.Count(), val2: codeCopy.Length);
 		for (int i = 0; i < iterationCount; ++i)
 			_codeCells.ElementAt(index: i).Text = codeCopy[index: i].ToString();
-		_codeCells.ElementAt(index: iterationCount - 1).Focus();
+		_codeCells.ElementAt(index: iterationCount).Focus();
 	}
 
 	protected override void OnLoaded(RoutedEventArgs e)

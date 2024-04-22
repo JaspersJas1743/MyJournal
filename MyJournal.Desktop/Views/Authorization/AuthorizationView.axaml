@@ -12,13 +12,11 @@
 					Classes="CenteredTextBlock PageSubheader" Grid.RowSpan="3"/>
 		<TextBlock	Grid.Row="2" Text="{Binding Error}" Classes="CenteredTextBlock ErrorMessage OpacityTransition"
 					Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
-		<controls:TextBoxWithError	Text="{Binding Login,Mode=TwoWay}" Grid.Row="4"
-									VerticalContentAlignment="Center" CornerRadius="30"
+		<controls:TextBoxWithError	Text="{Binding Login,Mode=TwoWay}"
 									HaveError="{Binding HaveError}"
-									Watermark="Логин" Classes="Login"/>
-		<controls:TextBoxWithError	Classes="PasswordBoxWithError" HaveError="{Binding HaveError}"
-									VerticalContentAlignment="Center" CornerRadius="30" Watermark="Пароль"
-									Text="{Binding Password,Mode=TwoWay}" Grid.Row="6"/>
+									Grid.Row="4" Watermark="Логин" Classes="Login"/>
+		<controls:TextBoxWithError	Watermark="Пароль" Text="{Binding Password,Mode=TwoWay}" Grid.Row="6"
+									Classes="PasswordBoxWithError" HaveError="{Binding HaveError}"/>
 		<Grid Grid.Row="8">
 			<CheckBox	HorizontalAlignment="Left" Content="Не выходить из аккаунта"
 						IsChecked="{Binding SaveCredential,Mode=TwoWay}"/>

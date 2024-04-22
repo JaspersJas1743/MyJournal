@@ -1,0 +1,30 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg">
+
+	<Style Selector="controls|XamlSvg.DownArrow">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V643 H854 V0 H0 Z">
+										<DrawingGroup Opacity="1" Transform="0.1,0,0,-0.1,0,643">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Geometry="F1 M854,643z M0,0z M305,6416C208,6385 112,6315 64,6238 25,6177 0,6087 0,6010 0,5918 28,5835 89,5745 515,5120 3934,193 3963,162 3987,137 4037,103 4080,82 4152,46 4159,45 4260,45 4361,45 4368,46 4440,82 4483,103 4533,137 4557,162 4586,193 8005,5120 8431,5745 8500,5847 8523,5923 8518,6036 8515,6109 8509,6137 8487,6182 8431,6297 8343,6376 8233,6410 8168,6430 8151,6430 4256,6429 1126,6429 337,6426 305,6416z" />
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Style Selector="^.UpArrow">
+			<Setter Property="RenderTransform" Value="rotate(180deg)"/>
+		</Style>
+	</Style>
+</Styles>

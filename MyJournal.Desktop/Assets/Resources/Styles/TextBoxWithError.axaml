@@ -5,6 +5,8 @@
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
         <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="CornerRadius" Value="30"/>
         <Setter Property="BorderThickness" Value="5"/>
         <Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
         <Setter Property="FontFeatures" Value="+lnum"/>
@@ -167,6 +169,18 @@
                     <Template>
                         <Grid RowDefinitions="0.275* 0.45* 0.275*">
                             <controls:XamlSvg Grid.Row="1" Margin="20 0 5 0" Classes="Login TransitionForeground"/>
+                        </Grid>
+                    </Template>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="^.Email">
+            <Setter Property="InnerLeftContent">
+                <Setter.Value>
+                    <Template>
+                        <Grid RowDefinitions="0.15* 0.7* 0.15*">
+                            <controls:XamlSvg Grid.Row="1" Margin="15 0 5 0" Classes="Email TransitionForeground"/>
                         </Grid>
                     </Template>
                 </Setter.Value>
