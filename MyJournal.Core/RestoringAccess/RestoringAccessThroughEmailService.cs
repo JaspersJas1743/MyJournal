@@ -32,7 +32,7 @@ public class RestoringAccessThroughEmailService(
 			) ?? throw new InvalidOperationException();
 			_userId = response.UserId;
 			return new VerificationResult(isSuccess: true, errorMessage: String.Empty);
-		} catch (Exception ex) when (ex is not TaskCanceledException)
+		} catch (ApiException ex)
 		{
 			return new VerificationResult(isSuccess: false, errorMessage: ex.Message);
 		}

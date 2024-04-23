@@ -38,7 +38,7 @@ public sealed class UserRegistrationService(
 			_userId = response.Id;
 			return true;
 		}
-		catch (Exception e)
+		catch (ApiException e)
 		{
 			return false;
 		}

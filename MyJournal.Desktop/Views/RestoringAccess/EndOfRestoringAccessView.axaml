@@ -2,17 +2,17 @@
 			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.RestoringAccess"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
 			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
-			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:EndOfRegistrationVM"
-			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.EndOfRegistrationView">
+			mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:EndOfRestoringAccessVM"
+			x:Class="MyJournal.Desktop.Views.RestoringAccess.EndOfRestoringAccessView">
 	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 140*, 175*, 35*, 90*" MaxHeight="550">
 		<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
 		<TextBlock	Grid.Row="1" Classes="CenteredTextBlock PageSubheader" xml:space="preserve"
-		>Ваш аккаунт успешно зарегистрирован.
+		>Пароль от Вашего аккаунта успешно изменен.
 Пройдите процесс авторизации и
-начните работу с MyJournal!
+продолжите работу с MyJournal!
 		</TextBlock>
 		<lottie:Lottie Grid.Row="2" Path="/Assets/Resources/Animations/Happy.json" />
 		<Viewbox Grid.Row="4">

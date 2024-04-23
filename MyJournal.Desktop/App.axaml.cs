@@ -132,6 +132,11 @@ public partial class App : Application
 			.AddSingleton<ChangingPasswordWhenRestoringAccessVM>()
 			.AddSingleton<ChangingPasswordWhenRestoringAccessModel>()
 			#endregion
+			#region Last step
+			.AddSingleton<EndOfRestoringAccessView>()
+			.AddSingleton<EndOfRestoringAccessVM>()
+			.AddSingleton<EndOfRestoringAccessModel>()
+			#endregion
 			#endregion
 			#region Main
 			.AddSingleton<MainView>()

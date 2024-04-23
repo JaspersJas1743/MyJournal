@@ -1,10 +1,12 @@
 using System;
-using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MyJournal.Core;
 using MyJournal.Core.RestoringAccess;
+using MyJournal.Core.Utilities.Api;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.ViewModels.RestoringAccess;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
 
@@ -42,9 +44,12 @@ public class ChangingPasswordWhenRestoringAccessModel : ModelWithErrorMessage
 		{
 			await RestoringAccessService.ResetPassword(newPassword: NewPassword);
 
-			// Переход на некст страницу
+			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+				newVMType: typeof(EndOfRestoringAccessVM),
+				animationType: AnimationType.DirectionToRight
+			));
 		}
-		catch (Exception e)
+		catch (ApiException e)
 		{
 			Error = e.Message;
 			Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);

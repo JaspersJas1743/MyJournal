@@ -1,15 +1,14 @@
 using System.Reactive;
 using System.Threading.Tasks;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels.Authorization;
 using ReactiveUI;
 
-namespace MyJournal.Desktop.Models.Registration;
+namespace MyJournal.Desktop.Models.RestoringAccess;
 
-public sealed class EndOfRegistrationModel : ModelBase
+public class EndOfRestoringAccessModel : ModelBase
 {
-	public EndOfRegistrationModel()
+	public EndOfRestoringAccessModel()
 	{
 		ToAuthorization = ReactiveCommand.CreateFromTask(execute: MoveToNextStep);
 	}
