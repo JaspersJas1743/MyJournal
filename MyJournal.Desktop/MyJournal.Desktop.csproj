@@ -82,8 +82,12 @@
         <DependentUpon>RestoringAccessThroughPhoneView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="Views\RestoringAccess\SecondStepOfRestoringAccessView.axaml.cs">
+      <Compile Update="Views\RestoringAccess\ConfirmationOfRestoringAccessView.axaml.cs">
         <DependentUpon>SecondStepOfRestoringAccessView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\RestoringAccess\ChangingPasswordWhenRestoringAccessView.axaml.cs">
+        <DependentUpon>ChangingPasswordWhenRestoringAccessView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

@@ -6,7 +6,7 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.ViewModels.RestoringAccess;
 
-public sealed class SecondStepOfRestoringAccessVM(SecondStepOfRestoringAccessModel model) : VMWithError(model: model)
+public sealed class ConfirmationOfRestoringAccessVM(ConfirmationOfRestoringAccessModel model) : VMWithError(model: model)
 {
 	public ReactiveCommand<Unit, Unit> ToNextStep => model.ToNextStep;
 

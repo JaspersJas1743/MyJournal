@@ -2,18 +2,21 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using MyJournal.Core;
 using MyJournal.Core.RestoringAccess;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.ViewModels.RestoringAccess;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
 
 namespace MyJournal.Desktop.Models.RestoringAccess;
 
-public class SecondStepOfRestoringAccessModel : ModelWithErrorMessage
+public class ConfirmationOfRestoringAccessModel : ModelWithErrorMessage
 {
 	private string _entryCode = String.Empty;
 
-	public SecondStepOfRestoringAccessModel()
+	public ConfirmationOfRestoringAccessModel()
 	{
 		ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep, canExecute: ValidationContext.Valid);
 	}
@@ -37,10 +40,13 @@ public class SecondStepOfRestoringAccessModel : ModelWithErrorMessage
 			Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);
 		else
 		{
-			// MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-			// 	newVMType: typeof(),
-			// 	directionOfTransitionAnimation: PageTransition.Direction.Left
-			// ));
+			ChangingPasswordWhenRestoringAccessVM newVM = (Application.Current as App)!.GetService<ChangingPasswordWhenRestoringAccessVM>();
+			newVM.RestoringAccessService = RestoringAccessService;
+
+			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+				newVM: newVM,
+				animationType: AnimationType.DirectionToRight
+			));
 		}
 	}
 

@@ -103,7 +103,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 
 			MessageBus.Current.SendMessage(message: new ChangeMainWindowVMEventArgs(
 				newVMType: typeof(MainVM),
-				directionOfTransitionAnimation: PageTransition.Direction.Left
+				animationType: AnimationType.DirectionToRight
 			));
 		}
 		catch (ApiException e)

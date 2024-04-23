@@ -11,14 +11,14 @@
 	<Style Selector="TransitioningContentControl.LeftDirection">
 		<Setter Property="PageTransition">
 			<Setter.Value>
-				<transitions:PageTransition AnimationDirection="Left" Duration="0:0:0.4"/>
+				<transitions:MyPageSlide AnimationDirection="Left" Orientation="Horizontal" Duration="0:0:0.4"/>
 			</Setter.Value>
 		</Setter>
 	</Style>
 	<Style Selector="TransitioningContentControl.RightDirection">
 		<Setter Property="PageTransition">
 			<Setter.Value>
-				<transitions:PageTransition AnimationDirection="Right" Duration="0:0:0.4"/>
+				<transitions:MyPageSlide AnimationDirection="Right" Orientation="Horizontal" Duration="0:0:0.4"/>
 			</Setter.Value>
 		</Setter>
 	</Style>

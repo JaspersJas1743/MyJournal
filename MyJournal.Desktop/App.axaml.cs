@@ -122,10 +122,15 @@ public partial class App : Application
 			.AddSingleton<RestoringAccessThroughPhoneVM>()
 			.AddSingleton<RestoringAccessThroughPhoneModel>()
 			#endregion
-			#region Second step
-			.AddSingleton<SecondStepOfRestoringAccessView>()
-			.AddSingleton<SecondStepOfRestoringAccessVM>()
-			.AddSingleton<SecondStepOfRestoringAccessModel>()
+			#region Confirmation code
+			.AddSingleton<ConfirmationOfRestoringAccessView>()
+			.AddSingleton<ConfirmationOfRestoringAccessVM>()
+			.AddSingleton<ConfirmationOfRestoringAccessModel>()
+			#endregion
+			#region Changing password
+			.AddSingleton<ChangingPasswordWhenRestoringAccessView>()
+			.AddSingleton<ChangingPasswordWhenRestoringAccessVM>()
+			.AddSingleton<ChangingPasswordWhenRestoringAccessModel>()
 			#endregion
 			#endregion
 			#region Main

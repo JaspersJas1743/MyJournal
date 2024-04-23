@@ -93,8 +93,10 @@
 		</Style>
 
 		<Style Selector="^.TransparentWithPointerover">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 			<Setter Property="Background" Value="Transparent"/>
 			<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 				<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
 			</Style>
 		</Style>

@@ -47,7 +47,7 @@ public class RestoringAccessThroughPhoneModel : ModelWithErrorMessage
 			Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);
 		else
 		{
-			SecondStepOfRestoringAccessVM newVM = (Application.Current as App)!.GetService<SecondStepOfRestoringAccessVM>();
+			ConfirmationOfRestoringAccessVM newVM = (Application.Current as App)!.GetService<ConfirmationOfRestoringAccessVM>();
 			newVM.RestoringAccessService = _restoringAccessService;
 
 			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(

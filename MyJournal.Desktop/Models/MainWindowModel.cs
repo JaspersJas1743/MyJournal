@@ -20,8 +20,8 @@ public class MainWindowModel : ModelBase
 		MessageBus.Current.Listen<ChangeMainWindowVMEventArgs>().Subscribe(onNext: args =>
 		{
 			Content = args.NewVM;
-			HaveRightDirection = args.DirectionOfTransitionAnimation == PageTransition.Direction.Right;
-			HaveLeftDirection = !HaveRightDirection;
+			HaveRightDirection = args.AnimationType == AnimationType.DirectionToLeft;
+			HaveLeftDirection = args.AnimationType == AnimationType.DirectionToRight;
 		});
 
 		Minimize = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Minimized);

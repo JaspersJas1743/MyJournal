@@ -4,8 +4,8 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.RestoringAccess"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-			mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:SecondStepOfRestoringAccessVM"
-			x:Class="MyJournal.Desktop.Views.RestoringAccess.SecondStepOfRestoringAccessView">
+			mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:ConfirmationOfRestoringAccessVM"
+			x:Class="MyJournal.Desktop.Views.RestoringAccess.ConfirmationOfRestoringAccessView">
 	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 130*, 30*, 10*, 90*, 15*, 90*" MaxHeight="500">
 		<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
 		<TextBlock	Grid.Row="1" Grid.RowSpan="3" Classes="CenteredTextBlock PageSubheader" Padding="10" xml:space="preserve"

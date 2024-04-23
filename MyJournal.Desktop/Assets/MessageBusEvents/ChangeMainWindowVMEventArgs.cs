@@ -7,9 +7,9 @@ namespace MyJournal.Desktop.Assets.MessageBusEvents;
 
 public sealed class ChangeMainWindowVMEventArgs(
 	Type newVMType,
-	PageTransition.Direction directionOfTransitionAnimation
+	AnimationType animationType
 ) : EventArgs
 {
 	public BaseVM NewVM { get; } = ((Application.Current as App)!.GetService(serviceType: newVMType) as BaseVM)!;
-	public PageTransition.Direction DirectionOfTransitionAnimation { get; } = directionOfTransitionAnimation;
+	public AnimationType AnimationType { get; } = animationType;
 }

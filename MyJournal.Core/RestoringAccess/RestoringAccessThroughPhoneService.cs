@@ -34,7 +34,7 @@ public class RestoringAccessThroughPhoneService(
 			) ?? throw new InvalidOperationException();
 			_userId = response.UserId;
 			return new VerificationResult(isSuccess: true, errorMessage: String.Empty);
-		} catch (Exception ex)
+		} catch (Exception ex) when (ex is not TaskCanceledException)
 		{
 			return new VerificationResult(isSuccess: false, errorMessage: ex.Message);
 		}
