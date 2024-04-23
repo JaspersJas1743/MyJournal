@@ -3,9 +3,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Registration;
+using MyJournal.Core.RestoringAccess;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
@@ -56,6 +56,8 @@ public partial class App : Application
 			.AddKeyedRegistrationCodeVerificationService(key: nameof(RegistrationCodeVerificationService))
 			.AddKeyedLoginVerificationService(key: nameof(LoginVerificationService))
 			.AddUserRegistrationService()
+			.AddKeyedRestoringAccessThroughEmailService(key: nameof(RestoringAccessThroughEmailService))
+			.AddKeyedRestoringAccessThroughPhoneService(key: nameof(RestoringAccessThroughPhoneService))
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()
@@ -110,9 +112,21 @@ public partial class App : Application
 			#endregion
 			#endregion
 			#region Restoring Access
+			#region Through email
 			.AddSingleton<RestoringAccessThroughEmailView>()
 			.AddSingleton<RestoringAccessThroughEmailVM>()
 			.AddSingleton<RestoringAccessThroughEmailModel>()
+			#endregion
+			#region Through phone
+			.AddSingleton<RestoringAccessThroughPhoneView>()
+			.AddSingleton<RestoringAccessThroughPhoneVM>()
+			.AddSingleton<RestoringAccessThroughPhoneModel>()
+			#endregion
+			#region Second step
+			.AddSingleton<SecondStepOfRestoringAccessView>()
+			.AddSingleton<SecondStepOfRestoringAccessVM>()
+			.AddSingleton<SecondStepOfRestoringAccessModel>()
+			#endregion
 			#endregion
 			#region Main
 			.AddSingleton<MainView>()

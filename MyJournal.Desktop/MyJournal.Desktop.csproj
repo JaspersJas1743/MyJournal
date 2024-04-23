@@ -78,6 +78,14 @@
         <DependentUpon>EndOfRegistrationView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\RestoringAccess\RestoringAccessThroughPhoneView.axaml.cs">
+        <DependentUpon>RestoringAccessThroughPhoneView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\RestoringAccess\SecondStepOfRestoringAccessView.axaml.cs">
+        <DependentUpon>SecondStepOfRestoringAccessView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

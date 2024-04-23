@@ -1,10 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:transitions="clr-namespace:MyJournal.Desktop.Assets.Resources.Transitions">
-	<Style Selector="TransitioningContentControl">
+	<Style Selector="TransitioningContentControl.CrossFade">
 		<Setter Property="PageTransition">
 			<Setter.Value>
-				<CrossFade Duration="0:0:0.1" />
+				<CrossFade Duration="0:0:0.2" />
 			</Setter.Value>
 		</Setter>
 	</Style>

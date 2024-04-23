@@ -13,7 +13,7 @@ public abstract class ModelWithErrorMessage : ValidatableModel
 	protected ModelWithErrorMessage()
 	{
 		this.WhenValueChanged(propertyAccessor: model => model.Error)
-			.Select(selector: error => !String.IsNullOrEmpty(value: error))
+			.Select(selector: error => !String.IsNullOrWhiteSpace(value: error))
 			.Subscribe(onNext: hasError => HaveError = hasError);
 
 		this.WhenValueChanged(propertyAccessor: model => model.HaveError)

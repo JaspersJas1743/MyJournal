@@ -12,6 +12,12 @@ public class WelcomeVM(WelcomeModel model) : BaseVM(model: model)
 		set => model.HaveLeftDirection = value;
 	}
 
+	public bool HaveCrossFade
+	{
+		get => model.HaveCrossFade;
+		set => model.HaveCrossFade = value;
+	}
+
 	public bool HaveRightDirection
 	{
 		get => model.HaveRightDirection;

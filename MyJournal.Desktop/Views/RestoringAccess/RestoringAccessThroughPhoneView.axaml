@@ -5,25 +5,24 @@
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.RestoringAccess"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
 			mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="800"
-			x:DataType="vm:RestoringAccessThroughEmailVM"
-			x:Class="MyJournal.Desktop.Views.RestoringAccess.RestoringAccessThroughEmailView">
+			x:DataType="vm:RestoringAccessThroughPhoneVM"
+			x:Class="MyJournal.Desktop.Views.RestoringAccess.RestoringAccessThroughPhoneView">
 	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 130*, 30*, 10*, 90*, 15*, 90*, 15*, 50*" MaxHeight="600">
 		<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
 		<TextBlock	Grid.Row="1" Classes="CenteredTextBlock PageSubheader" Margin="120 0">
-			Введите адрес эл. почты, к которому был привязан Ваш аккаунт
+			Введите номер телефона, к которому был привязан Ваш аккаунт
 		</TextBlock>
 		<TextBlock	Grid.Row="2" Classes="CenteredTextBlock ErrorMessage OpacityTransition" Text="{Binding Error}"
 					Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
-		<controls:EmailInput	Grid.Row="4" EntryEmail="{Binding Email}"
-								HaveError="{Binding HaveError}"
-								/>
+		<controls:PhoneNumberInput	Grid.Row="4" EntryPhone="{Binding Phone}"
+									HaveError="{Binding HaveError}"/>
 		<Viewbox Grid.Row="6">
 			<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor" Content="Продолжить →" Width="800"
 												Height="90" Command="{Binding ToNextStep}"/>
 		</Viewbox>
 		<Viewbox Grid.Row="8">
-			<Button Classes="SubheaderContent Corner20 TransparentWithPointerover" Content="Использовать номер телефона" Width="500"
-					Height="50" Command="{Binding ToRestoringAccessThroughPhone}"/>
+			<Button Classes="SubheaderContent Corner20 TransparentWithPointerover" Content="Использовать электронную почту" Width="500"
+					Height="50" Command="{Binding ToRestoringAccessThroughEmail}"/>
 		</Viewbox>
 	</Grid>
 </UserControl>

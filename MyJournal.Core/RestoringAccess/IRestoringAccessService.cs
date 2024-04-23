@@ -4,7 +4,7 @@ namespace MyJournal.Core.RestoringAccess;
 
 public interface IRestoringAccessService<T>
 {
-	Task<bool> VerifyCredential(
+	Task<VerificationResult> VerifyCredential(
 		Credentials<T> credentials,
 		CancellationToken cancellationToken = default(CancellationToken)
 	);

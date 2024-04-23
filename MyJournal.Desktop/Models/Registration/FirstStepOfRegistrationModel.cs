@@ -55,7 +55,7 @@ public class FirstStepOfRegistrationModel : ModelWithErrorMessage
 			newVM.SetRegistrationCode(code: EntryCode);
 
 			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-				newVM: newVM, directionOfTransitionAnimation: PageTransition.Direction.Left
+				newVM: newVM, animationType: AnimationType.DirectionToRight
 			));
 		}
 	}
@@ -64,7 +64,7 @@ public class FirstStepOfRegistrationModel : ModelWithErrorMessage
 	{
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 			newVMType: typeof(AuthorizationVM),
-			directionOfTransitionAnimation: PageTransition.Direction.Right
+			animationType: AnimationType.DirectionToLeft
 		));
 	}
 

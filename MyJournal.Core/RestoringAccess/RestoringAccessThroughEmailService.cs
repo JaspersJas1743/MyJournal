@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -17,7 +18,7 @@ public class RestoringAccessThroughEmailService(
 	private record VerifyCredentialResponse(int UserId);
 	private record ResetPasswordRequest(string NewPassword);
 
-	public async Task<bool> VerifyCredential(
+	public async Task<VerificationResult> VerifyCredential(
 		Credentials<User> credentials,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -30,10 +31,10 @@ public class RestoringAccessThroughEmailService(
 				cancellationToken: cancellationToken
 			) ?? throw new InvalidOperationException();
 			_userId = response.UserId;
-			return true;
+			return new VerificationResult(isSuccess: true, errorMessage: String.Empty);
 		} catch (Exception ex)
 		{
-			return false;
+			return new VerificationResult(isSuccess: false, errorMessage: ex.Message);
 		}
 	}
 
@@ -67,4 +68,13 @@ public class RestoringAccessThroughEmailService(
 			cancellationToken: cancellationToken
 		);
 	}
+}
+
+public static class RestoringAccessThroughEmailServiceExtension
+{
+	public static IServiceCollection AddRestoringAccessThroughEmailService(this IServiceCollection serviceCollection)
+		=> serviceCollection.AddScoped<IRestoringAccessService<User>, RestoringAccessThroughEmailService>();
+
+	public static IServiceCollection AddKeyedRestoringAccessThroughEmailService(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedScoped<IRestoringAccessService<User>, RestoringAccessThroughEmailService>(serviceKey: key);
 }

@@ -20,7 +20,7 @@ public sealed class EndOfRegistrationModel : ModelBase
 	{
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 			newVMType: typeof(AuthorizationVM),
-			directionOfTransitionAnimation: PageTransition.Direction.Left
+			animationType: AnimationType.DirectionToRight
 		));
 	}
 }

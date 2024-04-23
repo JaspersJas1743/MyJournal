@@ -39,9 +39,10 @@
 			</interactivity:Interaction.Behaviors>
 		</Image>
 		<Viewbox Grid.Row="1" Grid.RowSpan="3" x:Name="ContentOnView" >
-			<TransitioningContentControl	Classes.RightDirection="{Binding HaveRightDirection}"
-											Height="800" Width="750" Content="{Binding Path=Content}"
-											Classes.LeftDirection="{Binding HaveLeftDirection}">
+			<TransitioningContentControl	Classes.CrossFade="{Binding HaveCrossFade}"
+											Classes.RightDirection="{Binding HaveRightDirection}"
+											Classes.LeftDirection="{Binding HaveLeftDirection}"
+											Height="800" Width="750" Content="{Binding Path=Content}">
 				<interactivity:Interaction.Behaviors>
 					<responsive:AdaptiveBehavior SourceControl="{Binding $parent[Window]}" TargetControl="ContentOnView">
 						<responsive:AdaptiveClassSetter	MinWidth="0" MinWidthOperator="GreaterThanOrEqual" MaxWidth="1250"

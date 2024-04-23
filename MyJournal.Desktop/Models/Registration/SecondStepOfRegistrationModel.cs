@@ -8,7 +8,6 @@ using MyJournal.Core;
 using MyJournal.Core.Registration;
 using MyJournal.Core.Utilities;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
@@ -51,7 +50,7 @@ public sealed class SecondStepOfRegistrationModel : ModelWithErrorMessage
 
 			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 				newVMType: typeof(ThirdStepOfRegistrationVM),
-				directionOfTransitionAnimation: PageTransition.Direction.Left
+				animationType: AnimationType.DirectionToRight
 			));
 		}
 	}

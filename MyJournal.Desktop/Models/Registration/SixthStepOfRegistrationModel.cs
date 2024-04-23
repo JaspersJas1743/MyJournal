@@ -27,7 +27,7 @@ public sealed class SixthStepOfRegistrationModel : ModelBase
 	{
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 			newVMType: _selectedOption,
-			directionOfTransitionAnimation: PageTransition.Direction.Left
+			animationType: AnimationType.DirectionToRight
 		));
 	}
 

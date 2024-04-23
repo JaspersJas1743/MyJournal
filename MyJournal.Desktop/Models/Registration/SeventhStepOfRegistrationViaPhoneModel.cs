@@ -42,7 +42,7 @@ public sealed class SeventhStepOfRegistrationViaPhoneModel : ModelWithErrorMessa
 			await _registrationService.SetPhone(phone: Phone);
 			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 				newVMType: typeof(EndOfRegistrationVM),
-				directionOfTransitionAnimation: PageTransition.Direction.Left
+				animationType: AnimationType.DirectionToRight
 			));
 		}
 		catch (ApiException e)

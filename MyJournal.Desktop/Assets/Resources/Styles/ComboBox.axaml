@@ -1,20 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
-	<Design.PreviewWith>
-		<Border Padding="20">
-			<StackPanel Spacing="10" Width="1000" Height="500">
-				<Viewbox>
-					<ComboBox PlaceholderText="Select an item" Width="700" Height="100">
-						<ComboBoxItem>Item 1</ComboBoxItem>
-						<ComboBoxItem>Item 2</ComboBoxItem>
-						<ComboBoxItem>Item 3</ComboBoxItem>
-					</ComboBox>
-				</Viewbox>
-			</StackPanel>
-		</Border>
-	</Design.PreviewWith>
-
 	<Style Selector="ComboBox">
 		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 		<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
@@ -33,6 +19,7 @@
 	                <Border x:Name="Background"
 	                        Grid.Column="0"
 	                        Grid.ColumnSpan="2"
+							Classes="TransitionBorderBrush"
 	                        Background="{TemplateBinding Background}"
 	                        BorderBrush="{TemplateBinding BorderBrush}"
 	                        BorderThickness="{TemplateBinding BorderThickness}"
@@ -82,10 +69,11 @@
 	                        IsLightDismissEnabled="True"
 	                        InheritsTransform="True">
 	                    <Border x:Name="PopupBorder" ClipToBounds="True" Padding="-5"
+								Classes="TransitionBorderBrush OpacityTransition"
 	                            Background="{DynamicResource ComboBoxDropDownBackground}"
 	                            BorderBrush="{TemplateBinding BorderBrush}"
 	                            BorderThickness="{TemplateBinding BorderThickness}"
-	                            HorizontalAlignment="Stretch" CornerRadius="30" Classes="OpacityTransition"
+	                            HorizontalAlignment="Stretch" CornerRadius="30"
 								Opacity="{TemplateBinding IsDropDownOpen,Converter={StaticResource BoolToDoubleConverter}}"
 								>
 							<ScrollViewer	HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
@@ -100,8 +88,18 @@
 	        </ControlTemplate>
 	    </Setter>
 		<Style Selector="^:pointerover /template/ Border#Background">
-			<Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=Background}"/>
-			<Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=BorderBrush}"/>
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+		</Style>
+		<Style Selector="^.HaveError">
+			<Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+			<Style Selector="^ /template/ controls|XamlSvg#DropDownGlyph">
+				<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+			</Style>
+			<Style Selector="^:pointerover /template/ Border#Background">
+				<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+				<Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+			</Style>
 		</Style>
 		<Style Selector="^:focus-visible">
 			<Style Selector="^ /template/ Border#HighlightBackground">

@@ -11,6 +11,7 @@ public class WelcomeModel : ModelBase
 {
 	private bool _haveLeftDirection;
 	private bool _haveRightDirection;
+	private bool _haveCrossFade;
 	private BaseVM _content;
 
 	public WelcomeModel(AuthorizationVM authorizationVM)
@@ -19,8 +20,9 @@ public class WelcomeModel : ModelBase
 		MessageBus.Current.Listen<ChangeWelcomeVMContentEventArgs>().Subscribe(onNext: args =>
 		{
 			Content = args.NewVM;
-			HaveRightDirection = args.DirectionOfTransitionAnimation == PageTransition.Direction.Right;
-			HaveLeftDirection = !HaveRightDirection;
+			HaveCrossFade = args.AnimationType == AnimationType.CrossFade;
+			HaveRightDirection = args.AnimationType == AnimationType.DirectionToLeft;
+			HaveLeftDirection = args.AnimationType == AnimationType.DirectionToRight;
 		});
 	}
 
@@ -28,6 +30,12 @@ public class WelcomeModel : ModelBase
 	{
 		get => _content;
 		private set => this.RaiseAndSetIfChanged(backingField: ref _content, newValue: value);
+	}
+
+	public bool HaveCrossFade
+	{
+		get => _haveCrossFade;
+		set => this.RaiseAndSetIfChanged(backingField: ref _haveCrossFade, newValue: value);
 	}
 
 	public bool HaveLeftDirection

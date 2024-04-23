@@ -3,29 +3,22 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MyJournal.Core;
-using MyJournal.Core.Registration;
-using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Resources.Transitions;
-using MyJournal.Desktop.ViewModels.Registration;
+using MyJournal.Core.RestoringAccess;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
 
-namespace MyJournal.Desktop.Models.Registration;
+namespace MyJournal.Desktop.Models.RestoringAccess;
 
-public sealed class FifthStepOfRegistrationModel : ModelWithErrorMessage
+public class SecondStepOfRestoringAccessModel : ModelWithErrorMessage
 {
-	private readonly IRegistrationService<User> _registrationService;
-
 	private string _entryCode = String.Empty;
 
-	public FifthStepOfRegistrationModel(
-		IRegistrationService<User> registrationService
-	)
+	public SecondStepOfRestoringAccessModel()
 	{
-		_registrationService = registrationService;
-
 		ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep, canExecute: ValidationContext.Valid);
 	}
+
+	public IRestoringAccessService<User> RestoringAccessService { get; set; }
 
 	public string EntryCode
 	{
@@ -39,15 +32,15 @@ public sealed class FifthStepOfRegistrationModel : ModelWithErrorMessage
 
 	public async Task MoveToNextStep()
 	{
-		HaveError = !await _registrationService.VerifyAuthenticationCode(code: EntryCode);
+		HaveError = !await RestoringAccessService.VerifyAuthenticationCode(code: EntryCode);
 		if (HaveError)
 			Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);
 		else
 		{
-			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-				newVMType: typeof(SixthStepOfRegistrationVM),
-				animationType: AnimationType.DirectionToRight
-			));
+			// MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+			// 	newVMType: typeof(),
+			// 	directionOfTransitionAnimation: PageTransition.Direction.Left
+			// ));
 		}
 	}
 

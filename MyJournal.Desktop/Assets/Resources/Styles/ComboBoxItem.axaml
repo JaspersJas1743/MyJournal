@@ -31,25 +31,25 @@
 			</ControlTemplate>
 		</Setter>
 		<Style Selector="^:nth-child(1) /template/ Border#PART_Border">
-			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}"/>
 			<Setter Property="BorderThickness" Value="5 5 5 0"/>
 			<Setter Property="CornerRadius" Value="30 30 0 0"/>
 			<Style Selector="^:pointerover">
-				<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+				<Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}"/>
 				<Setter Property="BorderThickness" Value="5 5 5 0"/>
 				<Setter Property="CornerRadius" Value="30 30 0 0"/>
 			</Style>
 		</Style>
 		<Style Selector="^ /template/ Border#PART_Border">
-			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}"/>
 			<Setter Property="BorderThickness" Value="5 0 5 0"/>
 		</Style>
 		<Style Selector="^:nth-last-child(1) /template/ Border#PART_Border">
-			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}"/>
 			<Setter Property="BorderThickness" Value="5 0 5 5"/>
 			<Setter Property="CornerRadius" Value="0 0 30 30"/>
 			<Style Selector="^:pointerover">
-				<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+				<Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}"/>
 				<Setter Property="BorderThickness" Value="5 0 5 5"/>
 				<Setter Property="CornerRadius" Value="0 0 30 30"/>
 			</Style>
@@ -58,15 +58,15 @@
 			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
 			<Style Selector="^ /template/ ContentPresenter">
 				<Setter Property="Background" Value="Transparent" />
-				<Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=BorderBrush}" />
-				<Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=Foreground}" />
+				<Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}"/>
+				<Setter Property="Foreground" Value="{Binding $parent[ComboBox].Foreground}"/>
 			</Style>
 		</Style>
 		<Style Selector="^:selected">
 			<Style Selector="^ /template/ ContentPresenter">
 				<Setter Property="Background" Value="Transparent" />
-				<Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=BorderBrush}" />
-				<Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=Foreground}" />
+				<Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}"/>
+				<Setter Property="Foreground" Value="{Binding $parent[ComboBox].Foreground}"/>
 			</Style>
 		</Style>
 	</Style>

@@ -68,7 +68,7 @@ public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 		nextStep.Code = codes.AuthenticationCode;
 
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-			newVM: nextStep, directionOfTransitionAnimation: PageTransition.Direction.Left
+			newVM: nextStep, animationType: AnimationType.DirectionToRight
 		));
 	}
 

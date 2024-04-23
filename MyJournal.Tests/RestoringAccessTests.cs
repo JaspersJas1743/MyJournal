@@ -78,8 +78,8 @@ public class RestoringAccessTests
 		{
 			Phone = "ivanivanovich@mail.ru"
 		};
-		bool isVerified = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		Assert.That(actual: isVerified, expression: Is.False);
+		VerificationResult result = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
+		Assert.That(actual: result.IsSuccess, expression: Is.False);
 	}
 
 	[Test]
@@ -133,7 +133,7 @@ public class RestoringAccessTests
 		{
 			Phone = "+7(910)952-0835"
 		};
-		bool isVerified = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
-		Assert.That(actual: isVerified, expression: Is.False);
+		VerificationResult result = await userRegistrationService.VerifyCredential(credentials: emailCredentials);
+		Assert.That(actual: result.IsSuccess, expression: Is.False);
 	}
 }

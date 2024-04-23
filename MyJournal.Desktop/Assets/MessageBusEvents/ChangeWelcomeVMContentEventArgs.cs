@@ -1,24 +1,30 @@
 using System;
 using Avalonia;
-using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels;
 
 namespace MyJournal.Desktop.Assets.MessageBusEvents;
 
+public enum AnimationType
+{
+	CrossFade,
+	DirectionToLeft,
+	DirectionToRight
+}
+
 public sealed class ChangeWelcomeVMContentEventArgs : EventArgs
 {
-	public ChangeWelcomeVMContentEventArgs(Type newVMType, PageTransition.Direction directionOfTransitionAnimation)
+	public ChangeWelcomeVMContentEventArgs(Type newVMType, AnimationType animationType)
 	{
 		NewVM = ((Application.Current as App)!.GetService(serviceType: newVMType) as BaseVM)!;
-		DirectionOfTransitionAnimation = directionOfTransitionAnimation;
+		AnimationType = animationType;
 	}
 
-	public ChangeWelcomeVMContentEventArgs(BaseVM newVM, PageTransition.Direction directionOfTransitionAnimation)
+	public ChangeWelcomeVMContentEventArgs(BaseVM newVM, AnimationType animationType)
 	{
 		NewVM = newVM;
-		DirectionOfTransitionAnimation = directionOfTransitionAnimation;
+		AnimationType = animationType;
 	}
 
 	public BaseVM NewVM { get; }
-	public PageTransition.Direction DirectionOfTransitionAnimation { get; }
+	public AnimationType AnimationType { get; }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -17,7 +18,7 @@ public class RestoringAccessThroughPhoneService(
 	private record VerifyCredentialResponse(int UserId);
 	private record ResetPasswordRequest(string NewPassword);
 
-	public async Task<bool> VerifyCredential(
+	public async Task<VerificationResult> VerifyCredential(
 		Credentials<User> credentials,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -32,10 +33,10 @@ public class RestoringAccessThroughPhoneService(
 				cancellationToken: cancellationToken
 			) ?? throw new InvalidOperationException();
 			_userId = response.UserId;
-			return true;
+			return new VerificationResult(isSuccess: true, errorMessage: String.Empty);
 		} catch (Exception ex)
 		{
-			return false;
+			return new VerificationResult(isSuccess: false, errorMessage: ex.Message);
 		}
 	}
 
@@ -69,4 +70,13 @@ public class RestoringAccessThroughPhoneService(
 			cancellationToken: cancellationToken
 		);
 	}
+}
+
+public static class RestoringAccessThroughPhoneServiceExtension
+{
+	public static IServiceCollection AddRestoringAccessThroughPhoneService(this IServiceCollection serviceCollection)
+		=> serviceCollection.AddScoped<IRestoringAccessService<User>, RestoringAccessThroughPhoneService>();
+
+	public static IServiceCollection AddKeyedRestoringAccessThroughPhoneService(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedScoped<IRestoringAccessService<User>, RestoringAccessThroughPhoneService>(serviceKey: key);
 }

@@ -42,7 +42,7 @@ public sealed class SeventhStepOfRegistrationViaEmailModel : ModelWithErrorMessa
 			await _registrationService.SetEmail(email: Email);
 			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 				newVMType: typeof(EndOfRegistrationVM),
-				directionOfTransitionAnimation: PageTransition.Direction.Left
+				animationType: AnimationType.DirectionToRight
 			));
 		}
 		catch (ApiException e)

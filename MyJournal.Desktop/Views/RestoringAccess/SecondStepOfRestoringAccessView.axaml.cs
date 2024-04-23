@@ -2,8 +2,8 @@ using Avalonia.Controls;
 
 namespace MyJournal.Desktop.Views.RestoringAccess;
 
-public partial class RestoringAccessThroughEmailView : UserControl
+public partial class SecondStepOfRestoringAccessView : UserControl
 {
-	public RestoringAccessThroughEmailView()
+	public SecondStepOfRestoringAccessView()
 		=> InitializeComponent();
 }

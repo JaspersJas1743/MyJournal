@@ -14,75 +14,89 @@
 				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
 			</Transitions>
 		</Setter>
-
 		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="{TemplateBinding Background}" />
 			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
 		</Style>
-
 		<Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="{TemplateBinding Background}" />
 			<Setter Property="Opacity" Value="0.7"/>
 		</Style>
-	</Style>
+		<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="^.TextButton">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid RowDefinitions="auto, auto">
+						<TextBlock Grid.Row="0" Text="{TemplateBinding Content}"
+									Foreground="{TemplateBinding Foreground}"
+									Padding="{TemplateBinding Padding}">
+						</TextBlock>
+						<Border Grid.Row="1" Height="1" Background="{TemplateBinding Foreground}"
+								Margin="0 -3 0 0"></Border>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
 
-	<Style Selector="Button.TextButton">
-		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-		<Setter Property="Padding" Value="0"/>
-		<Setter Property="VerticalContentAlignment" Value="Center"/>
-		<Setter Property="HorizontalContentAlignment" Value="Center"/>
-		<Setter Property="HorizontalAlignment" Value="Center"/>
-		<Setter Property="VerticalAlignment" Value="Center"/>
-		<Setter Property="Template">
-			<ControlTemplate>
-				<Grid RowDefinitions="auto, auto">
-					<TextBlock Grid.Row="0" Text="{TemplateBinding Content}"
-								Foreground="{TemplateBinding Foreground}"
-								Padding="{TemplateBinding Padding}">
-					</TextBlock>
-					<Border Grid.Row="1" Height="1" Background="{TemplateBinding Foreground}"
-							Margin="0 -3 0 0"></Border>
-				</Grid>
-			</ControlTemplate>
-		</Setter>
-	</Style>
+		<Style Selector="^.CopyButton">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+						<TextBlock	Foreground="{DynamicResource ForegroundColor}"
+									FontSize="28" Text="{TemplateBinding Content}"
+									VerticalAlignment="Center"/>
+						<controls:XamlSvg Classes="CopyToClipboard" Margin="10" VerticalAlignment="Center"/>
+					</StackPanel>
+				</ControlTemplate>
+			</Setter>
+		</Style>
 
-	<Style Selector="Button.CopyButton">
-		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-		<Setter Property="Padding" Value="0"/>
-		<Setter Property="VerticalContentAlignment" Value="Center"/>
-		<Setter Property="HorizontalContentAlignment" Value="Center"/>
-		<Setter Property="HorizontalAlignment" Value="Center"/>
-		<Setter Property="VerticalAlignment" Value="Center"/>
-		<Setter Property="Template">
-			<ControlTemplate>
-				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-					<TextBlock	Foreground="{DynamicResource ForegroundColor}"
-								FontSize="28" Text="{TemplateBinding Content}"
-								VerticalAlignment="Center"/>
-					<controls:XamlSvg Classes="CopyToClipboard" Margin="10" VerticalAlignment="Center"/>
-				</StackPanel>
-			</ControlTemplate>
-		</Setter>
-	</Style>
+		<Style Selector="^.HeaderContent">
+			<Setter Property="FontSize" Value="36"></Setter>
+		</Style>
 
-	<Style Selector="Button.HeaderContent">
-		<Setter Property="FontSize" Value="36"></Setter>
-	</Style>
+		<Style Selector="^.SubheaderContent">
+			<Setter Property="FontSize" Value="24"></Setter>
+		</Style>
 
-	<Style Selector="Button.SubheaderContent">
-		<Setter Property="FontSize" Value="24"></Setter>
-	</Style>
+		<Style Selector="^.Corner30">
+			<Setter Property="CornerRadius" Value="30"></Setter>
+		</Style>
+		<Style Selector="^.Corner20">
+			<Setter Property="CornerRadius" Value="20"></Setter>
+		</Style>
 
-	<Style Selector="Button.Corner30">
-		<Setter Property="CornerRadius" Value="30"></Setter>
-	</Style>
+		<Style Selector="^.MainAccentColor">
+			<Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
+		</Style>
 
-	<Style Selector="Button.MainAccentColor">
-		<Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
-	</Style>
+		<Style Selector="^.SecondaryAccentColor">
+			<Setter Property="Background" Value="{DynamicResource SecondaryAccentColor}"/>
+		</Style>
 
-	<Style Selector="Button.SecondaryAccentColor">
-		<Setter Property="Background" Value="{DynamicResource SecondaryAccentColor}"/>
+		<Style Selector="^.TransparentWithPointerover">
+			<Setter Property="Background" Value="Transparent"/>
+			<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+			</Style>
+		</Style>
 	</Style>
 </Styles>

@@ -4,7 +4,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DynamicData.Binding;
 using Microsoft.Extensions.DependencyInjection;
 using MsBox.Avalonia.Enums;
 using MyJournal.Core;
@@ -74,7 +73,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 	{
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 			newVMType: typeof(FirstStepOfRegistrationVM),
-			directionOfTransitionAnimation: PageTransition.Direction.Left
+			animationType: AnimationType.DirectionToRight
 		));
 	}
 
@@ -82,7 +81,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 	{
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 			newVMType: typeof(RestoringAccessThroughEmailVM),
-			directionOfTransitionAnimation: PageTransition.Direction.Left
+			animationType: AnimationType.CrossFade
 		));
 	}
 

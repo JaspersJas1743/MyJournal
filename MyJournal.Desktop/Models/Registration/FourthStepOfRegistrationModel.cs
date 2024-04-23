@@ -52,7 +52,7 @@ public sealed class FourthStepOfRegistrationModel : ModelBase
 	{
 		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
 			newVMType: typeof(FifthStepOfRegistrationVM),
-			directionOfTransitionAnimation: PageTransition.Direction.Left
+			animationType: AnimationType.DirectionToRight
 		));
 	}
 

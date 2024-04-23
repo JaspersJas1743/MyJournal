@@ -46,14 +46,14 @@ public partial class EmailInput : UserControl
 	{
 		base.OnInitialized();
 
-		PART_EmailName.Focus();
-
 		PART_Domain.ItemsSource = _domains;
 
 		if (!String.IsNullOrWhiteSpace(value: EntryEmail))
 			SetEmail();
 		else
 			PART_Domain.SelectedIndex = 0;
+
+		PART_EmailName.Focus();
 	}
 
 	private void OnEmailNameChanged(object? sender, TextChangedEventArgs e)
