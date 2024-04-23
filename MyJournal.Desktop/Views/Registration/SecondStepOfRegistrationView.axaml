@@ -3,7 +3,21 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Registration"
-			d:DesignWidth="800" d:DesignHeight="450" x:DataType="vm:SecondStepOfRegistrationVM"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			d:DesignWidth="750" d:DesignHeight="800" x:DataType="vm:SecondStepOfRegistrationVM"
 			mc:Ignorable="d" x:Class="MyJournal.Desktop.Views.Registration.SecondStepOfRegistrationView">
-	<Button Content="Назад" Command="{Binding ToBack}"></Button>
+	<Grid Classes="WelcomeContentMargin" RowDefinitions="auto, 130*, 30*, 10*, 90*, 10*, 90*" MaxHeight="475">
+		<TextBlock	Grid.Row="0" Text="Добро пожаловать в MyJournal!" Classes="CenteredTextBlock PageHeader"/>
+		<TextBlock	Grid.Row="1" Text="Введите логин, который будет использоваться для последующего входа в Ваш аккаунт"
+					Classes="CenteredTextBlock PageSubheader" Grid.RowSpan="3"/>
+		<TextBlock	Grid.Row="2" Classes="CenteredTextBlock ErrorMessage OpacityTransition" Text="Данный логин не может быть занят."
+					Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"/>
+		<controls:TextBoxWithError	Text="{Binding Login,Mode=TwoWay}" Grid.Row="4"
+									HaveError="{Binding HaveError}" Classes="Login"
+									VerticalContentAlignment="Center" CornerRadius="30" Watermark="Логин"/>
+		<Viewbox Grid.Row="6">
+			<controls:ButtonWithAnimatedCommand Classes="HeaderContent Corner30 MainAccentColor" Content="Продолжить →" Width="800"
+												Height="90" Command="{Binding ToNextStep}"/>
+		</Viewbox>
+	</Grid>
 </UserControl>

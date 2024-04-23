@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			x:Class="MyJournal.Desktop.Assets.Controls.PhoneNumberInput"
+			x:Name="ThisControl">
+	<Viewbox>
+		<StackPanel Height="90" Orientation="Horizontal" x:Name="Panel">
+			<TextBlock Text="+7("/>
+			<MaskedTextBox  FontSize="56" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}" Classes="CodeEntryCell"
+							x:Name="FirstPartOfNumber" Mask="000" Width="140" PastingFromClipboard="OnPastingToCellFromClipboard"/>
+			<TextBlock Text=")"/>
+			<MaskedTextBox  FontSize="56" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}" Classes="CodeEntryCell"
+							x:Name="SecondPartOfNumber" Mask="000" Width="140" PastingFromClipboard="OnPastingToCellFromClipboard"/>
+			<TextBlock Text="-"/>
+			<MaskedTextBox  FontSize="56" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}" Classes="CodeEntryCell"
+							x:Name="ThirdPartOfNumber" Mask="0000" Width="185" PastingFromClipboard="OnPastingToCellFromClipboard"/>
+		</StackPanel>
+	</Viewbox>
+</UserControl>

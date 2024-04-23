@@ -23,12 +23,14 @@
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.0.10.6" />
+        <PackageReference Include="Avalonia.Xaml.Interactions.Responsive" Version="11.0.10.6" />
         <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.10.6" />
         <PackageReference Include="GnomeStack.Secrets.OperatingSystem" Version="0.1.6" />
         <PackageReference Include="MessageBox.Avalonia" Version="3.1.5.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+        <PackageReference Include="ReactiveUI.Validation" Version="3.1.7" />
         <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     </ItemGroup>
 
@@ -46,6 +48,34 @@
       </Compile>
       <Compile Update="Views\MainWindow.axaml.cs">
         <DependentUpon>MainWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\ThirdStepOfRegistrationView.axaml.cs">
+        <DependentUpon>ThirdStepOfRegistrationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\FourthStepOfRegistrationView.axaml.cs">
+        <DependentUpon>FourStepOfRegistrationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\FifthStepOfRegistrationView.axaml.cs">
+        <DependentUpon>FiveStepOfRegistrationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\SixthStepOfRegistrationView.axaml.cs">
+        <DependentUpon>SixthStepOfRegistrationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\SeventhStepOfRegistrationViaPhoneView.axaml.cs">
+        <DependentUpon>SeventhStepOfRegistrationViaPhoneView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\SeventhStepOfRegistrationViaEmailView.axaml.cs">
+        <DependentUpon>SeventhStepOfRegistrationViaEmailView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Registration\EndOfRegistrationView.axaml.cs">
+        <DependentUpon>EndOfRegistrationView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

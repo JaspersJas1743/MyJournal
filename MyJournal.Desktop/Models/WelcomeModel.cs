@@ -1,8 +1,8 @@
 using System;
-using DynamicData.Binding;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
-using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models;
@@ -15,20 +15,19 @@ public class WelcomeModel : ModelBase
 
 	public WelcomeModel(AuthorizationVM authorizationVM)
 	{
-		authorizationVM.Presenter = this;
 		Content = authorizationVM;
-		this.WhenValueChanged(propertyAccessor: model => model.Content)
-			.Subscribe(onNext: content =>
-			{
-				HaveLeftDirection = content is FirstStepOfRegistrationVM { HasMoveToNextStep: false };
-				HaveRightDirection = !HaveLeftDirection;
-			});
+		MessageBus.Current.Listen<ChangeWelcomeVMContentEventArgs>().Subscribe(onNext: args =>
+		{
+			Content = args.NewVM;
+			HaveRightDirection = args.DirectionOfTransitionAnimation == PageTransition.Direction.Right;
+			HaveLeftDirection = !HaveRightDirection;
+		});
 	}
 
 	public BaseVM Content
 	{
 		get => _content;
-		set => this.RaiseAndSetIfChanged(backingField: ref _content, newValue: value);
+		private set => this.RaiseAndSetIfChanged(backingField: ref _content, newValue: value);
 	}
 
 	public bool HaveLeftDirection

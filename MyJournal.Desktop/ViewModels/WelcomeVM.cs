@@ -4,11 +4,7 @@ namespace MyJournal.Desktop.ViewModels;
 
 public class WelcomeVM(WelcomeModel model) : BaseVM(model: model)
 {
-	public BaseVM Content
-	{
-		get => model.Content;
-		set => model.Content = value;
-	}
+	public BaseVM Content => model.Content;
 
 	public bool HaveLeftDirection
 	{

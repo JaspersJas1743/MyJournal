@@ -1,10 +1,12 @@
 using System.Reactive;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels.Authorization;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.RestoringAccess;
 
-public class RestoringAccessThroughEmailModel : Drawable
+public class RestoringAccessThroughEmailModel : ModelBase
 {
 	public RestoringAccessThroughEmailModel()
 	{
@@ -14,5 +16,10 @@ public class RestoringAccessThroughEmailModel : Drawable
 	public ReactiveCommand<Unit, Unit> ToAuthorization { get; }
 
 	public void MoveToAuthorization()
-		=> MoveTo<AuthorizationVM>();
+	{
+		MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
+			newVMType: typeof(AuthorizationVM),
+			directionOfTransitionAnimation: PageTransition.Direction.Right
+		));
+	}
 }

@@ -1,6 +1,6 @@
 namespace MyJournal.Desktop.ViewModels.RestoringAccess;
 
-public class RestoringAccessThroughPhoneVM
+public sealed class RestoringAccessThroughPhoneVM : BaseVM
 {
 	
 }

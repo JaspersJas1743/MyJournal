@@ -1,0 +1,63 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+	<Design.PreviewWith>
+		<StackPanel Spacing="15" Margin="20" Orientation="Horizontal">
+			<controls:SelectionCard Header="Телефон" Width="165" Height="200">
+				<controls:SelectionCard.Content>
+					<controls:XamlSvg Classes="Phone"/>
+				</controls:SelectionCard.Content>
+			</controls:SelectionCard>
+			<controls:SelectionCard Header="Эл. почта" Width="165" Height="200" IsChecked="True">
+				<controls:SelectionCard.Content>
+					<controls:XamlSvg Classes="Email"/>
+				</controls:SelectionCard.Content>
+			</controls:SelectionCard>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="controls|SelectionCard">
+	    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+	    <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}" />
+		<Setter Property="CornerRadius" Value="20"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+		<Setter Property="BorderThickness" Value="5"/>
+	    <Setter Property="Template">
+	        <ControlTemplate>
+	            <Border Background="{TemplateBinding Background}" x:Name="PART_Border"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="{TemplateBinding CornerRadius}"
+						BorderBrush="{TemplateBinding BorderBrush}">
+					<Grid RowDefinitions="35*, 20*, 125*, 20*" ColumnDefinitions="20*, 125*, 20*">
+						<TextBlock	FontSize="20" x:Name="PART_CardHeader" Grid.Row="0" Grid.Column="0"
+									Text="{TemplateBinding Header}" Grid.ColumnSpan="3"
+									HorizontalAlignment="Center" VerticalAlignment="Bottom"
+									Foreground="{TemplateBinding Foreground}"/>
+						<ContentPresenter	Foreground="{TemplateBinding Foreground}" x:Name="PART_CardContent"
+											Grid.Row="2" Grid.Column="1" Content="{TemplateBinding Content}"/>
+					</Grid>
+				</Border>
+	        </ControlTemplate>
+	    </Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="BorderBrush" Duration="0:0:0.1"/>
+				<BrushTransition Property="Background"  Duration="0:0:0.1"/>
+				<BrushTransition Property="Foreground"  Duration="0:0:0.1"/>
+			</Transitions>
+		</Setter>
+		<Style Selector="^:checked">
+			<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeOnControlColor}"/>
+			<Setter Property="Background" Value="{DynamicResource SelectionControlColor}"/>
+			<Style Selector="^ /template/ ContentPresenter#PART_CardContent">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+		</Style>
+		<Style Selector="^:unchecked">
+			<Style Selector="^ /template/ ContentPresenter#PART_CardContent">
+				<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
+			</Style>
+		</Style>
+	</Style>
+</Styles>

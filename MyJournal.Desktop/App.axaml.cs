@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Registration;
-using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
@@ -31,7 +30,7 @@ namespace MyJournal.Desktop;
 
 public partial class App : Application
 {
-	private readonly IServiceProvider _services;
+	private readonly ServiceProvider _services;
 
 	public App()
 	{
@@ -50,36 +49,80 @@ public partial class App : Application
 			.AddApiClient()
 			.AddGoogleAuthenticator()
 			.AddFileService()
+			.AddKeyedAuthorizationWithCredentialsService(key: nameof(AuthorizationWithCredentialsService))
+			.AddKeyedAuthorizationWithTokenService(key: nameof(AuthorizationWithTokenService))
 			.AddConfigurationService()
 			.AddMessageService()
+			.AddKeyedRegistrationCodeVerificationService(key: nameof(RegistrationCodeVerificationService))
+			.AddKeyedLoginVerificationService(key: nameof(LoginVerificationService))
+			.AddUserRegistrationService()
 			#endregion
 			#region Authorization
-			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: nameof(AuthorizationWithCredentialsService))
-			.AddKeyedSingleton<IAuthorizationService<User>, AuthorizationWithTokenService>(serviceKey: nameof(AuthorizationWithTokenService))
 			.AddSingleton<AuthorizationView>()
 			.AddSingleton<AuthorizationVM>()
 			.AddSingleton<AuthorizationModel>()
 			#endregion
 			#region Registration
-			.AddTransient<IVerificationService<Credentials<User>>, RegistrationCodeVerificationService>()
+			#region First step
 			.AddSingleton<FirstStepOfRegistrationView>()
 			.AddSingleton<FirstStepOfRegistrationVM>()
 			.AddSingleton<FirstStepOfRegistrationModel>()
+			#endregion
+			#region Second step
 			.AddSingleton<SecondStepOfRegistrationView>()
 			.AddSingleton<SecondStepOfRegistrationVM>()
 			.AddSingleton<SecondStepOfRegistrationModel>()
 			#endregion
+			#region Third step
+			.AddSingleton<ThirdStepOfRegistrationView>()
+			.AddSingleton<ThirdStepOfRegistrationVM>()
+			.AddSingleton<ThirdStepOfRegistrationModel>()
+			#endregion
+			#region Fourth step
+			.AddSingleton<FourthStepOfRegistrationView>()
+			.AddSingleton<FourthStepOfRegistrationVM>()
+			.AddSingleton<FourthStepOfRegistrationModel>()
+			#endregion
+			#region Fifth step
+			.AddSingleton<FifthStepOfRegistrationView>()
+			.AddSingleton<FifthStepOfRegistrationVM>()
+			.AddSingleton<FifthStepOfRegistrationModel>()
+			#endregion
+			#region Sixth step
+			.AddSingleton<SixthStepOfRegistrationView>()
+			.AddSingleton<SixthStepOfRegistrationVM>()
+			.AddSingleton<SixthStepOfRegistrationModel>()
+			#endregion
+			#region Seventh step via phone
+			.AddSingleton<SeventhStepOfRegistrationViaPhoneView>()
+			.AddSingleton<SeventhStepOfRegistrationViaPhoneVM>()
+			.AddSingleton<SeventhStepOfRegistrationViaPhoneModel>()
+			#endregion
+			#region Seventh step via email
+			.AddSingleton<SeventhStepOfRegistrationViaEmailView>()
+			.AddSingleton<SeventhStepOfRegistrationViaEmailVM>()
+			.AddSingleton<SeventhStepOfRegistrationViaEmailModel>()
+			#endregion
+			#region End of registration
+			.AddSingleton<EndOfRegistrationView>()
+			.AddSingleton<EndOfRegistrationVM>()
+			.AddSingleton<EndOfRegistrationModel>()
+			#endregion
+			#endregion
 			#region Restoring Access
 			.AddSingleton<RestoringAccessThroughEmailView>()
 			.AddSingleton<RestoringAccessThroughEmailVM>()
-			.AddSingleton<RestoringAccessThroughEmailModel>();
+			.AddSingleton<RestoringAccessThroughEmailModel>()
+			#endregion
+			#region Main
+			.AddSingleton<MainView>()
+			.AddSingleton<MainVM>()
+			.AddSingleton<MainModel>();
 			#endregion
 
-#pragma warning disable CA1416
-		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddSingleton<ICredentialStorageService, WindowsCredentialStorageService>());
-		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddSingleton<ICredentialStorageService, LinuxCredentialStorageService>());
-		PlatformDetector.RunIfCurrentPlatformIsMacOS(action: () => services.AddSingleton<ICredentialStorageService, MacOsCredentialStorageService>());
-#pragma warning restore CA1416
+		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddWindowsCredentialStorageService());
+		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddLinuxCredentialStorageService());
+		PlatformDetector.RunIfCurrentPlatformIsMacOS(action: () => services.AddMacOsCredentialStorageService());
 
 		_services = services.BuildServiceProvider();
 	}
@@ -110,7 +153,13 @@ public partial class App : Application
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			desktop.MainWindow = GetService<MainWindowView>();
-			desktop.MainWindow.DataContext = GetService<MainWindowVM>();
+			MainWindowVM mainWindowVM = GetService<MainWindowVM>();
+			// ICredentialStorageService credentialStorageService = GetService<ICredentialStorageService>();
+			// UserCredential credential = credentialStorageService.Get();
+			// if (credential != UserCredential.Empty)
+			// 	mainWindowVM.MainVM = GetService<MainVM>();
+
+			desktop.MainWindow.DataContext = mainWindowVM;
 		}
 
 		base.OnFrameworkInitializationCompleted();

@@ -1,0 +1,73 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+	<Style Selector="ComboBoxItem">
+		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+		<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+		<Setter Property="BorderThickness" Value="5"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="FontFeatures" Value="+lnum"/>
+		<Setter Property="FontSize" Value="24"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="FocusAdorner" Value="{x:Null}" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border x:Name="PART_Border" Background="{TemplateBinding Background}">
+					<Grid ColumnDefinitions="15*, 20*, 10*, 500*" Height="70" Background="Transparent">
+						<controls:XamlSvg	Grid.Column="1" Width="20" Height="20" Classes="CheckMark" HorizontalAlignment="Center"
+											Foreground="{TemplateBinding Foreground}" VerticalAlignment="Center" Margin="10 0 0 0"
+											Opacity="{TemplateBinding IsSelected,Converter={StaticResource BoolToDoubleConverter}}"/>
+						<ContentPresenter	Grid.Column="3" Name="PART_ContentPresenter"
+											Foreground="{TemplateBinding Foreground}"
+											ContentTemplate="{TemplateBinding ContentTemplate}"
+											Content="{TemplateBinding Content}"
+											HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+											VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+											Padding="{TemplateBinding Padding}" />
+					</Grid>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:nth-child(1) /template/ Border#PART_Border">
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderThickness" Value="5 5 5 0"/>
+			<Setter Property="CornerRadius" Value="30 30 0 0"/>
+			<Style Selector="^:pointerover">
+				<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+				<Setter Property="BorderThickness" Value="5 5 5 0"/>
+				<Setter Property="CornerRadius" Value="30 30 0 0"/>
+			</Style>
+		</Style>
+		<Style Selector="^ /template/ Border#PART_Border">
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderThickness" Value="5 0 5 0"/>
+		</Style>
+		<Style Selector="^:nth-last-child(1) /template/ Border#PART_Border">
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderThickness" Value="5 0 5 5"/>
+			<Setter Property="CornerRadius" Value="0 0 30 30"/>
+			<Style Selector="^:pointerover">
+				<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+				<Setter Property="BorderThickness" Value="5 0 5 5"/>
+				<Setter Property="CornerRadius" Value="0 0 30 30"/>
+			</Style>
+		</Style>
+		<Style Selector="^:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+			<Style Selector="^ /template/ ContentPresenter">
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=BorderBrush}" />
+				<Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=Foreground}" />
+			</Style>
+		</Style>
+		<Style Selector="^:selected">
+			<Style Selector="^ /template/ ContentPresenter">
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=BorderBrush}" />
+				<Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=Foreground}" />
+			</Style>
+		</Style>
+	</Style>
+</Styles>

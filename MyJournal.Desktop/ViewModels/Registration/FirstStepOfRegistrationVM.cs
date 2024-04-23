@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.ViewModels.Registration;
 
-public class FirstStepOfRegistrationVM(FirstStepOfRegistrationModel model) : Renderer(model: model)
+public sealed class FirstStepOfRegistrationVM(FirstStepOfRegistrationModel model) : VMWithError(model: model)
 {
 	public ReactiveCommand<Unit, Unit> ToNextStep => model.ToNextStep;
 	public ReactiveCommand<Unit, Unit> ToAuthorization => model.ToAuthorization;
@@ -15,11 +15,5 @@ public class FirstStepOfRegistrationVM(FirstStepOfRegistrationModel model) : Ren
 		set => model.EntryCode = value;
 	}
 
-	public bool HaveError
-	{
-		get => model.HaveError;
-		set => model.HaveError = value;
-	}
-
-	public bool HasMoveToNextStep => model.HasMoveToNextStep;
+	public int CountOfCell => model.CountOfCell;
 }

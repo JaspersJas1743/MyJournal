@@ -1,0 +1,45 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+	<Style Selector="controls|PhoneNumberInput">
+		<Style Selector="^[HaveError=True]">
+			<Style Selector="^ TextBox">
+				<Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
+			</Style>
+			<Style Selector="^ StackPanel#Panel">
+				<Style.Animations>
+					<Animation Duration="0:0:0.15">
+						<KeyFrame Cue="0%">
+							<Setter Property="Margin" Value="0 0 0 0"/>
+						</KeyFrame>
+						<KeyFrame Cue="25%">
+							<Setter Property="Margin" Value="-7.5 0 0 0"/>
+						</KeyFrame>
+						<KeyFrame Cue="50%">
+							<Setter Property="Margin" Value="0 0 0 0"/>
+						</KeyFrame>
+						<KeyFrame Cue="75%">
+							<Setter Property="Margin" Value="7.5 0 0 0"/>
+						</KeyFrame>
+						<KeyFrame Cue="100%">
+							<Setter Property="Margin" Value="0 0 0 0"/>
+						</KeyFrame>
+					</Animation>
+				</Style.Animations>
+			</Style>
+		</Style>
+		<Style Selector="^ TextBox">
+			<Setter Property="CornerRadius" Value="20"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+			<Setter Property="Padding" Value="0 10"/>
+			<Setter Property="CaretBrush" Value="Transparent"/>
+		</Style>
+		<Style Selector="^ TextBox.Empty">
+			<Setter Property="Foreground" Value="{DynamicResource StrokeColor}"/>
+		</Style>
+		<Style Selector="^ TextBlock">
+			<Setter Property="FontSize" Value="62"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+		</Style>
+	</Style>
+</Styles>

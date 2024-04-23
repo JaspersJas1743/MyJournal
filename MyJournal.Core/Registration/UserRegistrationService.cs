@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -97,4 +98,13 @@ public sealed class UserRegistrationService(
 			cancellationToken: cancellationToken
 		);
 	}
+}
+
+public static class UserRegistrationServiceExtension
+{
+	public static IServiceCollection AddUserRegistrationService(this IServiceCollection serviceCollection)
+		=> serviceCollection.AddScoped<IRegistrationService<User>, UserRegistrationService>();
+
+	public static IServiceCollection AddKeyedUserRegistrationService(this IServiceCollection serviceCollection, string key)
+		=> serviceCollection.AddKeyedScoped<IRegistrationService<User>, UserRegistrationService>(serviceKey: key);
 }

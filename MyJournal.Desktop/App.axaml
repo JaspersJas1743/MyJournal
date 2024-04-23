@@ -13,6 +13,7 @@
         <ResourceDictionary>
             <FontFamily x:Key="Raleway">avares://MyJournal.Desktop/Assets/Resources/Fonts#Raleway</FontFamily>
             <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
+            <converters:Base64ToBitmapConverter x:Key="Base64ToBitmapConverter"/>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"></ResourceInclude>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"></ResourceInclude>
@@ -27,6 +28,8 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBoxWithError.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ButtonWithAnimatedCommand.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/CodeInput.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/SelectionCard.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/PhoneNumberInput.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Window.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBlock.axaml"/>
@@ -35,6 +38,9 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/CheckBox.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Border.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TransitioningContentControl.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Grid.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ComboBox.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ComboBoxItem.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"/>
@@ -46,5 +52,9 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Login.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Password.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/CheckMark.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/CopyToClipboard.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Phone.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Email.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/DownArrow.axaml"/>
     </Application.Styles>
 </Application>
