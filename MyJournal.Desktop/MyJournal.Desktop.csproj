@@ -97,6 +97,18 @@
       <Compile Update="Assets\Controls\PhoneNumberInput.axaml.cs">
         <DependentUpon>PhoneNumberInput.axaml</DependentUpon>
       </Compile>
+      <Compile Update="Views\MessagesView.axaml.cs">
+        <DependentUpon>MessagesView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Marks\ReceivedMarksView.axaml.cs">
+        <DependentUpon>ReceivedMarksView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileView.axaml.cs">
+        <DependentUpon>ProfileView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

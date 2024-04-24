@@ -4,13 +4,13 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using MsBox.Avalonia.Enums;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
@@ -101,9 +101,11 @@ public class AuthorizationModel : ModelWithErrorMessage
 			if (SaveCredential)
 				await SaveCorrectCredential(accessToken: authorizedUser.Token);
 
+			MainVM mainVM = (Application.Current as App)!.GetService<MainVM>();
+			mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+
 			MessageBus.Current.SendMessage(message: new ChangeMainWindowVMEventArgs(
-				newVMType: typeof(MainVM),
-				animationType: AnimationType.DirectionToRight
+				newVM: mainVM, animationType: AnimationType.DirectionToRight
 			));
 		}
 		catch (ApiException e)

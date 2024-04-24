@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core;
 using MyJournal.Core.Authorization;
 using MyJournal.Core.Registration;
 using MyJournal.Core.RestoringAccess;
@@ -15,16 +16,28 @@ using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
+using MyJournal.Desktop.Models.Marks;
+using MyJournal.Desktop.Models.Profile;
 using MyJournal.Desktop.Models.Registration;
 using MyJournal.Desktop.Models.RestoringAccess;
+using MyJournal.Desktop.Models.Tasks;
+using MyJournal.Desktop.Models.Timetable;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
+using MyJournal.Desktop.ViewModels.Marks;
+using MyJournal.Desktop.ViewModels.Profile;
 using MyJournal.Desktop.ViewModels.Registration;
 using MyJournal.Desktop.ViewModels.RestoringAccess;
+using MyJournal.Desktop.ViewModels.Tasks;
+using MyJournal.Desktop.ViewModels.Timetable;
 using MyJournal.Desktop.Views;
 using MyJournal.Desktop.Views.Authorization;
+using MyJournal.Desktop.Views.Marks;
 using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
+using MyJournal.Desktop.Views.Tasks;
+using MyJournal.Desktop.Views.Timetable;
+using ProfileView = MyJournal.Desktop.Views.Profile.ProfileView;
 
 namespace MyJournal.Desktop;
 
@@ -141,7 +154,68 @@ public partial class App : Application
 			#region Main
 			.AddSingleton<MainView>()
 			.AddSingleton<MainVM>()
-			.AddSingleton<MainModel>();
+			.AddSingleton<MainModel>()
+			#endregion
+			#region Initial loadin
+			.AddSingleton<InitialLoadingView>()
+			.AddSingleton<InitialLoadingVM>()
+			.AddSingleton<InitialLoadingModel>()
+			#endregion
+			#region Profile
+			.AddSingleton<ProfileView>()
+			.AddSingleton<ProfileVM>()
+			.AddSingleton<ProfileModel>()
+			#endregion
+			#region Messages
+			.AddSingleton<MessagesView>()
+			.AddSingleton<MessagesVM>()
+			.AddSingleton<MessagesModel>()
+			#endregion
+			#region Marks
+			#region Created marks
+			.AddSingleton<CreatedMarksView>()
+			.AddSingleton<CreatedMarksVM>()
+			.AddSingleton<CreatedMarksModel>()
+			#endregion
+			#region Received marks
+			.AddSingleton<ReceivedMarksView>()
+			.AddSingleton<ReceivedMarksVM>()
+			.AddSingleton<ReceivedMarksModel>()
+			#endregion
+			#endregion
+			#region Tasks
+			#region All tasks
+			.AddSingleton<AllTasksView>()
+			.AddSingleton<AllTasksVM>()
+			.AddSingleton<AllTasksModel>()
+			#endregion
+			#region Created tasks
+			.AddSingleton<CreatedTasksView>()
+			.AddSingleton<CreatedTasksVM>()
+			.AddSingleton<CreatedTasksModel>()
+			#endregion
+			#region Received tasks
+			.AddSingleton<ReceivedTasksView>()
+			.AddSingleton<ReceivedTasksVM>()
+			.AddSingleton<ReceivedTasksModel>()
+			#endregion
+			#endregion
+			#region Timetable
+			#region Creating timetable
+			.AddSingleton<CreatingTimetableView>()
+			.AddSingleton<CreatingTimetableVM>()
+			.AddSingleton<CreatingTimetableModel>()
+			#endregion
+			#region Study timetable
+			.AddSingleton<StudyTimetableView>()
+			.AddSingleton<StudyTimetableVM>()
+			.AddSingleton<StudyTimetableModel>()
+			#endregion
+			#region Work timetable
+			.AddSingleton<WorkTimetableView>()
+			.AddSingleton<WorkTimetableVM>()
+			.AddSingleton<WorkTimetableModel>();
+			#endregion
 			#endregion
 
 		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddWindowsCredentialStorageService());
@@ -172,18 +246,27 @@ public partial class App : Application
 	public override void Initialize()
 		=> AvaloniaXamlLoader.Load(obj: this);
 
-	public override void OnFrameworkInitializationCompleted()
+	public override async void OnFrameworkInitializationCompleted()
 	{
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			desktop.MainWindow = GetService<MainWindowView>();
 			MainWindowVM mainWindowVM = GetService<MainWindowVM>();
-			// ICredentialStorageService credentialStorageService = GetService<ICredentialStorageService>();
-			// UserCredential credential = credentialStorageService.Get();
-			// if (credential != UserCredential.Empty)
-			// 	mainWindowVM.MainVM = GetService<MainVM>();
-
+			InitialLoadingVM initialLoadingVM = GetService<InitialLoadingVM>();
+			mainWindowVM.Content = initialLoadingVM;
 			desktop.MainWindow.DataContext = mainWindowVM;
+
+			ICredentialStorageService credentialStorageService = GetService<ICredentialStorageService>();
+			UserCredential credential = credentialStorageService.Get();
+			if (credential != UserCredential.Empty)
+			{
+				IAuthorizationService<User> authorizationService = GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
+				MainVM mainVM = GetService<MainVM>();
+				Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
+				mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+				mainWindowVM.Content = mainVM;
+			}
+			initialLoadingVM.StopTimer();
 		}
 
 		base.OnFrameworkInitializationCompleted();

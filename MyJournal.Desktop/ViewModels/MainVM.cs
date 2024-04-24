@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MyJournal.Core;
 using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Models;
 
@@ -17,4 +18,13 @@ public sealed class MainVM(MainModel model) : BaseVM(model: model)
 		get => model.SelectedItem;
 		set => model.SelectedItem = value;
 	}
+
+	public int SelectedIndex
+	{
+		get => model.SelectedIndex;
+		set => model.SelectedIndex = value;
+	}
+
+	public void SetAuthorizedUser(User user)
+		=> model.SetAuthorizedUser(user: user);
 }
