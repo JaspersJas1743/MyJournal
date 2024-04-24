@@ -1,17 +1,45 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<Style Selector="Border.TransitionBorderBrush">
+
+	<Style Selector="Border">
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="BorderBrush" Value="Transparent" />
+		<Setter Property="ClipToBounds" Value="True" />
 		<Setter Property="Transitions">
 			<Transitions>
-				<BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+				<DoubleTransition Duration="0:0:0.2" Property="Height" />
 			</Transitions>
 		</Setter>
-	</Style>
-	<Style Selector="Border.OpacityTransition">
-		<Setter Property="Transitions">
-			<Transitions>
-				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
-			</Transitions>
-		</Setter>
+		<Style Selector="^.TransitionBorderBrush">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="^.OpacityTransition">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="^.MenuBorder">
+			<Setter Property="Height" Value="100"/>
+			<Setter Property="Width" Value="550"/>
+			<Setter Property="Margin" Value="0 0 0 -80"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderThickness" Value="5"/>
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+			<Setter Property="CornerRadius" Value="30"/>
+			<Style Selector="^:pointerover">
+				<Setter Property="Margin" Value="0 0 0 20"/>
+			</Style>
+			<Setter Property="Transitions">
+				<Transitions>
+					<ThicknessTransition Property="Margin" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
 	</Style>
 </Styles>

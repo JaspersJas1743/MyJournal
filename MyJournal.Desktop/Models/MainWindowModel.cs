@@ -39,7 +39,7 @@ public class MainWindowModel : ModelBase
 	public BaseVM Content
 	{
 		get => _content;
-		private set => this.RaiseAndSetIfChanged(backingField: ref _content, newValue: value);
+		set => this.RaiseAndSetIfChanged(backingField: ref _content, newValue: value);
 	}
 
 	public bool HaveLeftDirection

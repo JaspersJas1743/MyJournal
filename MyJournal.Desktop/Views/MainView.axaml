@@ -3,7 +3,32 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:viewModels="clr-namespace:MyJournal.Desktop.ViewModels"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" MinWidth="1200"
-			MinHeight="700" x:DataType="viewModels:MainVM" x:Class="MyJournal.Desktop.Views.MainView">
-	Welcome to Avalonia!
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
+			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
+			x:DataType="viewModels:MainVM" x:Class="MyJournal.Desktop.Views.MainView">
+	<Grid ColumnDefinitions="685*, 550*, 685*">
+		<TransitioningContentControl Grid.Column="0" Grid.ColumnSpan="3">
+			<TransitioningContentControl.Content>
+				<Binding ElementName="MenuPanel" Path="((controls:MenuItem)SelectedItem).ItemContent">
+					<Binding.FallbackValue>
+						<TextBlock Text="Произошла непредвиденная ошибка :(" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+					</Binding.FallbackValue>
+				</Binding>
+			</TransitioningContentControl.Content>
+		</TransitioningContentControl>
+		<Viewbox Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+			<Border Width="550" Classes="MenuBorder">
+				<ListBox    VerticalAlignment="Center" x:Name="MenuPanel" Background="Transparent"
+							ItemsSource="{Binding Menu}" HorizontalAlignment="Center"
+							SelectedItem="{Binding SelectedItem,Mode=TwoWay}">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Horizontal"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+				</ListBox>
+			</Border>
+		</Viewbox>
+	</Grid>
 </UserControl>

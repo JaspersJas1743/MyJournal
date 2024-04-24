@@ -11,7 +11,7 @@ using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 
 namespace MyJournal.Core;
 
-public class User
+public abstract class User
 {
 	#region Fields
 	private readonly HubConnection _userHubConnection;

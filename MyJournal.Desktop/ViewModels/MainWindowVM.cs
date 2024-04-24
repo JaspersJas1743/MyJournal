@@ -13,7 +13,11 @@ public sealed class MainWindowVM(MainWindowModel model) : BaseVM(model: model)
 	public ReactiveCommand<Unit, WindowState> Restore => model.Restore;
 	public ReactiveCommand<Unit, Unit> Close => model.Close;
 
-	public BaseVM Content => model.Content;
+	public BaseVM Content
+	{
+		get => model.Content;
+		set => model.Content = value;
+	}
 
 	public bool HaveLeftDirection
 	{
