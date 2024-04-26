@@ -21,7 +21,12 @@ public static class ValidLinkExtensions
 
 	private static bool IsValidUrl(string? url)
 	{
-		using HttpClient client = new HttpClient();
+		HttpClientHandler clientHandler = new HttpClientHandler()
+		{
+			ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+		};
+
+		using HttpClient client = new HttpClient(handler: clientHandler);
 		if (!Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, result: out Uri? uri))
 			return false;
 
