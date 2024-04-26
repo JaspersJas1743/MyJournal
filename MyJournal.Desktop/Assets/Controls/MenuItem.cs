@@ -9,12 +9,9 @@ public sealed class MenuItem : ListBoxItem
 {
 	public static readonly StyledProperty<XamlSvg> ImageProperty = AvaloniaProperty.Register<MenuItem, XamlSvg>(name: nameof(Image));
 	public static readonly StyledProperty<string> HeaderProperty = AvaloniaProperty.Register<MenuItem, string>(name: nameof(Header));
-	public static readonly StyledProperty<BaseVM> ItemContentProperty = AvaloniaProperty.Register<MenuItem, BaseVM>(name: nameof(ItemContent));
+	public static readonly StyledProperty<MenuItemVM> ItemContentProperty = AvaloniaProperty.Register<MenuItem, MenuItemVM>(name: nameof(ItemContent));
 
-	public MenuItem()
-	{ }
-
-	public MenuItem(string image, string header, BaseVM itemContent)
+	public MenuItem(string image, string header, MenuItemVM itemContent)
 	{
 		Image = new XamlSvg() { Classes = { image } };
 		Header = header;
@@ -43,7 +40,7 @@ public sealed class MenuItem : ListBoxItem
 		set => SetValue(property: HeaderProperty, value: value);
 	}
 
-	public BaseVM ItemContent
+	public MenuItemVM ItemContent
 	{
 		get => GetValue(property: ItemContentProperty);
 		set => SetValue(property: ItemContentProperty, value: value);

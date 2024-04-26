@@ -24,22 +24,31 @@
 				</Transitions>
 			</Setter>
 		</Style>
-		<Style Selector="^.MenuBorder">
-			<Setter Property="Height" Value="100"/>
-			<Setter Property="Width" Value="550"/>
-			<Setter Property="Margin" Value="0 0 0 -80"/>
-			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
-			<Setter Property="BorderThickness" Value="5"/>
-			<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+		<Style Selector="^.ProfileSection">
 			<Setter Property="CornerRadius" Value="30"/>
+			<Setter Property="BorderThickness" Value="5"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+		</Style>
+		<Style Selector="^.MenuBorder">
+			<Setter Property="Height" Value="140"/>
+			<Setter Property="Width" Value="590"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Margin" Value="0 0 0 -100"/>
 			<Style Selector="^:pointerover">
-				<Setter Property="Margin" Value="0 0 0 20"/>
+				<Setter Property="Margin" Value="0 0 0 0"/>
 			</Style>
 			<Setter Property="Transitions">
 				<Transitions>
 					<ThicknessTransition Property="Margin" Duration="0:0:0.2"/>
 				</Transitions>
 			</Setter>
+			<Style Selector="^ Border.Menu">
+				<Setter Property="Margin" Value="20"/>
+				<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+				<Setter Property="BorderThickness" Value="5"/>
+				<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+				<Setter Property="CornerRadius" Value="30"/>
+			</Style>
 		</Style>
 	</Style>
 </Styles>

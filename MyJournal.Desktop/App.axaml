@@ -31,6 +31,7 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/SelectionCard.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/PhoneNumberInput.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/MenuItem.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/AdvancedImage.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Window.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TextBlock.axaml"/>
@@ -62,5 +63,6 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Schedule.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Tasks.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Messages.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/DefaultUser.axaml"/>
     </Application.Styles>
 </Application>

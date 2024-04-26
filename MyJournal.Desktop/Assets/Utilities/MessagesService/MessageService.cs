@@ -1,18 +1,22 @@
 using System;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
+using MyJournal.Desktop.Views;
 
 namespace MyJournal.Desktop.Assets.Utilities.MessagesService;
 
 public sealed class MessageService : IMessageService
 {
+	private readonly MainWindowView _mainWindow;
+
+	public MessageService(MainWindowView mainWindow)
+		=> _mainWindow = mainWindow;
+
 	private static IMsBox<ButtonResult> GetMessageBox(string text, string title, ButtonEnum buttons, Icon image)
 	{
 		return MessageBoxManager.GetMessageBoxStandard(@params: new MessageBoxStandardParams()
@@ -46,10 +50,7 @@ public sealed class MessageService : IMessageService
 		=> await ShowWindow(text: text, title: String.Empty, buttons: ButtonEnum.OkCancel, image: Icon.None);
 
 	public async Task<ButtonResult> ShowPopup(string text, string title, ButtonEnum buttons, Icon image)
-	{
-		IClassicDesktopStyleApplicationLifetime? owner = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
-		return await GetMessageBox(text: text, title: title, buttons: buttons, image: image).ShowAsPopupAsync(owner: owner?.MainWindow);
-	}
+		=> await GetMessageBox(text: text, title: title, buttons: buttons, image: image).ShowAsPopupAsync(owner: _mainWindow);
 
 	public async Task<ButtonResult> ShowErrorAsPopup(string text)
 		=> await ShowPopup(text: text, title: "Ошибка", buttons: ButtonEnum.OkCancel, image: Icon.Error);
@@ -64,17 +65,22 @@ public sealed class MessageService : IMessageService
 		=> await ShowPopup(text: text, title: String.Empty, buttons: ButtonEnum.OkCancel, image: Icon.None);
 
 	public async Task<ButtonResult> ShowDialog(string text, string title, ButtonEnum buttons, Icon image)
-	{
-		IClassicDesktopStyleApplicationLifetime? owner = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
-		return await GetMessageBox(text: text, title: title, buttons: buttons, image: image).ShowWindowDialogAsync(owner: owner?.MainWindow);
-	}
+		=> await GetMessageBox(text: text, title: title, buttons: buttons, image: image).ShowWindowDialogAsync(owner: _mainWindow);
 }
 
 public static class MessageServiceExtensions
 {
 	public static IServiceCollection AddMessageService(this IServiceCollection serviceCollection)
-		=> serviceCollection.AddTransient<IMessageService, MessageService>();
+	{
+		return serviceCollection.AddTransient<IMessageService, MessageService>(
+			implementationFactory: provider => new MessageService(mainWindow: provider.GetService<MainWindowView>()!)
+		);
+	}
 
 	public static IServiceCollection AddKeyedMessageService(this IServiceCollection serviceCollection, string key)
-		=> serviceCollection.AddKeyedTransient<IMessageService, MessageService>(serviceKey: key);
+	{
+		return serviceCollection.AddKeyedTransient<IMessageService, MessageService>(serviceKey: key,
+			implementationFactory: (provider, o) => new MessageService(mainWindow: provider.GetService<MainWindowView>()!)
+		);
+	}
 }

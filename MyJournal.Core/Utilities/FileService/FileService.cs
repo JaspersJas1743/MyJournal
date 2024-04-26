@@ -55,10 +55,11 @@ public sealed class FileService(
 		if (link is null)
 			throw new ArgumentNullException(message: "Ссылка на файл не может быть null.", paramName: nameof(link));
 
-		await ApiClient.DeleteAsync<FileLink>(
-			apiMethod: FileControllerMethods.DeleteFile,
-			arg: new FileLink(Link: link),
-			cancellationToken: cancellationToken
+		await ApiClient.DeleteAsync(
+			uri: ApiClient.CreateUri(
+				apiMethod: FileControllerMethods.DeleteFile,
+				arg: new FileLink(Link: link)
+			), cancellationToken: cancellationToken
 		);
 	}
 }

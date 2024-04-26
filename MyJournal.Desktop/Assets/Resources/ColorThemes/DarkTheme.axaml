@@ -36,4 +36,5 @@
 	<SolidColorBrush x:Key="MaximizePointeroverColor" Color="#303030"/>
 	<SolidColorBrush x:Key="RestorePointeroverColor" Color="#303030"/>
 	<SolidColorBrush x:Key="ClosePointeroverColor" Color="#F35454"/>
+	<SolidColorBrush x:Key="DefaultUserColor" Color="#636363"/>
 </ResourceDictionary>

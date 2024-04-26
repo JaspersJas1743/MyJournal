@@ -1,8 +1,12 @@
+using System.Threading.Tasks;
+using MyJournal.Core;
 using MyJournal.Desktop.Models;
 
 namespace MyJournal.Desktop.ViewModels.Timetable;
 
-public class TimetableVM(ModelBase model) : BaseVM(model: model)
+public class TimetableVM(ModelBase model) : MenuItemVM(model: model)
 {
-
+	public override async Task SetUser(User user)
+	{
+	}
 }

@@ -17,17 +17,17 @@
 			</TransitioningContentControl.Content>
 		</TransitioningContentControl>
 		<Viewbox Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-			<Border Width="550" Classes="MenuBorder">
-				<ListBox    SelectionMode="Single" SelectedIndex="{Binding SelectedIndex}"
-							VerticalAlignment="Center" x:Name="MenuPanel" Background="Transparent"
-							ItemsSource="{Binding Menu}" HorizontalAlignment="Center"
-							SelectedItem="{Binding SelectedItem,Mode=TwoWay}">
-					<ListBox.ItemsPanel>
-						<ItemsPanelTemplate>
-							<StackPanel Orientation="Horizontal"/>
-						</ItemsPanelTemplate>
-					</ListBox.ItemsPanel>
-				</ListBox>
+			<Border Classes="MenuBorder">
+				<Border Classes="Menu">
+					<ListBox    ItemsSource="{Binding Menu}" SelectedIndex="{Binding SelectedIndex}"
+								SelectedItem="{Binding SelectedItem,Mode=TwoWay}" x:Name="MenuPanel">
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Horizontal"/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+					</ListBox>
+				</Border>
 			</Border>
 		</Viewbox>
 	</Grid>

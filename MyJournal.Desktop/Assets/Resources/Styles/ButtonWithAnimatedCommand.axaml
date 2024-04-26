@@ -84,11 +84,17 @@
         <Style Selector="^.Corner30">
             <Setter Property="CornerRadius" Value="30"/>
         </Style>
+        <Style Selector="^.Corner15">
+            <Setter Property="CornerRadius" Value="15"/>
+        </Style>
         <Style Selector="^.MainAccentColor">
             <Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
         </Style>
         <Style Selector="^.SecondaryAccentColor">
 			<Setter Property="Background" Value="{DynamicResource SecondaryAccentColor}"/>
+        </Style>
+        <Style Selector="^.Danger">
+            <Setter Property="Background" Value="{DynamicResource ErrorColor}"/>
         </Style>
     </Style>
 </Styles>

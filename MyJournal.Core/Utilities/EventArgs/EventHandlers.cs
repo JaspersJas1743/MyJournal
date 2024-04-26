@@ -4,6 +4,10 @@ namespace MyJournal.Core.Utilities.EventArgs;
 public delegate void UpdatedEmailHandler(UpdatedEmailEventArgs e);
 #endregion
 
+#region Profile photo
+public delegate void UpdatedProfilePhotoHandler(UpdatedProfilePhotoEventArgs e);
+#endregion
+
 #region Phone
 public delegate void UpdatedPhoneHandler(UpdatedPhoneEventArgs e);
 #endregion

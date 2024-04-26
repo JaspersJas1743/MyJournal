@@ -13,6 +13,7 @@ using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
+using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
@@ -33,6 +34,7 @@ using MyJournal.Desktop.ViewModels.Timetable;
 using MyJournal.Desktop.Views;
 using MyJournal.Desktop.Views.Authorization;
 using MyJournal.Desktop.Views.Marks;
+using MyJournal.Desktop.Views.Profile;
 using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
@@ -62,6 +64,7 @@ public partial class App : Application
 			.AddApiClient()
 			.AddGoogleAuthenticator()
 			.AddFileService()
+			.AddFileStorageService()
 			.AddKeyedAuthorizationWithCredentialsService(key: nameof(AuthorizationWithCredentialsService))
 			.AddKeyedAuthorizationWithTokenService(key: nameof(AuthorizationWithTokenService))
 			.AddConfigurationService()
@@ -165,6 +168,11 @@ public partial class App : Application
 			.AddSingleton<ProfileView>()
 			.AddSingleton<ProfileVM>()
 			.AddSingleton<ProfileModel>()
+			#region Profile photo
+			.AddSingleton<ProfilePhotoView>()
+			.AddSingleton<ProfilePhotoVM>()
+			.AddSingleton<ProfilePhotoModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()

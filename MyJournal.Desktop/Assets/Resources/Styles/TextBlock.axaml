@@ -4,41 +4,50 @@
 		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=Raleway}"/>
 		<Setter Property="FontWeight" Value="SemiBold"/>
 		<Setter Property="FontFeatures" Value="+lnum"></Setter>
-	</Style>
 
-	<Style Selector="TextBlock.WindowHeader">
-		<Setter Property="FontSize" Value="16"/>
-	</Style>
+		<Style Selector="^.WindowHeader">
+			<Setter Property="FontSize" Value="16"/>
+		</Style>
 
-	<Style Selector="TextBlock.CenteredTextBlock">
-		<Setter Property="HorizontalAlignment" Value="Center"/>
-		<Setter Property="VerticalAlignment" Value="Center"/>
-	</Style>
+		<Style Selector="^.CenteredTextBlock">
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+		</Style>
 
-	<Style Selector="TextBlock.PageHeader">
-		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
-		<Setter Property="FontSize" Value="48"/>
-		<Setter Property="TextWrapping" Value="Wrap"/>
-		<Setter Property="TextAlignment" Value="Center"/>
-	</Style>
+		<Style Selector="^.PageHeader">
+			<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
+			<Setter Property="FontSize" Value="48"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+		</Style>
 
-	<Style Selector="TextBlock.PageSubheader">
-		<Setter Property="FontSize" Value="24"/>
-		<Setter Property="TextWrapping" Value="Wrap"/>
-		<Setter Property="TextAlignment" Value="Center"/>
-		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=SubheaderColor}"/>
-	</Style>
+		<Style Selector="^.PageSubheader">
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+			<Setter Property="Foreground" Value="{DynamicResource ResourceKey=SubheaderColor}"/>
+		</Style>
 
-	<Style Selector="TextBlock.ErrorMessage">
-		<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
-		<Setter Property="FontSize" Value="24"/>
-	</Style>
+		<Style Selector="^.ErrorMessage">
+			<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+			<Setter Property="FontSize" Value="24"/>
+		</Style>
 
-	<Style Selector="TextBlock.OpacityTransition">
-		<Setter Property="Transitions">
-			<Transitions>
-				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
-			</Transitions>
-		</Setter>
+		<Style Selector="^.OpacityTransition">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.ProfileHeader">
+			<Setter Property="FontSize" Value="28"/>
+			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+		</Style>
+		<Style Selector="^.ProfileSubheader">
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="Foreground" Value="#B3B3B3"/>
+		</Style>
 	</Style>
 </Styles>

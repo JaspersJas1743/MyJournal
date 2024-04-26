@@ -30,7 +30,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 
 	private string _login = String.Empty;
 	private string _password = String.Empty;
-		private bool _saveCredential = true;
+	private bool _saveCredential = true;
 
 	public AuthorizationModel(
 		[FromKeyedServices(key: nameof(AuthorizationWithCredentialsService))] IAuthorizationService<User> authorizationService,

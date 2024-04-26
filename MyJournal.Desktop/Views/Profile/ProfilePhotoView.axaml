@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+			mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="410" x:DataType="vm:ProfilePhotoVM"
+			x:Class="MyJournal.Desktop.Views.Profile.ProfilePhotoView">
+	<Border Classes="ProfileSection">
+		<Grid ColumnDefinitions="20*, 370*, 20*, 320*, 20*" RowDefinitions="20*, 60*, 180*, 60*, 10*, 60*, 20*">
+			<Border Grid.Column="1" Grid.Row="1" Grid.RowSpan="5" CornerRadius="15" ClipToBounds="True"
+					Background="{DynamicResource StrokeColor}">
+				<Grid>
+					<asyncImageLoader:AdvancedImage IsVisible="{Binding Photo,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+													Source="{Binding Photo}" Stretch="UniformToFill"/>
+					<controls:XamlSvg	IsVisible="{Binding Photo,Converter={x:Static StringConverters.IsNullOrEmpty}}"
+										Classes="DefaultUser" Margin="85" Foreground="{DynamicResource DefaultUserColor}"/>
+				</Grid>
+			</Border>
+			<StackPanel Grid.Row="1" Grid.Column="3">
+				<TextBlock Classes="ProfileHeader" Text="{Binding NameAndPatronymic}" />
+				<TextBlock Classes="ProfileSubheader" Text="{Binding Role}"/>
+			</StackPanel>
+			<Viewbox Grid.Column="3" Grid.Row="3">
+				<controls:ButtonWithAnimatedCommand Content="Изменить фотографию" Height="60" Width="320"
+													Classes="MainAccentColor Corner15 SubheaderContent"
+													Command="{Binding ChangePhoto}"/>
+			</Viewbox>
+			<Viewbox Grid.Column="3" Grid.Row="5">
+				<controls:ButtonWithAnimatedCommand Content="Удалить фотографию" Height="60" Width="320"
+													Classes="Danger Corner15 SubheaderContent"
+													Command="{Binding DeletePhoto}"/>
+			</Viewbox>
+		</Grid>
+	</Border>
+</UserControl>

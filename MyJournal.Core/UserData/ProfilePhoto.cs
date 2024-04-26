@@ -1,5 +1,6 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.UserData;
@@ -18,6 +19,10 @@ public sealed class ProfilePhoto(
 	public string? Link { get; private set; } = link;
 	#endregion
 
+	#region Events
+	public event UpdatedProfilePhotoHandler UpdatedProfilePhoto;
+	#endregion
+
 	#region Records
 	private sealed record UploadProfilePhotoRequest(string? Link);
 	private sealed record UploadProfilePhotoResponse(string Message);
@@ -29,12 +34,17 @@ public sealed class ProfilePhoto(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (Link is not null)
+			await fileService.Delete(link: Link, cancellationToken: cancellationToken);
+		
 		Link = await fileService.Upload(folderToSave: DefaultBucket, pathToFile: pathToPhoto, cancellationToken: cancellationToken);
+		UpdatedProfilePhoto?.Invoke(e: new UpdatedProfilePhotoEventArgs(link: Link));
 
-		_ = await client.PutAsync<UploadProfilePhotoResponse, UploadProfilePhotoRequest>(
-			apiMethod: UserControllerMethods.UploadProfilePhoto,
-			arg: new UploadProfilePhotoRequest(Link: Link),
-			cancellationToken: cancellationToken
+		_ = await client.PutAsync<UploadProfilePhotoResponse>(
+			uri: ApiClient.CreateUri(
+				apiMethod: UserControllerMethods.UploadProfilePhoto,
+				arg: new UploadProfilePhotoRequest(Link: Link)
+			), cancellationToken: cancellationToken
 		);
 	}
 
@@ -48,6 +58,7 @@ public sealed class ProfilePhoto(
 		await fileService.Delete(link: Link, cancellationToken: cancellationToken);
 		await client.DeleteAsync(apiMethod: UserControllerMethods.DeleteProfilePhoto, cancellationToken: cancellationToken);
 		Link = null;
+		UpdatedProfilePhoto?.Invoke(e: new UpdatedProfilePhotoEventArgs(link: Link));
 	}
 
 	public async Task Download(
