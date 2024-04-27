@@ -15,7 +15,8 @@
     <SolidColorBrush x:Key="TextOnSelectedControlColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="WatermarkOnTextControlColor" Color="#C6C6C6"/>
     <SolidColorBrush x:Key="TransparentControlPointeroverColor" Color="#E9E9E9"/>
-    <SolidColorBrush x:Key="ConfirmationDataColor" Color="#4FB84D"/>
+    <SolidColorBrush x:Key="ConfirmedDataColor" Color="#4FB84D"/>
+    <SolidColorBrush x:Key="UnconfirmedDataColor" Color="#DD4747"/>
     <SolidColorBrush x:Key="ControlPointeroverColor" Color="#DCDCDC"/>
     <SolidColorBrush x:Key="DateTimeColor" Color="#9C9C9C"/>
     <SolidColorBrush x:Key="SelectionControlColor" Color="#00A3FF"/>

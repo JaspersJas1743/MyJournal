@@ -33,7 +33,7 @@ public sealed class Email(
 	{
 		bool isVerified = await googleAuthenticatorService.VerifyAuthenticationCode(userId: client.ClientId, code: confirmationCode, cancellationToken: cancellationToken);
 		if (!isVerified)
-			throw new ArgumentException(message: "Некорректный код подтверждения для смены адреса электронной почты.", paramName: nameof(confirmationCode));
+			throw new ArgumentException(message: "Некорректный код подтверждения для смены адреса электронной почты.");
 
 		ChangeEmailResponse response = await client.PutAsync<ChangeEmailResponse, ChangeEmailRequest>(
 			apiMethod: UserControllerMethods.ChangeEmail,

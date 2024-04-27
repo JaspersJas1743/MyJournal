@@ -12,6 +12,7 @@
 		<Style Selector="^.CenteredTextBlock">
 			<Setter Property="HorizontalAlignment" Value="Center"/>
 			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="TextAlignment" Value="Center"/>
 		</Style>
 
 		<Style Selector="^.PageHeader">
@@ -31,6 +32,7 @@
 		<Style Selector="^.ErrorMessage">
 			<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
 			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
 		</Style>
 
 		<Style Selector="^.OpacityTransition">
@@ -41,13 +43,27 @@
 			</Setter>
 		</Style>
 
-		<Style Selector="^.ProfileHeader">
+		<Style Selector="^.ProfileSectionHeader">
 			<Setter Property="FontSize" Value="28"/>
 			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
 		</Style>
-		<Style Selector="^.ProfileSubheader">
+
+		<Style Selector="^.ProfileSectionSubheader">
 			<Setter Property="FontSize" Value="20"/>
 			<Setter Property="Foreground" Value="#B3B3B3"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
+		<Style Selector="^.Verified">
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="Foreground" Value="{DynamicResource ConfirmedDataColor}"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
+		<Style Selector="^.Unverified">
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="Foreground" Value="{DynamicResource UnconfirmedDataColor}"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
 		</Style>
 	</Style>
 </Styles>

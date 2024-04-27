@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Controls;
 
@@ -48,10 +50,11 @@ public partial class EmailInput : UserControl
 
 		PART_Domain.ItemsSource = _domains;
 
-		if (!String.IsNullOrWhiteSpace(value: EntryEmail))
-			SetEmail();
-		else
-			PART_Domain.SelectedIndex = 0;
+		PART_Domain.SelectedIndex = 0;
+
+		this.WhenAnyValue(property1: input => input.EntryEmail)
+			.Where(predicate: email => !String.IsNullOrWhiteSpace(value: email))
+			.Subscribe(onNext: _ => SetEmail());
 
 		PART_EmailName.Focus();
 	}

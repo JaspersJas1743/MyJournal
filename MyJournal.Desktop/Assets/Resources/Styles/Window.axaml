@@ -8,108 +8,97 @@
         <Setter Property="ExtendClientAreaTitleBarHeightHint" Value="35"/>
         <Setter Property="ExtendClientAreaToDecorationsHint" Value="True"/>
         <Setter Property="SystemDecorations" Value="BorderOnly"/>
-	</Style>
-
-	<Style Selector="Window.MainWindow">
-		<Setter Property="WindowStartupLocation" Value="CenterScreen"/>
-		<Setter Property="Template">
-			<ControlTemplate x:DataType="vm:MainWindowVM">
-				<Grid Margin="{TemplateBinding Property=OffScreenMargin}">
-					<Border x:Name="WindowBorder" Background="{DynamicResource ResourceKey=BackgroundColor}" CornerRadius="15" IsHitTestVisible="False"/>
-					<Border x:Name="PART_TransparencyFallback" Background="Transparent" IsHitTestVisible="False"/>
-					<VisualLayerManager>
-						<Grid RowDefinitions="35, *" ColumnDefinitions="35, *">
-							<controls:XamlSvg IsHitTestVisible="False" Grid.Column="0" Grid.Row="0" Height="20"
-											  Foreground="{DynamicResource ResourceKey=HeaderColor}"
-											  Classes="ApplicationLogo CenteredSvg" Width="20"/>
-							<TextBlock IsHitTestVisible="False" Grid.Column="1" Text="{TemplateBinding Property=Title}"
-									   Classes="WindowHeader CenteredTextBlock" Grid.Row="0"/>
-							<Grid Grid.Column="1" ColumnDefinitions="30, *, Auto" Margin="10" Grid.Row="0" Height="20">
-								<StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-									<Button x:Name="MinimizeButton" Classes="WindowButton MinimizeButton" Command="{Binding Path=Minimize}">
-										<controls:XamlSvg Classes="Minimize"></controls:XamlSvg>
-									</Button>
-									<Button x:Name="MaximizeButton" Classes="WindowButton MaximizeButton" Command="{Binding Path=Maximize}">
-										<controls:XamlSvg Classes="Maximize" Margin="2"></controls:XamlSvg>
-									</Button>
-									<Button x:Name="RestoreButton" Classes="WindowButton RestoreButton" Command="{Binding Path=Restore}">
-										<controls:XamlSvg Classes="Restore" Margin="2"></controls:XamlSvg>
-									</Button>
-									<Button x:Name="CloseButton" Classes="WindowButton CloseButton" Command="{Binding Path=Close}">
-										<controls:XamlSvg Classes="Close"></controls:XamlSvg>
-									</Button>
-								</StackPanel>
+		<Style Selector="^.MainWindow">
+			<Setter Property="WindowStartupLocation" Value="CenterScreen"/>
+			<Setter Property="Template">
+				<ControlTemplate x:DataType="vm:MainWindowVM">
+					<Grid Margin="{TemplateBinding Property=OffScreenMargin}">
+						<Border x:Name="WindowBorder" Background="{DynamicResource ResourceKey=BackgroundColor}" CornerRadius="15" IsHitTestVisible="False"/>
+						<Border x:Name="PART_TransparencyFallback" Background="Transparent" IsHitTestVisible="False"/>
+						<VisualLayerManager>
+							<Grid RowDefinitions="35, *" ColumnDefinitions="35, *">
+								<controls:XamlSvg IsHitTestVisible="False" Grid.Column="0" Grid.Row="0" Height="20"
+												  Foreground="{DynamicResource ResourceKey=HeaderColor}"
+												  Classes="ApplicationLogo CenteredSvg" Width="20"/>
+								<TextBlock IsHitTestVisible="False" Grid.Column="1" Text="{TemplateBinding Property=Title}"
+										   Classes="WindowHeader CenteredTextBlock" Grid.Row="0"/>
+								<Grid Grid.Column="1" ColumnDefinitions="30, *, Auto" Margin="10" Grid.Row="0" Height="20">
+									<StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+										<Button x:Name="MinimizeButton" Classes="WindowButton MinimizeButton" Command="{Binding Path=Minimize}">
+											<controls:XamlSvg Classes="Minimize"/>
+										</Button>
+										<Button x:Name="MaximizeButton" Classes="WindowButton MaximizeButton" Command="{Binding Path=Maximize}">
+											<controls:XamlSvg Classes="Maximize" Margin="2"/>
+										</Button>
+										<Button x:Name="RestoreButton" Classes="WindowButton RestoreButton" Command="{Binding Path=Restore}">
+											<controls:XamlSvg Classes="Restore" Margin="2"/>
+										</Button>
+										<Button x:Name="CloseButton" Classes="WindowButton CloseButton" Command="{Binding Path=Close}">
+											<controls:XamlSvg Classes="Close"/>
+										</Button>
+									</StackPanel>
+								</Grid>
+								<ContentPresenter HorizontalContentAlignment="{TemplateBinding Property=HorizontalContentAlignment}"
+								                  Margin="{TemplateBinding Property=Padding}" Grid.Column="0" Grid.ColumnSpan="2"
+								                  VerticalContentAlignment="{TemplateBinding Property=VerticalContentAlignment}"
+												  x:Name="PART_ContentPresenter" Content="{TemplateBinding Property=Content}"
+												  Grid.Row="1" ContentTemplate="{TemplateBinding Property=ContentTemplate}"/>
 							</Grid>
-							<ContentPresenter HorizontalContentAlignment="{TemplateBinding Property=HorizontalContentAlignment}"
-							                  Margin="{TemplateBinding Property=Padding}" Grid.Column="0" Grid.ColumnSpan="2"
-							                  VerticalContentAlignment="{TemplateBinding Property=VerticalContentAlignment}"
-											  x:Name="PART_ContentPresenter" Content="{TemplateBinding Property=Content}"
-											  Grid.Row="1" ContentTemplate="{TemplateBinding Property=ContentTemplate}"/>
-						</Grid>
-					</VisualLayerManager>
-				</Grid>
-			</ControlTemplate>
-		</Setter>
-
-		<Style Selector="^[WindowState=Maximized] /template/ Border#WindowBorder">
-			<Setter Property="CornerRadius" Value="0"/>
+						</VisualLayerManager>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+			<Style Selector="^[WindowState=Maximized] /template/ Border#WindowBorder">
+				<Setter Property="CornerRadius" Value="0"/>
+			</Style>
+			<Style Selector="^[WindowState=Maximized] /template/ Button#MaximizeButton">
+				<Setter Property="IsVisible" Value="False"/>
+			</Style>
+			<Style Selector="^[WindowState=Normal] /template/ Button#RestoreButton">
+				<Setter Property="IsVisible" Value="False"/>
+			</Style>
 		</Style>
-
-		<Style Selector="^[WindowState=Maximized] /template/ Button#MaximizeButton">
-			<Setter Property="IsVisible" Value="False"/>
-		</Style>
-
-		<Style Selector="^[WindowState=Normal] /template/ Button#RestoreButton">
-			<Setter Property="IsVisible" Value="False"/>
-		</Style>
-	</Style>
-
-	<Style Selector="Button.WindowButton">
-		<Setter Property="Background" Value="Transparent"/>
-		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
-		<Setter Property="BorderBrush" Value="Transparent"/>
-		<Setter Property="BorderThickness" Value="0"/>
-		<Setter Property="Width" Value="26"/>
-		<Setter Property="Height" Value="26"/>
-		<Setter Property="Padding" Value="5"/>
-		<Setter Property="CornerRadius" Value="7.5"/>
-		<Setter Property="Template">
-			<ControlTemplate>
-				<Border BorderThickness="{TemplateBinding Property=BorderThickness}" CornerRadius="{TemplateBinding Property=CornerRadius}"
-						Background="{TemplateBinding Property=Background}" BorderBrush="{TemplateBinding Property=BorderBrush}">
-					<ContentPresenter Content="{TemplateBinding Property=Content}" Margin="{TemplateBinding Property=Padding}"
-									  HorizontalAlignment="Center" VerticalAlignment="Center"/>
-				</Border>
-			</ControlTemplate>
-		</Setter>
-		<Setter Property="Transitions">
-			<Transitions>
-				<BrushTransition Property="Background" Duration="0:0:0.05"/>
-			</Transitions>
-		</Setter>
-	</Style>
-
-	<Style Selector="Button.MinimizeButton">
-		<Style Selector="^:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ResourceKey=MinimizePointeroverColor}"/>
-		</Style>
-	</Style>
-
-	<Style Selector="Button.MaximizeButton">
-		<Style Selector="^:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ResourceKey=MaximizePointeroverColor}"/>
-		</Style>
-	</Style>
-
-	<Style Selector="Button.RestoreButton">
-		<Style Selector="^:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ResourceKey=MaximizePointeroverColor}"/>
-		</Style>
-	</Style>
-
-	<Style Selector="Button.CloseButton">
-		<Style Selector="^:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ResourceKey=ClosePointeroverColor}"/>
+		<Style Selector="^.ConfirmationCodeWindow">
+			<Setter Property="ShowInTaskbar" Value="False"/>
+			<Setter Property="WindowStartupLocation" Value="CenterOwner"/>
+			<Setter Property="Template">
+				<ControlTemplate x:DataType="vm:ConfirmationCodeWindowVM">
+					<Grid Margin="{TemplateBinding Property=OffScreenMargin}">
+						<Border x:Name="WindowBorder" Background="{DynamicResource ResourceKey=BackgroundColor}" CornerRadius="15" IsHitTestVisible="False"/>
+						<Border x:Name="PART_TransparencyFallback" Background="Transparent" IsHitTestVisible="False"/>
+						<VisualLayerManager>
+							<Grid RowDefinitions="35, *" ColumnDefinitions="35, *">
+								<controls:XamlSvg IsHitTestVisible="False" Grid.Column="0" Grid.Row="0" Height="20"
+												  Foreground="{DynamicResource ResourceKey=HeaderColor}"
+												  Classes="ApplicationLogo CenteredSvg" Width="20"/>
+								<TextBlock IsHitTestVisible="False" Grid.Column="1" Text="{TemplateBinding Property=Title}"
+										   Classes="WindowHeader CenteredTextBlock" Grid.Row="0"/>
+								<Grid Grid.Column="1" ColumnDefinitions="30, *, Auto" Margin="10" Grid.Row="0" Height="20">
+									<StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+										<Button x:Name="CloseButton" Classes="WindowButton CloseButton" Command="{Binding Path=Close}">
+											<controls:XamlSvg Classes="Close"/>
+										</Button>
+									</StackPanel>
+								</Grid>
+								<ContentPresenter HorizontalContentAlignment="{TemplateBinding Property=HorizontalContentAlignment}"
+								                  Margin="{TemplateBinding Property=Padding}" Grid.Column="0" Grid.ColumnSpan="2"
+								                  VerticalContentAlignment="{TemplateBinding Property=VerticalContentAlignment}"
+												  x:Name="PART_ContentPresenter" Content="{TemplateBinding Property=Content}"
+												  Grid.Row="1" ContentTemplate="{TemplateBinding Property=ContentTemplate}"/>
+							</Grid>
+						</VisualLayerManager>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+			<Style Selector="^[WindowState=Maximized] /template/ Border#WindowBorder">
+				<Setter Property="CornerRadius" Value="0"/>
+			</Style>
+			<Style Selector="^[WindowState=Maximized] /template/ Button#MaximizeButton">
+				<Setter Property="IsVisible" Value="False"/>
+			</Style>
+			<Style Selector="^[WindowState=Normal] /template/ Button#RestoreButton">
+				<Setter Property="IsVisible" Value="False"/>
+			</Style>
 		</Style>
 	</Style>
 

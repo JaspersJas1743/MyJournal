@@ -12,6 +12,7 @@ using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
+using MyJournal.Desktop.Assets.Utilities.ConfirmationService;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
@@ -74,6 +75,7 @@ public partial class App : Application
 			.AddUserRegistrationService()
 			.AddKeyedRestoringAccessThroughEmailService(key: nameof(RestoringAccessThroughEmailService))
 			.AddKeyedRestoringAccessThroughPhoneService(key: nameof(RestoringAccessThroughPhoneService))
+			.AddConfirmationService()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()
@@ -172,6 +174,11 @@ public partial class App : Application
 			.AddSingleton<ProfilePhotoView>()
 			.AddSingleton<ProfilePhotoVM>()
 			.AddSingleton<ProfilePhotoModel>()
+			#endregion
+			#region Profile email
+			.AddSingleton<ProfileEmailView>()
+			.AddSingleton<ProfileEmailVM>()
+			.AddSingleton<ProfileEmailModel>()
 			#endregion
 			#endregion
 			#region Messages

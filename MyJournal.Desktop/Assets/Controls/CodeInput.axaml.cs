@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -32,16 +33,55 @@ public partial class CodeInput : UserControl
 		name: nameof(CountOfCell),
 		defaultValue: 7
 	);
+	public static readonly StyledProperty<bool> CodeIsEnteredProperty = AvaloniaProperty.Register<CodeInput, bool>(
+		name: nameof(CodeIsEntered),
+		defaultValue: false
+	);
+	public static readonly StyledProperty<ICommand?> CompletedCommandProperty = AvaloniaProperty.Register<CodeInput, ICommand?>(
+		name: nameof(CompletedCommand)
+	);
+	public static readonly StyledProperty<object?> CompletedCommandParameterProperty = AvaloniaProperty.Register<CodeInput, object?>(
+		name: nameof(CompletedCommandParameter)
+	);
+	public static readonly RoutedEvent<RoutedEventArgs> CompletedCodeEvent = RoutedEvent.Register<CodeInput, RoutedEventArgs>(
+		name: nameof(CompletedCode),
+		routingStrategy: RoutingStrategies.Direct
+	);
 
 	private IEnumerable<TextBox> _codeCells;
 
 	public CodeInput()
-		=> InitializeComponent();
+	{
+		InitializeComponent();
 
-	public string EntryCode
+		this.WhenAnyValue(property1: input => input.EntryCode.Length)
+			.Subscribe(onNext: length => CodeIsEntered = length == CountOfCell);
+
+		this.WhenAnyValue(property1: input => input.EntryCode).Where(predicate: _ => CodeIsEntered).Subscribe(onNext: _ =>
+		{
+			RaiseEvent(e: new RoutedEventArgs(CompletedCodeEvent));
+
+			if (CompletedCommand?.CanExecute(parameter: CompletedCommandParameter) == true)
+				CompletedCommand?.Execute(parameter: CompletedCommandParameter);
+		});
+	}
+
+	public event EventHandler<RoutedEventArgs> CompletedCode
+	{
+		add => AddHandler(routedEvent: CompletedCodeEvent, handler: value);
+		remove => RemoveHandler(routedEvent: CompletedCodeEvent, handler: value);
+	}
+
+	public string? EntryCode
 	{
 		get => GetValue(property: EntryCodeProperty);
 		set => SetValue(property: EntryCodeProperty, value: value);
+	}
+
+	public bool CodeIsEntered
+	{
+		get => GetValue(property: CodeIsEnteredProperty);
+		set => SetValue(property: CodeIsEnteredProperty, value: value);
 	}
 
 	public bool HaveError
@@ -54,6 +94,18 @@ public partial class CodeInput : UserControl
 	{
 		get => GetValue(property: CountOfCellProperty);
 		set => SetValue(property: CountOfCellProperty, value: value);
+	}
+
+	public ICommand? CompletedCommand
+	{
+		get => GetValue(property: CompletedCommandProperty);
+		set => SetValue(property: CompletedCommandProperty, value: value);
+	}
+
+	public object? CompletedCommandParameter
+	{
+		get => GetValue(property: CompletedCommandParameterProperty);
+		set => SetValue(property: CompletedCommandParameterProperty, value: value);
 	}
 
 	protected override void OnInitialized()
@@ -84,10 +136,10 @@ public partial class CodeInput : UserControl
 			return tb;
 		}));
 		_codeCells = CodeEntryPanel.Children.OfType<TextBox>();
-		string codeCopy = EntryCode;
-		int iterationCount = Math.Min(val1: _codeCells.Count(), val2: codeCopy.Length);
+		string? codeCopy = EntryCode;
+		int iterationCount = Math.Min(val1: _codeCells.Count(), val2: codeCopy?.Length ?? 0);
 		for (int i = 0; i < iterationCount; ++i)
-			_codeCells.ElementAt(index: i).Text = codeCopy[index: i].ToString();
+			_codeCells.ElementAt(index: i).Text = codeCopy?[index: i].ToString();
 		_codeCells.ElementAt(index: iterationCount).Focus();
 	}
 

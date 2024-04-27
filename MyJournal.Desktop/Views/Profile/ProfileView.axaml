@@ -12,7 +12,7 @@
 			<Border Grid.Row="3" Grid.RowSpan="3" Grid.Column="1" Background="Gold"/>
 			<Border Grid.Row="7" Grid.RowSpan="3" Grid.Column="1" Background="Green"/>
 
-			<Border Grid.Row="1" Grid.Column="3" Background="Purple"/>
+			<ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding ProfileEmailVM}"/>
 			<Border Grid.Row="3" Grid.RowSpan="7" Grid.Column="3" Background="DeepSkyBlue"/>
 
 			<Border Grid.Row="1" Grid.Column="5" Grid.ColumnSpan="3" Background="Red"/>
