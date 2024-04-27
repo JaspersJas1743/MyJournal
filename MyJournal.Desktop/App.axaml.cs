@@ -18,6 +18,7 @@ using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
+using MyJournal.Desktop.Models.ConfirmationCode;
 using MyJournal.Desktop.Models.Marks;
 using MyJournal.Desktop.Models.Profile;
 using MyJournal.Desktop.Models.Registration;
@@ -26,6 +27,7 @@ using MyJournal.Desktop.Models.Tasks;
 using MyJournal.Desktop.Models.Timetable;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
+using MyJournal.Desktop.ViewModels.ConfirmationCode;
 using MyJournal.Desktop.ViewModels.Marks;
 using MyJournal.Desktop.ViewModels.Profile;
 using MyJournal.Desktop.ViewModels.Registration;
@@ -34,13 +36,13 @@ using MyJournal.Desktop.ViewModels.Tasks;
 using MyJournal.Desktop.ViewModels.Timetable;
 using MyJournal.Desktop.Views;
 using MyJournal.Desktop.Views.Authorization;
+using MyJournal.Desktop.Views.ConfirmationCode;
 using MyJournal.Desktop.Views.Marks;
 using MyJournal.Desktop.Views.Profile;
 using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
 using MyJournal.Desktop.Views.Timetable;
-using ProfileView = MyJournal.Desktop.Views.Profile.ProfileView;
 
 namespace MyJournal.Desktop;
 
@@ -76,6 +78,10 @@ public partial class App : Application
 			.AddKeyedRestoringAccessThroughEmailService(key: nameof(RestoringAccessThroughEmailService))
 			.AddKeyedRestoringAccessThroughPhoneService(key: nameof(RestoringAccessThroughPhoneService))
 			.AddConfirmationService()
+			.AddTransient<FirstStepOfConfirmationView>()
+			.AddTransient<SuccessConfirmationModel>()
+			.AddTransient<SuccessConfirmationVM>()
+			.AddTransient<SuccessConfirmationView>()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()

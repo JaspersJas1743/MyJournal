@@ -1,12 +1,11 @@
 ﻿using System.Reactive;
-using MyJournal.Desktop.Models;
+using MyJournal.Desktop.Models.ConfirmationCode;
 using ReactiveUI;
 
-namespace MyJournal.Desktop.ViewModels;
+namespace MyJournal.Desktop.ViewModels.ConfirmationCode;
 
-public sealed class ConfirmationCodeWindowVM(ConfirmationCodeWindowModel model) : VMWithError(model: model)
+public sealed class FirstStepOfConfirmationVM(FirstStepOfConfirmationModel model) : VMWithError(model: model)
 {
-	public ReactiveCommand<Unit, Unit> Close => model.Close;
 	public ReactiveCommand<Unit, Unit> CompletedCode => model.CompletedCode;
 
 	public string EntryCode

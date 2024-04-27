@@ -7,6 +7,7 @@ using MyJournal.Core;
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ConfirmationService;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
@@ -67,18 +68,18 @@ public sealed class ProfileEmailModel : ModelWithErrorMessage
 		{
 			try
 			{
-				await _email?.Change(confirmationCode: code, newEmail: EnteredEmail);
-				return String.Empty;
+				string message = await _email?.Change(confirmationCode: code, newEmail: EnteredEmail);
+				return new CommandExecuteResult(ExecuteResult: CommandExecuteResults.Confirmed, Message: message);
 			}
 			catch (ArgumentException ex)
 			{
-				return ex.Message;
+				return new CommandExecuteResult(ExecuteResult: CommandExecuteResults.Unconfirmed, Message: ex.Message);
 			}
 			catch (ApiException ex)
 			{
 				Error = ex.Message;
 				Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(onNext: _ => HaveError = false);
-				return String.Empty;
+				return new CommandExecuteResult(ExecuteResult: CommandExecuteResults.Wrong, Message: ex.Message);
 			}
 		}));
 	}

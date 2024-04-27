@@ -111,8 +111,16 @@
         <DependentUpon>ProfileView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="Views\ConfirmationCodeWindow.axaml.cs">
+      <Compile Update="Views\Profile\ProfilePhoneView.axaml.cs">
+        <DependentUpon>ProfilePhoneView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\ConfirmationCode\ConfirmationCodeWindow.axaml.cs">
         <DependentUpon>ConfirmationCodeWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\ConfirmationCode\SuccessConfirmationView.axaml.cs">
+        <DependentUpon>SuccessConfirmationView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>
