@@ -617,7 +617,7 @@ public sealed class AccountController(
     )
     {
         int userId = GetAuthorizedUserId();
-        Session session = await _context.Sessions.AsNoTracking().Where(predicate: s => s.Id == id && s.UserId == userId)
+        Session session = await _context.Sessions.Where(predicate: s => s.Id == id && s.UserId == userId)
             .SingleOrDefaultAsync(cancellationToken: cancellationToken)
             ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Указанная сессия не найдена.");
 
@@ -661,7 +661,7 @@ public sealed class AccountController(
     {
         int userId = GetAuthorizedUserId();
 
-        IQueryable<Session> sessionsToDisable = _context.Users.AsNoTracking()
+        IQueryable<Session> sessionsToDisable = _context.Users
             .Where(u => u.Id.Equals(userId))
             .SelectMany(u => u.Sessions.Where(
                 s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable
@@ -702,7 +702,7 @@ public sealed class AccountController(
         int userId = GetAuthorizedUserId();
         int currentSessionId = GetCurrentSessionId();
 
-        IQueryable<Session> sessionsToDisable = _context.Users.AsNoTracking()
+        IQueryable<Session> sessionsToDisable = _context.Users
             .Where(u => u.Id.Equals(userId))
             .SelectMany(u => u.Sessions.Where(
                 s => s.SessionActivityStatus.ActivityStatus == SessionActivityStatuses.Enable && !s.Id.Equals(currentSessionId)
