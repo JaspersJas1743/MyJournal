@@ -53,10 +53,16 @@ public partial class App : Application
 	public App()
 	{
 		IServiceCollection services = new ServiceCollection()
-			#region MainWindow
+			#region Main window
 			.AddSingleton<MainWindowView>()
 			.AddSingleton<MainWindowVM>()
 			.AddSingleton<MainWindowModel>()
+			#endregion
+			#region Confirmation code window
+			.AddTransient<FirstStepOfConfirmationView>()
+			.AddTransient<SuccessConfirmationModel>()
+			.AddTransient<SuccessConfirmationVM>()
+			.AddTransient<SuccessConfirmationView>()
 			#endregion
 			#region Welcome
 			.AddSingleton<WelcomeView>()
@@ -78,10 +84,6 @@ public partial class App : Application
 			.AddKeyedRestoringAccessThroughEmailService(key: nameof(RestoringAccessThroughEmailService))
 			.AddKeyedRestoringAccessThroughPhoneService(key: nameof(RestoringAccessThroughPhoneService))
 			.AddConfirmationService()
-			.AddTransient<FirstStepOfConfirmationView>()
-			.AddTransient<SuccessConfirmationModel>()
-			.AddTransient<SuccessConfirmationVM>()
-			.AddTransient<SuccessConfirmationView>()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()
@@ -185,6 +187,11 @@ public partial class App : Application
 			.AddSingleton<ProfileEmailView>()
 			.AddSingleton<ProfileEmailVM>()
 			.AddSingleton<ProfileEmailModel>()
+			#endregion
+			#region Profile phone
+			.AddSingleton<ProfilePhoneView>()
+			.AddSingleton<ProfilePhoneVM>()
+			.AddSingleton<ProfilePhoneModel>()
 			#endregion
 			#endregion
 			#region Messages

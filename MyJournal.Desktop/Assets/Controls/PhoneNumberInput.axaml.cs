@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -51,8 +50,9 @@ public partial class PhoneNumberInput : UserControl
 
 		_cells = Panel.Children.OfType<MaskedTextBox>();
 
-		if (!String.IsNullOrWhiteSpace(value: EntryPhone))
-			SetPhone(phone: EntryPhone);
+		this.WhenAnyValue(property1: input => input.EntryPhone)
+			.Where(predicate: phone => !String.IsNullOrWhiteSpace(value: phone))
+			.Subscribe(onNext: SetPhone);
 
 		foreach (MaskedTextBox mtb in _cells)
 		{
@@ -60,9 +60,13 @@ public partial class PhoneNumberInput : UserControl
 			mtb.AddHandler(routedEvent: KeyDownEvent, handler: OnKeyDownToCell, routes: RoutingStrategies.Tunnel);
 			mtb.AddHandler(routedEvent: TextBox.TextChangedEvent, handler: OnTextChanged);
 			mtb.AddHandler(routedEvent: TextBox.PastingFromClipboardEvent, handler: OnPastingToCellFromClipboard);
-			mtb.WhenAnyValue(property1: textBox => textBox.Text).Where(predicate: text => text is not null).Subscribe(
-				onNext: _ => EntryPhone = $"+7({FirstPartOfNumber.Text}){SecondPartOfNumber.Text}-{ThirdPartOfNumber.Text}"
-			);
+			mtb.WhenAnyValue(property1: textBox => textBox.Text)
+				.Subscribe(onNext: _ =>
+				{
+					EntryPhone = _cells.All(predicate: mtb => mtb.Text?.All(predicate: c => c != '_') == true) 
+						? $"+7({FirstPartOfNumber.Text}){SecondPartOfNumber.Text}-{ThirdPartOfNumber.Text}" 
+						: String.Empty;
+				});
 			mtb.WhenAnyValue(property1: textBox => textBox.Text).Where(predicate: text => text is not null && text.All(predicate: c => c == '_'))
 			   .Subscribe(onNext: _ => mtb.Classes.Add(name: "Empty"));
 			mtb.WhenAnyValue(property1: textBox => textBox.Text).Where(predicate: text => text is not null && text.Any(predicate: c => c != '_'))
@@ -81,8 +85,10 @@ public partial class PhoneNumberInput : UserControl
 		MaskedTextBox maskedTextBox = (sender as MaskedTextBox)!;
 		if (e is { Key: Key.V, KeyModifiers: KeyModifiers.Control })
 			await PastePhone(e: e);
-		if (e.Key == Key.Back && (maskedTextBox.Text?.All(predicate: c => c == '_') ?? false))
+		else if (e.Key == Key.Back && (maskedTextBox.Text?.All(predicate: c => c == '_') ?? false))
 			GetPreviousMaskedTextBox(current: maskedTextBox)?.Focus();
+		else if (Char.IsLetterOrDigit(s: e.KeySymbol ?? " ", index: 0) && maskedTextBox.Text?.All(predicate: c => c != '_') == true)
+			GetNextMaskedTextBox(current: maskedTextBox)?.Focus();
 	}
 
 	private void OnCellGotFocus(object? sender, GotFocusEventArgs e)
