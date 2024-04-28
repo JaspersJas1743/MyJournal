@@ -3,7 +3,12 @@
 	<Style Selector="TextBlock">
 		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=Raleway}"/>
 		<Setter Property="FontWeight" Value="SemiBold"/>
-		<Setter Property="FontFeatures" Value="+lnum"></Setter>
+		<Setter Property="FontFeatures" Value="+lnum"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
 
 		<Style Selector="^.WindowHeader">
 			<Setter Property="FontSize" Value="16"/>

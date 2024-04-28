@@ -2,6 +2,7 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
 	<Style Selector="controls|MenuItem">
+		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 		<Style Selector="^[ItemType=Full]">
 			<Setter Property="Template">
 				<ControlTemplate>
@@ -9,8 +10,8 @@
 							ColumnDefinitions="30*, 40*, 30*" Width="100" Height="100"
 							Background="{Binding $parent[ListBox].Background}">
 						<ContentPresenter Content="{TemplateBinding Image}" x:Name="PART_MenuItemImage" Grid.Column="1"
-										Grid.Row="1" Foreground="{DynamicResource ForegroundColor}"/>
-						<TextBlock	Grid.ColumnSpan="3" Grid.Row="3" Foreground="{DynamicResource ForegroundColor}"
+										Grid.Row="1" Foreground="{TemplateBinding Foreground}"/>
+						<TextBlock	Grid.ColumnSpan="3" Grid.Row="3" Foreground="{TemplateBinding Foreground}"
 									Text="{TemplateBinding Header}" Grid.Column="0" x:Name="PART_MenuItemHeader"
 									TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 					</Grid>
@@ -24,17 +25,18 @@
 							ColumnDefinitions="25*, 50*, 25*" Width="100" Height="100"
 							Background="{Binding $parent[ListBox].Background}">
 						<ContentPresenter Content="{TemplateBinding Image}" x:Name="PART_MenuItemImage" Grid.Column="1"
-										Grid.Row="1" Foreground="{DynamicResource ForegroundColor}"/>
+										Grid.Row="1" Foreground="{TemplateBinding Foreground}"/>
 					</Grid>
 				</ControlTemplate>
 			</Setter>
 		</Style>
 		<Style Selector="^:selected">
-			<Style Selector="^ /template/ ContentPresenter#PART_MenuItemImage">
-				<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
-			</Style>
-			<Style Selector="^ /template/ TextBlock#PART_MenuItemHeader">
-				<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
+			<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
+		</Style>
+
+		<Style Selector="^.SelectionMenuItem">
+			<Style Selector="^:selected">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
 			</Style>
 		</Style>
 	</Style>

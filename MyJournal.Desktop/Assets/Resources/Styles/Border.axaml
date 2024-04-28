@@ -17,6 +17,13 @@
 				</Transitions>
 			</Setter>
 		</Style>
+		<Style Selector="^.TransitionBackground">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
 		<Style Selector="^.OpacityTransition">
 			<Setter Property="Transitions">
 				<Transitions>

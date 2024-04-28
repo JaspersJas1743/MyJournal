@@ -13,13 +13,18 @@
 		<Setter Property="FontSize" Value="24"/>
 		<Setter Property="FontWeight" Value="SemiBold"/>
 		<Setter Property="FocusAdorner" Value="{x:Null}" />
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
 		<Setter Property="Template">
 	        <ControlTemplate>
 	            <Grid ColumnDefinitions="*,40">
 	                <Border x:Name="Background"
 	                        Grid.Column="0"
 	                        Grid.ColumnSpan="2"
-							Classes="TransitionBorderBrush"
+							Classes="TransitionBorderBrush TransitionBackground"
 	                        Background="{TemplateBinding Background}"
 	                        BorderBrush="{TemplateBinding BorderBrush}"
 	                        BorderThickness="{TemplateBinding BorderThickness}"
@@ -69,7 +74,7 @@
 	                        IsLightDismissEnabled="True"
 	                        InheritsTransform="True">
 	                    <Border x:Name="PopupBorder" ClipToBounds="True" Padding="-5"
-								Classes="TransitionBorderBrush OpacityTransition"
+								Classes="TransitionBorderBrush OpacityTransition TransitionBackground"
 	                            Background="{DynamicResource ComboBoxDropDownBackground}"
 	                            BorderBrush="{TemplateBinding BorderBrush}"
 	                            BorderThickness="{TemplateBinding BorderThickness}"

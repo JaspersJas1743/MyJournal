@@ -130,6 +130,10 @@
         <DependentUpon>ProfileChangeMenuItemTypeView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Profile\ProfileChangeThemeView.axaml.cs">
+        <DependentUpon>ProfileChangeThemeView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

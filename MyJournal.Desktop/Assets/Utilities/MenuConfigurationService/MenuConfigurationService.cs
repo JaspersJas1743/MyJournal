@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Desktop.Assets.Controls;
-using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using ReactiveUI;
 
@@ -21,9 +20,7 @@ public sealed class MenuConfigurationService : IMenuConfigurationService
 	{
 		MessageBus.Current.SendMessage(new ChangeMenuItemsTypeEventArgs(menuItemTypes: type));
 		_configurationService.Set(key: ConfigurationKeys.MenuType, value: type);
-		IMenuConfigurationService.InvokeChangeMenuItemsTypeEvent(
-			e: new ChangeMenuItemsTypeEventArgs(menuItemTypes: type)
-		);
+		IMenuConfigurationService.InvokeChangeMenuItemsTypeEvent(e: new ChangeMenuItemsTypeEventArgs(menuItemTypes: type));
 	}
 }
 

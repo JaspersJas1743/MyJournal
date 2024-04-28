@@ -1,7 +1,9 @@
 using System;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
@@ -17,6 +19,7 @@ using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.Assets.Utilities.ThemeConfigurationService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
 using MyJournal.Desktop.Models.ConfirmationCode;
@@ -86,6 +89,7 @@ public partial class App : Application
 			.AddKeyedRestoringAccessThroughPhoneService(key: nameof(RestoringAccessThroughPhoneService))
 			.AddConfirmationService()
 			.AddMenuConfigurationService()
+			.AddThemeConfigurationService()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()
@@ -205,6 +209,11 @@ public partial class App : Application
 			.AddSingleton<ProfileChangeMenuItemTypeVM>()
 			.AddSingleton<ProfileChangeMenuItemTypeModel>()
 			#endregion
+			#region Profile change theme
+			.AddSingleton<ProfileChangeThemeView>()
+			.AddSingleton<ProfileChangeThemeVM>()
+			.AddSingleton<ProfileChangeThemeModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()
@@ -288,6 +297,7 @@ public partial class App : Application
 
 	public override async void OnFrameworkInitializationCompleted()
 	{
+		SetTheme(configurationService: GetService<IConfigurationService>());
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			desktop.MainWindow = GetService<MainWindowView>();
@@ -326,5 +336,15 @@ public partial class App : Application
 	{
 		WelcomeVM welcomeVM = GetService<WelcomeVM>();
 		mainWindowVM.Content = welcomeVM;
+	}
+
+	private void SetTheme(IConfigurationService configurationService)
+	{
+		ThemeVariant currentTheme = (typeof(ThemeVariant).GetProperty(
+			name: configurationService.Get(key: ConfigurationKeys.Theme)!,
+			bindingAttr: BindingFlags.Public | BindingFlags.Static
+		)!.GetValue(obj: null) as ThemeVariant)!;
+		IThemeConfigurationService.CurrentTheme = currentTheme == ThemeVariant.Default ? ActualThemeVariant : currentTheme;
+		RequestedThemeVariant = IThemeConfigurationService.CurrentTheme;
 	}
 }

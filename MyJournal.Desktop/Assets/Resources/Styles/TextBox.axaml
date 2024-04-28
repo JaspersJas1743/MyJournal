@@ -11,6 +11,11 @@
         <Setter Property="FontSize" Value="24"/>
         <Setter Property="SelectionBrush" Value="{DynamicResource MainAccentColor}"/>
         <Setter Property="CaretBrush" Value="{DynamicResource ForegroundColor}"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
 		<Setter Property="Template">
 	        <ControlTemplate>
 	            <DataValidationErrors>
@@ -111,7 +116,9 @@
 		    <Setter Property="FontSize" Value="48"/>
 		    <Setter Property="Transitions">
 			    <Transitions>
-				    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"></BrushTransition>
+				    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+				    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+				    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
 			    </Transitions>
 		    </Setter>
 		    <Style Selector="^:focus /template/ Border#PART_BorderElement">

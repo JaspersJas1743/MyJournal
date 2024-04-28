@@ -1,7 +1,7 @@
 using System;
 using MyJournal.Desktop.Assets.Controls;
 
-namespace MyJournal.Desktop.Assets.MessageBusEvents;
+namespace MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 
 public sealed class ChangeMenuItemsTypeEventArgs(MenuItemTypes menuItemTypes) : EventArgs
 {

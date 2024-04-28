@@ -1,5 +1,4 @@
 using MyJournal.Desktop.Assets.Controls;
-using MyJournal.Desktop.Assets.MessageBusEvents;
 
 namespace MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 

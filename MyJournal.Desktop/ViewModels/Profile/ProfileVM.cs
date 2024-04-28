@@ -13,6 +13,7 @@ public sealed class ProfileVM(ProfileModel model) : MenuItemVM(model: model)
 	public BaseVM ProfilePhoneVM => model.ProfilePhoneVM;
 	public BaseVM ProfileSessionsVM => model.ProfileSessionsVM;
 	public BaseVM ProfileChangeMenuItemTypeVM => model.ProfileChangeMenuItemTypeVM;
+	public BaseVM ProfileChangeThemeVM => model.ProfileChangeThemeVM;
 
 	public ReactiveCommand<Unit, Unit> ClosedThisSession => model.CloseThisSession;
 

@@ -14,7 +14,8 @@
 			<Setter Property="Template">
 				<ControlTemplate x:DataType="vm:MainWindowVM">
 					<Grid Margin="{TemplateBinding Property=OffScreenMargin}">
-						<Border x:Name="WindowBorder" Background="{DynamicResource ResourceKey=BackgroundColor}" CornerRadius="15" IsHitTestVisible="False"/>
+						<Border x:Name="WindowBorder" Background="{DynamicResource BackgroundColor}"
+								Classes="TransitionBackground" CornerRadius="15" IsHitTestVisible="False"/>
 						<Border x:Name="PART_TransparencyFallback" Background="Transparent" IsHitTestVisible="False"/>
 						<VisualLayerManager>
 							<Grid RowDefinitions="35, *" ColumnDefinitions="35, *">
