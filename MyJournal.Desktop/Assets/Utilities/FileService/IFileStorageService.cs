@@ -6,5 +6,5 @@ namespace MyJournal.Desktop.Assets.Utilities.FileService;
 public interface IFileStorageService
 {
 	public Task<IStorageFile?> OpenFile();
-	public Task<IStorageFile?> SaveFile();
+	public Task<IStorageFolder?> OpenFolder();
 }

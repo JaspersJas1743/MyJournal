@@ -214,6 +214,11 @@ public partial class App : Application
 			.AddSingleton<ProfileChangeThemeVM>()
 			.AddSingleton<ProfileChangeThemeModel>()
 			#endregion
+			#region Profile file storage
+			.AddSingleton<ProfileFileStorageView>()
+			.AddSingleton<ProfileFileStorageVM>()
+			.AddSingleton<ProfileFileStorageModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()

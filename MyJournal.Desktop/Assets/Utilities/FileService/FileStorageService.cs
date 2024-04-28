@@ -18,19 +18,22 @@ public sealed class FileStorageService : IFileStorageService
 	{
 		IReadOnlyList<IStorageFile> files = await _target.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 		{
-			Title = "Открыть файл..",
+			Title = "Открыть...",
 			AllowMultiple = false
 		});
 
 		return files.Count >= 1 ? files[0] : null;
 	}
 
-	public async Task<IStorageFile?> SaveFile()
+	public async Task<IStorageFolder?> OpenFolder()
 	{
-		return await _target.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
+		IReadOnlyList<IStorageFolder> folders = await _target.StorageProvider.OpenFolderPickerAsync(options: new FolderPickerOpenOptions()
 		{
-			Title = "Сохранить..",
+			Title = "Открыть...",
+			AllowMultiple = false
 		});
+
+		return folders.Count >= 1 ? folders[0] : null;
 	}
 }
 
