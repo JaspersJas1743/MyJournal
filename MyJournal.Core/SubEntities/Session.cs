@@ -58,6 +58,11 @@ public sealed class Session : ISubEntity
 		return new Session(client: client, response: response);
 	}
 
+	internal static Session Create(
+		ApiClient client,
+		GetSessionsResponse response
+	) => new Session(client: client, response: response);
+
 	public async Task<string> SignOut(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)

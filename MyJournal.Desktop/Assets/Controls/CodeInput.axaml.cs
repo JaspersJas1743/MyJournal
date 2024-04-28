@@ -146,8 +146,11 @@ public partial class CodeInput : UserControl
 	protected override void OnLoaded(RoutedEventArgs e)
 	{
 		base.OnLoaded(e: e);
-		(_codeCells.FirstOrDefault(predicate: tb => String.IsNullOrEmpty(value: tb.Text)) ?? _codeCells.Last()).Focus();
+		SetFocusOnLastCell();
 	}
+
+	private void SetFocusOnLastCell() =>
+		(_codeCells.FirstOrDefault(predicate: tb => String.IsNullOrEmpty(value: tb.Text)) ?? _codeCells.Last()).Focus();
 
 	private void OnKeyDownInCell(object? sender, KeyEventArgs e)
 	{

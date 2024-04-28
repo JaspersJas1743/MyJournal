@@ -76,7 +76,7 @@ public abstract class User
 				googleAuthenticatorService: googleAuthenticatorService
 			)),
 			sessions: new AsyncLazy<SessionCollection>(valueFactory: async () => await SessionCollection.Create(
-				   client: client
+				client: client
 			))
 		));
 		_photo = new AsyncLazy<ProfilePhoto>(valueFactory: async () => new ProfilePhoto(

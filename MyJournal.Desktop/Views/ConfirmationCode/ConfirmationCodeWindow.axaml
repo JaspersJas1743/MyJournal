@@ -5,7 +5,7 @@
 		xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.ConfirmationCode"
 		x:DataType="vm:ConfirmationCodeWindowVM" Title="Подтверждение"
 		mc:Ignorable="d" d:DesignWidth="630" d:DesignHeight="275" CanResize="False"
-		Width="630" Height="275" Classes="ConfirmationCodeWindow"
+		SystemDecorations="None" Width="630" Height="285" Classes="ConfirmationCodeWindow"
 		x:Class="MyJournal.Desktop.Views.ConfirmationCode.ConfirmationCodeWindow">
 	<TransitioningContentControl	Classes.RightDirection="{Binding HaveRightDirection}"
 									Classes.LeftDirection="{Binding HaveLeftDirection}"

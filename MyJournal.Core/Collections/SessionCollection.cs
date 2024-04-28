@@ -1,4 +1,3 @@
-using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -47,9 +46,10 @@ public sealed class SessionCollection : IAsyncEnumerable<Session>
 		) ?? throw new InvalidOperationException();
 		return new SessionCollection(
 			client: client,
-			sessions: new AsyncLazy<List<Session>>(valueFactory: async () => new List<Session>(collection: await Task.WhenAll(tasks: sessions.Select(
-				selector: async s => await Session.Create(client: client, id: s.Id, cancellationToken: cancellationToken)
-			)))));
+			sessions: new AsyncLazy<List<Session>>(valueFactory: () => new List<Session>(collection: sessions.Select(
+				selector: s => Session.Create(client: client, response: s)
+			)))
+		);
 	}
 	#endregion
 

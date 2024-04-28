@@ -19,7 +19,6 @@
         <PackageReference Include="Avalonia" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.Desktop" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.Labs.Lottie" Version="11.0.10.1" />
-        <PackageReference Include="Avalonia.Svg.Skia" Version="11.0.0.18" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.0-beta1" />
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.0-beta1" />
@@ -121,6 +120,10 @@
       </Compile>
       <Compile Update="Views\ConfirmationCode\SuccessConfirmationView.axaml.cs">
         <DependentUpon>SuccessConfirmationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileSessionsView.axaml.cs">
+        <DependentUpon>ProfileSessionsView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

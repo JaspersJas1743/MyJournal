@@ -44,6 +44,7 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ComboBox.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ComboBoxItem.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ListBox.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ListBoxItem.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"/>

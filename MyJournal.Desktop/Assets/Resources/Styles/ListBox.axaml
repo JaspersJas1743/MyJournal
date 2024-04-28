@@ -1,5 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:entities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
+		xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia">
 
 	<Style Selector="ListBox">
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -8,6 +10,30 @@
 		<Setter Property="VerticalAlignment" Value="Center"/>
 		<Setter Property="HorizontalAlignment" Value="Center"/>
 		<Setter Property="Background" Value="Transparent"/>
+		<Style Selector="^.Sessions">
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="15"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="entities:Session">
+					<Border Width="270" Height="90" Classes="Session">
+						<Grid RowDefinitions="15*, 5*, 10*, 40*, 20*" ColumnDefinitions="20*, 50*, 15*, 150*, 15*, 20*">
+							<Ellipse Grid.Row="1" Grid.RowSpan="2" Fill="{DynamicResource ConfirmedDataColor}"
+									Grid.Column="4" IsVisible="{Binding IsCurrentSession}"/>
+							<asyncImageLoader:AdvancedImage Grid.Column="1" Grid.Row="2" Grid.RowSpan="2" Source="{Binding ClientLogoLink}"/>
+							<StackPanel Grid.Row="2" Grid.RowSpan="2" Grid.Column="3" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="5">
+								<TextBlock Text="{Binding ClientName}" FontSize="20"/>
+								<TextBlock Text="{Binding Ip}" FontSize="20"/>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</Setter>
+		</Style>
 	</Style>
 
 </Styles>

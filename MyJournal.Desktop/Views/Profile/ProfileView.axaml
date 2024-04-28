@@ -9,7 +9,7 @@
 		<Grid	Height="1025" RowDefinitions="10*, 410*, 20*, 270*, 20*, 25*, 20*, 120*, 20*, 70*, 40*"
 				Width="1920" ColumnDefinitions="25*, 750*, 20*, 540*, 20*, 260*, 20*, 260*, 25*">
 			<ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding ProfilePhotoVM}"/>
-			<Border Grid.Row="3" Grid.RowSpan="3" Grid.Column="1" Background="Gold"/>
+			<ContentControl Grid.Row="3" Grid.RowSpan="3" Grid.Column="1"  Content="{Binding ProfileSessionsVM}"/>
 			<Border Grid.Row="7" Grid.RowSpan="3" Grid.Column="1" Background="Green"/>
 
 			<ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding ProfileEmailVM}"/>

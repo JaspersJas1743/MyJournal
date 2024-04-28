@@ -193,6 +193,11 @@ public partial class App : Application
 			.AddSingleton<ProfilePhoneVM>()
 			.AddSingleton<ProfilePhoneModel>()
 			#endregion
+			#region Profile sessions
+			.AddSingleton<ProfileSessionsView>()
+			.AddSingleton<ProfileSessionsVM>()
+			.AddSingleton<ProfileSessionsModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()
@@ -288,11 +293,19 @@ public partial class App : Application
 			UserCredential credential = credentialStorageService.Get();
 			if (credential != UserCredential.Empty)
 			{
-				IAuthorizationService<User> authorizationService = GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
-				MainVM mainVM = GetService<MainVM>();
-				Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
-				mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
-				mainWindowVM.Content = mainVM;
+				try
+				{
+					IAuthorizationService<User> authorizationService = GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
+					MainVM mainVM = GetService<MainVM>();
+					Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
+					mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+					mainWindowVM.Content = mainVM;
+				}
+				catch (UnauthorizedAccessException e)
+				{
+					WelcomeVM welcomeVM = GetService<WelcomeVM>();
+					mainWindowVM.Content = welcomeVM;
+				}
 			}
 			initialLoadingVM.StopTimer();
 		}
