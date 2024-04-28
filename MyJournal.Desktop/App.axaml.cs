@@ -15,6 +15,7 @@ using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.ConfirmationService;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
+using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
@@ -84,6 +85,7 @@ public partial class App : Application
 			.AddKeyedRestoringAccessThroughEmailService(key: nameof(RestoringAccessThroughEmailService))
 			.AddKeyedRestoringAccessThroughPhoneService(key: nameof(RestoringAccessThroughPhoneService))
 			.AddConfirmationService()
+			.AddMenuConfigurationService()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()

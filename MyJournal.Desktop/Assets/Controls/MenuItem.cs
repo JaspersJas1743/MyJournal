@@ -13,6 +13,9 @@ public enum MenuItemTypes
 
 public sealed class MenuItem : ListBoxItem
 {
+	public const MenuItemTypes Full = MenuItemTypes.Full;
+	public const MenuItemTypes Compact = MenuItemTypes.Compact;
+
 	public static readonly StyledProperty<XamlSvg> ImageProperty = AvaloniaProperty.Register<MenuItem, XamlSvg>(name: nameof(Image));
 	public static readonly StyledProperty<MenuItemTypes> ItemTypeProperty = AvaloniaProperty.Register<MenuItem, MenuItemTypes>(name: nameof(ItemType));
 	public static readonly StyledProperty<string> HeaderProperty = AvaloniaProperty.Register<MenuItem, string>(name: nameof(Header));

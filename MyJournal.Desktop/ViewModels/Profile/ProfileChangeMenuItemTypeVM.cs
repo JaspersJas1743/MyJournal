@@ -6,10 +6,10 @@ namespace MyJournal.Desktop.ViewModels.Profile;
 
 public sealed class ProfileChangeMenuItemTypeVM(ProfileChangeMenuItemTypeModel model) : BaseVM(model: model)
 {
-	public bool ShortTypeIsSelected
+	public bool CompactTypeIsSelected
 	{
-		get => model.ShortTypeIsSelected;
-		set => model.ShortTypeIsSelected = value;
+		get => model.CompactTypeIsSelected;
+		set => model.CompactTypeIsSelected = value;
 	}
 
 	public bool FullTypeIsSelected
@@ -18,6 +18,6 @@ public sealed class ProfileChangeMenuItemTypeVM(ProfileChangeMenuItemTypeModel m
 		set => model.FullTypeIsSelected = value;
 	}
 
-	public ReactiveCommand<Unit, Unit> SelectedShortType => model.SelectedShortType;
+	public ReactiveCommand<Unit, Unit> SelectedCompactType => model.SelectedCompactType;
 	public ReactiveCommand<Unit, Unit> SelectedFullType => model.SelectedFullType;
 }

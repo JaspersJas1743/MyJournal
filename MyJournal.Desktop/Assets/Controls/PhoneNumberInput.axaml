@@ -8,14 +8,17 @@
 	<Viewbox>
 		<StackPanel Height="90" Orientation="Horizontal" x:Name="Panel">
 			<TextBlock Text="+7("/>
-			<MaskedTextBox  FontSize="56" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}" Classes="CodeEntryCell"
-							x:Name="FirstPartOfNumber" Mask="000" Width="140" PastingFromClipboard="OnPastingToCellFromClipboard"/>
+			<MaskedTextBox  ContextFlyout="{x:Null}" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}"
+							Classes="CodeEntryCell" x:Name="FirstPartOfNumber" Mask="000" Width="140"
+							FontSize="56" PastingFromClipboard="OnPastingToCellFromClipboard"/>
 			<TextBlock Text=")"/>
-			<MaskedTextBox  FontSize="56" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}" Classes="CodeEntryCell"
-							x:Name="SecondPartOfNumber" Mask="000" Width="140" PastingFromClipboard="OnPastingToCellFromClipboard"/>
+			<MaskedTextBox	ContextFlyout="{x:Null}" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}"
+							Classes="CodeEntryCell" x:Name="SecondPartOfNumber" Mask="000" Width="140"
+							FontSize="56" PastingFromClipboard="OnPastingToCellFromClipboard"/>
 			<TextBlock Text="-"/>
-			<MaskedTextBox  FontSize="56" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}" Classes="CodeEntryCell"
-							x:Name="ThirdPartOfNumber" Mask="0000" Width="185" PastingFromClipboard="OnPastingToCellFromClipboard"/>
+			<MaskedTextBox  ContextFlyout="{x:Null}" Classes.ErrorCodeEntryCell="{Binding #ThisControl.HaveError}"
+							Classes="CodeEntryCell" x:Name="ThirdPartOfNumber" Mask="0000" Width="185"
+							FontSize="56" PastingFromClipboard="OnPastingToCellFromClipboard"/>
 		</StackPanel>
 	</Viewbox>
 </UserControl>

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using Avalonia;
 using MyJournal.Core;
-using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
+using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Marks;
 using MyJournal.Desktop.ViewModels.Profile;
@@ -57,13 +57,11 @@ public static class RoleHelper
 		if (contents is null)
 			throw new NullReferenceException(message: $"Метод {nameof(GetContent)} вернул пустой список.");
 
-		MenuItemTypes menuItemType = Enum.Parse<MenuItemTypes>(value: _configurationService.Get(key: ConfigurationKeys.MenuType) ?? nameof(MenuItemTypes.Full));
-
 		return Enumerable.Range(start: 0, count: Images.Length).Select(selector: index =>
 		{
 			MenuItemVM content = contents[index];
 			content.SetUser(user: user);
-			return new MenuItem(image: Images[index], header: Names[index], itemContent: content, itemType: menuItemType);
+			return new MenuItem(image: Images[index], header: Names[index], itemContent: content, itemType: IMenuConfigurationService.CurrentType);
 		});
 	}
 

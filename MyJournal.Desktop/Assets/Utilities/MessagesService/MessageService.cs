@@ -71,16 +71,8 @@ public sealed class MessageService : IMessageService
 public static class MessageServiceExtensions
 {
 	public static IServiceCollection AddMessageService(this IServiceCollection serviceCollection)
-	{
-		return serviceCollection.AddTransient<IMessageService, MessageService>(
-			implementationFactory: provider => new MessageService(mainWindow: provider.GetService<MainWindowView>()!)
-		);
-	}
+		=> serviceCollection.AddTransient<IMessageService, MessageService>();
 
 	public static IServiceCollection AddKeyedMessageService(this IServiceCollection serviceCollection, string key)
-	{
-		return serviceCollection.AddKeyedTransient<IMessageService, MessageService>(serviceKey: key,
-			implementationFactory: (provider, o) => new MessageService(mainWindow: provider.GetService<MainWindowView>()!)
-		);
-	}
+		=> serviceCollection.AddKeyedTransient<IMessageService, MessageService>(serviceKey: key);
 }

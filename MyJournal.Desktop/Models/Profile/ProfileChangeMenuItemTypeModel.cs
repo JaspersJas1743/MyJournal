@@ -1,37 +1,33 @@
-using System;
 using System.Reactive;
 using System.Threading.Tasks;
 using MyJournal.Desktop.Assets.Controls;
-using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
+using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.Profile;
 
 public sealed class ProfileChangeMenuItemTypeModel : ModelBase
 {
-	private readonly IConfigurationService _configurationService;
+	private readonly IMenuConfigurationService _menuConfigurationService;
 
-	private bool _shortTypeIsSelected;
+	private bool _compactTypeIsSelected;
 	private bool _fullTypeIsSelected;
 
-	public ProfileChangeMenuItemTypeModel(IConfigurationService configurationService)
+	public ProfileChangeMenuItemTypeModel(IMenuConfigurationService menuConfigurationService)
 	{
-		_configurationService = configurationService;
+		_menuConfigurationService = menuConfigurationService;
 
-		MenuItemTypes menuItemType = Enum.Parse<MenuItemTypes>(value: _configurationService.Get(key: ConfigurationKeys.MenuType) ?? nameof(MenuItemTypes.Full));
+		FullTypeIsSelected = IMenuConfigurationService.CurrentType == MenuItemTypes.Full;
+		CompactTypeIsSelected = IMenuConfigurationService.CurrentType == MenuItemTypes.Compact;
 
-		FullTypeIsSelected = menuItemType == MenuItemTypes.Full;
-		ShortTypeIsSelected = menuItemType == MenuItemTypes.Compact;
-
-		SelectedShortType = ReactiveCommand.CreateFromTask(execute: ChangeMenuItemTypeToShort);
-		SelectedFullType = ReactiveCommand.CreateFromTask(execute: ChangeMenuItemTypeToFull);
+		SelectedCompactType = ReactiveCommand.Create(execute: ChangeMenuItemTypeToCompact);
+		SelectedFullType = ReactiveCommand.Create(execute: ChangeMenuItemTypeToFull);
 	}
 
-	public bool ShortTypeIsSelected
+	public bool CompactTypeIsSelected
 	{
-        get => _shortTypeIsSelected;
-        set => this.RaiseAndSetIfChanged(backingField: ref _shortTypeIsSelected, newValue: value);
+        get => _compactTypeIsSelected;
+        set => this.RaiseAndSetIfChanged(backingField: ref _compactTypeIsSelected, newValue: value);
     }
 
 	public bool FullTypeIsSelected
@@ -40,18 +36,12 @@ public sealed class ProfileChangeMenuItemTypeModel : ModelBase
         set => this.RaiseAndSetIfChanged(backingField: ref _fullTypeIsSelected, newValue: value);
     }
 
-	private async Task ChangeMenuItemTypeToFull()
-	{
-		MessageBus.Current.SendMessage(new ChangeMenuItemTypesEventArgs(menuItemTypes: MenuItemTypes.Full));
-		_configurationService.Set(key: ConfigurationKeys.MenuType, value: MenuItemTypes.Full);
-	}
+	private void ChangeMenuItemTypeToFull()
+		=> _menuConfigurationService.ChangeType(type: MenuItemTypes.Full);
 
-	private async Task ChangeMenuItemTypeToShort()
-	{
-		MessageBus.Current.SendMessage(new ChangeMenuItemTypesEventArgs(menuItemTypes: MenuItemTypes.Compact));
-		_configurationService.Set(key: ConfigurationKeys.MenuType, value: MenuItemTypes.Compact);
-	}
+	private void ChangeMenuItemTypeToCompact()
+		=> _menuConfigurationService.ChangeType(type: MenuItemTypes.Compact);
 
-	public ReactiveCommand<Unit, Unit> SelectedShortType { get; }
+	public ReactiveCommand<Unit, Unit> SelectedCompactType { get; }
 	public ReactiveCommand<Unit, Unit> SelectedFullType { get; }
 }

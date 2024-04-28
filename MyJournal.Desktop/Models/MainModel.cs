@@ -1,9 +1,9 @@
-using System;
 using System.Collections.ObjectModel;
 using MyJournal.Core;
 using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Utilities;
+using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models;
@@ -16,11 +16,16 @@ public sealed class MainModel : ModelBase
 
 	public MainModel()
 	{
-		MessageBus.Current.Listen<ChangeMenuItemTypesEventArgs>().Subscribe(onNext: args =>
-		{
-			foreach (MenuItem menuItem in Menu)
-				menuItem.ItemType = args.MenuItemTypes;
-		});
+		IMenuConfigurationService.ChangeMenuItemsType += OnChangeMenuItemsType;
+	}
+
+	~MainModel()
+		=> IMenuConfigurationService.ChangeMenuItemsType -= OnChangeMenuItemsType;
+
+	private void OnChangeMenuItemsType(ChangeMenuItemsTypeEventArgs e)
+	{
+		foreach (MenuItem menuItem in Menu)
+			menuItem.ItemType = e.MenuItemTypes;
 	}
 
 	public ObservableCollection<MenuItem> Menu

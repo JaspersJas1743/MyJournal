@@ -9,16 +9,16 @@
 	<Border Classes="ProfileSection">
 		<Grid ColumnDefinitions="20*, 45*, 55*, 15*, 55*, 45*, 20*" RowDefinitions="15*, auto, 10*, 100*, 15*">
 			<TextBlock Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="1" Text="Вид меню" Classes="ProfileSectionHeader2 CenteredTextBlock"/>
-			<controls:SelectionCard Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Header="Профиль" GroupName="MenuTypeVariant" Tag="Full"
-									Classes="MenuItem" IsChecked="{Binding FullTypeIsSelected}"
-									Command="{Binding SelectedFullType}">
+			<controls:SelectionCard Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Tag="{x:Static controls:MenuItem.Full}" Header="Профиль"
+									GroupName="MenuTypeVariant" IsChecked="{Binding FullTypeIsSelected}"
+									Classes="MenuItem" Command="{Binding SelectedFullType}">
 				<controls:SelectionCard.Content>
 					<controls:XamlSvg Classes="Login"/>
 				</controls:SelectionCard.Content>
 			</controls:SelectionCard>
-			<controls:SelectionCard Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="2" GroupName="MenuTypeVariant" Classes="MenuItem"
-									IsChecked="{Binding ShortTypeIsSelected}" Tag="Short"
-									Command="{Binding SelectedShortType}">
+			<controls:SelectionCard GroupName="MenuTypeVariant" IsChecked="{Binding CompactTypeIsSelected}"
+									Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="2" Tag="{x:Static controls:MenuItem.Compact}"
+									Classes="MenuItem" Command="{Binding SelectedCompactType}">
 				<controls:SelectionCard.Content>
 					<controls:XamlSvg Classes="Login"/>
 				</controls:SelectionCard.Content>
