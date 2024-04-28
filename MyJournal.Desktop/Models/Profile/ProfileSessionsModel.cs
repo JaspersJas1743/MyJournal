@@ -9,7 +9,6 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.ViewModels;
 using ReactiveUI;
 

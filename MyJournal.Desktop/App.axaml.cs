@@ -303,13 +303,21 @@ public partial class App : Application
 				}
 				catch (UnauthorizedAccessException e)
 				{
-					WelcomeVM welcomeVM = GetService<WelcomeVM>();
-					mainWindowVM.Content = welcomeVM;
+					credentialStorageService.Remove();
+					MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 				}
 			}
+			else
+				MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 			initialLoadingVM.StopTimer();
 		}
 
 		base.OnFrameworkInitializationCompleted();
+	}
+
+	private void MoveToAuthorizationPage(MainWindowVM mainWindowVM)
+	{
+		WelcomeVM welcomeVM = GetService<WelcomeVM>();
+		mainWindowVM.Content = welcomeVM;
 	}
 }

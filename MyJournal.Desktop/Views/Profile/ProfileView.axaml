@@ -3,6 +3,7 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
 			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			x:DataType="vm:ProfileVM" x:Class="MyJournal.Desktop.Views.Profile.ProfileView">
 	<Viewbox>
@@ -19,7 +20,10 @@
 			<Border Grid.Row="3" Grid.Column="5" Grid.ColumnSpan="3" Background="Aqua"/>
 			<Border Grid.Row="5" Grid.RowSpan="3" Grid.Column="5" Background="Blue"/>
 			<Border Grid.Row="5" Grid.RowSpan="3" Grid.Column="7" Background="Blue"/>
-			<Border Grid.Row="9" Grid.Column="5" Grid.ColumnSpan="3" Background="Chartreuse"/>
+			<Viewbox Grid.Row="9" Grid.Column="5" Grid.ColumnSpan="3">
+				<controls:ButtonWithAnimatedCommand Width="540" Height="70" Command="{Binding ClosedThisSession}"
+													Classes="Danger Corner15 SubheaderContent" Content="Выйти из аккаунта"/>
+			</Viewbox>
 		</Grid>
 	</Viewbox>
 </UserControl>
