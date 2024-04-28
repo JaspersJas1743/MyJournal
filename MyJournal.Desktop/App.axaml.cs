@@ -198,6 +198,11 @@ public partial class App : Application
 			.AddSingleton<ProfileSessionsVM>()
 			.AddSingleton<ProfileSessionsModel>()
 			#endregion
+			#region Profile change menu type
+			.AddSingleton<ProfileChangeMenuItemTypeView>()
+			.AddSingleton<ProfileChangeMenuItemTypeVM>()
+			.AddSingleton<ProfileChangeMenuItemTypeModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()

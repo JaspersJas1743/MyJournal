@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using MyJournal.Core;
 using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Models;
@@ -7,7 +7,7 @@ namespace MyJournal.Desktop.ViewModels;
 
 public sealed class MainVM(MainModel model) : BaseVM(model: model)
 {
-	public IEnumerable<MenuItem> Menu
+	public ObservableCollection<MenuItem> Menu
 	{
 		get => model.Menu;
 		set => model.Menu = value;

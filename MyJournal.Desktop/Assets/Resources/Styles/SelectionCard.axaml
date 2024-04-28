@@ -59,5 +59,18 @@
 				<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
 			</Style>
 		</Style>
+		<Style Selector="^.MenuItem">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="{TemplateBinding Background}" x:Name="PART_Border"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							BorderBrush="{TemplateBinding BorderBrush}">
+						<controls:MenuItem	Image="{TemplateBinding Content}" Header="{TemplateBinding Header}"
+											ItemType="{TemplateBinding Tag}"/>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
 	</Style>
 </Styles>

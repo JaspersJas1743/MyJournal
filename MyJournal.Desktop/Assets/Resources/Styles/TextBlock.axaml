@@ -48,6 +48,10 @@
 			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
 		</Style>
 
+		<Style Selector="^.ProfileSectionHeader2">
+			<Setter Property="FontSize" Value="24"/>
+		</Style>
+
 		<Style Selector="^.ProfileSectionSubheader">
 			<Setter Property="FontSize" Value="20"/>
 			<Setter Property="Foreground" Value="#B3B3B3"/>

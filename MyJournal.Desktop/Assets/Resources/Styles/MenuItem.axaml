@@ -2,19 +2,33 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
 	<Style Selector="controls|MenuItem">
-		<Setter Property="Template">
-			<ControlTemplate>
-				<Grid	x:Name="PART_MenuItemContainer" RowDefinitions="20*, 40*, 10*, 20*, 10*"
-						ColumnDefinitions="30*, 40*, 30*" Width="100" Height="100"
-						Background="{Binding $parent[ListBox].Background}">
-					<ContentPresenter Content="{TemplateBinding Image}" x:Name="PART_MenuItemImage" Grid.Column="1"
-									Grid.Row="1" Foreground="{DynamicResource ForegroundColor}"/>
-					<TextBlock	Grid.ColumnSpan="3" Grid.Row="3" Foreground="{DynamicResource ForegroundColor}"
-								Text="{TemplateBinding Header}" Grid.Column="0" x:Name="PART_MenuItemHeader"
-								TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-				</Grid>
-			</ControlTemplate>
-		</Setter>
+		<Style Selector="^[ItemType=Full]">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid	x:Name="PART_MenuItemContainer" RowDefinitions="20*, 40*, 5*, 20*, 15*"
+							ColumnDefinitions="30*, 40*, 30*" Width="100" Height="100"
+							Background="{Binding $parent[ListBox].Background}">
+						<ContentPresenter Content="{TemplateBinding Image}" x:Name="PART_MenuItemImage" Grid.Column="1"
+										Grid.Row="1" Foreground="{DynamicResource ForegroundColor}"/>
+						<TextBlock	Grid.ColumnSpan="3" Grid.Row="3" Foreground="{DynamicResource ForegroundColor}"
+									Text="{TemplateBinding Header}" Grid.Column="0" x:Name="PART_MenuItemHeader"
+									TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="^[ItemType=Compact]">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid	x:Name="PART_MenuItemContainer" RowDefinitions="25*, 50*, 25*"
+							ColumnDefinitions="25*, 50*, 25*" Width="100" Height="100"
+							Background="{Binding $parent[ListBox].Background}">
+						<ContentPresenter Content="{TemplateBinding Image}" x:Name="PART_MenuItemImage" Grid.Column="1"
+										Grid.Row="1" Foreground="{DynamicResource ForegroundColor}"/>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
 		<Style Selector="^:selected">
 			<Style Selector="^ /template/ ContentPresenter#PART_MenuItemImage">
 				<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>

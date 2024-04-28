@@ -19,7 +19,7 @@
 			<ContentControl Grid.Row="1" Grid.Column="5" Grid.ColumnSpan="3" Content="{Binding ProfilePhoneVM}"/>
 			<Border Grid.Row="3" Grid.Column="5" Grid.ColumnSpan="3" Background="Aqua"/>
 			<Border Grid.Row="5" Grid.RowSpan="3" Grid.Column="5" Background="Blue"/>
-			<Border Grid.Row="5" Grid.RowSpan="3" Grid.Column="7" Background="Blue"/>
+			<ContentControl Grid.Row="5" Grid.RowSpan="3" Grid.Column="7" Content="{Binding ProfileChangeMenuItemTypeVM}"/>
 			<Viewbox Grid.Row="9" Grid.Column="5" Grid.ColumnSpan="3">
 				<controls:ButtonWithAnimatedCommand Width="540" Height="70" Command="{Binding ClosedThisSession}"
 													Classes="Danger Corner15 SubheaderContent" Content="Выйти из аккаунта"/>

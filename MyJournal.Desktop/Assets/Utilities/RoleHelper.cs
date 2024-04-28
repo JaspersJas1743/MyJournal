@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using Avalonia;
 using MyJournal.Core;
-using MyJournal.Desktop.Models;
-using MyJournal.Desktop.Models.Tasks;
+using MyJournal.Desktop.Assets.Controls;
+using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Marks;
 using MyJournal.Desktop.ViewModels.Profile;
@@ -22,6 +22,7 @@ public static class RoleHelper
 	private const string Parent = "Родитель";
 	private const string Administrator = "Администратор";
 
+	private static readonly IConfigurationService _configurationService;
 	private static readonly string[] Images = new string[] { "Login", "Messages", "Tasks", "Marks", "Schedule" };
 	private static readonly string[] Names = new string[] { "Профиль", "Диалоги", "Задания", "Оценки", "Занятия" };
 	private static readonly MenuItemVM[] ContentsForTeacher;
@@ -32,6 +33,7 @@ public static class RoleHelper
 	static RoleHelper()
 	{
 		App app = (Application.Current as App)!;
+		_configurationService = app.GetService<IConfigurationService>();
 		ProfileVM profile = app.GetService<ProfileVM>();
 		MessagesVM messages = app.GetService<MessagesVM>();
 		TasksVM receivedTasks = app.GetService<ReceivedTasksVM>();
@@ -55,11 +57,13 @@ public static class RoleHelper
 		if (contents is null)
 			throw new NullReferenceException(message: $"Метод {nameof(GetContent)} вернул пустой список.");
 
+		MenuItemTypes menuItemType = Enum.Parse<MenuItemTypes>(value: _configurationService.Get(key: ConfigurationKeys.MenuType) ?? nameof(MenuItemTypes.Full));
+
 		return Enumerable.Range(start: 0, count: Images.Length).Select(selector: index =>
 		{
 			MenuItemVM content = contents[index];
 			content.SetUser(user: user);
-			return new MenuItem(image: Images[index], header: Names[index], itemContent: content);
+			return new MenuItem(image: Images[index], header: Names[index], itemContent: content, itemType: menuItemType);
 		});
 	}
 
