@@ -18,4 +18,5 @@ public interface IMessageService
 	Task<ButtonResult> ShowMessageAsPopup(string text);
 
 	Task<ButtonResult> ShowDialog(string text, string title, ButtonEnum buttons, Icon image);
+	Task ShowSuccess(string text);
 }

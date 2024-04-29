@@ -40,6 +40,12 @@
 			<Setter Property="TextWrapping" Value="Wrap"/>
 		</Style>
 
+		<Style Selector="^.SmallErrorMessage">
+			<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
 		<Style Selector="^.OpacityTransition">
 			<Setter Property="Transitions">
 				<Transitions>

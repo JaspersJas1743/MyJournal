@@ -138,6 +138,10 @@
         <DependentUpon>ProfileFileStorageView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Profile\ProfileSecurityView.axaml.cs">
+        <DependentUpon>ProfileSecutiyView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

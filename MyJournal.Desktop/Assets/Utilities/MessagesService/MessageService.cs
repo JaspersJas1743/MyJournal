@@ -1,12 +1,17 @@
 using System;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
+using MyJournal.Desktop.Models.ConfirmationCode;
+using MyJournal.Desktop.ViewModels.ConfirmationCode;
 using MyJournal.Desktop.Views;
+using MyJournal.Desktop.Views.ConfirmationCode;
 
 namespace MyJournal.Desktop.Assets.Utilities.MessagesService;
 
@@ -66,6 +71,21 @@ public sealed class MessageService : IMessageService
 
 	public async Task<ButtonResult> ShowDialog(string text, string title, ButtonEnum buttons, Icon image)
 		=> await GetMessageBox(text: text, title: title, buttons: buttons, image: image).ShowWindowDialogAsync(owner: _mainWindow);
+
+	public async Task ShowSuccess(string text)
+	{
+		ConfirmationCodeWindow window = new ConfirmationCodeWindow()
+		{
+			Content = new SuccessConfirmationVM(model: new SuccessConfirmationModel()
+			{
+				Text = text
+			})
+		};
+		window.Show(owner: _mainWindow);
+		Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(
+			onNext: _ => Dispatcher.UIThread.Invoke(callback: () => window.Close())
+		);
+	}
 }
 
 public static class MessageServiceExtensions

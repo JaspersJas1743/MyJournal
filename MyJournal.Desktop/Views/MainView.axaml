@@ -18,7 +18,7 @@
 		</TransitioningContentControl>
 		<Viewbox Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 			<Border Classes="MenuBorder">
-				<Border Classes="Menu">
+				<Border Classes="Menu TransitionBackground TransitionBorderBrush">
 					<ListBox    ItemsSource="{Binding Menu}" SelectedIndex="{Binding SelectedIndex}"
 								SelectedItem="{Binding SelectedItem,Mode=TwoWay}" x:Name="MenuPanel">
 						<ListBox.ItemsPanel>

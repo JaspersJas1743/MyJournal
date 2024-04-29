@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="540" d:DesignHeight="410" x:DataType="vm:ProfileSecurityVM"
+			x:Class="MyJournal.Desktop.Views.Profile.ProfileSecurityView">
+	<Border Classes="ProfileSection">
+		<Grid RowDefinitions="20*, auto, 15*, auto, 25*, 90*, 15*, 90*, 15*, 90*, 15*, 70*, 20*" ColumnDefinitions="20*, 500*, 20*">
+			<TextBlock Grid.Column="1" Grid.Row="1" Text="Безопасность" Classes="ProfileSectionHeader CenteredTextBlock"/>
+			<TextBlock	Opacity="{Binding !HaveError,Converter={StaticResource BoolToDoubleConverter}}"
+						Grid.Column="1" Grid.Row="3" Classes="ProfileSectionSubheader CenteredTextBlock"
+						Text="Новый пароль будет использоваться для последующего входа в Ваш аккаунт"/>
+			<TextBlock	Text="{Binding Error}" Grid.Column="1" Grid.Row="3" Classes="CenteredTextBlock SmallErrorMessage"
+						Opacity="{Binding HaveError,Converter={StaticResource BoolToDoubleConverter}}"
+						/>
+			<controls:TextBoxWithError	Grid.Row="5" Watermark="Текущий пароль" Text="{Binding CurrentPassword,Mode=TwoWay}"
+										Grid.Column="1" Classes="PasswordBoxWithError" HaveError="{Binding HaveError}"/>
+			<controls:TextBoxWithError	Watermark="Новый пароль" Grid.Row="7" Text="{Binding NewPassword,Mode=TwoWay}"
+										Grid.Column="1" Classes="PasswordBoxWithError" HaveError="{Binding HaveError}"/>
+			<controls:TextBoxWithError	Grid.Row="9" Watermark="Повторите новый пароль" Text="{Binding NewPasswordConfirmation,Mode=TwoWay}"
+										Grid.Column="1" Classes="PasswordBoxWithError" HaveError="{Binding HaveError}"/>
+			<Viewbox Grid.Row="11" Grid.Column="1">
+				<controls:ButtonWithAnimatedCommand Content="Сохранить изменения" Classes="SubheaderContent Corner15 MainAccentColor"
+													Height="70" Width="500" Command="{Binding ChangePassword}"/>
+			</Viewbox>
+		</Grid>
+	</Border>
+</UserControl>

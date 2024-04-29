@@ -4,7 +4,7 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="vm:ProfileVM" x:Class="MyJournal.Desktop.Views.Profile.ProfileView">
 	<Viewbox>
 		<Grid	Height="1025" RowDefinitions="10*, 410*, 20*, 270*, 20*, 25*, 20*, 120*, 20*, 70*, 40*"
@@ -14,7 +14,7 @@
 			<Border Grid.Row="7" Grid.RowSpan="3" Grid.Column="1" Background="Green"/>
 
 			<ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding ProfileEmailVM}"/>
-			<Border Grid.Row="3" Grid.RowSpan="7" Grid.Column="3" Background="DeepSkyBlue"/>
+			<ContentControl Grid.Row="3" Grid.RowSpan="7" Grid.Column="3" Content="{Binding ProfileSecurityVM}"/>
 
 			<ContentControl Grid.Row="1" Grid.Column="5" Grid.ColumnSpan="3" Content="{Binding ProfilePhoneVM}"/>
 			<ContentControl Grid.Row="3" Grid.Column="5" Grid.ColumnSpan="3" Content="{Binding ProfileFileStorageVM}"/>

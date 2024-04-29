@@ -7,4 +7,5 @@ public interface IFileStorageService
 {
 	public Task<IStorageFile?> OpenFile();
 	public Task<IStorageFolder?> OpenFolder();
+	public Task SaveFile(string url);
 }

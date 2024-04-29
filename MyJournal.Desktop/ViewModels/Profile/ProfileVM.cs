@@ -15,6 +15,7 @@ public sealed class ProfileVM(ProfileModel model) : MenuItemVM(model: model)
 	public BaseVM ProfileChangeMenuItemTypeVM => model.ProfileChangeMenuItemTypeVM;
 	public BaseVM ProfileChangeThemeVM => model.ProfileChangeThemeVM;
 	public BaseVM ProfileFileStorageVM => model.ProfileFileStorageVM;
+	public BaseVM ProfileSecurityVM => model.ProfileSecurityVM;
 
 	public ReactiveCommand<Unit, Unit> ClosedThisSession => model.CloseThisSession;
 

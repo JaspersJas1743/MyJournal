@@ -23,7 +23,8 @@ public sealed class ProfileModel : ModelBase
 		ProfileSessionsVM profileSessionsVM,
 		ProfileChangeMenuItemTypeVM profileChangeMenuItemTypeVM,
 		ProfileChangeThemeVM profileChangeThemeVM,
-		ProfileFileStorageVM profileFileStorageVM
+		ProfileFileStorageVM profileFileStorageVM,
+		ProfileSecurityVM profileSecurityVM
 	)
 	{
 		_credentialStorageService = credentialStorageService;
@@ -35,6 +36,7 @@ public sealed class ProfileModel : ModelBase
 		ProfileChangeMenuItemTypeVM = profileChangeMenuItemTypeVM;
 		ProfileChangeThemeVM = profileChangeThemeVM;
 		ProfileFileStorageVM = profileFileStorageVM;
+		ProfileSecurityVM = profileSecurityVM;
 
 		CloseThisSession = ReactiveCommand.CreateFromTask(execute: CloseThis);
 	}
@@ -52,6 +54,7 @@ public sealed class ProfileModel : ModelBase
 	public ProfileChangeMenuItemTypeVM ProfileChangeMenuItemTypeVM { get; }
 	public ProfileChangeThemeVM ProfileChangeThemeVM { get; }
 	public ProfileFileStorageVM ProfileFileStorageVM { get; }
+	public ProfileSecurityVM ProfileSecurityVM { get; }
 
 	public ReactiveCommand<Unit, Unit> CloseThisSession { get; }
 
@@ -61,6 +64,7 @@ public sealed class ProfileModel : ModelBase
 		await ProfilePhoneVM.SetUser(user: user);
 		await ProfileEmailVM.SetUser(user: user);
 		await ProfileSessionsVM.SetUser(user: user);
+		await ProfileSecurityVM.SetUser(user: user);
 
 		Security security = await user.GetSecurity();
 		_sessionCollection = await security.GetSessions();

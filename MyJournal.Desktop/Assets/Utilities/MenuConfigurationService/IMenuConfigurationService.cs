@@ -4,7 +4,7 @@ namespace MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 
 public interface IMenuConfigurationService
 {
-	public static MenuItemTypes CurrentType;
+	public static MenuItemTypes CurrentType { get; protected set; }
 
 	public delegate void ChangeMenuItemsTypeHandler(ChangeMenuItemsTypeEventArgs e);
 	public static event ChangeMenuItemsTypeHandler? ChangeMenuItemsType;

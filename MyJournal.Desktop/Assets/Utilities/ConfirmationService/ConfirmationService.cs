@@ -23,6 +23,7 @@ public sealed class ConfirmationService(MainWindowView mainWindow) : IConfirmati
 			))
 		};
 		await IConfirmationService.Instance.ShowDialog<bool>(owner: mainWindow);
+		IConfirmationService.Instance = null;
 	}
 }
 

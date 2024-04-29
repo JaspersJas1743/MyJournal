@@ -12,6 +12,9 @@ public class SuccessConfirmationModel : ModelBase
 
 	public SuccessConfirmationModel()
 	{
+		if (IConfirmationService.Instance is null)
+			return;
+
 		Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(
 			onNext: _ => Dispatcher.UIThread.Invoke(callback: () => IConfirmationService.Instance?.Close(dialogResult: true))
 		);

@@ -24,7 +24,7 @@ public sealed class Password(
 	{
 		bool isVerified = await googleAuthenticatorService.VerifyAuthenticationCode(userId: client.ClientId, code: confirmationCode, cancellationToken: cancellationToken);
 		if (!isVerified)
-			throw new ArgumentException(message: "Некорректный код подтверждения для смены пароля.", paramName: nameof(confirmationCode));
+			throw new ArgumentException(message: "Некорректный код подтверждения для смены пароля.");
 
 		ChangePasswordResponse response = await client.PutAsync<ChangePasswordResponse, ChangePasswordRequest>(
 			apiMethod: UserControllerMethods.ChangePassword,

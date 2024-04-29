@@ -219,6 +219,11 @@ public partial class App : Application
 			.AddSingleton<ProfileFileStorageVM>()
 			.AddSingleton<ProfileFileStorageModel>()
 			#endregion
+			#region Profile security
+			.AddSingleton<ProfileSecurityView>()
+			.AddSingleton<ProfileSecurityVM>()
+			.AddSingleton<ProfileSecurityModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()
