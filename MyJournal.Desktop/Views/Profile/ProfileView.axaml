@@ -11,7 +11,7 @@
 				Width="1920" ColumnDefinitions="25*, 750*, 20*, 540*, 20*, 260*, 20*, 260*, 25*">
 			<ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding ProfilePhotoVM}"/>
 			<ContentControl Grid.Row="3" Grid.RowSpan="3" Grid.Column="1"  Content="{Binding ProfileSessionsVM}"/>
-			<Border Grid.Row="7" Grid.RowSpan="3" Grid.Column="1" Background="Green"/>
+			<ContentControl Grid.Row="7" Grid.RowSpan="3" Grid.Column="1" Content="{Binding ProfileChangeStartedPageVM}"/>
 
 			<ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding ProfileEmailVM}"/>
 			<ContentControl Grid.Row="3" Grid.RowSpan="7" Grid.Column="3" Content="{Binding ProfileSecurityVM}"/>

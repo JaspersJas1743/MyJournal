@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using MyJournal.Core;
 using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Models;
@@ -25,6 +26,6 @@ public sealed class MainVM(MainModel model) : BaseVM(model: model)
 		set => model.SelectedIndex = value;
 	}
 
-	public void SetAuthorizedUser(User user)
-		=> model.SetAuthorizedUser(user: user);
+	public async Task SetAuthorizedUser(User user)
+		=> await model.SetAuthorizedUser(user: user);
 }

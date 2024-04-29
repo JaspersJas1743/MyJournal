@@ -3,6 +3,12 @@
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
 	<Style Selector="controls|MenuItem">
 		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="BorderBrush" Duration="0:0:0.1"/>
+				<BrushTransition Property="Background"  Duration="0:0:0.1"/>
+			</Transitions>
+		</Setter>
 		<Style Selector="^[ItemType=Full]">
 			<Setter Property="Template">
 				<ControlTemplate>

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia;
 using MyJournal.Core;
+using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using MyJournal.Desktop.ViewModels;
@@ -51,19 +53,22 @@ public static class RoleHelper
 		ContentsForAdministrator	= new MenuItemVM[] { profile, messages, allTasks,		createdMarks,	administratorTimetable };
 	}
 
-	public static IEnumerable<MenuItem> GetMenu(User user)
+	public static async Task<IEnumerable<MenuItem>> GetMenu(User user)
 	{
 		MenuItemVM[]? contents = GetContent(userType: user.GetType());
 		if (contents is null)
 			throw new NullReferenceException(message: $"Метод {nameof(GetContent)} вернул пустой список.");
 
-		return Enumerable.Range(start: 0, count: Images.Length).Select(selector: index =>
+		return await Task.WhenAll(tasks: Enumerable.Range(start: 0, count: Images.Length).Select(selector: async index =>
 		{
 			MenuItemVM content = contents[index];
-			content.SetUser(user: user);
+			await content.SetUser(user: user);
 			return new MenuItem(image: Images[index], header: Names[index], itemContent: content, itemType: IMenuConfigurationService.CurrentType);
-		});
+		}));
 	}
+
+	public static IEnumerable<BaseMenuItem> GetBaseMenu()
+		=> Enumerable.Range(start: 0, count: Images.Length).Select(selector: index => new BaseMenuItem(image: Images[index], header: Names[index]));
 
 	public static string? GetRoleName(User user)
 	{

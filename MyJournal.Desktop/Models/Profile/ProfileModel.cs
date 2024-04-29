@@ -24,7 +24,8 @@ public sealed class ProfileModel : ModelBase
 		ProfileChangeMenuItemTypeVM profileChangeMenuItemTypeVM,
 		ProfileChangeThemeVM profileChangeThemeVM,
 		ProfileFileStorageVM profileFileStorageVM,
-		ProfileSecurityVM profileSecurityVM
+		ProfileSecurityVM profileSecurityVM,
+		ProfileChangeStartedPageVM profileChangeStartedPageVM
 	)
 	{
 		_credentialStorageService = credentialStorageService;
@@ -37,6 +38,7 @@ public sealed class ProfileModel : ModelBase
 		ProfileChangeThemeVM = profileChangeThemeVM;
 		ProfileFileStorageVM = profileFileStorageVM;
 		ProfileSecurityVM = profileSecurityVM;
+		ProfileChangeStartedPageVM = profileChangeStartedPageVM;
 
 		CloseThisSession = ReactiveCommand.CreateFromTask(execute: CloseThis);
 	}
@@ -55,6 +57,7 @@ public sealed class ProfileModel : ModelBase
 	public ProfileChangeThemeVM ProfileChangeThemeVM { get; }
 	public ProfileFileStorageVM ProfileFileStorageVM { get; }
 	public ProfileSecurityVM ProfileSecurityVM { get; }
+	public ProfileChangeStartedPageVM ProfileChangeStartedPageVM { get; }
 
 	public ReactiveCommand<Unit, Unit> CloseThisSession { get; }
 

@@ -224,6 +224,11 @@ public partial class App : Application
 			.AddSingleton<ProfileSecurityVM>()
 			.AddSingleton<ProfileSecurityModel>()
 			#endregion
+			#region Profile started page
+			.AddSingleton<ProfileChangeStartedPageView>()
+			.AddSingleton<ProfileChangeStartedPageVM>()
+			.AddSingleton<ProfileChangeStartedPageModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()
@@ -325,7 +330,7 @@ public partial class App : Application
 					IAuthorizationService<User> authorizationService = GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
 					MainVM mainVM = GetService<MainVM>();
 					Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
-					mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+					await mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
 					mainWindowVM.Content = mainVM;
 				}
 				catch (UnauthorizedAccessException e)

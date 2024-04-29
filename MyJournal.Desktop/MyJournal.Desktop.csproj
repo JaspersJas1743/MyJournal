@@ -142,6 +142,10 @@
         <DependentUpon>ProfileSecutiyView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Profile\ProfileChangeStartedPageView.axaml.cs">
+        <DependentUpon>ProfileChangeStartedPageView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

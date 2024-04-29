@@ -91,7 +91,6 @@
             </Style>
         </Style>
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
             <Style Selector="^ /template/ TextBlock#PART_Watermark">
                 <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
             </Style>
