@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:profile="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="540" d:DesignHeight="410" x:DataType="profile:ProfileEmailVM"
+			x:Class="MyJournal.Desktop.Views.Profile.ProfileEmailView">
+	<Border Classes="ProfileSection">
+		<Grid RowDefinitions="20*, auto, 15*, auto, 25*, 90*, 10*, 70*, 10*, 60*, 20*" ColumnDefinitions="20*, 500*, 20*">
+			<TextBlock Grid.Column="1" Grid.Row="1" Text="Электронная почта"
+						Classes="ProfileSectionHeader CenteredTextBlock"/>
+			<TextBlock	Text="Электронная почта будет использоваться для восстановления доступа к аккаунту"
+						Grid.Column="1" Grid.Row="3" Classes="ProfileSectionSubheader CenteredTextBlock"/>
+			<controls:EmailInput	Grid.Column="1" Grid.Row="5" EntryEmail="{Binding EnteredEmail}"
+									HaveError="{Binding HaveError}"/>
+			<TextBlock	Classes="Verified CenteredTextBlock" Margin="0 -20 0 0"
+						Grid.Row="7" Grid.Column="1" Text="Электронная почта подтверждена">
+				<TextBlock.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="HaveError" Converter="{x:Static BoolConverters.Not}"/>
+						<Binding Path="EmailIsVerified"/>
+					</MultiBinding>
+				</TextBlock.IsVisible>
+			</TextBlock>
+			<TextBlock Grid.Row="7" Grid.Column="1" Text="Электронная почта не подтверждена"
+						Classes="Unverified CenteredTextBlock" Margin="0 -20 0 0">
+				<TextBlock.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="HaveError" Converter="{x:Static BoolConverters.Not}"/>
+						<Binding Path="EmailIsVerified" Converter="{x:Static BoolConverters.Not}"/>
+					</MultiBinding>
+				</TextBlock.IsVisible>
+			</TextBlock>
+			<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Error}"
+						Classes="ErrorMessage CenteredTextBlock" Margin="0 -20 0 0"
+						IsVisible="{Binding HaveError}"/>
+			<Viewbox Grid.Row="9" Grid.Column="1">
+				<controls:ButtonWithAnimatedCommand Content="Сохранить изменения" Height="60" Width="500"
+													Classes="MainAccentColor Corner15 SubheaderContent"
+													Command="{Binding ChangeEmail}"/>
+			</Viewbox>
+		</Grid>
+	</Border>
+</UserControl>

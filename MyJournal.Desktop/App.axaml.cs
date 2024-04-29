@@ -1,7 +1,9 @@
 using System;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
@@ -12,10 +14,15 @@ using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
+using MyJournal.Desktop.Assets.Utilities.ConfirmationService;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
+using MyJournal.Desktop.Assets.Utilities.FileService;
+using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.Assets.Utilities.ThemeConfigurationService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
+using MyJournal.Desktop.Models.ConfirmationCode;
 using MyJournal.Desktop.Models.Marks;
 using MyJournal.Desktop.Models.Profile;
 using MyJournal.Desktop.Models.Registration;
@@ -24,6 +31,7 @@ using MyJournal.Desktop.Models.Tasks;
 using MyJournal.Desktop.Models.Timetable;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
+using MyJournal.Desktop.ViewModels.ConfirmationCode;
 using MyJournal.Desktop.ViewModels.Marks;
 using MyJournal.Desktop.ViewModels.Profile;
 using MyJournal.Desktop.ViewModels.Registration;
@@ -32,12 +40,13 @@ using MyJournal.Desktop.ViewModels.Tasks;
 using MyJournal.Desktop.ViewModels.Timetable;
 using MyJournal.Desktop.Views;
 using MyJournal.Desktop.Views.Authorization;
+using MyJournal.Desktop.Views.ConfirmationCode;
 using MyJournal.Desktop.Views.Marks;
+using MyJournal.Desktop.Views.Profile;
 using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
 using MyJournal.Desktop.Views.Timetable;
-using ProfileView = MyJournal.Desktop.Views.Profile.ProfileView;
 
 namespace MyJournal.Desktop;
 
@@ -48,10 +57,16 @@ public partial class App : Application
 	public App()
 	{
 		IServiceCollection services = new ServiceCollection()
-			#region MainWindow
+			#region Main window
 			.AddSingleton<MainWindowView>()
 			.AddSingleton<MainWindowVM>()
 			.AddSingleton<MainWindowModel>()
+			#endregion
+			#region Confirmation code window
+			.AddTransient<FirstStepOfConfirmationView>()
+			.AddTransient<SuccessConfirmationModel>()
+			.AddTransient<SuccessConfirmationVM>()
+			.AddTransient<SuccessConfirmationView>()
 			#endregion
 			#region Welcome
 			.AddSingleton<WelcomeView>()
@@ -62,6 +77,7 @@ public partial class App : Application
 			.AddApiClient()
 			.AddGoogleAuthenticator()
 			.AddFileService()
+			.AddFileStorageService()
 			.AddKeyedAuthorizationWithCredentialsService(key: nameof(AuthorizationWithCredentialsService))
 			.AddKeyedAuthorizationWithTokenService(key: nameof(AuthorizationWithTokenService))
 			.AddConfigurationService()
@@ -71,6 +87,9 @@ public partial class App : Application
 			.AddUserRegistrationService()
 			.AddKeyedRestoringAccessThroughEmailService(key: nameof(RestoringAccessThroughEmailService))
 			.AddKeyedRestoringAccessThroughPhoneService(key: nameof(RestoringAccessThroughPhoneService))
+			.AddConfirmationService()
+			.AddMenuConfigurationService()
+			.AddThemeConfigurationService()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()
@@ -165,6 +184,51 @@ public partial class App : Application
 			.AddSingleton<ProfileView>()
 			.AddSingleton<ProfileVM>()
 			.AddSingleton<ProfileModel>()
+			#region Profile photo
+			.AddSingleton<ProfilePhotoView>()
+			.AddSingleton<ProfilePhotoVM>()
+			.AddSingleton<ProfilePhotoModel>()
+			#endregion
+			#region Profile email
+			.AddSingleton<ProfileEmailView>()
+			.AddSingleton<ProfileEmailVM>()
+			.AddSingleton<ProfileEmailModel>()
+			#endregion
+			#region Profile phone
+			.AddSingleton<ProfilePhoneView>()
+			.AddSingleton<ProfilePhoneVM>()
+			.AddSingleton<ProfilePhoneModel>()
+			#endregion
+			#region Profile sessions
+			.AddSingleton<ProfileSessionsView>()
+			.AddSingleton<ProfileSessionsVM>()
+			.AddSingleton<ProfileSessionsModel>()
+			#endregion
+			#region Profile change menu type
+			.AddSingleton<ProfileChangeMenuItemTypeView>()
+			.AddSingleton<ProfileChangeMenuItemTypeVM>()
+			.AddSingleton<ProfileChangeMenuItemTypeModel>()
+			#endregion
+			#region Profile change theme
+			.AddSingleton<ProfileChangeThemeView>()
+			.AddSingleton<ProfileChangeThemeVM>()
+			.AddSingleton<ProfileChangeThemeModel>()
+			#endregion
+			#region Profile file storage
+			.AddSingleton<ProfileFileStorageView>()
+			.AddSingleton<ProfileFileStorageVM>()
+			.AddSingleton<ProfileFileStorageModel>()
+			#endregion
+			#region Profile security
+			.AddSingleton<ProfileSecurityView>()
+			.AddSingleton<ProfileSecurityVM>()
+			.AddSingleton<ProfileSecurityModel>()
+			#endregion
+			#region Profile started page
+			.AddSingleton<ProfileChangeStartedPageView>()
+			.AddSingleton<ProfileChangeStartedPageVM>()
+			.AddSingleton<ProfileChangeStartedPageModel>()
+			#endregion
 			#endregion
 			#region Messages
 			.AddSingleton<MessagesView>()
@@ -248,6 +312,7 @@ public partial class App : Application
 
 	public override async void OnFrameworkInitializationCompleted()
 	{
+		SetTheme(configurationService: GetService<IConfigurationService>());
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			desktop.MainWindow = GetService<MainWindowView>();
@@ -260,15 +325,41 @@ public partial class App : Application
 			UserCredential credential = credentialStorageService.Get();
 			if (credential != UserCredential.Empty)
 			{
-				IAuthorizationService<User> authorizationService = GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
-				MainVM mainVM = GetService<MainVM>();
-				Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
-				mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
-				mainWindowVM.Content = mainVM;
+				try
+				{
+					IAuthorizationService<User> authorizationService = GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
+					MainVM mainVM = GetService<MainVM>();
+					Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
+					await mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+					mainWindowVM.Content = mainVM;
+				}
+				catch (UnauthorizedAccessException e)
+				{
+					credentialStorageService.Remove();
+					MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
+				}
 			}
+			else
+				MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 			initialLoadingVM.StopTimer();
 		}
 
 		base.OnFrameworkInitializationCompleted();
+	}
+
+	private void MoveToAuthorizationPage(MainWindowVM mainWindowVM)
+	{
+		WelcomeVM welcomeVM = GetService<WelcomeVM>();
+		mainWindowVM.Content = welcomeVM;
+	}
+
+	private void SetTheme(IConfigurationService configurationService)
+	{
+		ThemeVariant currentTheme = (typeof(ThemeVariant).GetProperty(
+			name: configurationService.Get(key: ConfigurationKeys.Theme)!,
+			bindingAttr: BindingFlags.Public | BindingFlags.Static
+		)!.GetValue(obj: null) as ThemeVariant)!;
+		IThemeConfigurationService.CurrentTheme = currentTheme == ThemeVariant.Default ? ActualThemeVariant : currentTheme;
+		RequestedThemeVariant = IThemeConfigurationService.CurrentTheme;
 	}
 }

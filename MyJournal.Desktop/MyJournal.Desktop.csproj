@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <PackageReference Include="AdysTech.CredentialManager" Version="2.6.0" />
+        <PackageReference Include="AsyncImageLoader.Avalonia" Version="3.2.1" />
         <PackageReference Include="Avalonia" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.Desktop" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.Labs.Lottie" Version="11.0.10.1" />
@@ -22,9 +23,9 @@
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.0-beta1" />
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.0-beta1" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.1.0-beta1" />
-        <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.0.10.6" />
-        <PackageReference Include="Avalonia.Xaml.Interactions.Responsive" Version="11.0.10.6" />
-        <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.10.6" />
+        <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.0.10.9" />
+        <PackageReference Include="Avalonia.Xaml.Interactions.Responsive" Version="11.0.10.9" />
+        <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.10.9" />
         <PackageReference Include="GnomeStack.Secrets.OperatingSystem" Version="0.1.6" />
         <PackageReference Include="MessageBox.Avalonia" Version="3.1.5.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -107,6 +108,42 @@
       </Compile>
       <Compile Update="Views\Profile\ProfileView.axaml.cs">
         <DependentUpon>ProfileView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfilePhoneView.axaml.cs">
+        <DependentUpon>ProfilePhoneView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\ConfirmationCode\ConfirmationCodeWindow.axaml.cs">
+        <DependentUpon>ConfirmationCodeWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\ConfirmationCode\SuccessConfirmationView.axaml.cs">
+        <DependentUpon>SuccessConfirmationView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileSessionsView.axaml.cs">
+        <DependentUpon>ProfileSessionsView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileChangeMenuItemTypeView.axaml.cs">
+        <DependentUpon>ProfileChangeMenuItemTypeView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileChangeThemeView.axaml.cs">
+        <DependentUpon>ProfileChangeThemeView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileFileStorageView.axaml.cs">
+        <DependentUpon>ProfileFileStorageView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileSecurityView.axaml.cs">
+        <DependentUpon>ProfileSecutiyView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Profile\ProfileChangeStartedPageView.axaml.cs">
+        <DependentUpon>ProfileChangeStartedPageView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

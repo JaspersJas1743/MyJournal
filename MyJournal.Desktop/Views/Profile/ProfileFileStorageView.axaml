@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="540" d:DesignHeight="270" x:DataType="vm:ProfileFileStorageVM"
+			x:Class="MyJournal.Desktop.Views.Profile.ProfileFileStorageView">
+	<Border Classes="ProfileSection">
+		<Grid RowDefinitions="20*, auto, 20*, 90*, 15*, 70*, 20*" ColumnDefinitions="20*, 240*, 20*, 240*, 20*">
+			<TextBlock	Grid.Column="0" Grid.ColumnSpan="5" Text="Путь для сохранения файлов" VerticalAlignment="Center"
+						Grid.Row="1" Classes="ProfileSectionHeader CenteredTextBlock"/>
+			<TextBox	Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3" Watermark="Путь к папке" FontSize="24"
+						Text="{Binding Path,Mode=TwoWay}"/>
+			<Viewbox Grid.Row="5" Grid.Column="1">
+				<controls:ButtonWithAnimatedCommand Content="Изменить папку.." Height="70" Width="240"
+													Classes="MainAccentColor Corner15 SubheaderContent"
+													Command="{Binding ChangeFolder}"/>
+			</Viewbox>
+			<Viewbox Grid.Row="5" Grid.Column="3">
+				<controls:ButtonWithAnimatedCommand Content="Сбросить" Height="70" Width="240"
+													Classes="MainAccentColor Corner15 SubheaderContent"
+													Command="{Binding ResetFolder}"/>
+			</Viewbox>
+		</Grid>
+	</Border>
+</UserControl>

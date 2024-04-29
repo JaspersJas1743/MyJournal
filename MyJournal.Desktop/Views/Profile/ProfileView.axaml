@@ -3,7 +3,27 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="vm:ProfileVM" x:Class="MyJournal.Desktop.Views.Profile.ProfileView">
-	<TextBlock Text="Profile" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+	<Viewbox>
+		<Grid	Height="1025" RowDefinitions="10*, 410*, 20*, 270*, 20*, 25*, 20*, 120*, 20*, 70*, 40*"
+				Width="1920" ColumnDefinitions="25*, 750*, 20*, 540*, 20*, 260*, 20*, 260*, 25*">
+			<ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding ProfilePhotoVM}"/>
+			<ContentControl Grid.Row="3" Grid.RowSpan="3" Grid.Column="1"  Content="{Binding ProfileSessionsVM}"/>
+			<ContentControl Grid.Row="7" Grid.RowSpan="3" Grid.Column="1" Content="{Binding ProfileChangeStartedPageVM}"/>
+
+			<ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding ProfileEmailVM}"/>
+			<ContentControl Grid.Row="3" Grid.RowSpan="7" Grid.Column="3" Content="{Binding ProfileSecurityVM}"/>
+
+			<ContentControl Grid.Row="1" Grid.Column="5" Grid.ColumnSpan="3" Content="{Binding ProfilePhoneVM}"/>
+			<ContentControl Grid.Row="3" Grid.Column="5" Grid.ColumnSpan="3" Content="{Binding ProfileFileStorageVM}"/>
+			<ContentControl Grid.Row="5" Grid.RowSpan="3" Grid.Column="5" Content="{Binding ProfileChangeThemeVM}"/>
+			<ContentControl Grid.Row="5" Grid.RowSpan="3" Grid.Column="7" Content="{Binding ProfileChangeMenuItemTypeVM}"/>
+			<Viewbox Grid.Row="9" Grid.Column="5" Grid.ColumnSpan="3">
+				<controls:ButtonWithAnimatedCommand Width="540" Height="70" Command="{Binding ClosedThisSession}"
+													Classes="Danger Corner15 SubheaderContent" Content="Выйти из аккаунта"/>
+			</Viewbox>
+		</Grid>
+	</Viewbox>
 </UserControl>

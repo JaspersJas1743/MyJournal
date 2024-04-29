@@ -1,0 +1,29 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg">
+
+	<Style Selector="controls|XamlSvg.DefaultUser">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V856 H684 V0 H0 Z">
+										<DrawingGroup Opacity="1" Transform="0.1,0,0,-0.1,0,856">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Geometry="F1 M684,856z M0,0z M3350,8543C2802,8524 2310,8309 1909,7910 1580,7583 1366,7144 1305,6670 1218,5999 1485,5289 1995,4833 2229,4624 2450,4495 2745,4395 2970,4318 3167,4287 3420,4287 3668,4287 3857,4316 4080,4389 4778,4619 5301,5179 5486,5897 5644,6511 5509,7171 5119,7698 4984,7878 4757,8087 4550,8218 4197,8442 3771,8557 3350,8543z M3665,7670C3918,7621 4131,7507 4324,7317 4758,6889 4824,6214 4482,5695 4427,5612 4301,5478 4209,5404 3812,5086 3233,5044 2785,5301 2508,5460 2298,5719 2201,6023 1993,6674 2332,7371 2975,7615 3172,7690 3448,7711 3665,7670z" />
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Geometry="F1 M684,856z M0,0z M3215,3844C3193,3842 3126,3835 3065,3830 1918,3721 878,2996 361,1945 145,1508 35,1067 14,560 7,387 17,319 67,228 124,123 253,40 385,20 482,7 6358,7 6455,20 6551,34 6639,78 6704,143 6809,248 6835,337 6827,556 6813,882 6764,1176 6676,1455 6396,2346 5760,3088 4925,3499 4565,3677 4203,3782 3785,3830 3692,3841 3285,3851 3215,3844z M3705,2985C4309,2910 4808,2669 5229,2249 5538,1941 5762,1565 5878,1160 5907,1058 5940,912 5940,884 5940,872 5567,870 3420,870 1273,870 900,872 900,884 900,912 933,1058 962,1160 1078,1565 1299,1937 1611,2249 2023,2663 2528,2908 3123,2985 3265,3003 3560,3003 3705,2985z" />
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</Styles>

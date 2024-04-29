@@ -22,7 +22,7 @@
                         <Border Name="PART_BorderElement" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                                 MinWidth="{TemplateBinding MinWidth}" MinHeight="{TemplateBinding MinHeight}"
-                                Classes="TransitionBorderBrush"/>
+                                Classes="TransitionBorderBrush TransitionBackground TransitionForeground" />
                         <Border Margin="{TemplateBinding BorderThickness}">
                             <Grid ColumnDefinitions="Auto,*,Auto" >
                                 <ContentPresenter Grid.Column="0" Content="{TemplateBinding InnerLeftContent}" x:Name="PART_InnerLeftContent"
@@ -73,7 +73,7 @@
                                     </ScrollViewer>
                                 </DockPanel>
                                 <ContentPresenter Grid.Column="2" x:Name="PART_InnerRightContent" Content="{TemplateBinding InnerRightContent}"
-                                                  Foreground="{DynamicResource MainAccentColor}"/>
+                                                  Foreground="{DynamicResource MainAccentColor}" />
                             </Grid>
                         </Border>
                     </Panel>

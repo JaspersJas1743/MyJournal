@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="265" d:DesignHeight="165" x:DataType="vm:ProfileChangeMenuItemTypeVM"
+			x:Class="MyJournal.Desktop.Views.Profile.ProfileChangeMenuItemTypeView">
+	<Border Classes="ProfileSection">
+		<Grid ColumnDefinitions="20*, 45*, 55*, 15*, 55*, 45*, 20*" RowDefinitions="15*, auto, 10*, 100*, 15*">
+			<TextBlock Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="1" Text="Вид меню" Classes="ProfileSectionHeader2 CenteredTextBlock"/>
+			<controls:SelectionCard Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Tag="{x:Static controls:MenuItem.Full}" Header="Профиль"
+									GroupName="MenuTypeVariant" IsChecked="{Binding FullTypeIsSelected}"
+									Classes="MenuItem" Command="{Binding SelectedFullType}">
+				<controls:SelectionCard.Content>
+					<controls:XamlSvg Classes="Login"/>
+				</controls:SelectionCard.Content>
+			</controls:SelectionCard>
+			<controls:SelectionCard GroupName="MenuTypeVariant" IsChecked="{Binding CompactTypeIsSelected}"
+									Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="2" Tag="{x:Static controls:MenuItem.Compact}"
+									Classes="MenuItem" Command="{Binding SelectedCompactType}">
+				<controls:SelectionCard.Content>
+					<controls:XamlSvg Classes="Login"/>
+				</controls:SelectionCard.Content>
+			</controls:SelectionCard>
+		</Grid>
+	</Border>
+</UserControl>

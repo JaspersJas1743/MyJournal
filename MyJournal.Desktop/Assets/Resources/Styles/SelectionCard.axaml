@@ -1,20 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
-	<Design.PreviewWith>
-		<StackPanel Spacing="15" Margin="20" Orientation="Horizontal">
-			<controls:SelectionCard Header="Телефон" Width="165" Height="200">
-				<controls:SelectionCard.Content>
-					<controls:XamlSvg Classes="Phone"/>
-				</controls:SelectionCard.Content>
-			</controls:SelectionCard>
-			<controls:SelectionCard Header="Эл. почта" Width="165" Height="200" IsChecked="True">
-				<controls:SelectionCard.Content>
-					<controls:XamlSvg Classes="Email"/>
-				</controls:SelectionCard.Content>
-			</controls:SelectionCard>
-		</StackPanel>
-	</Design.PreviewWith>
 
 	<Style Selector="controls|SelectionCard">
 	    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
@@ -57,6 +43,46 @@
 		<Style Selector="^:unchecked">
 			<Style Selector="^ /template/ ContentPresenter#PART_CardContent">
 				<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
+			</Style>
+		</Style>
+		<Style Selector="^.MenuItem">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="{TemplateBinding Background}" x:Name="PART_Border"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							BorderBrush="{TemplateBinding BorderBrush}">
+						<controls:MenuItem	Image="{TemplateBinding Content}" Header="{TemplateBinding Header}"
+											ItemType="{TemplateBinding Tag}" Classes="SelectionMenuItem"
+											Foreground="{TemplateBinding Foreground}"/>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.InvertCard">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="{TemplateBinding Background}" x:Name="PART_Border"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							BorderBrush="{TemplateBinding BorderBrush}">
+						<Grid	x:Name="PART_MenuItemContainer" RowDefinitions="20*, 40*, 5*, 20*, 15*"
+								ColumnDefinitions="30*, 40*, 30*" Width="100" Height="100"
+								Background="{Binding $parent[ListBox].Background}">
+							<ContentPresenter Content="{TemplateBinding Content}" x:Name="PART_CardContent" Grid.Column="1"
+											Grid.Row="1" Foreground="{TemplateBinding Foreground}"/>
+							<TextBlock	Grid.ColumnSpan="3" Grid.Row="3" Foreground="{TemplateBinding Foreground}"
+										Text="{TemplateBinding Header}" Grid.Column="0" x:Name="PART_CardHeader"
+										TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+			<Style Selector="^:unchecked">
+				<Style Selector="^ /template/ ContentPresenter#PART_CardContent">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+				</Style>
 			</Style>
 		</Style>
 	</Style>

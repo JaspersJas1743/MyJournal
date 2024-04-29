@@ -30,7 +30,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 
 	private string _login = String.Empty;
 	private string _password = String.Empty;
-		private bool _saveCredential = true;
+	private bool _saveCredential = true;
 
 	public AuthorizationModel(
 		[FromKeyedServices(key: nameof(AuthorizationWithCredentialsService))] IAuthorizationService<User> authorizationService,
@@ -102,7 +102,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 				await SaveCorrectCredential(accessToken: authorizedUser.Token);
 
 			MainVM mainVM = (Application.Current as App)!.GetService<MainVM>();
-			mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+			await mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
 
 			MessageBus.Current.SendMessage(message: new ChangeMainWindowVMEventArgs(
 				newVM: mainVM, animationType: AnimationType.DirectionToRight

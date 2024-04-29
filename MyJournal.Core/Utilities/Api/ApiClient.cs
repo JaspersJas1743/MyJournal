@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -14,23 +15,21 @@ public sealed class ApiClient : IDisposable
 	#region Fields
 	private const string ServerAddress = "https://my-journal.ru/api/";
 
-	private readonly HttpClient _client = new HttpClient()
-	{
-		Timeout = TimeSpan.FromSeconds(value: 2),
-	};
-	
+	private readonly HttpClient _client;
+
 	private readonly JsonSerializerOptions _options = new JsonSerializerOptions()
 	{
 		WriteIndented = true,
 		PropertyNamingPolicy = null
 	};
 
-	public static readonly ApiClient Empty = new ApiClient();
+	public static readonly ApiClient Empty = new ApiClient(timeout: TimeSpan.Zero);
 	#endregion
 
 	#region Constructors
-	public ApiClient()
+	public ApiClient(TimeSpan timeout)
 	{
+		_client = new HttpClient() { Timeout = timeout };
 		_client.DefaultRequestHeaders.Clear();
 		_client.DefaultRequestHeaders.Add(name: nameof(HttpRequestHeader.Accept), value: MediaTypeNames.Application.Json);
 	}
@@ -171,6 +170,9 @@ public sealed class ApiClient : IDisposable
 	public async Task PutAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
 		=> await HelperForPutAsync(uri: uri, cancellationToken: cancellationToken);
 
+	public async Task<TOut?> PutAsync<TOut>(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		=> await HelperForPutAsync<TOut>(uri: uri, cancellationToken: cancellationToken);
+
     public async Task PutAsync<TIn>(string apiMethod, TIn arg, CancellationToken cancellationToken = default(CancellationToken))
         => await PutAsync<TIn>(uri: CreateUri(apiMethod: apiMethod), arg: arg, cancellationToken: cancellationToken);
 
@@ -300,10 +302,10 @@ public sealed class ApiClient : IDisposable
 		return responseMessage;
 	}
 
-	private Uri CreateUri(string apiMethod)
+	public static Uri CreateUri(string apiMethod)
 		=> new Uri(uriString: ServerAddress + apiMethod);
 
-	private Uri CreateUri(string apiMethod, Dictionary<string, string> arg)
+	public static Uri CreateUri(string apiMethod, Dictionary<string, string> arg)
 	{
 		StringBuilder uri = new StringBuilder(value: ServerAddress + apiMethod + '?');
 		foreach (KeyValuePair<string, string> pair in arg)
@@ -313,7 +315,7 @@ public sealed class ApiClient : IDisposable
 		return new Uri(uriString: uri.ToString());
 	}
 
-	private Uri CreateUri<T>(string apiMethod, T arg)
+	public static Uri CreateUri<T>(string apiMethod, T arg)
 	{
 		StringBuilder uri = new StringBuilder(value: ServerAddress + apiMethod + '?');
 		foreach (PropertyInfo pair in typeof(T).GetProperties())
@@ -338,9 +340,15 @@ public sealed class ApiClient : IDisposable
 
 public static class ApiClientExtension
 {
+	public static IServiceCollection AddApiClient(this IServiceCollection serviceCollection, TimeSpan timeout)
+		=> serviceCollection.AddTransient<ApiClient>(implementationFactory: _ => new ApiClient(timeout: timeout));
+
 	public static IServiceCollection AddApiClient(this IServiceCollection serviceCollection)
-		=> serviceCollection.AddTransient<ApiClient>();
+		=> serviceCollection.AddApiClient(timeout: TimeSpan.FromSeconds(value: 2));
+
+	public static IServiceCollection AddKeyedApiClient(this IServiceCollection serviceCollection, string key, TimeSpan timeout)
+		=> serviceCollection.AddKeyedTransient<ApiClient>(serviceKey: key, implementationFactory: (_, _) => new ApiClient(timeout: timeout));
 
 	public static IServiceCollection AddKeyedApiClient(this IServiceCollection serviceCollection, string key)
-		=> serviceCollection.AddKeyedTransient<ApiClient>(serviceKey: key);
+		=> serviceCollection.AddKeyedApiClient(key: key, timeout: TimeSpan.FromSeconds(value: 2));
 }

@@ -100,5 +100,54 @@
 				<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
 			</Style>
 		</Style>
+
+		<Style Selector="^.WindowButton">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
+			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Width" Value="26"/>
+			<Setter Property="Height" Value="26"/>
+			<Setter Property="Padding" Value="5"/>
+			<Setter Property="CornerRadius" Value="7.5"/>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border BorderThickness="{TemplateBinding Property=BorderThickness}" CornerRadius="{TemplateBinding Property=CornerRadius}"
+							Background="{TemplateBinding Property=Background}" BorderBrush="{TemplateBinding Property=BorderBrush}">
+						<ContentPresenter Content="{TemplateBinding Property=Content}" Margin="{TemplateBinding Property=Padding}"
+										HorizontalAlignment="Center" VerticalAlignment="Center"/>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.05"/>
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.MinimizeButton">
+			<Style Selector="^:pointerover">
+				<Setter Property="Background" Value="{DynamicResource ResourceKey=MinimizePointeroverColor}"/>
+			</Style>
+		</Style>
+
+		<Style Selector="^.MaximizeButton">
+			<Style Selector="^:pointerover">
+				<Setter Property="Background" Value="{DynamicResource ResourceKey=MaximizePointeroverColor}"/>
+			</Style>
+		</Style>
+
+		<Style Selector="^.RestoreButton">
+			<Style Selector="^:pointerover">
+				<Setter Property="Background" Value="{DynamicResource ResourceKey=MaximizePointeroverColor}"/>
+			</Style>
+		</Style>
+
+		<Style Selector="^.CloseButton">
+			<Style Selector="^:pointerover">
+				<Setter Property="Background" Value="{DynamicResource ResourceKey=ClosePointeroverColor}"/>
+			</Style>
+		</Style>
 	</Style>
 </Styles>

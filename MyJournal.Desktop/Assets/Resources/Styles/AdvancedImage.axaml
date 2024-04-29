@@ -1,0 +1,14 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:asyncImageLoader="using:AsyncImageLoader"
+		xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie">
+
+	<Style Selector="asyncImageLoader|AdvancedImage">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<lottie:Lottie Path="/Assets/Resources/Animations/Loading.json" IsVisible="{TemplateBinding IsLoading}"/>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+</Styles>

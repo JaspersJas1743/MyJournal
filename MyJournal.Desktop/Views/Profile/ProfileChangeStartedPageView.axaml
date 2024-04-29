@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="210" x:DataType="vm:ProfileChangeStartedPageVM"
+			x:Class="MyJournal.Desktop.Views.Profile.ProfileChangeStartedPageView">
+	<Border Classes="ProfileSection">
+		<Grid ColumnDefinitions="95*, 560*, 95*" RowDefinitions="15*, auto, 10*, auto, 10*, 100*, 20*">
+			<TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Text="Начальная страница" Classes="ProfileSectionHeader2 CenteredTextBlock"/>
+			<TextBlock	Grid.Column="1" Grid.Row="3" Classes="ProfileSectionSubheader CenteredTextBlock"
+						Text="Выбранная страница будет открываться при запуске"/>
+			<Viewbox Grid.Column="1" Grid.Row="5">
+				<ListBox	ItemsSource="{Binding Menu}" Width="560" Height="100"
+							SelectedIndex="{Binding SelectedIndex}" Classes="StartedPage"/>
+			</Viewbox>
+		</Grid>
+	</Border>
+</UserControl>

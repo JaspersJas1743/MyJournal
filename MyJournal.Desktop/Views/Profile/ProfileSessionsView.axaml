@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Profile"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="315" x:DataType="vm:ProfileSessionsVM"
+			x:Class="MyJournal.Desktop.Views.Profile.ProfileSessionsView">
+	<Border Classes="ProfileSection">
+		<Grid RowDefinitions="20*, auto, 10*, auto, 10*, 90*, 15*, 70*, 20*" ColumnDefinitions="20*, 350*, 10*, 350*, 20*">
+			<TextBlock	Grid.Column="1" Grid.ColumnSpan="3" Text="История активности"
+						Grid.Row="1" Classes="ProfileSectionHeader CenteredTextBlock"/>
+			<TextBlock	Text="В истории активности отображаются текущие сеансы в MyJournal"
+						Classes="ProfileSectionSubheader CenteredTextBlock"
+						Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3"/>
+			<ListBox	Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Left"
+						ItemsSource="{Binding Sessions}" Classes="Sessions"/>
+			<Viewbox Grid.Row="7" Grid.Column="1">
+				<controls:ButtonWithAnimatedCommand Width="350" Content="Завершить все сеансы" Classes="Danger Corner15 SubheaderContent"
+													Height="70" Command="{Binding CloseAllSessions}"/>
+			</Viewbox>
+			<Viewbox Grid.Row="7" Grid.Column="3">
+				<controls:ButtonWithAnimatedCommand Width="350" Content="Завершить другие сеансы" Classes="Danger Corner15 SubheaderContent"
+													Height="70" Command="{Binding CloseOtherSessions}"/>
+			</Viewbox>
+		</Grid>
+	</Border>
+</UserControl>

@@ -8,7 +8,7 @@ namespace MyJournal.Desktop.Models;
 public class InitialLoadingModel : ModelBase
 {
 	private const string BaseLoadingText = "Загрузка";
-	private readonly Timer _timer = new Timer(interval: TimeSpan.FromMilliseconds(value: 250));
+	private readonly Timer _timer = new Timer(interval: TimeSpan.FromMilliseconds(value: 700));
 	private string _loadingText = BaseLoadingText;
 	private int _counter = 0;
 

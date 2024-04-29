@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.ConfirmationCode"
+			mc:Ignorable="d" d:DesignWidth="630" d:DesignHeight="275"
+			x:DataType="vm:FirstStepOfConfirmationVM"
+			x:Class="MyJournal.Desktop.Views.ConfirmationCode.FirstStepOfConfirmationView">
+	<Grid ColumnDefinitions="20*, 590*, 20*" RowDefinitions="20*, 95*, 20*, 90*, 20*">
+		<TextBlock	Grid.Row="1" Grid.Column="1" Text="{Binding Text}"
+					Classes="ProfileSectionSubheader CenteredTextBlock" xml:space="preserve"
+					IsVisible="{Binding !HaveError}">
+		</TextBlock>
+		<TextBlock	Grid.Row="1" Grid.Column="1" Text="{Binding Error}"
+					Classes="ErrorMessage CenteredTextBlock" xml:space="preserve"
+					IsVisible="{Binding HaveError}">
+		</TextBlock>
+		<controls:CodeInput CountOfCell="6" CompletedCommand="{Binding CompletedCode}"
+							Grid.Column="1" EntryCode="{Binding EntryCode}"
+							Grid.Row="3" HaveError="{Binding HaveError}"/>
+	</Grid>
+</UserControl>

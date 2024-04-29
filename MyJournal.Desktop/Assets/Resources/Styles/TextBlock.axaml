@@ -3,42 +3,82 @@
 	<Style Selector="TextBlock">
 		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=Raleway}"/>
 		<Setter Property="FontWeight" Value="SemiBold"/>
-		<Setter Property="FontFeatures" Value="+lnum"></Setter>
-	</Style>
-
-	<Style Selector="TextBlock.WindowHeader">
-		<Setter Property="FontSize" Value="16"/>
-	</Style>
-
-	<Style Selector="TextBlock.CenteredTextBlock">
-		<Setter Property="HorizontalAlignment" Value="Center"/>
-		<Setter Property="VerticalAlignment" Value="Center"/>
-	</Style>
-
-	<Style Selector="TextBlock.PageHeader">
-		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
-		<Setter Property="FontSize" Value="48"/>
-		<Setter Property="TextWrapping" Value="Wrap"/>
-		<Setter Property="TextAlignment" Value="Center"/>
-	</Style>
-
-	<Style Selector="TextBlock.PageSubheader">
-		<Setter Property="FontSize" Value="24"/>
-		<Setter Property="TextWrapping" Value="Wrap"/>
-		<Setter Property="TextAlignment" Value="Center"/>
-		<Setter Property="Foreground" Value="{DynamicResource ResourceKey=SubheaderColor}"/>
-	</Style>
-
-	<Style Selector="TextBlock.ErrorMessage">
-		<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
-		<Setter Property="FontSize" Value="24"/>
-	</Style>
-
-	<Style Selector="TextBlock.OpacityTransition">
+		<Setter Property="FontFeatures" Value="+lnum"/>
 		<Setter Property="Transitions">
 			<Transitions>
-				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+				<BrushTransition Property="Foreground" Duration="0:0:0.2"/>
 			</Transitions>
 		</Setter>
+
+		<Style Selector="^.WindowHeader">
+			<Setter Property="FontSize" Value="16"/>
+		</Style>
+
+		<Style Selector="^.CenteredTextBlock">
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+		</Style>
+
+		<Style Selector="^.PageHeader">
+			<Setter Property="Foreground" Value="{DynamicResource ResourceKey=HeaderColor}"/>
+			<Setter Property="FontSize" Value="48"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+		</Style>
+
+		<Style Selector="^.PageSubheader">
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+			<Setter Property="Foreground" Value="{DynamicResource ResourceKey=SubheaderColor}"/>
+		</Style>
+
+		<Style Selector="^.ErrorMessage">
+			<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
+		<Style Selector="^.SmallErrorMessage">
+			<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
+		<Style Selector="^.OpacityTransition">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.ProfileSectionHeader">
+			<Setter Property="FontSize" Value="28"/>
+			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+		</Style>
+
+		<Style Selector="^.ProfileSectionHeader2">
+			<Setter Property="FontSize" Value="24"/>
+		</Style>
+
+		<Style Selector="^.ProfileSectionSubheader">
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="Foreground" Value="#B3B3B3"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
+		<Style Selector="^.Verified">
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="Foreground" Value="{DynamicResource ConfirmedDataColor}"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
+		<Style Selector="^.Unverified">
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="Foreground" Value="{DynamicResource UnconfirmedDataColor}"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
 	</Style>
 </Styles>

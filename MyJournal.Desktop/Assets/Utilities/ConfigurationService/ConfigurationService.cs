@@ -28,8 +28,8 @@ public sealed class ConfigurationService : IConfigurationService
 public static class ConfigurationServiceExtensions
 {
 	public static IServiceCollection AddConfigurationService(this IServiceCollection serviceCollection)
-		=> serviceCollection.AddTransient<IConfigurationService, ConfigurationService>();
+		=> serviceCollection.AddSingleton<IConfigurationService, ConfigurationService>();
 
 	public static IServiceCollection AddKeyedConfigurationService(this IServiceCollection serviceCollection, string key)
-		=> serviceCollection.AddKeyedTransient<IConfigurationService, ConfigurationService>(serviceKey: key);
+		=> serviceCollection.AddKeyedSingleton<IConfigurationService, ConfigurationService>(serviceKey: key);
 }

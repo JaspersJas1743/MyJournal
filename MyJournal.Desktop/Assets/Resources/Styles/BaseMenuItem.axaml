@@ -1,0 +1,46 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+	<Style Selector="controls|BaseMenuItem">
+		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}" />
+		<Setter Property="CornerRadius" Value="20"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+		<Setter Property="BorderThickness" Value="5"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="BorderBrush" Duration="0:0:0.1"/>
+				<BrushTransition Property="Background"  Duration="0:0:0.1"/>
+			</Transitions>
+		</Setter>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border Background="{TemplateBinding Background}" x:Name="PART_Border"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="{TemplateBinding CornerRadius}"
+						BorderBrush="{TemplateBinding BorderBrush}">
+					<Viewbox>
+						<Grid	x:Name="PART_MenuItemContainer" RowDefinitions="20*, 40*, 10*, 20*, 10*"
+								ColumnDefinitions="30*, 40*, 30*" Width="100" Height="100"
+								Background="{Binding $parent[ListBox].Background}">
+							<ContentPresenter Content="{TemplateBinding Image}" x:Name="PART_MenuItemImage" Grid.Column="1"
+											Grid.Row="1" Foreground="{TemplateBinding Foreground}"/>
+							<TextBlock	Grid.ColumnSpan="3" Grid.Row="3" Foreground="{TemplateBinding Foreground}"
+										Text="{TemplateBinding Header}" Grid.Column="0" x:Name="PART_MenuItemHeader"
+										TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Grid>
+					</Viewbox>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:selected">
+			<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeOnControlColor}"/>
+			<Setter Property="Background" Value="{DynamicResource SelectionControlColor}"/>
+			<Style Selector="^ /template/ ContentPresenter#PART_MenuItemImage">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+		</Style>
+	</Style>
+
+</Styles>

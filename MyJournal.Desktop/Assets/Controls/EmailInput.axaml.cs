@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Controls;
 
@@ -30,7 +32,7 @@ public partial class EmailInput : UserControl
 	public EmailInput()
 		=> InitializeComponent();
 
-	public string EntryEmail
+	public string? EntryEmail
 	{
 		get => GetValue(property: EntryEmailProperty);
 		set => SetValue(property: EntryEmailProperty, value: value);
@@ -47,11 +49,11 @@ public partial class EmailInput : UserControl
 		base.OnInitialized();
 
 		PART_Domain.ItemsSource = _domains;
+		PART_Domain.SelectedIndex = 0;
 
-		if (!String.IsNullOrWhiteSpace(value: EntryEmail))
-			SetEmail();
-		else
-			PART_Domain.SelectedIndex = 0;
+		this.WhenAnyValue(property1: input => input.EntryEmail)
+			.Where(predicate: email => !String.IsNullOrWhiteSpace(value: email))
+			.Subscribe(onNext: SetEmail);
 
 		PART_EmailName.Focus();
 	}
@@ -78,21 +80,29 @@ public partial class EmailInput : UserControl
 	}
 
 	private void SetEnteredEmail()
-		=> EntryEmail = PART_EmailName.Text + (PART_Domain.IsVisible ? PART_Domain.SelectedItem : String.Empty);
-
-	private void SetEmail()
 	{
-		if (!EntryEmail.Contains(value: '@'))
+		if (String.IsNullOrWhiteSpace(value: PART_EmailName.Text))
+			return;
+
+		EntryEmail = PART_EmailName.Text + (PART_Domain.IsVisible ? PART_Domain.SelectedItem : String.Empty);
+	}
+
+	private void SetEmail(string? email)
+	{
+		if (email is null)
+			return;
+
+		if (!email.Contains(value: '@'))
 		{
-			PART_EmailName.Text = EntryEmail;
+			PART_EmailName.Text = email;
 			return;
 		}
 
-		string[] parts = EntryEmail.Split(separator: '@');
+		string[] parts = email.Split(separator: '@');
 		string enteredDomain = '@' + parts.Last();
 		if (!_domains.Contains(value: enteredDomain))
 		{
-			PART_EmailName.Text = EntryEmail;
+			PART_EmailName.Text = email;
 			return;
 		}
 
