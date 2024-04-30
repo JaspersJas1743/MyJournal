@@ -87,19 +87,27 @@ public abstract class User
 		_activity = new AsyncLazy<Activity>(valueFactory: async () => new Activity(
 			client: client
 		));
+
+		ClosedCurrentSession += OnClosedCurrentSession;
 	}
 
-	~User() => Client.Dispose();
+	~User() => ClosedCurrentSession -= OnClosedCurrentSession;
+
 	#endregion
 
 	#region Records
 	protected sealed record UserInformationResponse(int Id, string Surname, string Name, string? Patronymic, string? Phone, string? Email, string? Photo);
 	#endregion
 
+	#region Handlers
+	protected delegate void ClosedCurrentSessionHandler();
+	#endregion
+
 	#region Events
 	public event JoinedInChatHandler? JoinedInChat;
 	public event ReceivedMessageHandler? ReceivedMessage;
 	public event ChangedTimetableHandler ChangedTimetable;
+	protected event ClosedCurrentSessionHandler ClosedCurrentSession;
 	#endregion
 
 	#region Methods
@@ -175,8 +183,11 @@ public abstract class User
 		});
 		_userHubConnection.On<IEnumerable<int>>(methodName: UserHubMethods.SignOut, handler: async sessionIds =>
 		{
+			bool currentSessionAreClosed = sessionIds.Contains(value: Client.SessionId);
+			if (currentSessionAreClosed)
+				ClosedCurrentSession?.Invoke();
 			await InvokeIfSessionsAreCreated(invocation: async collection => await collection.OnClosedSession(
-				e: new ClosedSessionEventArgs(sessionIds: sessionIds, currentSessionAreClosed: sessionIds.Contains(value: Client.SessionId)),
+				e: new ClosedSessionEventArgs(sessionIds: sessionIds, currentSessionAreClosed: currentSessionAreClosed),
 				cancellationToken: cancellationToken
 			));
 		});
@@ -270,5 +281,8 @@ public abstract class User
 
 	protected void OnChangedTimetable(ChangedTimetableEventArgs e)
 		=> ChangedTimetable?.Invoke(e: e);
+
+	private async void OnClosedCurrentSession()
+		=> await _userHubConnection.StopAsync();
 	#endregion
 }

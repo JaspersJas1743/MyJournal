@@ -85,7 +85,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 		));
 	}
 
-	private async Task SignInWithCredentials(CancellationToken cancellationToken)
+	private async Task SignInWithCredentials()
 	{
 		try
 		{
@@ -94,8 +94,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 					login: Login,
 					password: Password,
 					client: Enum.Parse<UserAuthorizationCredentials.Clients>(value: PlatformDetector.CurrentOperatingSystem)
-				),
-				cancellationToken: cancellationToken
+				)
 			);
 
 			if (SaveCredential)

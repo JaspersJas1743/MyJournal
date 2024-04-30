@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Reactive;
 using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Models.Profile;
+using ReactiveUI;
 
 namespace MyJournal.Desktop.ViewModels.Profile;
 
@@ -17,4 +19,6 @@ public sealed class ProfileChangeStartedPageVM(ProfileChangeStartedPageModel mod
 		get => model.Menu;
 		set => model.Menu = value;
 	}
+
+	public ReactiveCommand<Unit, Unit> OnLayoutUpdated => model.OnLayoutUpdated;
 }

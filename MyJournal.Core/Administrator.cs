@@ -34,7 +34,13 @@ public sealed class Administrator : User
 			url: AdministratorHubMethod.HubEndpoint,
 			token: client.Token!
 		);
+		ClosedCurrentSession += OnClosedCurrentSession;
 	}
+
+	~Administrator() => ClosedCurrentSession -= OnClosedCurrentSession;
+
+	private async void OnClosedCurrentSession()
+		=> await _administratorHubConnection.StopAsync();
 
 	public async Task<ClassCollection> GetClasses()
 		=> await _classes;

@@ -37,7 +37,13 @@ public sealed class Student : User
 			token: client.Token!
 		);
 		_timetable = timetable;
+		ClosedCurrentSession += OnClosedCurrentSession;
 	}
+
+	~Student() => ClosedCurrentSession -= OnClosedCurrentSession;
+
+	private async void OnClosedCurrentSession()
+		=> await _studentHubConnection.StopAsync();
 
 	public async Task<StudyingSubjectCollection> GetStudyingSubjects()
 		=> await _studyingSubjects;

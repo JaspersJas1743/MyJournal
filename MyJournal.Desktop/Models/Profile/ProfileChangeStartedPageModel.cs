@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive;
 using System.Reactive.Linq;
 using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Assets.Utilities;
@@ -24,7 +25,17 @@ public sealed class ProfileChangeStartedPageModel : ModelBase
 		this.WhenAnyValue(property1: model => model.SelectedIndex)
 			.Where(predicate: index => index >= 0)
 			.Subscribe(onNext: index => _configurationService.Set(key: ConfigurationKeys.StartedPage, value: index));
+
+		OnLayoutUpdated = ReactiveCommand.Create(execute: SetSelectedIndex);
 	}
+
+	private void SetSelectedIndex()
+	{
+		if (SelectedIndex < 0)
+			SelectedIndex = Int32.Parse(s: _configurationService.Get(key: ConfigurationKeys.StartedPage)!);
+	}
+
+	public ReactiveCommand<Unit, Unit> OnLayoutUpdated { get; }
 
 	public int SelectedIndex
 	{

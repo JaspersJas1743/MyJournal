@@ -38,7 +38,13 @@ public sealed class Teacher : User
 			token: client.Token!
 		);
 		_timetable = timetable;
+		ClosedCurrentSession += OnClosedCurrentSession;
 	}
+
+	~Teacher() => ClosedCurrentSession -= OnClosedCurrentSession;
+
+	private async void OnClosedCurrentSession()
+		=> await _teacherHubConnection.StopAsync();
 
 	public async Task<TaughtSubjectCollection> GetTaughtSubjects()
 		=> await _taughtSubjectCollection;

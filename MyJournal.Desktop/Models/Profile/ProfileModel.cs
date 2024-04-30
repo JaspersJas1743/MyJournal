@@ -63,11 +63,13 @@ public sealed class ProfileModel : ModelBase
 
 	public async Task SetUser(User user)
 	{
-		await ProfilePhotoVM.SetUser(user: user);
-		await ProfilePhoneVM.SetUser(user: user);
-		await ProfileEmailVM.SetUser(user: user);
-		await ProfileSessionsVM.SetUser(user: user);
-		await ProfileSecurityVM.SetUser(user: user);
+		await Task.WhenAll(
+			ProfilePhotoVM.SetUser(user: user),
+			ProfilePhoneVM.SetUser(user: user),
+			ProfileEmailVM.SetUser(user: user),
+			ProfileSessionsVM.SetUser(user: user),
+			ProfileSecurityVM.SetUser(user: user)
+		);
 
 		Security security = await user.GetSecurity();
 		_sessionCollection = await security.GetSessions();

@@ -37,7 +37,13 @@ public sealed class Parent : User
 			token: client.Token!
 		);
 		_timetable = timetable;
+		ClosedCurrentSession += OnClosedCurrentSession;
 	}
+
+	~Parent() => ClosedCurrentSession -= OnClosedCurrentSession;
+
+	private async void OnClosedCurrentSession()
+		=> await _parentHubConnection.StopAsync();
 
 	public async Task<WardSubjectStudyingCollection> GetWardSubjectsStudying()
 		=> await _wardSubjectsStudying;
