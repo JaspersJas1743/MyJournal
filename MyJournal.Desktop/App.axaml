@@ -14,6 +14,7 @@
             <FontFamily x:Key="Raleway">avares://MyJournal.Desktop/Assets/Resources/Fonts#Raleway</FontFamily>
             <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
             <converters:Base64ToBitmapConverter x:Key="Base64ToBitmapConverter"/>
+            <converters:MarginForChatPhotoConverter x:Key="MarginForChatPhotoConverter"/>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"></ResourceInclude>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"></ResourceInclude>
@@ -68,5 +69,8 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/DefaultUser.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/DarkTheme.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/LightTheme.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Search.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Plus.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ReadMark.axaml"/>
     </Application.Styles>
 </Application>

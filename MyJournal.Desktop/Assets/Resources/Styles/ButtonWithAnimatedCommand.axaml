@@ -96,5 +96,18 @@
         <Style Selector="^.Danger">
             <Setter Property="Background" Value="{DynamicResource ErrorColor}"/>
         </Style>
+        <Style Selector="^.AddChat">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
+            <Setter Property="Content">
+                <Setter.Value>
+                    <Template>
+                        <controls:XamlSvg Classes="Plus" Margin="15"/>
+                    </Template>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Style>
 </Styles>

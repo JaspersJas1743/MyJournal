@@ -42,6 +42,59 @@
 				</ItemsPanelTemplate>
 			</Setter>
 		</Style>
+		<Style Selector="^.Chats">
+			<Setter Property="VerticalAlignment" Value="Top" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<VirtualizingStackPanel Orientation="Vertical"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="entities:Chat">
+					<Viewbox Width="490" Height="115">
+						<Grid	Width="505" ColumnDefinitions="15*, 85*, 15*, 255*, 70*, 20*, 5*, 15*, 5*, 10*, 10*"
+								Height="115" RowDefinitions="15*, 25*, 5*, 10*, 20*, 10*, 15*, 5*, 10*">
+							<Border Grid.Column="1" Grid.Row="1" Grid.RowSpan="7" CornerRadius="20" ClipToBounds="True"
+									Background="{DynamicResource MainAccentColor}" Height="85" Width="85">
+								<asyncImageLoader:AdvancedImage Margin="{Binding Photo,Converter={StaticResource MarginForChatPhotoConverter}}"
+																Source="{Binding Photo}" Stretch="UniformToFill"/>
+							</Border>
+							<TextBlock	Grid.Row="1" Grid.Column="3" Text="{Binding Name}" TextTrimming="CharacterEllipsis"
+										FontSize="20" Foreground="{DynamicResource ForegroundColor}"/>
+							<TextBlock	Grid.Row="3" Grid.RowSpan="5" Grid.Column="3" Grid.ColumnSpan="2" VerticalAlignment="Bottom" TextWrapping="Wrap" MaxLines="2"
+										Foreground="{DynamicResource MessageOnChatList}" TextTrimming="CharacterEllipsis" FontSize="20"
+										Text="{Binding LastMessage.Content,FallbackValue='Сообщения в чате отсутствуют :('}"/>
+							<TextBlock	Grid.Column="4" Grid.ColumnSpan="6" Grid.Row="1" FontSize="20" Foreground="{DynamicResource DateTimeColor}"
+										Text="{Binding LastMessage.CreatedAt,FallbackValue='',StringFormat='d MMMM'}" HorizontalAlignment="Right"/>
+							<Ellipse Fill="{DynamicResource MainAccentColor}" Grid.Row="4" Grid.Column="7" Grid.ColumnSpan="2">
+								<Ellipse.IsVisible>
+									<MultiBinding Converter="{x:Static BoolConverters.And}">
+										<Binding Path="LastMessage.FromMe" FallbackValue="False" Converter="{x:Static BoolConverters.Not}"/>
+										<Binding Path="LastMessage.IsRead" FallbackValue="False" Converter="{x:Static BoolConverters.Not}"/>
+									</MultiBinding>
+								</Ellipse.IsVisible>
+							</Ellipse>
+							<controls:XamlSvg   Classes="ReadMark" Grid.Row="6" Grid.Column="6" Grid.ColumnSpan="2"
+												Foreground="{DynamicResource MainAccentColor}">
+								<controls:XamlSvg.IsVisible>
+									<MultiBinding Converter="{x:Static BoolConverters.And}">
+										<Binding Path="LastMessage.FromMe" FallbackValue="False"/>
+										<Binding Path="LastMessage.IsRead" FallbackValue="False"/>
+									</MultiBinding>
+								</controls:XamlSvg.IsVisible>
+							</controls:XamlSvg>
+							<controls:XamlSvg   Classes="ReadMark" Grid.Row="6" Grid.Column="7" Grid.ColumnSpan="2"
+												Foreground="{DynamicResource MainAccentColor}"
+												IsVisible="{Binding LastMessage.FromMe}"/>
+						</Grid>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
 	</Style>
 
 </Styles>

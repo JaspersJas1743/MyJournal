@@ -36,6 +36,11 @@
 			<Setter Property="BorderThickness" Value="5"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
 		</Style>
+		<Style Selector="^.Dialogs">
+			<Setter Property="CornerRadius" Value="20"/>
+			<Setter Property="BorderThickness" Value="5"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+		</Style>
 		<Style Selector="^.Session">
 			<Setter Property="CornerRadius" Value="20"/>
 			<Setter Property="BorderThickness" Value="5"/>

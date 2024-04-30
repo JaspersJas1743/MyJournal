@@ -3,7 +3,26 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="vm:MessagesVM" x:Class="MyJournal.Desktop.Views.MessagesView">
-	<TextBlock Text="Messages" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+	<Viewbox>
+		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 875*, 40*" Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
+			<TextBox Grid.Column="1" Grid.Row="1" Watermark="Поиск" FontSize="24" Classes="Search"/>
+			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush Dialogs">
+				<Grid RowDefinitions="775*, 80*, 20*" ColumnDefinitions="400*, 80*, 20*">
+					<ListBox	Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" ItemsSource="{Binding Chats}"
+								Classes="Chats" IsVisible="{Binding !!Chats.Count}"/>
+					<TextBlock	IsVisible="{Binding !Chats.Count}" Classes="NotChatsMessage"
+								Text="У Вас еще нет диалогов. Чтобы начать диалог, нажмите кнопку “+”"
+								Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3"/>
+					<Viewbox Grid.Column="1" Grid.Row="1">
+						<controls:ButtonWithAnimatedCommand Width="80" Height="80" Classes="AddChat"/>
+					</Viewbox>
+				</Grid>
+			</Border>
+			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="3" Classes="TransitionBorderBrush Dialogs">
+			</Border>
+		</Grid>
+	</Viewbox>
 </UserControl>

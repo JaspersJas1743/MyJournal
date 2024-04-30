@@ -31,4 +31,24 @@
 		</Style>
 	</Style>
 
+	<Style Selector="ListBox.Chats ListBoxItem">
+		<Style Selector="^:selected">
+			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
+			</Style>
+			<Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
+			</Style>
+			<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
+			</Style>
+			<Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
+			</Style>
+		</Style>
+	</Style>
 </Styles>

@@ -92,7 +92,6 @@ public abstract class User
 	}
 
 	~User() => ClosedCurrentSession -= OnClosedCurrentSession;
-
 	#endregion
 
 	#region Records

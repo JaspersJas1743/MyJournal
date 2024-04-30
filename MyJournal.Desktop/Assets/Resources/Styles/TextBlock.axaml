@@ -80,5 +80,12 @@
 			<Setter Property="Foreground" Value="{DynamicResource UnconfirmedDataColor}"/>
 			<Setter Property="TextWrapping" Value="Wrap"/>
 		</Style>
+
+		<Style Selector="^.NotChatsMessage">
+			<Setter Property="Margin" Value="120 350 120 0"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+		</Style>
 	</Style>
 </Styles>
