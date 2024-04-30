@@ -9,6 +9,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.ViewModels;
 using ReactiveUI;
 
@@ -16,11 +17,14 @@ namespace MyJournal.Desktop.Models.Profile;
 
 public sealed class ProfileSessionsModel : ModelBase
 {
+	private readonly ICredentialStorageService _credentialStorageService;
 	private ObservableCollectionExtended<Session> _sessions = new ObservableCollectionExtended<Session>();
 	private SessionCollection _sessionCollection;
 
-	public ProfileSessionsModel()
+	public ProfileSessionsModel(ICredentialStorageService credentialStorageService)
 	{
+		_credentialStorageService = credentialStorageService;
+
 		CloseAllSessions = ReactiveCommand.CreateFromTask(execute: CloseAll);
 		CloseOtherSessions = ReactiveCommand.CreateFromTask(execute: CloseOther);
 	}
@@ -53,6 +57,7 @@ public sealed class ProfileSessionsModel : ModelBase
 			MessageBus.Current.SendMessage(message: new ChangeMainWindowVMEventArgs(
 				newVMType: typeof(WelcomeVM), animationType: AnimationType.CrossFade
 			));
+			_credentialStorageService.Remove();
 		}
 
 		Sessions.RemoveMany(itemsToRemove: Sessions.Where(predicate: s => e.SessionIds.Contains(value: s.Id)));

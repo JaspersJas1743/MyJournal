@@ -44,10 +44,7 @@ public sealed class ProfileModel : ModelBase
 	}
 
 	private async Task CloseThis()
-	{
-		await _sessionCollection.CloseThis();
-		_credentialStorageService.Remove();
-	}
+		=> await _sessionCollection.CloseThis();
 
 	public ProfilePhotoVM ProfilePhotoVM { get; }
 	public ProfileEmailVM ProfileEmailVM { get; }

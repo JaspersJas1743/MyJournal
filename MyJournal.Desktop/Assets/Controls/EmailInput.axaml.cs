@@ -55,6 +55,10 @@ public partial class EmailInput : UserControl
 			.Where(predicate: email => !String.IsNullOrWhiteSpace(value: email))
 			.Subscribe(onNext: SetEmail);
 
+		this.WhenAnyValue(property1: input => input.EntryEmail)
+			.Where(String.IsNullOrWhiteSpace)
+			.Subscribe(onNext: SetEmpty);
+
 		PART_EmailName.Focus();
 	}
 
@@ -109,4 +113,7 @@ public partial class EmailInput : UserControl
 		PART_EmailName.Text = parts.First();
 		PART_Domain.SelectedItem = enteredDomain;
 	}
+
+	private void SetEmpty(string? email)
+		=> PART_EmailName.Text = String.Empty;
 }

@@ -54,6 +54,9 @@ public partial class PhoneNumberInput : UserControl
 			.Where(predicate: phone => !String.IsNullOrWhiteSpace(value: phone))
 			.Subscribe(onNext: SetPhone);
 
+		this.WhenAnyValue(property1: input => input.EntryPhone)
+			.Where(String.IsNullOrEmpty).Subscribe(onNext: SetEmpty);
+
 		foreach (MaskedTextBox mtb in _cells)
 		{
 			mtb.AddHandler(routedEvent: GotFocusEvent, handler: OnCellGotFocus);
@@ -130,9 +133,6 @@ public partial class PhoneNumberInput : UserControl
 			return;
 
 		phone = String.Concat(values: phone.Where(predicate: Char.IsDigit).Skip(count: 1));
-		if (String.IsNullOrWhiteSpace(value: phone))
-			return;
-
 		int iterationCount = Math.Min(val1: _cells.Sum(selector: c => c.Text!.Length), val2: phone.Length);
 		int cellIndex = 0;
 		for (int i = 0; i < iterationCount;)
@@ -142,6 +142,12 @@ public partial class PhoneNumberInput : UserControl
 			i += currentCell.Text!.Length;
 			++cellIndex;
 		}
-		_cells.ElementAt(index: cellIndex - 1).Focus();
+		_cells.ElementAt(index: cellIndex - 1 < 0 ? 0 : cellIndex - 1).Focus();
+	}
+
+	private void SetEmpty(string phone)
+	{
+		foreach (MaskedTextBox mtb in _cells)
+			mtb.Clear();
 	}
 }
