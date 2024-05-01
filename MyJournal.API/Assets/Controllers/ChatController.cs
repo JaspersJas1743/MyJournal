@@ -141,7 +141,7 @@ public sealed class ChatController(
 				) : null,
 				AdditionalInformation: new AdditionalInformation(
 					IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
-					OnlineAt: chat.Users.SingleOrDefault(predicate: u => u.Id != userId)?.OnlineAt,
+					OnlineAt: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != userId)?.OnlineAt : null,
 					CountOfParticipants: chat.Users.Count
 				)
 			));
@@ -205,7 +205,7 @@ public sealed class ChatController(
 			) : null,
 			AdditionalInformation: new AdditionalInformation(
 				IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
-				OnlineAt: chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.OnlineAt,
+				OnlineAt: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.OnlineAt : null,
 				CountOfParticipants: chat.Users.Count
 			)
 		));
