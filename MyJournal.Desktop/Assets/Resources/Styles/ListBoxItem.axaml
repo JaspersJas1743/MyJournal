@@ -32,23 +32,35 @@
 	</Style>
 
 	<Style Selector="ListBox.Chats ListBoxItem">
-		<Style Selector="^:selected">
+		<Setter Property="FocusAdorner" Value="{x:Null}"/>
+	    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:selected">
+			<Style Selector="^ TextBlock.ChatHeader">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ TextBlock.ChatLastMessage">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ TextBlock.ChatLastMessageDate">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
 			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
-			</Style>
-			<Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
-				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
-			</Style>
-			<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
-			</Style>
-			<Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-				<Setter Property="Background" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}" />
-			</Style>
-		</Style>
+	            <Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	    </Style>
 	</Style>
 </Styles>

@@ -58,18 +58,15 @@
 					<Viewbox Width="490" Height="115">
 						<Grid	Width="505" ColumnDefinitions="15*, 85*, 15*, 255*, 70*, 20*, 5*, 15*, 5*, 10*, 10*"
 								Height="115" RowDefinitions="15*, 25*, 5*, 10*, 20*, 10*, 15*, 5*, 10*">
-							<Border Grid.Column="1" Grid.Row="1" Grid.RowSpan="7" CornerRadius="20" ClipToBounds="True"
-									Background="{DynamicResource MainAccentColor}" Height="85" Width="85">
+							<Border Grid.Column="1" Grid.Row="1" Grid.RowSpan="7" Classes="ChatPhoto">
 								<asyncImageLoader:AdvancedImage Margin="{Binding Photo,Converter={StaticResource MarginForChatPhotoConverter}}"
-																Source="{Binding Photo}" Stretch="UniformToFill"/>
+																Source="{Binding Photo}" Stretch="UniformToFill" x:Name="Image"/>
 							</Border>
-							<TextBlock	Grid.Row="1" Grid.Column="3" Text="{Binding Name}" TextTrimming="CharacterEllipsis"
-										FontSize="20" Foreground="{DynamicResource ForegroundColor}"/>
-							<TextBlock	Grid.Row="3" Grid.RowSpan="5" Grid.Column="3" Grid.ColumnSpan="2" VerticalAlignment="Bottom" TextWrapping="Wrap" MaxLines="2"
-										Foreground="{DynamicResource MessageOnChatList}" TextTrimming="CharacterEllipsis" FontSize="20"
-										Text="{Binding LastMessage.Content,FallbackValue='Сообщения в чате отсутствуют :('}"/>
-							<TextBlock	Grid.Column="4" Grid.ColumnSpan="6" Grid.Row="1" FontSize="20" Foreground="{DynamicResource DateTimeColor}"
-										Text="{Binding LastMessage.CreatedAt,FallbackValue='',StringFormat='d MMMM'}" HorizontalAlignment="Right"/>
+							<TextBlock	Grid.Row="1" Grid.Column="3" Text="{Binding Name}" Classes="ChatHeader" x:Name="PART_Name"/>
+							<TextBlock	Text="{Binding LastMessage.Content,FallbackValue='Сообщения в чате отсутствуют :('}" Classes="ChatLastMessage"
+										Grid.Row="3" Grid.RowSpan="5" Grid.Column="3" Grid.ColumnSpan="2" x:Name="PART_LastMessage"/>
+							<TextBlock	Grid.Column="4" Grid.ColumnSpan="6" Grid.Row="1" x:Name="PART_DateOfLastMessage" Classes="ChatLastMessageDate"
+										Text="{Binding LastMessage.CreatedAt,FallbackValue='',StringFormat='d MMMM'}"/>
 							<Ellipse Fill="{DynamicResource MainAccentColor}" Grid.Row="4" Grid.Column="7" Grid.ColumnSpan="2">
 								<Ellipse.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.And}">

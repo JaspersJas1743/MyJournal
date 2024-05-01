@@ -87,5 +87,26 @@
 			<Setter Property="FontSize" Value="20"/>
 			<Setter Property="TextAlignment" Value="Center"/>
 		</Style>
+
+		<Style Selector="^.ChatHeader">
+			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+		</Style>
+
+		<Style Selector="^.ChatLastMessage">
+			<Setter Property="Foreground" Value="{DynamicResource MessageOnChatList}"/>
+			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+			<Setter Property="VerticalAlignment" Value="Bottom"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="MaxLines" Value="2"/>
+			<Setter Property="FontSize" Value="20"/>
+		</Style>
+
+		<Style Selector="^.ChatLastMessageDate">
+			<Setter Property="Foreground" Value="{DynamicResource DateTimeColor}"/>
+			<Setter Property="HorizontalAlignment" Value="Right"/>
+			<Setter Property="FontSize" Value="20"/>
+		</Style>
 	</Style>
 </Styles>

@@ -15,9 +15,10 @@
             <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
             <converters:Base64ToBitmapConverter x:Key="Base64ToBitmapConverter"/>
             <converters:MarginForChatPhotoConverter x:Key="MarginForChatPhotoConverter"/>
+            <converters:MarginForSmallChatPhotoConverter x:Key="MarginForSmallChatPhotoConverter"/>
             <ResourceDictionary.ThemeDictionaries>
-                <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"></ResourceInclude>
-                <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"></ResourceInclude>
+                <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"/>
+                <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"/>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
