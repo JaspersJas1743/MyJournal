@@ -26,7 +26,8 @@ public sealed class ChatController(
 	[Validator<GetDialogsRequestValidator>]
 	public record GetChatsRequest(bool IsFiltered, string? Filter, int Offset, int Count);
 	public record LastMessage(string? Content, bool IsFile, DateTime CreatedAt, bool FromMe, bool IsRead);
-	public record GetChatsResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, int CountOfUnreadMessages);
+	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int? CountOfParticipants);
+	public record GetChatsResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 
 	[Validator<CreateSingleChatRequestValidator>]
 	public record CreateSingleChatRequest(int InterlocutorId);
@@ -138,8 +139,11 @@ public sealed class ChatController(
 					FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
 					IsRead: chat.LastMessageNavigation.ReadedAt is not null
 				) : null,
-				CountOfUnreadMessages: chat.Messages.OrderByDescending(keySelector: m => m.CreatedAt)
-					.TakeWhile(predicate: m => m.ReadedAt is null && !m.Sender.Id.Equals(user.Id)).Count()
+				AdditionalInformation: new AdditionalInformation(
+					IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
+					OnlineAt: chat.Users.SingleOrDefault(predicate: u => u.Id != userId)?.OnlineAt,
+					CountOfParticipants: chat.ChatType.Type == ChatTypes.Multi ? chat.Users.Count : null
+				)
 			));
 
 		if (request.IsFiltered)
@@ -199,7 +203,11 @@ public sealed class ChatController(
 				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
 				IsRead: chat.LastMessageNavigation.ReadedAt is not null
 			) : null,
-			CountOfUnreadMessages: 0
+			AdditionalInformation: new AdditionalInformation(
+				IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
+				OnlineAt: chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.OnlineAt,
+				CountOfParticipants: chat.ChatType.Type == ChatTypes.Multi ? chat.Users.Count : null
+			)
 		));
 	}
 
