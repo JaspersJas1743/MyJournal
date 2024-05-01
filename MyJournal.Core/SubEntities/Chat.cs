@@ -13,7 +13,7 @@ public sealed class LastMessage
 	public bool IsFile { get; init; }
 	public DateTime CreatedAt { get; init; }
 	public bool FromMe { get; init; }
-	public bool IsRead { get; init; }
+	public bool IsRead { get; set; }
 }
 
 public sealed class Chat : ISubEntity
@@ -35,7 +35,10 @@ public sealed class Chat : ISubEntity
 		Name = response.ChatName;
 		Photo = response.ChatPhoto;
 		LastMessage = response.LastMessage;
-		CountOfUnreadMessages = response.CountOfUnreadMessages;
+		IsSingleChat = response.AdditionalInformation.IsSingleChat;
+		OnlineAt = response.AdditionalInformation.OnlineAt;
+		CountOfParticipants = response.AdditionalInformation.CountOfParticipants;
+
 		_messages = messages;
 	}
 	#endregion
@@ -45,12 +48,15 @@ public sealed class Chat : ISubEntity
 	public string? Name { get; init; }
 	public string? Photo { get; init; }
 	public LastMessage? LastMessage { get; init; }
-	public int CountOfUnreadMessages { get; init; }
+	public bool IsSingleChat { get; init; }
+	public DateTime? OnlineAt { get; init; }
+	public int? CountOfParticipants { get; init; }
 	internal bool MessagesAreCreated => _messages.IsValueCreated;
 	#endregion
 
 	#region Records
-	internal sealed record ChatResponse(int Id, string? ChatName, string? ChatPhoto, LastMessage? LastMessage, int CountOfUnreadMessages);
+	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int? CountOfParticipants);
+	public record ChatResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 	#endregion
 
 	#region Events
