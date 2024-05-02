@@ -242,12 +242,10 @@ public sealed class ChatController(
 	{
 		int userId = GetAuthorizedUserId();
 		IQueryable<User> interlocutors = _context.Users
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.ChatType)
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
 			.Where(predicate: u => u.Id == userId)
 			.SelectMany(selector: u => u.Chats.SelectMany(
 				c => c.Users.Where(i => i.Id != userId || c.Users.Count == 1)
-			)).Skip(count: request.Offset).Take(count: request.Count).Distinct();
+			)).Skip(count: request.Offset).Take(count: request.Count);
 
 		return Ok(interlocutors.Select(u => new GetInterlocutorsResponse(
 			u.Id,
@@ -257,7 +255,7 @@ public sealed class ChatController(
 			u.LinkToPhoto,
 			u.UserActivityStatus.ActivityStatus,
 			u.OnlineAt
-		)));
+		)).Distinct());
 	}
 
 	/// <summary>
