@@ -31,6 +31,20 @@
 				</Transitions>
 			</Setter>
 		</Style>
+		<Style Selector="^.WidthTransition">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Width" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="^.HeightTransition">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Height" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+		</Style>
 		<Style Selector="^.ProfileSection">
 			<Setter Property="CornerRadius" Value="30"/>
 			<Setter Property="BorderThickness" Value="5"/>
@@ -70,9 +84,18 @@
 		<Style Selector="^.ChatPhoto">
 			<Setter Property="ClipToBounds" Value="True"/>
 			<Setter Property="CornerRadius" Value="20"/>
-			<Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
 			<Setter Property="Height" Value="85"/>
 			<Setter Property="Width" Value="85"/>
+		</Style>
+		<Style Selector="^.DefaultChatPhoto">
+			<Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
+		</Style>
+		<Style Selector="^.Thumb">
+			<Setter Property="Background" Value="{DynamicResource ForegroundColor}"/>
+			<Setter Property="CornerRadius" Value="5"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="VerticalAlignment" Value="Stretch"/>
+			<Setter Property="Opacity" Value="0.5"/>
 		</Style>
 	</Style>
 </Styles>

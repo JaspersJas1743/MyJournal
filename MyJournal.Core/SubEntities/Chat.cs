@@ -50,12 +50,12 @@ public sealed class Chat : ISubEntity
 	public LastMessage? LastMessage { get; init; }
 	public bool IsSingleChat { get; init; }
 	public DateTime? InterlocutorOnlineAt { get; init; }
-	public int? CountOfParticipants { get; init; }
+	public int CountOfParticipants { get; init; }
 	internal bool MessagesAreCreated => _messages.IsValueCreated;
 	#endregion
 
 	#region Records
-	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int? CountOfParticipants);
+	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int CountOfParticipants);
 	public record ChatResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 	#endregion
 

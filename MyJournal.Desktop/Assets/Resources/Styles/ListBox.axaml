@@ -47,7 +47,7 @@
 			<Setter Property="Margin" Value="0" />
 			<Setter Property="Padding" Value="0" />
 			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
 			<Setter Property="ItemsPanel">
 				<ItemsPanelTemplate>
 					<VirtualizingStackPanel Orientation="Vertical"/>
@@ -58,8 +58,9 @@
 					<Viewbox Width="490" Height="115">
 						<Grid	Width="505" ColumnDefinitions="15*, 85*, 15*, 255*, 70*, 20*, 5*, 15*, 5*, 10*, 10*"
 								Height="115" RowDefinitions="15*, 25*, 5*, 10*, 20*, 10*, 15*, 5*, 10*">
-							<Border Grid.Column="1" Grid.Row="1" Grid.RowSpan="7" Classes="ChatPhoto">
-								<asyncImageLoader:AdvancedImage Margin="{Binding Photo,Converter={StaticResource MarginForChatPhotoConverter}}"
+							<Border Grid.Column="1" Grid.Row="1" Grid.RowSpan="7" Classes="ChatPhoto"
+									Classes.DefaultChatPhoto="{Binding Photo,Converter={StaticResource PhotoLinkIsDefaultConverter}}">
+								<asyncImageLoader:AdvancedImage	Classes.LargeChatPhoto="{Binding Photo,Converter={StaticResource PhotoLinkIsDefaultConverter}}"
 																Source="{Binding Photo}" Stretch="UniformToFill" x:Name="Image"/>
 							</Border>
 							<TextBlock	Grid.Row="1" Grid.Column="3" Text="{Binding Name}" Classes="ChatHeader" x:Name="PART_Name"/>
@@ -70,8 +71,8 @@
 							<Ellipse Fill="{DynamicResource MainAccentColor}" Grid.Row="4" Grid.Column="7" Grid.ColumnSpan="2">
 								<Ellipse.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.And}">
-										<Binding Path="LastMessage.FromMe" FallbackValue="False" Converter="{x:Static BoolConverters.Not}"/>
-										<Binding Path="LastMessage.IsRead" FallbackValue="False" Converter="{x:Static BoolConverters.Not}"/>
+										<Binding Path="LastMessage.FromMe" FallbackValue="{x:False}" Converter="{x:Static BoolConverters.Not}"/>
+										<Binding Path="LastMessage.IsRead" FallbackValue="{x:False}" Converter="{x:Static BoolConverters.Not}"/>
 									</MultiBinding>
 								</Ellipse.IsVisible>
 							</Ellipse>
@@ -79,14 +80,14 @@
 												Foreground="{DynamicResource MainAccentColor}">
 								<controls:XamlSvg.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.And}">
-										<Binding Path="LastMessage.FromMe" FallbackValue="False"/>
-										<Binding Path="LastMessage.IsRead" FallbackValue="False"/>
+										<Binding Path="LastMessage.FromMe" FallbackValue="{x:False}"/>
+										<Binding Path="LastMessage.IsRead" FallbackValue="{x:False}"/>
 									</MultiBinding>
 								</controls:XamlSvg.IsVisible>
 							</controls:XamlSvg>
 							<controls:XamlSvg   Classes="ReadMark" Grid.Row="6" Grid.Column="7" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}"
-												IsVisible="{Binding LastMessage.FromMe}"/>
+												IsVisible="{Binding LastMessage.FromMe,FallbackValue={x:False}}"/>
 						</Grid>
 					</Viewbox>
 				</DataTemplate>
