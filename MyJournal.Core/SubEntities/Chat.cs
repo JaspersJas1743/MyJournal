@@ -36,7 +36,7 @@ public sealed class Chat : ISubEntity
 		Photo = response.ChatPhoto;
 		LastMessage = response.LastMessage;
 		IsSingleChat = response.AdditionalInformation.IsSingleChat;
-		OnlineAt = response.AdditionalInformation.OnlineAt;
+		InterlocutorOnlineAt = response.AdditionalInformation.OnlineAt;
 		CountOfParticipants = response.AdditionalInformation.CountOfParticipants;
 
 		_messages = messages;
@@ -49,13 +49,13 @@ public sealed class Chat : ISubEntity
 	public string? Photo { get; init; }
 	public LastMessage? LastMessage { get; init; }
 	public bool IsSingleChat { get; init; }
-	public DateTime? OnlineAt { get; init; }
-	public int? CountOfParticipants { get; init; }
+	public DateTime? InterlocutorOnlineAt { get; init; }
+	public int CountOfParticipants { get; init; }
 	internal bool MessagesAreCreated => _messages.IsValueCreated;
 	#endregion
 
 	#region Records
-	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int? CountOfParticipants);
+	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int CountOfParticipants);
 	public record ChatResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 	#endregion
 

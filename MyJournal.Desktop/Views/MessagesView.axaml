@@ -3,7 +3,62 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+			xmlns:entities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
+			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="vm:MessagesVM" x:Class="MyJournal.Desktop.Views.MessagesView">
-	<TextBlock Text="Messages" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+	<Viewbox>
+		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 875*, 40*" Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
+			<TextBox	Grid.Column="1" Grid.Row="1" Watermark="Поиск" FontSize="24" Classes="Search"
+						Text="{Binding Filter,Mode=TwoWay}"/>
+			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush Dialogs">
+				<Grid RowDefinitions="775*, 80*, 20*" ColumnDefinitions="400*, 80*, 20*">
+					<controls:ListBoxWithLoadOnScroll
+								Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" ItemsSource="{Binding Chats}"
+								Classes="Chats" IsVisible="{Binding !!Chats.Count}" x:Name="Chats"
+								SelectedItem="{Binding SelectedChat,Mode=TwoWay}"
+								Command="{Binding OnChatsLoaded}">
+						<interactivity:Interaction.Behaviors>
+							<interaction:EventTriggerBehavior EventName="KeyDown">
+								<interaction:InvokeCommandAction Command="{Binding OnKeyDown}" PassEventArgsToCommand="True"/>
+							</interaction:EventTriggerBehavior>
+							<interaction:EventTriggerBehavior EventName="SelectionChanged">
+								<interaction:InvokeCommandAction Command="{Binding OnSelectionChanged}"/>
+							</interaction:EventTriggerBehavior>
+						</interactivity:Interaction.Behaviors>
+					</controls:ListBoxWithLoadOnScroll>
+					<TextBlock	IsVisible="{Binding !Chats.Count}" Classes="NotChatsMessage"
+								Text="У Вас еще нет диалогов. Чтобы начать диалог, нажмите кнопку “+”"
+								Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3"/>
+					<Viewbox Grid.Column="1" Grid.Row="1">
+						<controls:ButtonWithAnimatedCommand Width="80" Height="80" Classes="AddChat"/>
+					</Viewbox>
+				</Grid>
+			</Border>
+			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="3" Classes="TransitionBorderBrush Dialogs">
+				<Grid RowDefinitions="90*, 730*, 75*, 90*" IsVisible="{Binding #Chats.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}">
+					<Grid Grid.Row="0" RowDefinitions="15*, 60*, 15*" ColumnDefinitions="1285*, 60*, 15*">
+						<Border Classes.DefaultChatPhoto="{Binding #Chats.((entities:Chat)SelectedItem).Photo,Converter={StaticResource PhotoLinkIsDefaultConverter}}"
+								Classes="ChatPhoto" CornerRadius="10" Grid.Column="1" Grid.Row="1" Width="60" Height="60">
+							<asyncImageLoader:AdvancedImage Classes.SmallChatPhoto="{Binding #Chats.((entities:Chat)SelectedItem).Photo,Converter={StaticResource PhotoLinkIsDefaultConverter}}"
+															Source="{Binding #Chats.((entities:Chat)SelectedItem).Photo}" Stretch="UniformToFill" x:Name="Image"/>
+						</Border>
+						<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top"
+									Text="{Binding #Chats.((entities:Chat)SelectedItem).Name}"/>
+						<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+									Text="{Binding Subheader}" Foreground="{DynamicResource DateTimeColor}"/>
+					</Grid>
+					<Border Grid.Row="1" Background="{DynamicResource ChatBackgroundColor}">
+					</Border>
+					<Border Grid.Row="2" Background="Transparent">
+					</Border>
+					<Border Grid.Row="3" Background="Transparent">
+					</Border>
+				</Grid>
+			</Border>
+		</Grid>
+	</Viewbox>
 </UserControl>

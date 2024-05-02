@@ -11,6 +11,7 @@
     <SolidColorBrush x:Key="CodeEntrySelection" Color="#5CB554"/>
     <SolidColorBrush x:Key="ErrorColor" Color="#FF4E4E"/>
     <SolidColorBrush x:Key="ContentOnControlColor" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="MessageOnChatList" Color="#6D6D6D"/>
     <SolidColorBrush x:Key="StrokeOnControlColor" Color="#8DCDF2"/>
     <SolidColorBrush x:Key="TextOnSelectedControlColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="WatermarkOnTextControlColor" Color="#C6C6C6"/>
@@ -20,7 +21,7 @@
     <SolidColorBrush x:Key="ControlPointeroverColor" Color="#DCDCDC"/>
     <SolidColorBrush x:Key="DateTimeColor" Color="#9C9C9C"/>
     <SolidColorBrush x:Key="SelectionControlColor" Color="#00A3FF"/>
-    <SolidColorBrush x:Key="ChatBackgroundColor" Color="#A8E0FF"/>
+    <SolidColorBrush x:Key="ChatBackgroundColor" Color="#BEE8FF"/>
     <SolidColorBrush x:Key="MessageColor" Color="#67C8FF"/>
     <SolidColorBrush x:Key="ExcellentGradeColor" Color="#009D06"/>
     <SolidColorBrush x:Key="GoodGradeColor" Color="#88C800"/>

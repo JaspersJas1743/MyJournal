@@ -1,0 +1,72 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="Thumb.VerticalThumb">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Width="4" x:Name="MainBorder" Classes="WidthTransition Thumb"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#MainBorder">
+            <Setter Property="Width" Value="8" />
+        </Style>
+    </Style>
+
+    <Style Selector="Thumb.HorizontalThumb">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Height="4" x:Name="MainBorder" Classes="HeightTransition Thumb"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#MainBorder">
+            <Setter Property="Height" Value="8" />
+        </Style>
+    </Style>
+
+    <Style Selector="ScrollBar">
+        <Style Selector="^:vertical">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid x:Name="Root">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="VerticalRoot">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <Track  Orientation="{TemplateBinding Orientation}" Value="{TemplateBinding Value,Mode=TwoWay}"
+                                        DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" Grid.Row="1"
+                                        Maximum="{TemplateBinding Maximum}" Minimum="{TemplateBinding Minimum}"
+                                        IsDirectionReversed="True" ViewportSize="{TemplateBinding ViewportSize}">
+                                     <Thumb Classes="VerticalThumb" HorizontalAlignment="Right" />
+                                </Track>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="^:horizontal">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid x:Name="Root">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            x:Name="HorizontalRoot">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Track  Orientation="{TemplateBinding Orientation}" Value="{TemplateBinding Value,Mode=TwoWay}"
+                                        DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" Grid.Column="1"
+                                        Maximum="{TemplateBinding Maximum}" Minimum="{TemplateBinding Minimum}"
+                                        ViewportSize="{TemplateBinding ViewportSize}">
+                                    <Thumb Classes="HorizontalThumb" VerticalAlignment="Bottom" />
+                                </Track>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </Style>
+
+</Styles>

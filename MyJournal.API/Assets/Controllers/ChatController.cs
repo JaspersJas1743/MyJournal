@@ -26,7 +26,7 @@ public sealed class ChatController(
 	[Validator<GetDialogsRequestValidator>]
 	public record GetChatsRequest(bool IsFiltered, string? Filter, int Offset, int Count);
 	public record LastMessage(string? Content, bool IsFile, DateTime CreatedAt, bool FromMe, bool IsRead);
-	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int CountOfParticipants);
+	public record AdditionalInformation(bool IsSingleChat, int? InterlocutorId, int CountOfParticipants);
 	public record GetChatsResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 
 	[Validator<CreateSingleChatRequestValidator>]
@@ -141,7 +141,7 @@ public sealed class ChatController(
 				) : null,
 				AdditionalInformation: new AdditionalInformation(
 					IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
-					OnlineAt: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != userId)?.OnlineAt : null,
+					InterlocutorId: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.Id : null,
 					CountOfParticipants: chat.Users.Count
 				)
 			));
@@ -205,7 +205,7 @@ public sealed class ChatController(
 			) : null,
 			AdditionalInformation: new AdditionalInformation(
 				IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
-				OnlineAt: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.OnlineAt : null,
+				InterlocutorId: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.Id : null,
 				CountOfParticipants: chat.Users.Count
 			)
 		));

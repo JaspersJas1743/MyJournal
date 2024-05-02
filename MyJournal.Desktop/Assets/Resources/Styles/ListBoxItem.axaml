@@ -31,4 +31,46 @@
 		</Style>
 	</Style>
 
+	<Style Selector="ListBox.Chats ListBoxItem">
+		<Setter Property="FocusAdorner" Value="{x:Null}"/>
+	    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:selected">
+			<Style Selector="^ TextBlock.ChatHeader">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ TextBlock.ChatLastMessage">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ TextBlock.ChatLastMessageDate">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ Border.DefaultChatPhoto">
+				<Setter Property="BorderBrush" Value="White"/>
+				<Setter Property="BorderThickness" Value="3"/>
+			</Style>
+			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+	            <Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	    </Style>
+		<Style Selector="^:nth-child(1)">
+			<Setter Property="CornerRadius" Value="15 15 0 0"/>
+		</Style>
+		<Style Selector="^:nth-last-child(1)">
+			<Setter Property="CornerRadius" Value="0 0 15 15"/>
+		</Style>
+	</Style>
 </Styles>

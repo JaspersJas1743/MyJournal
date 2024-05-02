@@ -12,6 +12,7 @@
     <SolidColorBrush x:Key="ErrorColor" Color="#FF4E4E"/>
     <SolidColorBrush x:Key="ContentOnControlColor" Color="#FFFFFF"/>
 	<SolidColorBrush x:Key="StrokeOnControlColor" Color="#8DCDF2"/>
+	<SolidColorBrush x:Key="MessageOnChatList" Color="#6D6D6D"/>
     <SolidColorBrush x:Key="TextOnSelectedControlColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="WatermarkOnTextControlColor" Color="#636363"/>
     <SolidColorBrush x:Key="TransparentControlPointeroverColor" Color="#242424"/>

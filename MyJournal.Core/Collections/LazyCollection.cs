@@ -35,10 +35,41 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 
 	#region Properties
 	public int Length => Offset;
+	public bool AllItemsAreUploaded => _allItemsAreUploaded;
 	#endregion
 
 	#region Methods
 	#region Instance
+	public async Task<T> GetByIndex(int index)
+	{
+		List<T> collection = await Collection;
+		return collection[index: index];
+	}
+
+	public async Task<T> GetByIndex(Index index)
+	{
+		List<T> collection = await Collection;
+		return collection[index];
+	}
+
+	public async Task<IEnumerable<T>> GetByRange(Range range)
+	{
+		List<T> collection = await Collection;
+		return collection[range];
+	}
+
+	public async Task<IEnumerable<T>> GetByRange(int start, int end)
+	{
+		List<T> collection = await Collection;
+		return collection[new Range(start: new Index(value: start), end: new Index(value: end))];
+	}
+
+	public async Task<IEnumerable<T>> GetByRange(Index start, Index end)
+	{
+		List<T> collection = await Collection;
+		return collection[new Range(start: start, end: end)];
+	}
+
 	public async Task<T> FindById(int id)
 	{
 		List<T> collection = await Collection;

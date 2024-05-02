@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
 	<Style Selector="TextBox">
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
@@ -31,7 +32,7 @@
 	                    </Border>
 	                    <Border Margin="{TemplateBinding BorderThickness}">
 	                        <Grid ColumnDefinitions="Auto,*,Auto">
-	                            <ContentPresenter Grid.Column="0" Content="{TemplateBinding InnerLeftContent}" Margin="0 0 5 0"/>
+	                            <ContentPresenter x:Name="PART_InnerLeftContent" Grid.Column="0" Content="{TemplateBinding InnerLeftContent}" Margin="0 0 5 0"/>
 	                            <DockPanel x:Name="PART_InnerDockPanel" Grid.Column="1" Margin="{TemplateBinding Padding}">
 	                                <TextBlock Name="PART_FloatingWatermark" Foreground="{DynamicResource SystemAccentColor}"
 	                                           IsVisible="False" Text="{TemplateBinding Watermark}" DockPanel.Dock="Top" />
@@ -147,5 +148,21 @@
 			    <Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
 		    </Style>
 	    </Style>
+		<Style Selector="^.Search">
+			<Setter Property="CornerRadius" Value="20"/>
+			<Style Selector="^ /template/ ContentPresenter#PART_InnerLeftContent">
+				<Setter Property="Margin" Value="0"/>
+			</Style>
+			<Setter Property="InnerLeftContent">
+				<Setter.Value>
+					<Template>
+						<Grid RowDefinitions="0.15* 0.7* 0.15*">
+							<controls:XamlSvg Margin="15 0 0 0" Classes="Search TransitionForeground"
+											Grid.Row="1" Foreground="{DynamicResource MainAccentColor}"/>
+						</Grid>
+					</Template>
+				</Setter.Value>
+			</Setter>
+		</Style>
     </Style>
 </Styles>

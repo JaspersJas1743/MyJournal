@@ -9,6 +9,12 @@
 				<lottie:Lottie Path="/Assets/Resources/Animations/Loading.json" IsVisible="{TemplateBinding IsLoading}"/>
 			</ControlTemplate>
 		</Setter>
+		<Style Selector="^.LargeChatPhoto">
+			<Setter Property="Margin" Value="20"/>
+		</Style>
+		<Style Selector="^.SmallChatPhoto">
+			<Setter Property="Margin" Value="10"/>
+		</Style>
 	</Style>
 
 </Styles>
