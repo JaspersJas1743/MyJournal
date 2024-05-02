@@ -104,7 +104,7 @@
 			<Setter Property="Opacity" Value="0.5"/>
         </Style>
         <Style Selector="^:focus">
-            <Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
             <Style Selector="^ /template/ TextBlock#PART_Watermark">
                 <Setter Property="Opacity" Value="0.5"/>
                 <Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>

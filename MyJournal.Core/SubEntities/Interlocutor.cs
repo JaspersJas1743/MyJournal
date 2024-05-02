@@ -39,7 +39,7 @@ public sealed class Interlocutor : ISubEntity
 	#endregion
 
 	#region Records
-	private sealed record InterlocutorResponse(int Id, string Surname, string Name, string? Patronymic, string Photo, Activity.Statuses Activity, DateTime? OnlineAt);
+	internal sealed record InterlocutorResponse(int Id, string Surname, string Name, string? Patronymic, string Photo, Activity.Statuses Activity, DateTime? OnlineAt);
 	#endregion
 
 	#region Events
@@ -62,6 +62,30 @@ public sealed class Interlocutor : ISubEntity
 			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		Interlocutor interlocutor = new Interlocutor(
+			id: response.Id,
+			personalData: new AsyncLazy<PersonalData>(valueFactory: async () => new PersonalData(
+				name: response.Name,
+				surname: response.Surname,
+				patronymic: response.Patronymic
+			)),
+			photo: new AsyncLazy<ProfilePhoto>(valueFactory: async () => new ProfilePhoto(
+				client: client,
+				fileService: fileService,
+				link: response.Photo
+			)),
+			activity: response.Activity,
+			onlineAt: response.OnlineAt
+		);
+		return interlocutor;
+	}
+
+	internal static Interlocutor Create(
+		ApiClient client,
+		IFileService fileService,
+		InterlocutorResponse response
+	)
+	{
 		Interlocutor interlocutor = new Interlocutor(
 			id: response.Id,
 			personalData: new AsyncLazy<PersonalData>(valueFactory: async () => new PersonalData(

@@ -70,11 +70,10 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 		return collection[new Range(start: start, end: end)];
 	}
 
-	public async Task<T> FindById(int id)
+	public async Task<T?> FindById(int? id)
 	{
 		List<T> collection = await Collection;
-		return collection.Find(match: i => i.Id.Equals(id))
-			?? throw new ArgumentOutOfRangeException(message: $"Объект с идентификатором {id} отсутствует или не загружен.", paramName: nameof(id));
+		return collection.Find(match: i => i.Id.Equals(id));
 	}
 
 	public virtual async Task LoadNext(

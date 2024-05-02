@@ -36,7 +36,7 @@ public sealed class Chat : ISubEntity
 		Photo = response.ChatPhoto;
 		LastMessage = response.LastMessage;
 		IsSingleChat = response.AdditionalInformation.IsSingleChat;
-		InterlocutorOnlineAt = response.AdditionalInformation.OnlineAt;
+		CurrentInterlocutorId = response.AdditionalInformation.InterlocutorId;
 		CountOfParticipants = response.AdditionalInformation.CountOfParticipants;
 
 		_messages = messages;
@@ -44,18 +44,19 @@ public sealed class Chat : ISubEntity
 	#endregion
 
 	#region Properties
+	private int? CurrentInterlocutorId { get; init; }
 	public int Id { get; init; }
 	public string? Name { get; init; }
 	public string? Photo { get; init; }
-	public LastMessage? LastMessage { get; init; }
+	public LastMessage? LastMessage { get; set; }
 	public bool IsSingleChat { get; init; }
-	public DateTime? InterlocutorOnlineAt { get; init; }
+	public Interlocutor? CurrentInterlocutor { get; private set; }
 	public int CountOfParticipants { get; init; }
 	internal bool MessagesAreCreated => _messages.IsValueCreated;
 	#endregion
 
 	#region Records
-	public record AdditionalInformation(bool IsSingleChat, DateTime? OnlineAt, int CountOfParticipants);
+	public record AdditionalInformation(bool IsSingleChat, int? InterlocutorId, int CountOfParticipants);
 	public record ChatResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 	#endregion
 
@@ -87,6 +88,25 @@ public sealed class Chat : ISubEntity
 		);
 	}
 
+	internal static Chat Create(
+		ApiClient client,
+		IFileService fileService,
+		ChatResponse response,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		return new Chat(
+			client: client,
+			response: response,
+			messages: new AsyncLazy<MessageCollection>(valueFactory: async () => await MessageCollection.Create(
+				client: client,
+				fileService: fileService,
+				chatId: response.Id,
+				cancellationToken: cancellationToken
+			))
+		);
+	}
+
 	public async Task<MessageCollection> GetMessages()
 		=> await _messages;
 
@@ -94,7 +114,28 @@ public sealed class Chat : ISubEntity
 		CancellationToken cancellationToken = default(CancellationToken)
 	) => await _client.PutAsync(apiMethod: ChatControllerMethods.ReadChat(chatId: Id), cancellationToken: cancellationToken);
 
-	internal void OnReceivedMessage(ReceivedMessageEventArgs e)
-		=> ReceivedMessage?.Invoke(e: e);
+	public async Task LoadInterlocutor(User user)
+	{
+		if (CurrentInterlocutorId is null)
+			return;
+
+		InterlocutorCollection userInterlocutors = await user.GetInterlocutors();
+		CurrentInterlocutor = await userInterlocutors.FindById(id: CurrentInterlocutorId);
+	}
+
+	internal async Task OnReceivedMessage(ReceivedMessageEventArgs e)
+	{
+		MessageCollection messages = await GetMessages();
+		Message? message = await messages.FindById(id: e.MessageId);
+		LastMessage = new LastMessage()
+		{
+			Content = message!.Text,
+			CreatedAt = message.CreatedAt,
+			FromMe = message.FromMe,
+			IsFile = String.IsNullOrWhiteSpace(value: message.Text) && message.Attachments?.Any() == true,
+			IsRead = message.IsRead
+		};
+		ReceivedMessage?.Invoke(e: e);
+	}
 	#endregion
 }

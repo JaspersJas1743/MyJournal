@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -43,6 +44,8 @@ public class AuthorizationWithTokenService(
 			UserRoles.Administrator => await Administrator.Create(client: client, fileService: fileService, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
 			UserRoles.Parent => await Parent.Create(client: client, fileService: fileService, googleAuthenticatorService: googleAuthenticatorService, cancellationToken: cancellationToken),
 		};
+		Activity activity = await user.GetActivity();
+		await activity.SetOnline(cancellationToken: cancellationToken);
 		return new Authorized<User>(instance: user, typeOfInstance: user.GetType(), token: token);
 	}
 }

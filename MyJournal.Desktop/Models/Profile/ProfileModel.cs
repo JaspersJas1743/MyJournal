@@ -11,6 +11,8 @@ namespace MyJournal.Desktop.Models.Profile;
 
 public sealed class ProfileModel : ModelBase
 {
+	private User _user;
+
 	private readonly ICredentialStorageService _credentialStorageService;
 
 	private SessionCollection _sessionCollection;
@@ -44,7 +46,11 @@ public sealed class ProfileModel : ModelBase
 	}
 
 	private async Task CloseThis()
-		=> await _sessionCollection.CloseThis();
+	{
+		Activity activity = await _user.GetActivity();
+		await activity.SetOffline();
+		await _sessionCollection.CloseThis();
+	}
 
 	public ProfilePhotoVM ProfilePhotoVM { get; }
 	public ProfileEmailVM ProfileEmailVM { get; }
@@ -68,6 +74,7 @@ public sealed class ProfileModel : ModelBase
 			ProfileSecurityVM.SetUser(user: user)
 		);
 
+		_user = user;
 		Security security = await user.GetSecurity();
 		_sessionCollection = await security.GetSessions();
 	}

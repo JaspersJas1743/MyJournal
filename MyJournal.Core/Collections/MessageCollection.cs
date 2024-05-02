@@ -53,13 +53,10 @@ public sealed class MessageCollection : LazyCollection<Message>
 			client: client,
 			chatId: chatId,
 			fileService: fileService,
-			messages: new AsyncLazy<List<Message>>(valueFactory: async () => new List<Message>(collection: await Task.WhenAll(
-				tasks: messages.Select(selector: async m => await Message.Create(
-					client: client,
-					messageId: m.MessageId,
-					cancellationToken: cancellationToken
-				)).Reverse()
-			))),
+			messages: new AsyncLazy<List<Message>>(valueFactory: async () => new List<Message>(
+				collection: messages.Select(selector: m => Message.Create(response: m)
+				).Reverse()
+			)),
 			count: basedCount,
 			offset: messages.Count()
 		);

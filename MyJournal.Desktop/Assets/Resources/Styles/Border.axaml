@@ -17,6 +17,13 @@
 				</Transitions>
 			</Setter>
 		</Style>
+		<Style Selector="^.TransitionBorderThickness">
+			<Setter Property="Transitions">
+				<Transitions>
+					<ThicknessTransition Property="BorderThickness" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
 		<Style Selector="^.TransitionBackground">
 			<Setter Property="Transitions">
 				<Transitions>

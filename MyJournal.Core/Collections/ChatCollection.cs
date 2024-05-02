@@ -61,14 +61,14 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		return new ChatCollection(
 			client: client,
 			fileService: fileService,
-			chats: new AsyncLazy<List<Chat>>(valueFactory: async () => new List<Chat>(collection: await Task.WhenAll(
-				tasks: chats.Select(selector: async c => await Chat.Create(
+			chats: new AsyncLazy<List<Chat>>(valueFactory: async () => new List<Chat>(
+				collection: chats.Select(selector: c => Chat.Create(
 					client: client,
 					fileService: fileService,
-					id: c.Id,
+					response: c,
 					cancellationToken: cancellationToken
 				))
-			))),
+			)),
 			count: basedCount,
 			offset: chats.Count()
 		);
@@ -187,13 +187,13 @@ public sealed class ChatCollection : LazyCollection<Chat>
 	{
 		if (Collection.IsValueCreated)
 		{
-			Chat chat = await FindById(id: e.ChatId);
-			if (chat.MessagesAreCreated)
+			Chat? chat = await FindById(id: e.ChatId);
+			if (chat?.MessagesAreCreated == true)
 			{
 				MessageCollection messageFromChat = await chat.GetMessages();
 				await messageFromChat.Append(id: e.MessageId, cancellationToken: cancellationToken);
 			}
-			chat.OnReceivedMessage(e: e);
+			await chat?.OnReceivedMessage(e: e)!;
 		}
 		ReceivedMessageInChat?.Invoke(e: e);
 	}

@@ -8,6 +8,7 @@ using MyJournal.Core.Utilities.Constants.Hubs;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
+using Activity = MyJournal.Core.UserData.Activity;
 
 namespace MyJournal.Core;
 
@@ -52,14 +53,17 @@ public abstract class User
 			client: client,
 			fileService: fileService
 		));
+
 		_interlocutors = new AsyncLazy<InterlocutorCollection>(valueFactory: async () => await InterlocutorCollection.Create(
 			client: client,
 			fileService: fileService
 		));
+
 		_intendedInterlocutors = new AsyncLazy<IntendedInterlocutorCollection>(valueFactory: async () => await IntendedInterlocutorCollection.Create(
 			client: client,
 			fileService: fileService
 		));
+
 		_security = new AsyncLazy<Security>(valueFactory: async () => new Security(
 			phone: new AsyncLazy<Phone>(valueFactory: async () => new Phone(
 				client: client,
@@ -79,11 +83,13 @@ public abstract class User
 				client: client
 			))
 		));
+
 		_photo = new AsyncLazy<ProfilePhoto>(valueFactory: async () => new ProfilePhoto(
 			client: client,
 			fileService: fileService,
 			link: information.Photo
 		));
+
 		_activity = new AsyncLazy<Activity>(valueFactory: async () => new Activity(
 			client: client
 		));

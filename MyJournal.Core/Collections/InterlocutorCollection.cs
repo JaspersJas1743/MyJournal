@@ -28,7 +28,6 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 
 	#region Records
 	private sealed record GetInterlocutorsRequest(int Offset, int Count);
-	private sealed record GetInterlocutorsResponse(int UserId);
 	#endregion
 
 	#region Events
@@ -48,7 +47,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 	{
 		const int basedOffset = 0;
 		const int basedCount = 20;
-		IEnumerable<GetInterlocutorsResponse> interlocutors = await client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
+		IEnumerable<Interlocutor.InterlocutorResponse> interlocutors = await client.GetAsync<IEnumerable<Interlocutor.InterlocutorResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				Offset: basedOffset,
@@ -58,14 +57,12 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 		return new InterlocutorCollection(
 			client: client,
 			fileService: fileService,
-			interlocutors: new AsyncLazy<List<Interlocutor>>(valueFactory: async () => new List<Interlocutor>(collection: await Task.WhenAll(
-				tasks: interlocutors.Select(selector: async i => await Interlocutor.Create(
+			interlocutors: new AsyncLazy<List<Interlocutor>>(valueFactory: async () => new List<Interlocutor>(collection: interlocutors.Select(
+				selector: response => Interlocutor.Create(
 					client: client,
 					fileService: fileService,
-					id: i.UserId,
-					cancellationToken:
-					cancellationToken
-				))
+					response: response
+				)
 			))),
 			count: basedCount,
 			offset: interlocutors.Count()
@@ -78,7 +75,7 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<GetInterlocutorsResponse> interlocutors = await Client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
+		IEnumerable<Interlocutor.InterlocutorResponse> interlocutors = await Client.GetAsync<IEnumerable<Interlocutor.InterlocutorResponse>, GetInterlocutorsRequest>(
 			apiMethod: ChatControllerMethods.GetInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				Offset: Offset,
@@ -86,12 +83,11 @@ public sealed class InterlocutorCollection : LazyCollection<Interlocutor>
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		List<Interlocutor> collection = await Collection;
-		collection.AddRange(collection: await Task.WhenAll(tasks: interlocutors.Select(selector: async i => await Interlocutor.Create(
+		collection.AddRange(collection: interlocutors.Select(selector: response => Interlocutor.Create(
 			client: Client,
 			fileService: _fileService,
-			id: i.UserId,
-			cancellationToken: cancellationToken
-		))));
+			response: response
+		)));
 		Offset = collection.Count;
 	}
 

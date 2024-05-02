@@ -19,6 +19,7 @@ public sealed class ProfileSessionsModel : ModelBase
 {
 	private readonly ICredentialStorageService _credentialStorageService;
 	private ObservableCollectionExtended<Session> _sessions = new ObservableCollectionExtended<Session>();
+	private User _user;
 	private SessionCollection _sessionCollection;
 
 	public ProfileSessionsModel(ICredentialStorageService credentialStorageService)
@@ -40,6 +41,7 @@ public sealed class ProfileSessionsModel : ModelBase
 
 	public async Task SetUser(User user)
 	{
+		_user = user;
 		Security security = await user.GetSecurity();
 		_sessionCollection = await security.GetSessions();
 		_sessionCollection.ClosedSession += OnClosedSessions;
@@ -67,5 +69,9 @@ public sealed class ProfileSessionsModel : ModelBase
 		=> await _sessionCollection.CloseOthers();
 
 	private async Task CloseAll()
-		=> await _sessionCollection.CloseAll();
+	{
+		Activity activity = await _user.GetActivity();
+		await activity.SetOffline();
+		await _sessionCollection.CloseAll();
+	}
 }

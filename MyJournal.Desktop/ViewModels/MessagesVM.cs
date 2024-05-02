@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using DynamicData.Binding;
 using MyJournal.Core;
-using MyJournal.Core.SubEntities;
+using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 using MyJournal.Desktop.Models;
 using ReactiveUI;
 
@@ -11,13 +11,13 @@ namespace MyJournal.Desktop.ViewModels;
 
 public sealed class MessagesVM(MessagesModel model) : MenuItemVM(model: model)
 {
-	public ObservableCollectionExtended<Chat> Chats
+	public ObservableCollectionExtended<ObservableChat> Chats
 	{
 		get => model.Chats;
 		set => model.Chats = value;
 	}
 
-	public Chat? SelectedChat
+	public ObservableChat? SelectedChat
 	{
 		get => model.SelectedChat;
 		set => model.SelectedChat = value;

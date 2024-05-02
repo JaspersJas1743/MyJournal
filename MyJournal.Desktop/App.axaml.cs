@@ -331,6 +331,7 @@ public partial class App : Application
 					MainVM mainVM = GetService<MainVM>();
 					Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
 					await mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+					mainWindowVM.SetUser(user: authorizedUser.Instance);
 					mainWindowVM.Content = mainVM;
 				}
 				catch (UnauthorizedAccessException e)

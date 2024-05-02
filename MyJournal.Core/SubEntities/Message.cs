@@ -57,5 +57,17 @@ public sealed class Message : ISubEntity
 			)
 		);
 	}
+
+	internal static Message Create(
+		GetMessageResponse response
+	)
+	{
+		return new Message(
+			response: response,
+			attachments: response.Content.Attachments?.Select(selector: a =>
+				Attachment.Create(linkToFile: a.LinkToFile, type: a.AttachmentType)
+			)
+		);
+	}
 	#endregion
 }

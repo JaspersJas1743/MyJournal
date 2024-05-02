@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using System.Reactive;
+﻿using System.Reactive;
 using Avalonia.Controls;
+using MyJournal.Core;
 using MyJournal.Desktop.Models;
 using ReactiveUI;
 
@@ -30,4 +30,7 @@ public sealed class MainWindowVM(MainWindowModel model) : BaseVM(model: model)
 		get => model.HaveRightDirection;
 		set => model.HaveRightDirection = value;
 	}
+
+	public void SetUser(User user)
+		=> model.SetUser(user: user);
 }

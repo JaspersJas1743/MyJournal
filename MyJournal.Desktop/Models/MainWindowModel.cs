@@ -1,8 +1,9 @@
 using System;
 using System.Reactive;
 using Avalonia.Controls;
+using MyJournal.Core;
+using MyJournal.Core.UserData;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.Views;
 using ReactiveUI;
@@ -11,6 +12,7 @@ namespace MyJournal.Desktop.Models;
 
 public class MainWindowModel : ModelBase
 {
+	private User _user;
 	private BaseVM _content;
 	private bool _haveLeftDirection;
 	private bool _haveRightDirection;
@@ -27,7 +29,12 @@ public class MainWindowModel : ModelBase
 		Minimize = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Minimized);
 		Maximize = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Maximized);
 		Restore = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Normal);
-		Close = ReactiveCommand.Create(execute: mainWindowView.Close);
+		Close = ReactiveCommand.CreateFromTask(execute: async () =>
+		{
+			mainWindowView.Close();
+			Activity activity = await _user?.GetActivity()!;
+			await activity.SetOffline();
+		});
 		Content = startedContent;
 	}
 
@@ -53,4 +60,7 @@ public class MainWindowModel : ModelBase
 		get => _haveRightDirection;
 		set => this.RaiseAndSetIfChanged(backingField: ref _haveRightDirection, newValue: value);
 	}
+
+	public void SetUser(User user)
+		=> _user = user;
 }

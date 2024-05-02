@@ -89,9 +89,9 @@ public sealed class SessionCollection : IAsyncEnumerable<Session>
 	{
 		List<Session> sessions = await _sessions;
 		sessions.Add(item: await Session.Create(
-			  client: _client,
-			  id: id,
-			  cancellationToken: cancellationToken
+			client: _client,
+			id: id,
+			cancellationToken: cancellationToken
 		));
 	}
 

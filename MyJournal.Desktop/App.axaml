@@ -15,6 +15,8 @@
             <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
             <converters:Base64ToBitmapConverter x:Key="Base64ToBitmapConverter"/>
             <converters:PhotoLinkIsDefaultConverter x:Key="PhotoLinkIsDefaultConverter"/>
+            <converters:ActivityToBoolConverter x:Key="ActivityToBoolConverter"/>
+            <converters:ActivityToDoubleConverter x:Key="ActivityToDoubleConverter"/>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"/>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"/>
@@ -49,6 +51,7 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ListBoxItem.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ScrollBar.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ScrollViewer.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Ellipse.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"/>

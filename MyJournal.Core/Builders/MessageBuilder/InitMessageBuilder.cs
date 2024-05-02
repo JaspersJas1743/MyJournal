@@ -29,7 +29,7 @@ internal sealed class InitMessageBuilder : IInitMessageBuilder
 	{
 		return MessageBuilder.Create(
 			fileService: _fileService,
-			builder: new StringBuilder(value: text),
+			text: text,
 			attachments: Enumerable.Empty<Attachment>(),
 			chatId: _chatId
 		);
@@ -47,7 +47,7 @@ internal sealed class InitMessageBuilder : IInitMessageBuilder
 		);
 		return MessageBuilder.Create(
 			fileService: _fileService,
-			builder: new StringBuilder(),
+			text: String.Empty,
 			attachments: new Attachment[] { attachment },
 			chatId: _chatId
 		);

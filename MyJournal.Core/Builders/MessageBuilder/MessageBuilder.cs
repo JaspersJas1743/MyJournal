@@ -1,4 +1,3 @@
-using System.Text;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
@@ -7,19 +6,19 @@ namespace MyJournal.Core.Builders.MessageBuilder;
 
 internal sealed class MessageBuilder : IMessageBuilder
 {
-	private readonly StringBuilder _text = new StringBuilder();
 	private readonly List<Attachment> _attachments = new List<Attachment>();
 	private readonly IFileService _fileService;
 	private readonly int _chatId;
+	private string _text;
 
 	private MessageBuilder(
 		IFileService fileService,
-		StringBuilder builder,
+		string text,
 		IEnumerable<Attachment> attachments,
 		int chatId
 	)
 	{
-		_text.Append(value: builder);
+		_text = text;
 		_attachments.AddRange(collection: attachments);
 		_fileService = fileService;
 		_chatId = chatId;
@@ -29,16 +28,16 @@ internal sealed class MessageBuilder : IMessageBuilder
 
 	internal static MessageBuilder Create(
 		IFileService fileService,
-		StringBuilder builder,
+		string text,
 		IEnumerable<Attachment> attachments,
 		int chatId
-	) => new MessageBuilder(fileService: fileService, builder: builder, attachments: attachments, chatId: chatId);
+	) => new MessageBuilder(fileService: fileService, text: text, attachments: attachments, chatId: chatId);
 
-	public IMessageBuilder AddText(
+	public IMessageBuilder ChangeText(
 		string text
 	)
 	{
-		_text.Append(value: text);
+		_text = text;
 		return this;
 	}
 
