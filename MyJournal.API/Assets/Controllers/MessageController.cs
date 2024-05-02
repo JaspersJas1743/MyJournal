@@ -116,7 +116,7 @@ public sealed class MessageController(
 	{
 		int userId = GetAuthorizedUserId();
 		return Ok(value: await _context.Messages.AsNoTracking()
-			.Where(predicate: m => m.Id == id && m.SenderId == userId)
+			.Where(predicate: m => m.Id == id && m.Chat.Users.Any(u => u.Id == m.SenderId))
 			.Select(selector: m => new GetMessageResponse(
 				m.Id,
 				new MessageContent(
