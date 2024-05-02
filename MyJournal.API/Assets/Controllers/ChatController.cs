@@ -41,7 +41,7 @@ public sealed class ChatController(
 
 	[Validator<GetInterlocutorsRequestValidator>]
 	public record GetInterlocutorsRequest(int Offset, int Count);
-	public record GetInterlocutorsResponse(int UserId);
+	public record GetInterlocutorsResponse(int Id, string Surname, string Name, string? Patronymic, string? Photo, UserActivityStatuses Activity, DateTime? OnlineAt);
 	#endregion
 
 	#region Methods
@@ -247,9 +247,17 @@ public sealed class ChatController(
 			.Where(predicate: u => u.Id == userId)
 			.SelectMany(selector: u => u.Chats.SelectMany(
 				c => c.Users.Where(i => i.Id != userId || c.Users.Count == 1)
-			)).Skip(count: request.Offset).Take(count: request.Count);
+			)).Skip(count: request.Offset).Take(count: request.Count).Distinct();
 
-		return Ok(interlocutors.Select(u => new GetInterlocutorsResponse(u.Id)));
+		return Ok(interlocutors.Select(u => new GetInterlocutorsResponse(
+			u.Id,
+			u.Surname,
+			u.Name,
+			u.Patronymic,
+			u.LinkToPhoto,
+			u.UserActivityStatus.ActivityStatus,
+			u.OnlineAt
+		)));
 	}
 
 	/// <summary>
