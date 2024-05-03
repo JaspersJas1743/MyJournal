@@ -6,36 +6,26 @@ namespace MyJournal.Core.Builders.MessageBuilder;
 
 internal sealed class MessageBuilder : IMessageBuilder
 {
-	private readonly List<Attachment> _attachments = new List<Attachment>();
+	private readonly Dictionary<string, Attachment> _attachments = new Dictionary<string, Attachment>();
 	private readonly IFileService _fileService;
 	private readonly int _chatId;
-	private string _text;
+	private string _text = String.Empty;
 
 	private MessageBuilder(
 		IFileService fileService,
-		string text,
-		IEnumerable<Attachment> attachments,
 		int chatId
 	)
 	{
-		_text = text;
-		_attachments.AddRange(collection: attachments);
 		_fileService = fileService;
 		_chatId = chatId;
 	}
 
 	internal sealed record SendMessageRequest(int ChatId, Message.MessageContent Content);
 
-	internal static MessageBuilder Create(
-		IFileService fileService,
-		string text,
-		IEnumerable<Attachment> attachments,
-		int chatId
-	) => new MessageBuilder(fileService: fileService, text: text, attachments: attachments, chatId: chatId);
+	internal static MessageBuilder Create(IFileService fileService, int chatId)
+		=> new MessageBuilder(fileService: fileService, chatId: chatId);
 
-	public IMessageBuilder ChangeText(
-		string text
-	)
+	public IMessageBuilder SetText(string text)
 	{
 		_text = text;
 		return this;
@@ -46,7 +36,7 @@ internal sealed class MessageBuilder : IMessageBuilder
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		_attachments.Add(item: await Attachment.Create(
+		_attachments.Add(key: pathToFile, value: await Attachment.Create(
 			fileService: _fileService,
 			pathToFile: pathToFile,
 			cancellationToken: cancellationToken
@@ -55,13 +45,13 @@ internal sealed class MessageBuilder : IMessageBuilder
 	}
 
 	public async Task<IMessageBuilder> RemoveAttachment(
-		int index,
+		string pathToFile,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Attachment attachment = _attachments[index: index];
+		Attachment attachment = _attachments[key: pathToFile];
 		await _fileService.Delete(link: attachment.LinkToFile, cancellationToken: cancellationToken);
-		_attachments.Remove(attachment);
+		_attachments.Remove(key: pathToFile);
 		return this;
 	}
 
@@ -73,8 +63,8 @@ internal sealed class MessageBuilder : IMessageBuilder
 				ChatId: _chatId,
 				Content: new Message.MessageContent(Text: _text.ToString(), Attachments: _attachments.Select(selector: a =>
 					new Message.MessageAttachment(
-						LinkToFile: a.LinkToFile,
-						AttachmentType: a.Type
+						LinkToFile: a.Value.LinkToFile,
+						AttachmentType: a.Value.Type
 					)
 				))
 			),

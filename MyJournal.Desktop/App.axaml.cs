@@ -74,7 +74,7 @@ public partial class App : Application
 			.AddSingleton<WelcomeModel>()
 			#endregion
 			#region Utilities
-			.AddApiClient(timeout: TimeSpan.FromSeconds(value: 5))
+			.AddApiClient(timeout: TimeSpan.FromSeconds(value: 15))
 			.AddGoogleAuthenticator()
 			.AddFileService()
 			.AddFileStorageService()

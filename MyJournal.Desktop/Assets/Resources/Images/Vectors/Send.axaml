@@ -1,0 +1,35 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg">
+
+	<Style Selector="controls|XamlSvg.Send">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V833 H828 V0 H0 Z">
+										<DrawingGroup Opacity="1" Transform="0.1,0,0,-0.1,0,833">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Geometry="F1 M828,833z M0,0z M1160,8309C922,8289 681,8210 527,8103 357,7984 250,7864 160,7689 45,7466 10,7304 9,6984 8,6671 62,6384 199,5965 294,5674 409,5414 731,4760 1052,4108 1052,4195 725,3539 601,3291 466,3016 426,2926 21,2033 -94,1298 90,783 209,449 449,209 783,90 1293,-93 1998,15 2915,415 3141,514 6996,2449 7140,2536 7600,2814 7914,3121 8104,3480 8179,3624 8233,3786 8260,3954 8276,4051 8274,4279 8256,4386 8170,4917 7792,5391 7140,5784 6980,5881 3130,7810 2870,7924 2209,8214 1613,8348 1160,8309z M1655,7651C1949,7599 2295,7485 2665,7319 2897,7215 6686,5317 6811,5242 7023,5116 7169,5001 7320,4844 7692,4456 7738,4032 7452,3631 7392,3547 7251,3399 7147,3312 7041,3224 6956,3164 6811,3078 6686,3003 2897,1105 2665,1001 2296,835 1951,722 1653,668 1483,638 1195,635 1080,663 857,717 719,854 663,1075 642,1161 639,1462 658,1585 686,1760 743,1990 803,2165 905,2461 985,2639 1281,3232 1423,3518 1545,3772 1551,3796L1562,3840 2618,3840C3790,3840 3738,3837 3833,3906 3916,3966 3960,4054 3960,4160 3960,4266 3916,4354 3833,4414 3738,4483 3790,4480 2619,4480L1565,4480 1542,4545C1529,4581 1408,4832 1273,5102 950,5750 851,5982 756,6310 669,6613 646,6755 646,6990 646,7137 650,7178 668,7247 696,7355 741,7441 802,7506 891,7600 982,7641 1180,7674 1246,7686 1542,7671 1655,7651z" />
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Style Selector="^[IsEnabled=True]">
+			<Setter Property="Foreground" Value="{DynamicResource MainAccentColor}"/>
+			<Setter Property="RenderTransform" Value="rotate(-90deg)"/>
+		</Style>
+		<Style Selector="^[IsEnabled=False]">
+			<Setter Property="Foreground" Value="{DynamicResource StrokeColor}"/>
+		</Style>
+	</Style>
+
+</Styles>

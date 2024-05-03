@@ -668,7 +668,7 @@ public class UserTests
 		Chat firstChat = await chats.FirstAsync();
 		const string message = "Тестирование сообщения :)";
 		MessageCollection messages = await firstChat.GetMessages();
-		IMessageBuilder messageBuilder = messages.CreateMessage().WithText(text: message);
+		IMessageBuilder messageBuilder = messages.CreateMessage().SetText(text: message);
 		await messageBuilder.AddAttachment(pathToFile: @"C:\Users\JaspersJas1743\Downloads\985b88cf-5ee0-496f-98a9-88fb9e35cd32.docx");
 		await messageBuilder.Send();
 		await Task.Delay(millisecondsDelay: 50);
@@ -701,7 +701,7 @@ public class UserTests
 			Chat firstChat = await chats.FirstAsync();
 			const string message = "Тестирование сообщения";
 			MessageCollection messages = await firstChat.GetMessages();
-			IMessageBuilder builder = messages.CreateMessage().WithText(text: message);
+			IMessageBuilder builder = messages.CreateMessage().SetText(text: message);
 			await builder.AddAttachment(pathToFile: @"C:\Users\JaspersJas1743\Downloads\Telegram Desktop\Внедрение_зависимостей_на_платформе_NET.pdf");
 		});
 	}

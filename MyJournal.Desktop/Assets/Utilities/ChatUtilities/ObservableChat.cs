@@ -23,16 +23,17 @@ public class ObservableChat : ReactiveObject
 		};
 	}
 
+	public Chat Observable => _chatToObservable;
 	public string? Name => _chatToObservable.Name;
 	public string? Photo => _chatToObservable.Photo;
 	public string? Content => _chatToObservable.LastMessage.Content;
 	public bool? IsFile => _chatToObservable.LastMessage.IsFile;
 	public DateTime? CreatedAt => _chatToObservable.LastMessage.CreatedAt;
 	public bool? FromMe => _chatToObservable.LastMessage.FromMe;
-	public bool? IsRead
+	public bool IsRead
 	{
-		get => _chatToObservable.LastMessage.IsRead;
-		set => _chatToObservable.LastMessage.IsRead = value ?? false;
+		get => _chatToObservable.LastMessage?.IsRead ?? false;
+		set => _chatToObservable.LastMessage!.IsRead = value;
 	}
 
 	public bool IsSingleChat => _chatToObservable.IsSingleChat;
@@ -43,7 +44,8 @@ public class ObservableChat : ReactiveObject
 	public async Task Read()
 	{
 		await _chatToObservable.Read();
-		IsRead = true;
+		if (_chatToObservable.LastMessage is not null)
+			IsRead = true;
 	}
 
 	public async Task LoadInterlocutor(User user)

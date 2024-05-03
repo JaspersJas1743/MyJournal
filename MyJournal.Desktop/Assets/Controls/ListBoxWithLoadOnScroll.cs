@@ -29,8 +29,8 @@ public sealed class ListBoxWithLoadOnScroll : ListBox
 			.Subscribe(onNext: scroll => (scroll as ScrollViewer)!.ScrollChanged += OnScrollChanged);
 
 		this.WhenAnyValue(property1: listBox => listBox.CurrentScrollHeight).WhereNotNull()
-			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.75))
-			.Where(predicate: offset => Dispatcher.UIThread.Invoke(callback: () => MaxScrollHeight > 0 && offset >= MaxScrollHeight / 4 * 3 && Items.Count >= 10))
+			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25))
+			.Where(predicate: offset => Dispatcher.UIThread.Invoke(callback: () => MaxScrollHeight > 0 && offset >= MaxScrollHeight / 5 * 4 && Items.Count >= 10))
 			.Where(predicate: _ => Dispatcher.UIThread.Invoke(callback: () => Command is not null && Command.CanExecute(parameter: CommandParameter)))
 			.Subscribe(onNext: _ => Dispatcher.UIThread.Invoke(callback: () => Command!.Execute(parameter: CommandParameter)));
 	}

@@ -22,7 +22,8 @@
     <SolidColorBrush x:Key="DateTimeColor" Color="#9C9C9C"/>
     <SolidColorBrush x:Key="SelectionControlColor" Color="#00A3FF"/>
     <SolidColorBrush x:Key="ChatBackgroundColor" Color="#BEE8FF"/>
-    <SolidColorBrush x:Key="MessageColor" Color="#67C8FF"/>
+    <SolidColorBrush x:Key="MyMessageColor" Color="#67C8FF"/>
+	<SolidColorBrush x:Key="InterlocutorMessageColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="ExcellentGradeColor" Color="#009D06"/>
     <SolidColorBrush x:Key="GoodGradeColor" Color="#88C800"/>
     <SolidColorBrush x:Key="SatisfactoryGradeColor" Color="#C4C800"/>

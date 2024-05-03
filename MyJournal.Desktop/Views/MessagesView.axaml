@@ -7,8 +7,17 @@
 			xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
 			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="vm:MessagesVM" x:Class="MyJournal.Desktop.Views.MessagesView">
+	<UserControl.Styles>
+		<Style Selector="Border.HaveAttachments">
+			<Setter Property="Grid.RowSpan" Value="2"/>
+		</Style>
+		<Style Selector="Border.DontHaveAttachments">
+			<Setter Property="Grid.RowSpan" Value="1"/>
+		</Style>
+	</UserControl.Styles>
 	<Viewbox>
 		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 875*, 40*" Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
 			<TextBox	Grid.Column="1" Grid.Row="1" Watermark="Поиск" FontSize="24" Classes="Search"
@@ -16,10 +25,10 @@
 			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush Dialogs">
 				<Grid RowDefinitions="775*, 80*, 20*" ColumnDefinitions="400*, 80*, 20*">
 					<controls:ListBoxWithLoadOnScroll
+							Classes.LargeCountChats="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+							SelectedItem="{Binding SelectedChat,Mode=TwoWay}" Command="{Binding OnChatsLoaded}"
 							Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" ItemsSource="{Binding Chats}"
-							Classes="Chats" IsVisible="{Binding !!Chats.Count}" x:Name="Chats"
-							SelectedItem="{Binding SelectedChat,Mode=TwoWay}"
-							Command="{Binding OnChatsLoaded}">
+							Classes="Chats" IsVisible="{Binding !!Chats.Count}" x:Name="Chats">
 						<interactivity:Interaction.Behaviors>
 							<interaction:EventTriggerBehavior EventName="KeyDown">
 								<interaction:InvokeCommandAction Command="{Binding OnKeyDown}" PassEventArgsToCommand="True"/>
@@ -29,16 +38,31 @@
 							</interaction:EventTriggerBehavior>
 						</interactivity:Interaction.Behaviors>
 					</controls:ListBoxWithLoadOnScroll>
-					<TextBlock	IsVisible="{Binding !Chats.Count}" Classes="NotChatsMessage"
-								Text="У Вас еще нет диалогов. Чтобы начать диалог, нажмите кнопку “+”"
-								Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3"/>
+					<TextBlock	Classes="NotChatsMessage" Text="У Вас еще нет диалогов. Чтобы начать диалог, нажмите кнопку “+”"
+								Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3">
+						<TextBlock.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Chats.Count"/>
+								<Binding Path="!ChatsAreLoaded"/>
+							</MultiBinding>
+						</TextBlock.IsVisible>
+					</TextBlock>
+					<lottie:Lottie	Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Center"
+									Margin="0 100" Path="/Assets/Resources/Animations/ChatsSearch.json"
+									IsVisible="{Binding ChatsAreLoaded}"/>
 					<Viewbox Grid.Column="1" Grid.Row="1">
 						<controls:ButtonWithAnimatedCommand Width="80" Height="80" Classes="AddChat"/>
 					</Viewbox>
 				</Grid>
 			</Border>
 			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="3" Classes="TransitionBorderBrush Dialogs">
-				<Grid RowDefinitions="90*, 730*, 75*, 90*" IsVisible="{Binding #Chats.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}">
+				<Grid IsVisible="{Binding #Chats.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="90*"/>
+						<RowDefinition Height="730*"/>
+						<RowDefinition Height="75*"/>
+						<RowDefinition Height="auto" MaxHeight="300"/>
+					</Grid.RowDefinitions>
 					<Grid Grid.Row="0" RowDefinitions="15*, 60*, 15*" ColumnDefinitions="1285*, 60*, 15*">
 						<Border Height="60" Classes.DefaultChatPhoto="{Binding SelectedChat.Photo,
 								Converter={StaticResource PhotoLinkIsDefaultConverter}}" Width="60"
@@ -57,11 +81,34 @@
 						<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom"
 									Text="{Binding Subheader}" Foreground="{DynamicResource DateTimeColor}"/>
 					</Grid>
-					<Border Grid.Row="1" Background="{DynamicResource ChatBackgroundColor}">
+					<Border Grid.Row="1" Background="{DynamicResource ChatBackgroundColor}" BorderBrush="{DynamicResource StrokeColor}"
+							BorderThickness="0 5" Classes.HaveAttachments="{Binding !Attachments.Count}">
+						<ListBox Classes="Messages" ItemsSource="{Binding Messages}"
+								SelectedItem="{Binding SelectedMessage}"/>
 					</Border>
-					<Border Grid.Row="2" Background="Transparent">
+					<Border Grid.Row="2" Background="Transparent" BorderBrush="{DynamicResource StrokeColor}"
+							BorderThickness="0 0 0 5" IsVisible="{Binding !!Attachments.Count}">
+						<ListBox Classes="AttachmentsList" Margin="15 0" VerticalAlignment="Center"
+								ItemsSource="{Binding Attachments}"/>
 					</Border>
 					<Border Grid.Row="3" Background="Transparent">
+						<Grid ColumnDefinitions="25*, 40*, 20*, 1170*, 20*, 40*, 25*">
+							<Button Grid.Column="1" Classes="MessageButton" Command="{Binding AppendAttachment}">
+								<controls:XamlSvg Classes="Attachments" Foreground="{DynamicResource MainAccentColor}"/>
+							</Button>
+							<TextBox	Grid.Column="3" Classes="MessageInput" Margin="0 25" MaxHeight="250" x:Name="MessageText"
+										Text="{Binding Message,Mode=TwoWay}" MaxLength="2000"/>
+							<Button Grid.Column="5" Classes="SendMessage MessageButton" Command="{Binding SendMessage}">
+								<controls:XamlSvg	Classes="Send TransitionForeground RenderTransformTransitions"
+													IsEnabled="{Binding $parent[Button].IsEnabled}"/>
+								<Button.IsEnabled>
+									<MultiBinding Converter="{x:Static BoolConverters.Or}">
+										<Binding Path="#MessageText.Text" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+										<Binding Path="!!Attachments.Count"/>
+									</MultiBinding>
+								</Button.IsEnabled>
+							</Button>
+						</Grid>
 					</Border>
 				</Grid>
 			</Border>

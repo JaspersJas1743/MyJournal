@@ -106,8 +106,8 @@ public sealed class MessageCollection : LazyCollection<Message>
 	#endregion
 
 	#region Instance
-	public IInitMessageBuilder CreateMessage()
-		=> InitMessageBuilder.Create(fileService: _fileService, chatId: _chatId);
+	public IMessageBuilder CreateMessage()
+		=> MessageBuilder.Create(fileService: _fileService, chatId: _chatId);
 	#endregion
 	#endregion
 }

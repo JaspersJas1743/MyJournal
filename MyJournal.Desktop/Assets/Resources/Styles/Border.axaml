@@ -104,5 +104,13 @@
 			<Setter Property="VerticalAlignment" Value="Stretch"/>
 			<Setter Property="Opacity" Value="0.5"/>
 		</Style>
+		<Style Selector="^.FromMe">
+			<Setter Property="Background" Value="{DynamicResource MyMessageColor}"/>
+			<Setter Property="HorizontalAlignment" Value="Right"/>
+		</Style>
+		<Style Selector="^.NotFromMe">
+			<Setter Property="Background" Value="{DynamicResource InterlocutorMessageColor}"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
+		</Style>
 	</Style>
 </Styles>

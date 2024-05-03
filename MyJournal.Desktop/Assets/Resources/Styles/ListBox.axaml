@@ -68,7 +68,12 @@
 										FallbackValue={x:False}}" Fill="Lime" Grid.Row="6" Grid.Column="2" Classes="OpacityTransition"/>
 							<TextBlock	Grid.Row="1" Grid.Column="4" Text="{Binding Name}" Classes="ChatHeader" x:Name="PART_Name"/>
 							<TextBlock	Text="{Binding Content,FallbackValue='Сообщения в чате отсутствуют :('}" Classes="ChatLastMessage"
-										Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessage"/>
+										Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessageIsFile"
+										IsVisible="{Binding !IsFile,FallbackValue={x:True}}"/>
+							<TextBlock	Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessage"
+										IsVisible="{Binding IsFile,FallbackValue={x:False}}"
+										Text="Вложение" Classes="ChatLastMessage"
+										/>
 							<TextBlock	Grid.Column="5" Grid.ColumnSpan="6" Grid.Row="1" x:Name="PART_DateOfLastMessage" Classes="ChatLastMessageDate"
 										Text="{Binding CreatedAt,FallbackValue='',StringFormat='d MMMM'}"/>
 							<Ellipse Fill="{DynamicResource MainAccentColor}" Grid.Row="4" Grid.Column="7" Grid.ColumnSpan="2">
@@ -79,7 +84,7 @@
 									</MultiBinding>
 								</Ellipse.IsVisible>
 							</Ellipse>
-							<controls:XamlSvg   Classes="ReadMark" Grid.Row="6" Grid.Column="7" Grid.ColumnSpan="2"
+							<controls:XamlSvg   Classes="ReadMark TransitionForeground" Grid.Row="6" Grid.Column="7" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}">
 								<controls:XamlSvg.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -88,7 +93,7 @@
 									</MultiBinding>
 								</controls:XamlSvg.IsVisible>
 							</controls:XamlSvg>
-							<controls:XamlSvg   Classes="ReadMark" Grid.Row="6" Grid.Column="9" Grid.ColumnSpan="2"
+							<controls:XamlSvg   Classes="ReadMark TransitionForeground" Grid.Row="6" Grid.Column="8" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}"
 												IsVisible="{Binding FromMe,FallbackValue={x:False}}"/>
 						</Grid>
@@ -96,6 +101,81 @@
 				</DataTemplate>
 			</Setter>
 		</Style>
+		<Style Selector="^.AttachmentsList">
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="utilities:Attachment">
+					<Viewbox Width="350" Height="50">
+						<Border Width="350" Height="50" CornerRadius="15" Background="{DynamicResource MainAccentColor}">
+							<Grid>
+								<TextBlock Margin="10 0 0 0" Width="300" VerticalAlignment="Center" Text="{Binding FileName}"
+											Foreground="{DynamicResource TextOnSelectedControlColor}" FontSize="20"
+											TextTrimming="CharacterEllipsis"/>
+								<Button HorizontalAlignment="Right" Margin="0 0 10 0"
+										VerticalAlignment="Center" Height="20" Width="20" Background="Transparent"
+										Command="{Binding Remove}" Padding="0">
+									<Button.Content>
+										<controls:XamlSvg Classes="Close" Foreground="White"/>
+									</Button.Content>
+								</Button>
+							</Grid>
+						</Border>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="^.Messages">
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+			<Setter Property="SelectionMode" Value="Single"/>
+			<Setter Property="AutoScrollToSelectedItem" Value="True"/>
+			<Setter Property="VerticalAlignment" Value="Bottom"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<VirtualizingStackPanel Orientation="Vertical"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="entities:Message">
+					<Border CornerRadius="20"
+							Margin="20 12.5" Padding="15 10" MaxWidth="600" MinHeight="55"
+							Classes.NotFromMe="{Binding !FromMe}"
+							Classes.FromMe="{Binding FromMe}">
+						<DockPanel>
+							<SelectableTextBlock	Text="{Binding Text}" FontSize="20" TextWrapping="Wrap"
+													VerticalAlignment="Center" DockPanel.Dock="Left" MaxWidth="510"/>
+							<Grid DockPanel.Dock="Right" Margin="10 0 0 0" Width="50">
+								<TextBlock	VerticalAlignment="Top" Text="{Binding CreatedAt,StringFormat='HH:mm'}"
+											FontSize="15" Foreground="{DynamicResource DateTimeColor}"
+											HorizontalAlignment="Right"/>
+								<Grid ColumnDefinitions="5*, 15*, 5*" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+									<controls:XamlSvg	Grid.Column="0" Grid.ColumnSpan="2" Classes="ReadMark TransitionForeground"
+														Foreground="{DynamicResource MainAccentColor}"
+														VerticalAlignment="Bottom" Height="15">
+										<controls:XamlSvg.IsVisible>
+											<MultiBinding Converter="{x:Static BoolConverters.And}">
+												<Binding Path="FromMe"/>
+												<Binding Path="IsRead"/>
+											</MultiBinding>
+										</controls:XamlSvg.IsVisible>
+									</controls:XamlSvg>
+									<controls:XamlSvg Grid.Column="1" Grid.ColumnSpan="2" Classes="ReadMark TransitionForeground" VerticalAlignment="Bottom"
+													Foreground="{DynamicResource MainAccentColor}"
+													IsVisible="{Binding FromMe}" Height="15"/>
+								</Grid>
+							</Grid>
+						</DockPanel>
+					</Border>
+				</DataTemplate>
+			</Setter>
+		</Style>
 	</Style>
-
 </Styles>
