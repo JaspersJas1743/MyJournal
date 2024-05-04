@@ -126,33 +126,34 @@ public sealed class ChatController(
 				.ThenInclude(navigationPropertyPath: m => m.Attachments)
 			.SingleOrDefaultAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken)
 		?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
-		IEnumerable<GetChatsResponse> result = user.Chats
-			.OrderByDescending(keySelector: c => c.CreatedAt)
-			.Skip(count: request.Offset).Take(count: request.Count).Select(chat => new GetChatsResponse(
-				Id: chat.Id,
-				ChatName: GetChatName(chat: chat, currentUser: user),
-				ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
-				LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
-					Content: chat.LastMessageNavigation?.Text,
-					IsFile: chat.LastMessageNavigation?.Text is null && chat.LastMessageNavigation.Attachments.Any(),
-					CreatedAt: chat.LastMessageNavigation.CreatedAt,
-					FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
-					IsRead: chat.LastMessageNavigation.ReadedAt is not null
-				) : null,
-				AdditionalInformation: new AdditionalInformation(
-					IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
-					InterlocutorId: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.Id : null,
-					CountOfParticipants: chat.Users.Count
-				)
-			));
 
-		if (request.IsFiltered)
-		{
-			result = result.Where(predicate: r => r.ChatName.StartsWith(
-				value: request.Filter, comparisonType: StringComparison.CurrentCultureIgnoreCase
-			));
-		}
-		return Ok(value: result);
+		IOrderedEnumerable<GetChatsResponse> result = user.Chats.Select(chat => new GetChatsResponse(
+			Id: chat.Id,
+			ChatName: GetChatName(chat: chat, currentUser: user),
+			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
+			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
+				Content: chat.LastMessageNavigation!.Text,
+				IsFile: chat.LastMessageNavigation!.Text is null && chat.LastMessageNavigation?.Attachments.Count != 0,
+				CreatedAt: chat.LastMessageNavigation!.CreatedAt,
+				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
+				IsRead: chat.LastMessageNavigation.ReadedAt is not null
+			) : null,
+			AdditionalInformation: new AdditionalInformation(
+				IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
+				InterlocutorId: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.Id : null,
+				CountOfParticipants: chat.Users.Count
+			)
+		)).OrderByDescending(keySelector: c => c.LastMessage?.CreatedAt);
+
+		if (!request.IsFiltered)
+			return Ok(value: result.Skip(count: request.Offset).Take(count: request.Count));
+
+		return Ok(value: result.Where(predicate: c =>
+			c.ChatName.StartsWith(value: request.Filter!, comparisonType: StringComparison.CurrentCultureIgnoreCase) ||
+			(c.ChatName == "Избранное" && $"{user.Surname} {user.Name} {user.Patronymic}".Contains(
+				value: request.Filter!, StringComparison.CurrentCultureIgnoreCase)
+			)
+		).Skip(count: request.Offset).Take(count: request.Count));
 	}
 
 	/// <summary>
