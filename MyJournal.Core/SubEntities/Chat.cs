@@ -34,6 +34,7 @@ public sealed class Chat : ISubEntity
 		Id = response.Id;
 		Name = response.ChatName;
 		Photo = response.ChatPhoto;
+		CreatedAt = response.CreatedAt;
 		LastMessage = response.LastMessage;
 		IsSingleChat = response.AdditionalInformation.IsSingleChat;
 		CurrentInterlocutorId = response.AdditionalInformation.InterlocutorId;
@@ -48,6 +49,7 @@ public sealed class Chat : ISubEntity
 	public int Id { get; init; }
 	public string? Name { get; init; }
 	public string? Photo { get; init; }
+	public DateTime? CreatedAt { get; init; }
 	public LastMessage? LastMessage { get; set; }
 	public bool IsSingleChat { get; init; }
 	public Interlocutor? CurrentInterlocutor { get; private set; }
@@ -57,7 +59,7 @@ public sealed class Chat : ISubEntity
 
 	#region Records
 	public record AdditionalInformation(bool IsSingleChat, int? InterlocutorId, int CountOfParticipants);
-	public record ChatResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
+	public record ChatResponse(int Id, string ChatName, string ChatPhoto, DateTime? CreatedAt, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 	#endregion
 
 	#region Events

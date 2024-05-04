@@ -22,6 +22,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
+using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using ReactiveUI;
@@ -33,6 +34,7 @@ public sealed class MessagesModel : ModelBase
 {
 	private readonly Timer _timer = new Timer(interval: TimeSpan.FromSeconds(value: 30));
 	private readonly IFileStorageService _fileStorageService;
+	private readonly IConfigurationService _configurationService;
 	private readonly IMessageService _messageService;
 
 	private int _previousChatId = -1;
@@ -46,19 +48,25 @@ public sealed class MessagesModel : ModelBase
 	private IMessageBuilder _messageBuilder;
 	private ObservableCollectionExtended<ObservableChat> _chats = new ObservableCollectionExtended<ObservableChat>();
 	private ObservableCollectionExtended<Attachment> _attachments = new ObservableCollectionExtended<Attachment>();
-	private ObservableCollectionExtended<Message> _messages = new ObservableCollectionExtended<Message>();
+	private ObservableCollectionExtended<ExtendedMessage> _messages = new ObservableCollectionExtended<ExtendedMessage>();
 	private ObservableChat? _selectedChat;
 	private bool _isLoaded = false;
-	private bool _chatsAreLoaded = false;
+	private bool _chatsAreLoaded = true;
+	private bool _messagesAreLoaded = true;
 	private string? _subheader = String.Empty;
 	private string? _message = String.Empty;
 	private string _filter = String.Empty;
-	private Message? _selectedMessage;
+	private ExtendedMessage? _selectedMessage;
 
-	public MessagesModel(IFileStorageService fileStorageService, IMessageService messageService)
+	public MessagesModel(
+		IFileStorageService fileStorageService,
+		IMessageService messageService,
+		IConfigurationService configurationService
+	)
 	{
 		_fileStorageService = fileStorageService;
 		_messageService = messageService;
+		_configurationService = configurationService;
 
 		OnKeyDown = ReactiveCommand.Create<KeyEventArgs>(execute: KeyDownHandler);
 		OnSelectionChanged = ReactiveCommand.CreateFromTask(execute: SelectionChangedHandler);
@@ -101,7 +109,7 @@ public sealed class MessagesModel : ModelBase
 		set => this.RaiseAndSetIfChanged(backingField: ref _attachments, newValue: value);
 	}
 
-	public ObservableCollectionExtended<Message> Messages
+	public ObservableCollectionExtended<ExtendedMessage> Messages
 	{
 		get => _messages;
 		set => this.RaiseAndSetIfChanged(backingField: ref _messages, newValue: value);
@@ -137,7 +145,13 @@ public sealed class MessagesModel : ModelBase
 		set => this.RaiseAndSetIfChanged(backingField: ref _chatsAreLoaded, newValue: value);
 	}
 
-	public Message? SelectedMessage
+	public bool MessagesAreLoaded
+	{
+		get => _messagesAreLoaded;
+		set => this.RaiseAndSetIfChanged(backingField: ref _messagesAreLoaded, newValue: value);
+	}
+
+	public ExtendedMessage? SelectedMessage
 	{
 		get => _selectedMessage;
 		set => this.RaiseAndSetIfChanged(backingField: ref _selectedMessage, newValue: value);
@@ -163,8 +177,11 @@ public sealed class MessagesModel : ModelBase
 
 	private void KeyDownHandler(KeyEventArgs e)
 	{
-		if (e.Key == Key.Escape)
-			SelectedChat = null;
+		if (e.Key != Key.Escape)
+			return;
+
+		SelectedChat = null;
+		Messages.Clear();
 	}
 
 	private string? GetTimeOfOnlineOfInterlocutor()
@@ -177,7 +194,7 @@ public sealed class MessagesModel : ModelBase
 
 		return (DateTime.Now - SelectedChat!.OnlineAt).Value.Days switch
 		{
-			> 1 => $"был(-а) в сети {SelectedChat!.OnlineAt:dd MMMM yyyy} в {SelectedChat!.OnlineAt:HH:mm}",
+			> 1 => $"был(-а) в сети {SelectedChat!.OnlineAt:d MMMM yyyy} в {SelectedChat!.OnlineAt:HH:mm}",
 			1 => $"был(-а) в сети {SelectedChat!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {SelectedChat!.OnlineAt:HH:mm}",
 			_ => "был(-а) в сети " + SelectedChat!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)
 		};
@@ -196,19 +213,24 @@ public sealed class MessagesModel : ModelBase
 		if (!_isLoaded || filter == _chatCollection.Filter)
 			return;
 
-		ChatsAreLoaded = true;
+		ChatsAreLoaded = false;
 		Chats.Clear();
 		await _chatCollection.SetFilter(filter: filter);
 		List<Chat> chats = await _chatCollection.ToListAsync();
 		Chats.Load(items: chats.Select(selector: chat => chat.ToObservable()));
-		ChatsAreLoaded = false;
+		ChatsAreLoaded = true;
 	}
 
 	private async Task SelectionChangedHandler()
 	{
-		Subheader = SelectedChat!.IsSingleChat ? GetTimeOfOnlineOfInterlocutor() : GetCountOfParticipants();
+		Subheader = SelectedChat?.IsSingleChat switch
+		{
+			true => GetTimeOfOnlineOfInterlocutor(),
+			false => GetCountOfParticipants(),
+			_ => String.Empty
+		};
 
-		if (SelectedChat.IsRead == false)
+		if (SelectedChat?.IsRead == false)
 			await SelectedChat?.Read()!;
 
 		if (_previousChatId > 0)
@@ -218,12 +240,25 @@ public sealed class MessagesModel : ModelBase
 			_allMessageBuilders[key: _previousChatId] = _messageBuilder;
 		}
 
+		if (SelectedChat is null)
+		{
+			_previousChatId = -1;
+			return;
+		}
+
+		MessagesAreLoaded = false;
+		Messages.Clear();
+		_messageFromSelectedChat = await SelectedChat.Observable.GetMessages();
+		List<Message> messages = await _messageFromSelectedChat.ToListAsync();
+		MessagesAreLoaded = true;
+		Messages = new ObservableCollectionExtended<ExtendedMessage>(collection: messages.Select(
+			selector: m => m.ToExtended(pathToSave: _configurationService.Get(key: ConfigurationKeys.StorageFolder)!)
+		));
+		SelectedMessage = Messages.FirstOrDefault(predicate: m => m.Message is { IsRead: false, FromMe: false })
+			?? Messages.LastOrDefault() ?? null;
+
 		Attachments = _allAttachments.TryGetValue(key: SelectedChat.Observable.Id, out ObservableCollectionExtended<Attachment>? attachments) ? attachments : new ObservableCollectionExtended<Attachment>();
 		Message = _allMessages.TryGetValue(key: SelectedChat.Observable.Id, out string? message) ? message : String.Empty;
-
-		_messageFromSelectedChat = await SelectedChat.Observable.GetMessages();
-		Messages = new ObservableCollectionExtended<Message>(list: await _messageFromSelectedChat.ToListAsync());
-		SelectedMessage = Messages.FirstOrDefault(predicate: m => m is { IsRead: false, FromMe: false }) ?? Messages.LastOrDefault() ?? null;
 
 		_messageBuilder = _allMessageBuilders.TryGetValue(key: SelectedChat.Observable.Id, out IMessageBuilder? messageBuilder)
 			? messageBuilder

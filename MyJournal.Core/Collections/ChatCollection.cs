@@ -90,12 +90,11 @@ public sealed class ChatCollection : LazyCollection<Chat>
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		List<Chat> collection = await Collection;
-		collection.AddRange(collection: await Task.WhenAll(tasks: loadedChats.Select(selector: async c => await Chat.Create(
+		collection.AddRange(collection: loadedChats.Select(selector: c => Chat.Create(
 			client: Client,
 			fileService: _fileService,
-			id: c.Id,
-			cancellationToken: cancellationToken
-		))));
+			response: c
+		)));
 		Offset = collection.Count;
 	}
 

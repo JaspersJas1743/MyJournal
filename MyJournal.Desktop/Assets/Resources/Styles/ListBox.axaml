@@ -64,23 +64,24 @@
 								<asyncImageLoader:AdvancedImage	Classes.LargeChatPhoto="{Binding Photo,Converter={StaticResource PhotoLinkIsDefaultConverter}}"
 																Source="{Binding Photo}" Stretch="UniformToFill" x:Name="Image"/>
 							</Border>
-							<Ellipse	Opacity="{Binding Activity,Converter={StaticResource ActivityToBoolConverter},
-										FallbackValue={x:False}}" Fill="Lime" Grid.Row="6" Grid.Column="2" Classes="OpacityTransition"/>
+							<Ellipse	Opacity="{Binding Activity,Converter={StaticResource ActivityToDoubleConverter}}"
+										Fill="Lime" Grid.Row="6" Grid.Column="2" Classes="OpacityTransition"/>
 							<TextBlock	Grid.Row="1" Grid.Column="4" Text="{Binding Name}" Classes="ChatHeader" x:Name="PART_Name"/>
-							<TextBlock	Text="{Binding Content,FallbackValue='Сообщения в чате отсутствуют :('}" Classes="ChatLastMessage"
+							<TextBlock	Text="{Binding Content,TargetNullValue='Сообщения в чате отсутствуют :('}" Classes="ChatLastMessage"
 										Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessageIsFile"
-										IsVisible="{Binding !IsFile,FallbackValue={x:True}}"/>
+										IsVisible="{Binding IsFile,TargetNullValue={x:True},
+										Converter={x:Static BoolConverters.Not}}"/>
 							<TextBlock	Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessage"
-										IsVisible="{Binding IsFile,FallbackValue={x:False}}"
+										IsVisible="{Binding IsFile,TargetNullValue={x:False}}"
 										Text="Вложение" Classes="ChatLastMessage"
 										/>
 							<TextBlock	Grid.Column="5" Grid.ColumnSpan="6" Grid.Row="1" x:Name="PART_DateOfLastMessage" Classes="ChatLastMessageDate"
-										Text="{Binding CreatedAt,FallbackValue='',StringFormat='d MMMM'}"/>
+										Text="{Binding CreatedAt,TargetNullValue='',StringFormat='d MMMM'}"/>
 							<Ellipse Fill="{DynamicResource MainAccentColor}" Grid.Row="4" Grid.Column="7" Grid.ColumnSpan="2">
 								<Ellipse.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.And}">
-										<Binding Path="FromMe" FallbackValue="{x:False}" Converter="{x:Static BoolConverters.Not}"/>
-										<Binding Path="IsRead" FallbackValue="{x:False}" Converter="{x:Static BoolConverters.Not}"/>
+										<Binding Path="NotFromMe"/>
+										<Binding Path="!IsRead"/>
 									</MultiBinding>
 								</Ellipse.IsVisible>
 							</Ellipse>
@@ -88,14 +89,14 @@
 												Foreground="{DynamicResource MainAccentColor}">
 								<controls:XamlSvg.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.And}">
-										<Binding Path="FromMe" FallbackValue="{x:False}"/>
-										<Binding Path="IsRead" FallbackValue="{x:False}"/>
+										<Binding Path="FromMe"/>
+										<Binding Path="IsRead"/>
 									</MultiBinding>
 								</controls:XamlSvg.IsVisible>
 							</controls:XamlSvg>
 							<controls:XamlSvg   Classes="ReadMark TransitionForeground" Grid.Row="6" Grid.Column="8" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}"
-												IsVisible="{Binding FromMe,FallbackValue={x:False}}"/>
+												IsVisible="{Binding FromMe}"/>
 						</Grid>
 					</Viewbox>
 				</DataTemplate>
@@ -131,29 +132,63 @@
 				</DataTemplate>
 			</Setter>
 		</Style>
+		<Style Selector="^.AttachmentsOnMessage">
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Spacing="5"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="utilities:ExtendedAttachment">
+					<Viewbox>
+						<controls:ButtonWithAnimatedCommand
+							Command="{Binding Download}"
+							CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"
+							Classes="Corner10 MainAccentColor" Height="25" MaxWidth="510" Padding="10 0">
+							<controls:ButtonWithAnimatedCommand.Content>
+								<TextBlock Text="{Binding FileName}" FontSize="20"/>
+							</controls:ButtonWithAnimatedCommand.Content>
+							<controls:ButtonWithAnimatedCommand.Flyout>
+								<Flyout ShowMode="TransientWithDismissOnPointerMoveAway" Placement="Bottom">
+									Файл успешно сохранен!
+								</Flyout>
+							</controls:ButtonWithAnimatedCommand.Flyout>
+						</controls:ButtonWithAnimatedCommand>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
 		<Style Selector="^.Messages">
-			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
 			<Setter Property="SelectionMode" Value="Single"/>
 			<Setter Property="AutoScrollToSelectedItem" Value="True"/>
 			<Setter Property="VerticalAlignment" Value="Bottom"/>
 			<Setter Property="HorizontalAlignment" Value="Stretch"/>
 			<Setter Property="ItemsPanel">
 				<ItemsPanelTemplate>
-					<VirtualizingStackPanel Orientation="Vertical"/>
+					<StackPanel Orientation="Vertical" />
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="entities:Message">
+				<DataTemplate DataType="utilities:ExtendedMessage">
 					<Border CornerRadius="20"
 							Margin="20 12.5" Padding="15 10" MaxWidth="600" MinHeight="55"
-							Classes.NotFromMe="{Binding !FromMe}"
-							Classes.FromMe="{Binding FromMe}">
-						<DockPanel>
-							<SelectableTextBlock	Text="{Binding Text}" FontSize="20" TextWrapping="Wrap"
-													VerticalAlignment="Center" DockPanel.Dock="Left" MaxWidth="510"/>
-							<Grid DockPanel.Dock="Right" Margin="10 0 0 0" Width="50">
-								<TextBlock	VerticalAlignment="Top" Text="{Binding CreatedAt,StringFormat='HH:mm'}"
+							Classes.NotFromMe="{Binding !Message.FromMe}"
+							Classes.FromMe="{Binding Message.FromMe}">
+						<StackPanel Orientation="Horizontal" Spacing="10">
+							<StackPanel Orientation="Vertical" Spacing="5">
+								<SelectableTextBlock	Text="{Binding Message.Text}" FontSize="20" TextWrapping="Wrap"
+														VerticalAlignment="Center" MaxWidth="510" HorizontalAlignment="Right"
+														TextAlignment="Left"/>
+								<ListBox	DockPanel.Dock="Bottom" MaxWidth="510" Classes="AttachmentsOnMessage"
+											ItemsSource="{Binding Attachments}"/>
+							</StackPanel>
+							<Grid Width="50">
+								<TextBlock	VerticalAlignment="Top" Text="{Binding Message.CreatedAt,StringFormat='HH:mm'}"
 											FontSize="15" Foreground="{DynamicResource DateTimeColor}"
 											HorizontalAlignment="Right"/>
 								<Grid ColumnDefinitions="5*, 15*, 5*" HorizontalAlignment="Right" VerticalAlignment="Bottom">
@@ -162,17 +197,17 @@
 														VerticalAlignment="Bottom" Height="15">
 										<controls:XamlSvg.IsVisible>
 											<MultiBinding Converter="{x:Static BoolConverters.And}">
-												<Binding Path="FromMe"/>
-												<Binding Path="IsRead"/>
+												<Binding Path="Message.FromMe"/>
+												<Binding Path="Message.IsRead"/>
 											</MultiBinding>
 										</controls:XamlSvg.IsVisible>
 									</controls:XamlSvg>
 									<controls:XamlSvg Grid.Column="1" Grid.ColumnSpan="2" Classes="ReadMark TransitionForeground" VerticalAlignment="Bottom"
-													Foreground="{DynamicResource MainAccentColor}"
-													IsVisible="{Binding FromMe}" Height="15"/>
+													Foreground="{DynamicResource MainAccentColor}" Height="15"
+													IsVisible="{Binding Message.FromMe}"/>
 								</Grid>
 							</Grid>
-						</DockPanel>
+						</StackPanel>
 					</Border>
 				</DataTemplate>
 			</Setter>

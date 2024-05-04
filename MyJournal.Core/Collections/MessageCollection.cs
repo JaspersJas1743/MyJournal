@@ -54,8 +54,10 @@ public sealed class MessageCollection : LazyCollection<Message>
 			chatId: chatId,
 			fileService: fileService,
 			messages: new AsyncLazy<List<Message>>(valueFactory: async () => new List<Message>(
-				collection: messages.Select(selector: m => Message.Create(response: m)
-				).Reverse()
+				collection: messages.Select(selector: m => Message.Create(
+					response: m,
+					fileService: fileService
+				)).Reverse()
 			)),
 			count: basedCount,
 			offset: messages.Count()
@@ -75,7 +77,12 @@ public sealed class MessageCollection : LazyCollection<Message>
 		) ?? throw new InvalidOperationException();
 		List<Message> collection = await Collection;
 		collection.InsertRange(index: 0, collection: await Task.WhenAll(tasks: loadedMessages.Select(
-			selector: async m => await Message.Create(client: Client, messageId: m.MessageId, cancellationToken: cancellationToken)
+			selector: async m => await Message.Create(
+				client: Client,
+				messageId: m.MessageId,
+				fileService: _fileService,
+				cancellationToken: cancellationToken
+			)
 		)));
 		Offset = collection.Count;
 	}
@@ -86,8 +93,12 @@ public sealed class MessageCollection : LazyCollection<Message>
 	)
 	{
 		await base.Append(
-			instance: await Message.Create(client: Client, messageId: id, cancellationToken: cancellationToken),
-			cancellationToken: cancellationToken
+			instance: await Message.Create(
+				client: Client,
+				messageId: id,
+				fileService: _fileService,
+				cancellationToken: cancellationToken
+			), cancellationToken: cancellationToken
 		);
 	}
 
@@ -99,8 +110,12 @@ public sealed class MessageCollection : LazyCollection<Message>
 	{
 		await base.Insert(
 			index: Length - index,
-			instance: await Message.Create(client: Client, messageId: id, cancellationToken: cancellationToken),
-			cancellationToken: cancellationToken
+			instance: await Message.Create(
+				client: Client,
+				messageId: id,
+				fileService: _fileService,
+				cancellationToken: cancellationToken
+			), cancellationToken: cancellationToken
 		);
 	}
 	#endregion

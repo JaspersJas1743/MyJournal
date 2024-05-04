@@ -25,7 +25,7 @@ public sealed class MessagesVM(MessagesModel model) : MenuItemVM(model: model)
 		set => model.Attachments = value;
 	}
 
-	public ObservableCollectionExtended<Message> Messages
+	public ObservableCollectionExtended<ExtendedMessage> Messages
 	{
 		get => model.Messages;
 		set => model.Messages = value;
@@ -61,7 +61,13 @@ public sealed class MessagesVM(MessagesModel model) : MenuItemVM(model: model)
 		set => model.ChatsAreLoaded = value;
 	}
 
-	public Message? SelectedMessage
+	public bool MessagesAreLoaded
+	{
+		get => model.MessagesAreLoaded;
+		set => model.MessagesAreLoaded = value;
+	}
+
+	public ExtendedMessage? SelectedMessage
 	{
 		get => model.SelectedMessage;
 		set => model.SelectedMessage = value;

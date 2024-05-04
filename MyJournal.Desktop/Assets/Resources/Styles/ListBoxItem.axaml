@@ -80,5 +80,4 @@
 			<Setter Property="CornerRadius" Value="0 0 15 15"/>
 		</Style>
 	</Style>
-
 </Styles>

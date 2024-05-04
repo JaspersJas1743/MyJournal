@@ -18,6 +18,8 @@
             <converters:ActivityToBoolConverter x:Key="ActivityToBoolConverter"/>
             <converters:ActivityToDoubleConverter x:Key="ActivityToDoubleConverter"/>
             <converters:ChatsCountIsLargeConverter x:Key="ChatsCountIsLargeConverter"/>
+            <converters:StringIsNullOrWhiteSpaceConverter x:Key="StringIsNullOrWhiteSpaceConverter"/>
+            <converters:StringIsNotNullOrWhiteSpaceConverter x:Key="StringIsNotNullOrWhiteSpaceConverter"/>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"/>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"/>
@@ -81,5 +83,6 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ReadMark.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Attachments.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Send.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/NotSelectedChatImage.axaml"/>
     </Application.Styles>
 </Application>

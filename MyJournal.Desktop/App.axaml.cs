@@ -1,5 +1,7 @@
 using System;
 using System.Reflection;
+using AsyncImageLoader;
+using AsyncImageLoader.Loaders;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -74,7 +76,7 @@ public partial class App : Application
 			.AddSingleton<WelcomeModel>()
 			#endregion
 			#region Utilities
-			.AddApiClient(timeout: TimeSpan.FromSeconds(value: 15))
+			.AddApiClient(timeout: TimeSpan.FromDays(value: 1))
 			.AddGoogleAuthenticator()
 			.AddFileService()
 			.AddFileStorageService()
@@ -312,6 +314,8 @@ public partial class App : Application
 
 	public override async void OnFrameworkInitializationCompleted()
 	{
+		ImageLoader.AsyncImageLoader = new DiskCachedWebImageLoader();
+
 		SetTheme(configurationService: GetService<IConfigurationService>());
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{

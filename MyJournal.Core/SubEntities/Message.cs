@@ -1,5 +1,6 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -42,6 +43,7 @@ public sealed class Message : ISubEntity
 	#region Methods
 	internal static async Task<Message> Create(
 		ApiClient client,
+		IFileService fileService,
 		int messageId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -53,19 +55,20 @@ public sealed class Message : ISubEntity
 		return new Message(
 			response: response,
 			attachments: response.Content.Attachments?.Select(selector: a =>
-				Attachment.Create(linkToFile: a.LinkToFile, type: a.AttachmentType)
+				Attachment.Create(linkToFile: a.LinkToFile, type: a.AttachmentType, fileService: fileService)
 			)
 		);
 	}
 
 	internal static Message Create(
-		GetMessageResponse response
+		GetMessageResponse response,
+		IFileService fileService
 	)
 	{
 		return new Message(
 			response: response,
 			attachments: response.Content.Attachments?.Select(selector: a =>
-				Attachment.Create(linkToFile: a.LinkToFile, type: a.AttachmentType)
+				Attachment.Create(linkToFile: a.LinkToFile, type: a.AttachmentType, fileService: fileService)
 			)
 		);
 	}

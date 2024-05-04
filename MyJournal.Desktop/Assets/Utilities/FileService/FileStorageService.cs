@@ -44,15 +44,6 @@ public sealed class FileStorageService : IFileStorageService
 
 		return folders.Count >= 1 ? folders[0] : null;
 	}
-
-	public async Task SaveFile(string url)
-	{
-		string folder = _configurationService.Get(key: ConfigurationKeys.StorageFolder)!;
-		if (!Path.Exists(path: folder))
-			Directory.CreateDirectory(path: folder);
-
-		await _fileService.Download(link: url, pathToSave: folder);
-	}
 }
 
 public static class FilesServiceExtensions

@@ -13,7 +13,7 @@ public sealed class ActivityToDoubleConverter : IValueConverter
 	{
 		Activity.Statuses? activity = value as Activity.Statuses?;
 		if (activity is null)
-			return new BindingNotification(error: new InvalidCastException(), errorType: BindingErrorType.Error);
+			return 0;
 
 		return System.Convert.ToDouble(value: activity == Activity.Statuses.Online);
 	}

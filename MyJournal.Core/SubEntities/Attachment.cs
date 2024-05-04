@@ -6,16 +6,19 @@ public sealed class Attachment
 {
 	#region Fields
 	private const string DefaultBucket = "message_attachments";
-
 	private static readonly string[] PhotoExtension = new string[] { ".png", ".jpg", ".jpeg" };
+	private readonly IFileService _fileService;
 	#endregion
 
 	#region Constructor
 	private Attachment(
 		string? linkToFile,
-		AttachmentType type
+		AttachmentType type,
+		IFileService fileService
 	)
 	{
+		_fileService = fileService;
+
 		LinkToFile = linkToFile;
 		Type = type;
 	}
@@ -51,12 +54,18 @@ public sealed class Attachment
 		if (PhotoExtension.Contains(Path.GetExtension(path: pathToFile)))
 			type = AttachmentType.Photo;
 
-		return new Attachment(linkToFile: link, type: type);
+		return new Attachment(linkToFile: link, type: type, fileService: fileService);
 	}
 
 	internal static Attachment Create(
 		string? linkToFile,
-		AttachmentType type
-	) => new Attachment(linkToFile: linkToFile, type: type);
+		AttachmentType type,
+		IFileService fileService
+	) => new Attachment(linkToFile: linkToFile, type: type, fileService: fileService);
+
+	public async Task Download(
+		string pathToSave,
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await _fileService.Download(link: LinkToFile, pathToSave: pathToSave, cancellationToken: cancellationToken);
 	#endregion
 }

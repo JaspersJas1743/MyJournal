@@ -43,73 +43,94 @@
 						<TextBlock.IsVisible>
 							<MultiBinding Converter="{x:Static BoolConverters.And}">
 								<Binding Path="!Chats.Count"/>
-								<Binding Path="!ChatsAreLoaded"/>
+								<Binding Path="ChatsAreLoaded"/>
 							</MultiBinding>
 						</TextBlock.IsVisible>
 					</TextBlock>
 					<lottie:Lottie	Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Center"
 									Margin="0 100" Path="/Assets/Resources/Animations/ChatsSearch.json"
-									IsVisible="{Binding ChatsAreLoaded}"/>
+									IsVisible="{Binding !ChatsAreLoaded}"/>
 					<Viewbox Grid.Column="1" Grid.Row="1">
 						<controls:ButtonWithAnimatedCommand Width="80" Height="80" Classes="AddChat"/>
 					</Viewbox>
 				</Grid>
 			</Border>
 			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="3" Classes="TransitionBorderBrush Dialogs">
-				<Grid IsVisible="{Binding #Chats.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="90*"/>
-						<RowDefinition Height="730*"/>
-						<RowDefinition Height="75*"/>
-						<RowDefinition Height="auto" MaxHeight="300"/>
-					</Grid.RowDefinitions>
-					<Grid Grid.Row="0" RowDefinitions="15*, 60*, 15*" ColumnDefinitions="1285*, 60*, 15*">
-						<Border Height="60" Classes.DefaultChatPhoto="{Binding SelectedChat.Photo,
-								Converter={StaticResource PhotoLinkIsDefaultConverter}}" Width="60"
-								Classes="ChatPhoto" CornerRadius="10" Grid.Column="1" Grid.Row="1">
-								<asyncImageLoader:AdvancedImage Classes.SmallChatPhoto="{Binding SelectedChat.Photo,
-																Converter={StaticResource PhotoLinkIsDefaultConverter}}"
-																Source="{Binding SelectedChat.Photo}"
-																Stretch="UniformToFill" x:Name="Image"/>
-						</Border>
-						<Ellipse Fill="Lime" Opacity="{Binding SelectedChat.Activity,
-								Converter={StaticResource ActivityToDoubleConverter},FallbackValue={x:False}}"
-								Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Column="1"
-								Grid.Row="1" Classes="OpacityTransition"/>
-						<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top"
-									Text="{Binding SelectedChat.Name}"/>
-						<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom"
-									Text="{Binding Subheader}" Foreground="{DynamicResource DateTimeColor}"/>
-					</Grid>
-					<Border Grid.Row="1" Background="{DynamicResource ChatBackgroundColor}" BorderBrush="{DynamicResource StrokeColor}"
-							BorderThickness="0 5" Classes.HaveAttachments="{Binding !Attachments.Count}">
-						<ListBox Classes="Messages" ItemsSource="{Binding Messages}"
-								SelectedItem="{Binding SelectedMessage}"/>
-					</Border>
-					<Border Grid.Row="2" Background="Transparent" BorderBrush="{DynamicResource StrokeColor}"
-							BorderThickness="0 0 0 5" IsVisible="{Binding !!Attachments.Count}">
-						<ListBox Classes="AttachmentsList" Margin="15 0" VerticalAlignment="Center"
-								ItemsSource="{Binding Attachments}"/>
-					</Border>
-					<Border Grid.Row="3" Background="Transparent">
-						<Grid ColumnDefinitions="25*, 40*, 20*, 1170*, 20*, 40*, 25*">
-							<Button Grid.Column="1" Classes="MessageButton" Command="{Binding AppendAttachment}">
-								<controls:XamlSvg Classes="Attachments" Foreground="{DynamicResource MainAccentColor}"/>
-							</Button>
-							<TextBox	Grid.Column="3" Classes="MessageInput" Margin="0 25" MaxHeight="250" x:Name="MessageText"
-										Text="{Binding Message,Mode=TwoWay}" MaxLength="2000"/>
-							<Button Grid.Column="5" Classes="SendMessage MessageButton" Command="{Binding SendMessage}">
-								<controls:XamlSvg	Classes="Send TransitionForeground RenderTransformTransitions"
-													IsEnabled="{Binding $parent[Button].IsEnabled}"/>
-								<Button.IsEnabled>
-									<MultiBinding Converter="{x:Static BoolConverters.Or}">
-										<Binding Path="#MessageText.Text" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
-										<Binding Path="!!Attachments.Count"/>
-									</MultiBinding>
-								</Button.IsEnabled>
-							</Button>
+				<interactivity:Interaction.Behaviors>
+					<interaction:EventTriggerBehavior EventName="KeyDown">
+						<interaction:InvokeCommandAction Command="{Binding OnKeyDown}" PassEventArgsToCommand="True"/>
+					</interaction:EventTriggerBehavior>
+				</interactivity:Interaction.Behaviors>
+				<Grid>
+					<Grid IsVisible="{Binding #Chats.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="90*"/>
+							<RowDefinition Height="730*"/>
+							<RowDefinition Height="75*"/>
+							<RowDefinition Height="auto" MaxHeight="300"/>
+						</Grid.RowDefinitions>
+						<Grid Grid.Row="0" RowDefinitions="15*, 60*, 15*" ColumnDefinitions="1285*, 60*, 15*">
+							<Border Height="60" Classes.DefaultChatPhoto="{Binding SelectedChat.Photo,
+									Converter={StaticResource PhotoLinkIsDefaultConverter}}" Width="60"
+									Classes="ChatPhoto" CornerRadius="10" Grid.Column="1" Grid.Row="1">
+									<asyncImageLoader:AdvancedImage Classes.SmallChatPhoto="{Binding SelectedChat.Photo,
+																	Converter={StaticResource PhotoLinkIsDefaultConverter}}"
+																	Source="{Binding SelectedChat.Photo}"
+																	Stretch="UniformToFill" x:Name="Image"/>
+							</Border>
+							<Ellipse Fill="Lime" Opacity="{Binding SelectedChat.Activity,
+									Converter={StaticResource ActivityToDoubleConverter},FallbackValue={x:False}}"
+									Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Column="1"
+									Grid.Row="1" Classes="OpacityTransition"/>
+							<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top"
+										Text="{Binding SelectedChat.Name}"/>
+							<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+										Text="{Binding Subheader}" Foreground="{DynamicResource DateTimeColor}"/>
 						</Grid>
-					</Border>
+						<Border Grid.Row="1" Background="{DynamicResource ChatBackgroundColor}" BorderBrush="{DynamicResource StrokeColor}"
+								BorderThickness="0 5" Classes.HaveAttachments="{Binding !Attachments.Count}">
+							<Grid>
+								<ListBox Classes="Messages" ItemsSource="{Binding Messages}"
+										SelectedItem="{Binding SelectedMessage}"
+										IsVisible="{Binding MessagesAreLoaded}"/>
+								<lottie:Lottie	Path="/Assets/Resources/Animations/ImageAndMessagesLoader.json" Margin="0 100 0 0"
+												Width="200" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center"
+												IsVisible="{Binding !MessagesAreLoaded}"/>
+							</Grid>
+						</Border>
+						<Border Grid.Row="2" Background="Transparent" BorderBrush="{DynamicResource StrokeColor}"
+								BorderThickness="0 0 0 5" IsVisible="{Binding !!Attachments.Count}">
+							<ListBox Classes="AttachmentsList" Margin="15 0" VerticalAlignment="Center"
+									ItemsSource="{Binding Attachments}"/>
+						</Border>
+						<Border Grid.Row="3" Background="Transparent">
+							<Grid ColumnDefinitions="25*, 40*, 20*, 1170*, 20*, 40*, 25*">
+								<Button Grid.Column="1" Classes="MessageButton" Command="{Binding AppendAttachment}">
+									<controls:XamlSvg Classes="Attachments" Foreground="{DynamicResource MainAccentColor}"/>
+								</Button>
+								<TextBox	Grid.Column="3" Classes="MessageInput" Margin="0 25" MaxHeight="250" x:Name="MessageText"
+											Text="{Binding Message,Mode=TwoWay}" MaxLength="2000">
+								</TextBox>
+								<Button Grid.Column="5" Classes="SendMessage MessageButton" Command="{Binding SendMessage}" HotKey="Enter">
+									<controls:XamlSvg	Classes="Send TransitionForeground RenderTransformTransitions"
+														IsEnabled="{Binding $parent[Button].IsEnabled}"/>
+									<Button.IsEnabled>
+										<MultiBinding Converter="{x:Static BoolConverters.Or}">
+											<Binding Path="#MessageText.Text" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+											<Binding Path="!!Attachments.Count"/>
+										</MultiBinding>
+									</Button.IsEnabled>
+								</Button>
+							</Grid>
+						</Border>
+					</Grid>
+					<Grid IsVisible="{Binding #Chats.SelectedItem,Converter={x:Static ObjectConverters.IsNull}}"
+						Width="260" Height="75" VerticalAlignment="Center" HorizontalAlignment="Center" ColumnDefinitions="75*, 10*, 175">
+						<controls:XamlSvg	Grid.Column="0" Foreground="{DynamicResource MainAccentColor}"
+											Classes="NotSelectedChatImage"/>
+						<TextBlock Grid.Column="2" TextWrapping="Wrap" Text="Выберите диалог для просмотра"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
 				</Grid>
 			</Border>
 		</Grid>

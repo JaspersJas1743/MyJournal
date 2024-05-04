@@ -12,7 +12,7 @@ public sealed class ActivityToBoolConverter : IValueConverter
 	{
 		Activity.Statuses? activity = value as Activity.Statuses?;
 		if (activity is null)
-			return new BindingNotification(error: new InvalidCastException(), errorType: BindingErrorType.Error);
+			return null;
 
 		return activity == Activity.Statuses.Online;
 	}
