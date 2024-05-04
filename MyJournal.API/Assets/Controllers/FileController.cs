@@ -64,11 +64,12 @@ public sealed class FileController(
 			key: fileKey,
 			cancellationToken: cancellationToken
 		);
+		string fileExtension = fileInfo.Extension.Trim(trimChar: '.');
 
 		if (!new FileExtensionContentTypeProvider().TryGetContentType(subpath: fileInfo.Name, contentType: out string? contentType))
 			contentType = "application/octet-stream";
 
-		return File(fileStream: file, contentType: contentType, fileDownloadName: fileInfo.Name);
+		return File(fileStream: file, contentType: contentType, fileDownloadName: $"file_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.{fileExtension}");
 	}
 	#endregion
 
@@ -103,7 +104,8 @@ public sealed class FileController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		string fileKey = $"{bucket}/{request.File.FileName}";
+		string fileExtension = Path.GetExtension(path: request.File.FileName);
+		string fileKey = $"{bucket}/{Guid.NewGuid()}{fileExtension}";
 		string link = await fileStorageService.UploadFileAsync(
 			key: fileKey,
 			fileStream: request.File.OpenReadStream(),
