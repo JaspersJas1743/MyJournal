@@ -27,7 +27,7 @@ public sealed class ChatController(
 	public record GetChatsRequest(bool IsFiltered, string? Filter, int Offset, int Count);
 	public record LastMessage(string? Content, bool IsFile, DateTime CreatedAt, bool FromMe, bool IsRead);
 	public record AdditionalInformation(bool IsSingleChat, int? InterlocutorId, int CountOfParticipants);
-	public record GetChatsResponse(int Id, string ChatName, string ChatPhoto, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
+	public record GetChatsResponse(int Id, string ChatName, string ChatPhoto, DateTime? CreatedAt, LastMessage? LastMessage, AdditionalInformation AdditionalInformation);
 
 	[Validator<CreateSingleChatRequestValidator>]
 	public record CreateSingleChatRequest(int InterlocutorId);
@@ -131,6 +131,7 @@ public sealed class ChatController(
 			Id: chat.Id,
 			ChatName: GetChatName(chat: chat, currentUser: user),
 			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
+			CreatedAt: chat.CreatedAt,
 			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
 				Content: chat.LastMessageNavigation!.Text,
 				IsFile: chat.LastMessageNavigation!.Text is null && chat.LastMessageNavigation?.Attachments.Count != 0,
@@ -143,7 +144,7 @@ public sealed class ChatController(
 				InterlocutorId: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.Id : null,
 				CountOfParticipants: chat.Users.Count
 			)
-		)).OrderByDescending(keySelector: c => c.LastMessage?.CreatedAt);
+		)).OrderByDescending(keySelector: c => c.LastMessage?.CreatedAt ?? c.CreatedAt);
 
 		if (!request.IsFiltered)
 			return Ok(value: result.Skip(count: request.Offset).Take(count: request.Count));
@@ -197,6 +198,7 @@ public sealed class ChatController(
 			Id: chat.Id,
 			ChatName: GetChatName(chat: chat, currentUser: user),
 			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
+			CreatedAt: chat.CreatedAt,
 			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
 				Content: chat.LastMessageNavigation?.Text,
 				IsFile: chat.LastMessageNavigation?.Text is null && chat.LastMessageNavigation.Attachments.Any(),
