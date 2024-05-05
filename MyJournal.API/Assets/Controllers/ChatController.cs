@@ -300,7 +300,7 @@ public sealed class ChatController(
 			.SingleOrDefaultAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken)
 		?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
 		IQueryable<User> interlocutors = _context.Users.AsNoTracking()
-			.Where(predicate: u => u.RegisteredAt != null);
+			.Where(predicate: u => u.RegisteredAt != null && u.Id != userId);
 
 		if (!request.IncludeExistedInterlocutors)
 		{
@@ -313,8 +313,7 @@ public sealed class ChatController(
 		if (request.IsFiltered)
 		{
 			interlocutors = interlocutors.Where(predicate: u =>
-				EF.Functions.Like(u.Surname + ' ' + u.Name + ' ' + u.Patronymic, request.Filter + '%') ||
-				(u.Id.Equals(userId) && EF.Functions.Like("Избранное", request.Filter + '%'))
+				EF.Functions.Like(u.Surname + ' ' + u.Name + ' ' + u.Patronymic, request.Filter + '%')
 			);
 		}
 
