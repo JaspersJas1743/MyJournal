@@ -103,10 +103,27 @@
 			<Setter Property="FontSize" Value="20"/>
 		</Style>
 
+		<Style Selector="^.ChatDraftMessage">
+			<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
+			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+			<Setter Property="VerticalAlignment" Value="Bottom"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="MaxLines" Value="2"/>
+			<Setter Property="FontSize" Value="20"/>
+		</Style>
+
 		<Style Selector="^.ChatLastMessageDate">
 			<Setter Property="Foreground" Value="{DynamicResource DateTimeColor}"/>
 			<Setter Property="HorizontalAlignment" Value="Right"/>
 			<Setter Property="FontSize" Value="20"/>
+		</Style>
+
+		<Style Selector="^.AttachmentName">
+			<Setter Property="MaxWidth" Value="280"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
 		</Style>
 	</Style>
 </Styles>

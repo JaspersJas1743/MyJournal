@@ -112,5 +112,21 @@
 			<Setter Property="Background" Value="{DynamicResource InterlocutorMessageColor}"/>
 			<Setter Property="HorizontalAlignment" Value="Left"/>
 		</Style>
+		<Style Selector="^.HaveAttachments">
+			<Setter Property="Grid.RowSpan" Value="2"/>
+		</Style>
+		<Style Selector="^.DontHaveAttachments">
+			<Setter Property="Grid.RowSpan" Value="1"/>
+		</Style>
+		<Style Selector="^.ChatBorder">
+			<Setter Property="Background" Value="{DynamicResource ChatBackgroundColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderThickness" Value="0 5"/>
+		</Style>
+		<Style Selector="^.AttachmentsBorder">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+			<Setter Property="BorderThickness" Value="0 0 0 5"/>
+		</Style>
 	</Style>
 </Styles>

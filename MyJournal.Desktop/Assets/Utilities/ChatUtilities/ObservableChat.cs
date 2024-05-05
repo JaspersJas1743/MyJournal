@@ -12,6 +12,7 @@ namespace MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 public class ObservableChat : ReactiveObject
 {
 	private readonly Chat _chatToObservable;
+	private string? _draft = String.Empty;
 
 	public ObservableChat(Chat chatToObservable)
 	{
@@ -27,7 +28,6 @@ public class ObservableChat : ReactiveObject
 
 	public Chat Observable => _chatToObservable;
 	public string? Name => _chatToObservable.Name;
-
 	public string? Photo => _chatToObservable.Photo;
 	public string? Content => _chatToObservable.LastMessage?.Content;
 	public bool? IsFile => _chatToObservable.LastMessage?.IsFile;
@@ -40,8 +40,14 @@ public class ObservableChat : ReactiveObject
 		set
 		{
 			_chatToObservable.LastMessage!.IsRead = value;
-			this.RaisePropertyChanged(propertyName: nameof(IsRead));
+			this.RaisePropertyChanged();
 		}
+	}
+
+	public string? Draft
+	{
+		get => _draft;
+		set => this.RaiseAndSetIfChanged(backingField: ref _draft, newValue: value);
 	}
 
 	public bool IsSingleChat => _chatToObservable.IsSingleChat;

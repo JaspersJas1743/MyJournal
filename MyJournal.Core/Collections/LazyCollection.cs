@@ -11,7 +11,7 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 	private bool _allItemsAreUploaded;
 
 	protected readonly ApiClient Client;
-	protected readonly AsyncLazy<List<T>> Collection;
+	protected AsyncLazy<List<T>> Collection;
 	protected readonly int Count;
 
 	protected int Offset;

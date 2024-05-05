@@ -10,6 +10,7 @@
     <SolidColorBrush x:Key="SecondaryAccentColor" Color="#37C16E"/>
     <SolidColorBrush x:Key="CodeEntrySelection" Color="#5CB554"/>
     <SolidColorBrush x:Key="ErrorColor" Color="#FF4E4E"/>
+	<SolidColorBrush x:Key="OnlineStatusColor" Color="Lime"/>
     <SolidColorBrush x:Key="ContentOnControlColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="MessageOnChatList" Color="#6D6D6D"/>
     <SolidColorBrush x:Key="StrokeOnControlColor" Color="#8DCDF2"/>

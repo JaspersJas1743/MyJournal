@@ -87,9 +87,6 @@
         <Style Selector="^.Corner15">
             <Setter Property="CornerRadius" Value="15"/>
         </Style>
-        <Style Selector="^.Corner10">
-            <Setter Property="CornerRadius" Value="10"/>
-        </Style>
         <Style Selector="^.MainAccentColor">
             <Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
         </Style>

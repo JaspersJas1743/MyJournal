@@ -149,6 +149,8 @@
 		    </Style>
 	    </Style>
 		<Style Selector="^.Search">
+			<Setter Property="Watermark" Value="Поиск"/>
+			<Setter Property="FontSize" Value="24"/>
 			<Setter Property="CornerRadius" Value="20"/>
 			<Style Selector="^ /template/ ContentPresenter#PART_InnerLeftContent">
 				<Setter Property="Margin" Value="0"/>

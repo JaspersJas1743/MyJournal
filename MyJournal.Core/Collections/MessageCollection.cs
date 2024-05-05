@@ -71,19 +71,16 @@ public sealed class MessageCollection : LazyCollection<Message>
 	)
 	{
 		IEnumerable<Message.GetMessageResponse> loadedMessages = await Client.GetAsync<IEnumerable<Message.GetMessageResponse>, GetMessagesRequest>(
-			apiMethod: ChatControllerMethods.GetChats,
+			apiMethod: MessageControllerMethods.GetMessages,
 			argQuery: new GetMessagesRequest(ChatId: _chatId, Offset: Offset, Count: Count),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		List<Message> collection = await Collection;
-		collection.InsertRange(index: 0, collection: await Task.WhenAll(tasks: loadedMessages.Select(
-			selector: async m => await Message.Create(
-				client: Client,
-				messageId: m.MessageId,
-				fileService: _fileService,
-				cancellationToken: cancellationToken
+		collection.InsertRange(index: 0, collection: loadedMessages.Select(
+			selector: m => Message.Create(
+				response: m, fileService: _fileService
 			)
-		)));
+		).Reverse());
 		Offset = collection.Count;
 	}
 

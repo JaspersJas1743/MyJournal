@@ -3,7 +3,8 @@
 		xmlns:entities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
 		xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.ChatUtilities">
+		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.ChatUtilities"
+		xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie">
 
 	<Style Selector="ListBox">
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -59,22 +60,44 @@
 					<Viewbox Width="490" Height="115">
 						<Grid	Width="505" ColumnDefinitions="15*, 70*, 15*, 15*, 255*, 70*, 20*, 5*, 15*, 5*, 10*, 10*"
 								Height="115" RowDefinitions="15*, 25*, 5*, 10*, 20*, 10*, 15*, 5*, 10*">
-							<Border Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="7" Classes="ChatPhoto TransitionBorderBrush TransitionBorderThickness"
-									Classes.DefaultChatPhoto="{Binding Photo,Converter={StaticResource PhotoLinkIsDefaultConverter}}">
-								<asyncImageLoader:AdvancedImage	Classes.LargeChatPhoto="{Binding Photo,Converter={StaticResource PhotoLinkIsDefaultConverter}}"
-																Source="{Binding Photo}" Stretch="UniformToFill" x:Name="Image"/>
+							<Border Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="7"
+									Classes="ChatPhoto TransitionBorderBrush TransitionBorderThickness"
+									Classes.DefaultChatPhoto="{Binding Photo,
+									Converter={StaticResource PhotoLinkIsDefaultConverter}}">
+								<asyncImageLoader:AdvancedImage	x:Name="Image" Classes.LargeChatPhoto="{Binding Photo,
+																Converter={StaticResource PhotoLinkIsDefaultConverter}}"
+																Source="{Binding Photo}" Stretch="UniformToFill"/>
 							</Border>
 							<Ellipse	Opacity="{Binding Activity,Converter={StaticResource ActivityToDoubleConverter}}"
-										Fill="Lime" Grid.Row="6" Grid.Column="2" Classes="OpacityTransition"/>
+										Fill="{DynamicResource OnlineStatusColor}" Grid.Row="6" Grid.Column="2" Classes="OpacityTransition"/>
 							<TextBlock	Grid.Row="1" Grid.Column="4" Text="{Binding Name}" Classes="ChatHeader" x:Name="PART_Name"/>
-							<TextBlock	Text="{Binding Content,TargetNullValue='Сообщения в чате отсутствуют :('}" Classes="ChatLastMessage"
-										Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessageIsFile"
-										IsVisible="{Binding IsFile,TargetNullValue={x:True},
-										Converter={x:Static BoolConverters.Not}}"/>
+							<TextBlock	Text="{Binding Content,TargetNullValue='Сообщения в чате отсутствуют :('}" Grid.Row="3"
+										Classes="ChatLastMessage" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessageIsFile">
+								<TextBlock.IsVisible>
+									<MultiBinding Converter="{x:Static BoolConverters.And}">
+										<Binding	Path="IsFile" TargetNullValue="{x:True}"
+													Converter="{x:Static BoolConverters.Not}"/>
+										<Binding	Converter="{StaticResource StringIsNullOrWhiteSpaceConverter}"
+													Path="Draft" TargetNullValue="{x:False}"/>
+									</MultiBinding>
+								</TextBlock.IsVisible>
+							</TextBlock>
 							<TextBlock	Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" x:Name="PART_LastMessage"
-										IsVisible="{Binding IsFile,TargetNullValue={x:False}}"
-										Text="Вложение" Classes="ChatLastMessage"
-										/>
+										Text="Вложение" Classes="ChatLastMessage">
+								<TextBlock.IsVisible>
+									<MultiBinding Converter="{x:Static BoolConverters.And}">
+										<Binding Path="IsFile" TargetNullValue="{x:False}"/>
+										<Binding	Converter="{StaticResource StringIsNullOrWhiteSpaceConverter}"
+													Path="Draft" TargetNullValue="{x:False}"/>
+									</MultiBinding>
+								</TextBlock.IsVisible>
+							</TextBlock>
+							<StackPanel Grid.Row="3" Grid.RowSpan="5" Grid.Column="4" Grid.ColumnSpan="2" Spacing="2.5" Orientation="Horizontal"
+										IsVisible="{Binding Draft,TargetNullValue={x:False},
+										Converter={StaticResource StringIsNotNullOrWhiteSpaceConverter}}">
+								<TextBlock	Text="Черновик: " Classes="ChatDraftMessage"/>
+								<TextBlock	Text="{Binding Draft}" Classes="ChatLastMessage"/>
+							</StackPanel>
 							<TextBlock	Grid.Column="5" Grid.ColumnSpan="6" Grid.Row="1" x:Name="PART_DateOfLastMessage" Classes="ChatLastMessageDate"
 										Text="{Binding CreatedAt,TargetNullValue='',StringFormat='d MMMM'}"/>
 							<Ellipse Fill="{DynamicResource MainAccentColor}" Grid.Row="4" Grid.Column="7" Grid.ColumnSpan="2">
@@ -113,20 +136,17 @@
 			</Setter>
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="utilities:Attachment">
-					<Viewbox Width="350" Height="50">
-						<Border Width="350" Height="50" CornerRadius="15" Background="{DynamicResource MainAccentColor}">
-							<Grid>
-								<TextBlock Margin="10 0 0 0" Width="300" VerticalAlignment="Center" Text="{Binding FileName}"
-											Foreground="{DynamicResource TextOnSelectedControlColor}" FontSize="20"
-											TextTrimming="CharacterEllipsis"/>
-								<Button HorizontalAlignment="Right" Margin="0 0 10 0"
-										VerticalAlignment="Center" Height="20" Width="20" Background="Transparent"
-										Command="{Binding Remove}" Padding="0">
-									<Button.Content>
-										<controls:XamlSvg Classes="Close" Foreground="White"/>
-									</Button.Content>
-								</Button>
-							</Grid>
+					<Viewbox Height="50">
+						<Border Height="50" CornerRadius="15" Background="{DynamicResource MainAccentColor}">
+							<StackPanel Orientation="Horizontal" Spacing="10" Margin="10 0">
+								<Grid>
+									<TextBlock	Text="{Binding FileName}" Classes="AttachmentName"
+												IsVisible="{Binding IsLoaded}"/>
+									<lottie:Lottie	Path="/Assets/Resources/Animations/Loading.json" HorizontalAlignment="Left"
+													IsVisible="{Binding !IsLoaded}"/>
+								</Grid>
+								<Button Classes="RemoveAttachment" Command="{Binding Remove}"/>
+							</StackPanel>
 						</Border>
 					</Viewbox>
 				</DataTemplate>
@@ -144,22 +164,24 @@
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="utilities:ExtendedAttachment">
 					<Viewbox>
-						<controls:ButtonWithAnimatedCommand
-							Command="{Binding Download}"
-							CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"
-							Classes="Corner10 MainAccentColor" Height="25" MaxWidth="510" Padding="10 0">
-							<controls:ButtonWithAnimatedCommand.Content>
+						<Button Command="{Binding Download}" Classes="Corner10 MainAccentColor"
+								CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"
+								Height="35" MaxWidth="510" Padding="10 0">
+							<Button.Content>
 								<TextBlock Text="{Binding FileName}" FontSize="20"/>
-							</controls:ButtonWithAnimatedCommand.Content>
-							<controls:ButtonWithAnimatedCommand.Flyout>
+							</Button.Content>
+							<Button.Flyout>
 								<Flyout ShowMode="TransientWithDismissOnPointerMoveAway" Placement="Bottom">
 									Файл успешно сохранен!
 								</Flyout>
-							</controls:ButtonWithAnimatedCommand.Flyout>
-						</controls:ButtonWithAnimatedCommand>
+							</Button.Flyout>
+						</Button>
 					</Viewbox>
 				</DataTemplate>
 			</Setter>
+			<Style Selector="^:empty">
+				<Setter Property="IsVisible" Value="False"/>
+			</Style>
 		</Style>
 		<Style Selector="^.Messages">
 			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -175,16 +197,15 @@
 			</Setter>
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="utilities:ExtendedMessage">
-					<Border CornerRadius="20"
-							Margin="20 12.5" Padding="15 10" MaxWidth="600" MinHeight="55"
-							Classes.NotFromMe="{Binding !Message.FromMe}"
-							Classes.FromMe="{Binding Message.FromMe}">
+					<Border MaxWidth="600" Classes.NotFromMe="{Binding !Message.FromMe}"
+							MinHeight="55" Classes.FromMe="{Binding Message.FromMe}"
+							CornerRadius="20" Margin="20 12.5" Padding="15 10">
 						<StackPanel Orientation="Horizontal" Spacing="10">
-							<StackPanel Orientation="Vertical" Spacing="5">
-								<SelectableTextBlock	Text="{Binding Message.Text}" FontSize="20" TextWrapping="Wrap"
-														VerticalAlignment="Center" MaxWidth="510" HorizontalAlignment="Right"
-														TextAlignment="Left"/>
-								<ListBox	DockPanel.Dock="Bottom" MaxWidth="510" Classes="AttachmentsOnMessage"
+							<StackPanel Orientation="Vertical" Spacing="5" VerticalAlignment="Center">
+								<SelectableTextBlock	Text="{Binding Message.Text}" Classes="Message"
+														IsVisible="{Binding Message.Text,
+														Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+								<ListBox	MaxWidth="510" Classes="AttachmentsOnMessage" VerticalAlignment="Center"
 											ItemsSource="{Binding Attachments}"/>
 							</StackPanel>
 							<Grid Width="50">

@@ -92,6 +92,10 @@
 			<Setter Property="Background" Value="{DynamicResource SecondaryAccentColor}"/>
 		</Style>
 
+		<Style Selector="^.Corner10">
+			<Setter Property="CornerRadius" Value="10"/>
+		</Style>
+
 		<Style Selector="^.TransparentWithPointerover">
 			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 			<Setter Property="Background" Value="Transparent"/>
@@ -157,11 +161,28 @@
 			<Setter Property="Margin" Value="0 25"/>
 			<Setter Property="VerticalAlignment" Value="Top"/>
 		</Style>
+
 		<Style Selector="^.SendMessage">
 			<Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
 				<Setter Property="Background" Value="{TemplateBinding Background}" />
 				<Setter Property="Opacity" Value="1"/>
 			</Style>
+		</Style>
+
+		<Style Selector="^.RemoveAttachment">
+			<Setter Property="HorizontalAlignment" Value="Right"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Height" Value="20"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="Width" Value="20"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Content">
+				<Setter.Value>
+					<Template>
+						<controls:XamlSvg Classes="Close" Foreground="White"/>
+					</Template>
+				</Setter.Value>
+			</Setter>
 		</Style>
 	</Style>
 </Styles>

@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using DynamicData;
@@ -38,21 +39,22 @@ public sealed class MessagesModel : ModelBase
 	private readonly IMessageService _messageService;
 
 	private int _previousChatId = -1;
-	private readonly Dictionary<int, string> _allMessages = new Dictionary<int, string>();
-	private readonly Dictionary<int, ObservableCollectionExtended<Attachment>> _allAttachments = new Dictionary<int, ObservableCollectionExtended<Attachment>>();
-	private readonly Dictionary<int, IMessageBuilder> _allMessageBuilders = new Dictionary<int, IMessageBuilder>();
+	private readonly Dictionary<int, string?> _allMessages = new Dictionary<int, string?>();
+	private readonly Dictionary<int, ObservableCollectionExtended<Attachment>?> _allAttachments = new Dictionary<int, ObservableCollectionExtended<Attachment>?>();
+	private readonly Dictionary<int, IMessageBuilder?> _allMessageBuilders = new Dictionary<int, IMessageBuilder?>();
 
 	private User? _user;
 	private ChatCollection _chatCollection;
-	private MessageCollection _messageFromSelectedChat;
-	private IMessageBuilder _messageBuilder;
+	private MessageCollection? _messageFromSelectedChat;
+	private IMessageBuilder? _messageBuilder;
 	private ObservableCollectionExtended<ObservableChat> _chats = new ObservableCollectionExtended<ObservableChat>();
-	private ObservableCollectionExtended<Attachment> _attachments = new ObservableCollectionExtended<Attachment>();
+	private ObservableCollectionExtended<Attachment>? _attachments = new ObservableCollectionExtended<Attachment>();
 	private ObservableCollectionExtended<ExtendedMessage> _messages = new ObservableCollectionExtended<ExtendedMessage>();
-	private ObservableChat? _selectedChat;
+	private bool _chatsUpdate = false;
 	private bool _isLoaded = false;
 	private bool _chatsAreLoaded = true;
 	private bool _messagesAreLoaded = true;
+	private bool _lastMessageIsSelected = true;
 	private string? _subheader = String.Empty;
 	private string? _message = String.Empty;
 	private string _filter = String.Empty;
@@ -72,16 +74,14 @@ public sealed class MessagesModel : ModelBase
 		OnSelectionChanged = ReactiveCommand.CreateFromTask(execute: SelectionChangedHandler);
 		OnFilterChanged = ReactiveCommand.CreateFromTask<string>(execute: FilterChangedHandler);
 		OnChatsLoaded = ReactiveCommand.CreateFromTask(execute: ChatsLoadedHandler);
+		OnMessagesLoaded = ReactiveCommand.CreateFromTask(execute: MessageLoadedHandler);
 		AppendAttachment = ReactiveCommand.CreateFromTask(execute: AddAttachment);
 		SendMessage = ReactiveCommand.CreateFromTask(execute: Send);
 
 		this.WhenAnyValue(property1: model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.5)).InvokeCommand(command: OnFilterChanged);
 
-		this.WhenAnyValue(property1: model => model.Message).WhereNotNull()
-			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.2))
-			.Subscribe(onNext: message => _messageBuilder?.SetText(text: message));
-
+		Selection.LostSelection += OnLostSelection;
 		Chats.CollectionChanged += OnChatsChanged;
 		_timer.Elapsed += OnTimerElapsed;
 		_timer.Start();
@@ -96,6 +96,9 @@ public sealed class MessagesModel : ModelBase
 	public ReactiveCommand<Unit, Unit> OnSelectionChanged { get; }
 	public ReactiveCommand<string, Unit> OnFilterChanged { get; }
 	public ReactiveCommand<Unit, Unit> OnChatsLoaded { get; }
+	public ReactiveCommand<Unit, Unit> OnMessagesLoaded { get; }
+
+	public SelectionModel<ObservableChat> Selection { get; } = new SelectionModel<ObservableChat>();
 
 	public ObservableCollectionExtended<ObservableChat> Chats
 	{
@@ -103,7 +106,7 @@ public sealed class MessagesModel : ModelBase
 		set => this.RaiseAndSetIfChanged(backingField: ref _chats, newValue: value);
 	}
 
-	public ObservableCollectionExtended<Attachment> Attachments
+	public ObservableCollectionExtended<Attachment>? Attachments
 	{
 		get => _attachments;
 		set => this.RaiseAndSetIfChanged(backingField: ref _attachments, newValue: value);
@@ -113,12 +116,6 @@ public sealed class MessagesModel : ModelBase
 	{
 		get => _messages;
 		set => this.RaiseAndSetIfChanged(backingField: ref _messages, newValue: value);
-	}
-
-	public ObservableChat? SelectedChat
-	{
-		get => _selectedChat;
-		set => this.RaiseAndSetIfChanged(backingField: ref _selectedChat, newValue: value);
 	}
 
 	public string? Subheader
@@ -133,7 +130,7 @@ public sealed class MessagesModel : ModelBase
 		set => this.RaiseAndSetIfChanged(backingField: ref _filter, newValue: value);
 	}
 
-	public string Message
+	public string? Message
 	{
 		get => _message;
 		set => this.RaiseAndSetIfChanged(backingField: ref _message, newValue: value);
@@ -168,6 +165,7 @@ public sealed class MessagesModel : ModelBase
 		InterlocutorCollection interlocutors = await task;
 
 		_user.JoinedInChat += OnUserJoinedInChat;
+		_chatCollection.ReceivedMessageInChat += OnReceivedMessageInChat;
 		interlocutors.InterlocutorAppearedOnline += CurrentInterlocutorOnAppearedOnline;
 		interlocutors.InterlocutorAppearedOffline += CurrentInterlocutorOnAppearedOffline;
 	}
@@ -180,32 +178,32 @@ public sealed class MessagesModel : ModelBase
 		if (e.Key != Key.Escape)
 			return;
 
-		SelectedChat = null;
+		Selection.SelectedItem = null;
 		Messages.Clear();
 	}
 
-	private string? GetTimeOfOnlineOfInterlocutor()
+	private string GetTimeOfOnlineOfInterlocutor()
 	{
-		if (SelectedChat!.OnlineAt is null)
+		if (Selection.SelectedItem!.OnlineAt is null)
 			return "в сети";
 
-		if ((DateTime.Now - SelectedChat!.OnlineAt).Value.Minutes < 1)
+		if ((DateTime.Now - Selection.SelectedItem!.OnlineAt).Value.Minutes < 1)
 			return "был(-а) в сети только что";
 
-		return (DateTime.Now - SelectedChat!.OnlineAt).Value.Days switch
+		return (DateTime.Now - Selection.SelectedItem!.OnlineAt).Value.Days switch
 		{
-			> 1 => $"был(-а) в сети {SelectedChat!.OnlineAt:d MMMM yyyy} в {SelectedChat!.OnlineAt:HH:mm}",
-			1 => $"был(-а) в сети {SelectedChat!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {SelectedChat!.OnlineAt:HH:mm}",
-			_ => "был(-а) в сети " + SelectedChat!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)
+			> 1 => $"был(-а) в сети {Selection.SelectedItem!.OnlineAt:d MMMM yyyy} в {Selection.SelectedItem!.OnlineAt:HH:mm}",
+			1 => $"был(-а) в сети {Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {Selection.SelectedItem!.OnlineAt:HH:mm}",
+			_ => "был(-а) в сети " + Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)
 		};
 	}
 
 	private string GetCountOfParticipants()
 	{
-		if (SelectedChat is null)
+		if (Selection.SelectedItem is null)
 			return String.Empty;
 
-		return WordFormulator.GetForm(count: SelectedChat!.CountOfParticipants, forms: new string[] { "участников", "участник", "участника" });
+		return WordFormulator.GetForm(count: Selection.SelectedItem!.CountOfParticipants, forms: new string[] { "участников", "участник", "участника" });
 	}
 
 	private async Task FilterChangedHandler(string filter)
@@ -223,48 +221,74 @@ public sealed class MessagesModel : ModelBase
 
 	private async Task SelectionChangedHandler()
 	{
-		Subheader = SelectedChat?.IsSingleChat switch
+		Subheader = Selection.SelectedItem?.IsSingleChat switch
 		{
 			true => GetTimeOfOnlineOfInterlocutor(),
 			false => GetCountOfParticipants(),
 			_ => String.Empty
 		};
 
-		if (SelectedChat?.IsRead == false)
-			await SelectedChat?.Read()!;
+		if (Selection.SelectedItem?.IsRead == false)
+			await Selection.SelectedItem?.Read()!;
 
 		if (_previousChatId > 0)
-		{
-			_allAttachments[key: _previousChatId] = Attachments;
-			_allMessages[key: _previousChatId] = Message;
-			_allMessageBuilders[key: _previousChatId] = _messageBuilder;
-		}
+			SaveDraft();
 
-		if (SelectedChat is null)
+		if (Selection.SelectedItem is null)
 		{
 			_previousChatId = -1;
 			return;
 		}
 
+		await UpdateMessages();
+		GetGraft();
+		_previousChatId = Selection.SelectedItem.Observable.Id;
+	}
+
+	private void SaveDraft()
+	{
+		_allMessages[key: _previousChatId] = Message?.Trim();
+		_allAttachments[key: _previousChatId] = Attachments;
+		_allMessageBuilders[key: _previousChatId] = _messageBuilder;
+		ObservableChat previousChat = Chats.First(predicate: c => c.Observable.Id == _previousChatId);
+		previousChat.Draft = Message;
+		if (Attachments?.Any() == true)
+			previousChat.Draft = $"[{String.Join(", ", Attachments.Select(selector: a => a.FileName))}]";
+	}
+
+	private async Task UpdateMessages()
+	{
 		MessagesAreLoaded = false;
 		Messages.Clear();
-		_messageFromSelectedChat = await SelectedChat.Observable.GetMessages();
+		_messageFromSelectedChat = await Selection.SelectedItem?.Observable.GetMessages()!;
 		List<Message> messages = await _messageFromSelectedChat.ToListAsync();
 		MessagesAreLoaded = true;
 		Messages = new ObservableCollectionExtended<ExtendedMessage>(collection: messages.Select(
-			selector: m => m.ToExtended(pathToSave: _configurationService.Get(key: ConfigurationKeys.StorageFolder)!)
+			selector: m => m.ToExtended(configurationService: _configurationService)
 		));
+
+		_lastMessageIsSelected = false;
 		SelectedMessage = Messages.FirstOrDefault(predicate: m => m.Message is { IsRead: false, FromMe: false })
 			?? Messages.LastOrDefault() ?? null;
+		_lastMessageIsSelected = true;
+	}
 
-		Attachments = _allAttachments.TryGetValue(key: SelectedChat.Observable.Id, out ObservableCollectionExtended<Attachment>? attachments) ? attachments : new ObservableCollectionExtended<Attachment>();
-		Message = _allMessages.TryGetValue(key: SelectedChat.Observable.Id, out string? message) ? message : String.Empty;
+	private void GetGraft()
+	{
+		if (Selection.SelectedItem is null)
+			return;
 
-		_messageBuilder = _allMessageBuilders.TryGetValue(key: SelectedChat.Observable.Id, out IMessageBuilder? messageBuilder)
+		Attachments = _allAttachments.TryGetValue(key: Selection.SelectedItem.Observable.Id, out ObservableCollectionExtended<Attachment>? attachments)
+			? attachments
+			: new ObservableCollectionExtended<Attachment>();
+
+		Message = _allMessages.TryGetValue(key: Selection.SelectedItem.Observable.Id, out string? message)
+			? message
+			: String.Empty;
+
+		_messageBuilder = _allMessageBuilders.TryGetValue(key: Selection.SelectedItem.Observable.Id, out IMessageBuilder? messageBuilder)
 			? messageBuilder
-			: _messageFromSelectedChat.CreateMessage();
-
-		_previousChatId = SelectedChat.Observable.Id;
+			: _messageFromSelectedChat?.CreateMessage();
 	}
 
 	private async Task ChatsLoadedHandler()
@@ -280,27 +304,32 @@ public sealed class MessagesModel : ModelBase
 
 	private async void OnChatsChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
+		if (e.Action == NotifyCollectionChangedAction.Move)
+			_chatsUpdate = true;
+
 		if (e.Action != NotifyCollectionChangedAction.Add)
 			return;
 
 		ObservableChat addedItem = e.NewItems!.OfType<ObservableChat>().Single();
-		await addedItem.LoadInterlocutor(user: _user);
+		await addedItem.LoadInterlocutor(user: _user!);
 	}
 
 	private void CurrentInterlocutorOnAppearedOffline(InterlocutorAppearedOfflineEventArgs e)
-		=> Subheader = SelectedChat?.IsSingleChat == true ? GetTimeOfOnlineOfInterlocutor() : GetCountOfParticipants();
+		=> Subheader = Selection.SelectedItem?.IsSingleChat == true ? GetTimeOfOnlineOfInterlocutor() : GetCountOfParticipants();
 
 	private void CurrentInterlocutorOnAppearedOnline(InterlocutorAppearedOnlineEventArgs e)
-		=> Subheader = SelectedChat?.IsSingleChat == true ? GetTimeOfOnlineOfInterlocutor() : GetCountOfParticipants();
+		=> Subheader = Selection.SelectedItem?.IsSingleChat == true ? GetTimeOfOnlineOfInterlocutor() : GetCountOfParticipants();
 
 	private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
-		=> Subheader = SelectedChat?.IsSingleChat == true ? GetTimeOfOnlineOfInterlocutor() : GetCountOfParticipants();
+		=> Subheader = Selection.SelectedItem?.IsSingleChat == true ? GetTimeOfOnlineOfInterlocutor() : GetCountOfParticipants();
 
 	private async Task Send()
 	{
-		await _messageBuilder.Send();
+		_messageBuilder?.SetText(text: Message?.Trim()!);
+		await _messageBuilder?.Send()!;
+		_messageBuilder = _messageFromSelectedChat?.CreateMessage();
 		Message = String.Empty;
-		Attachments.Clear();
+		Attachments?.Clear();
 	}
 
 	private async Task AddAttachment()
@@ -324,15 +353,65 @@ public sealed class MessagesModel : ModelBase
 		string pathToFile = HttpUtility.UrlDecode(pickedFile.Path.AbsolutePath);
 		Attachment attachment = new Attachment()
 		{
-			FileName = Path.GetFileName(path: pathToFile)
+			FileName = Path.GetFileName(path: pathToFile),
+			IsLoaded = false
 		};
 		attachment.Remove = ReactiveCommand.CreateFromTask(execute: async () =>
 		{
-			await _messageBuilder.RemoveAttachment(pathToFile: pathToFile);
-			Attachments.Remove(item: attachment);
+			await _messageBuilder?.RemoveAttachment(pathToFile: pathToFile)!;
+			Attachments?.Remove(item: attachment);
 		});
-		Attachments.Add(item: attachment);
+		Attachments?.Add(item: attachment);
+		await _messageBuilder?.AddAttachment(pathToFile: pathToFile)!;
+		attachment.IsLoaded = true;
+	}
 
-		await _messageBuilder.AddAttachment(pathToFile: pathToFile);
+	private async void OnReceivedMessageInChat(ReceivedMessageEventArgs e)
+	{
+		ObservableChat? chat = Chats.FirstOrDefault(predicate: chat => chat.Observable.Id == e.ChatId);
+		if (chat is not null)
+		{
+			int indexOfChat = Chats.IndexOf(item: chat);
+			if (indexOfChat != 0)
+				Chats.Move(oldIndex: indexOfChat, newIndex: 0);
+		}
+		else
+		{
+			ObservableChat newChat = (await _chatCollection.FindById(id: e.ChatId))!.ToObservable();
+			Chats.Insert(index: 0, item: newChat);
+		}
+
+		ExtendedMessage? receivedMessage = (await _messageFromSelectedChat?.FindById(id: e.MessageId)!)?.ToExtended(
+			configurationService: _configurationService
+		);
+
+		if (receivedMessage is null)
+			return;
+
+		Messages.Add(item: receivedMessage);
+		SelectedMessage = receivedMessage;
+	}
+
+	private void OnLostSelection(object? sender, EventArgs args)
+	{
+		if (_chatsUpdate)
+			Selection.SelectedItem = Chats[0];
+		_chatsUpdate = false;
+	}
+
+	private async Task MessageLoadedHandler()
+	{
+		if (_messageFromSelectedChat!.AllItemsAreUploaded && !_lastMessageIsSelected)
+			return;
+
+		int currentLength = _messageFromSelectedChat.Length;
+		await _messageFromSelectedChat.LoadNext();
+		IEnumerable<Message> messages = await _messageFromSelectedChat.GetByRange(start: 0, end: _messageFromSelectedChat.Length - currentLength);
+		Messages.InsertRange(collection: messages.Select(
+			selector: m => m.ToExtended(configurationService: _configurationService)
+		), index: 0);
+		_lastMessageIsSelected = false;
+		SelectedMessage = Messages[_messageFromSelectedChat.Length - currentLength];
+		_lastMessageIsSelected = true;
 	}
 }
