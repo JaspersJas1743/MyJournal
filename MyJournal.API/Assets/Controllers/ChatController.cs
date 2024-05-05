@@ -356,7 +356,7 @@ public sealed class ChatController(
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpPost(template: "single/create")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetChatsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<IEnumerable<GetChatsResponse>>> CreateSingleChat(
@@ -397,10 +397,7 @@ public sealed class ChatController(
 		await userHubContext.Clients.Users(userIds: createdChat.Users.Select(selector: c => c.Id.ToString()))
 			.JoinedInChat(id: createdChat.Id);
 
-		return RedirectToAction(
-			actionName: nameof(GetChats),
-			routeValues: new GetChatsRequest(IsFiltered: false, Filter: null, Offset: 0, Count: 20)
-		);
+		return Created();
 	}
 
 	/// <summary>
@@ -432,7 +429,7 @@ public sealed class ChatController(
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	[HttpPost(template: "multi/create")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetChatsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
 	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<IEnumerable<GetChatsResponse>>> CreateMultiChat(
@@ -463,10 +460,7 @@ public sealed class ChatController(
 		await userHubContext.Clients.Users(userIds: interlocutors.Select(selector: c => c.Id.ToString()))
 			.JoinedInChat(id: createdChat.Id);
 
-		return RedirectToAction(
-			actionName: nameof(GetChats),
-			routeValues: new GetChatsRequest(IsFiltered: false, Filter: null, Offset: 0, Count: 20)
-		);
+		return Created();
 	}
 	#endregion
 
