@@ -44,7 +44,8 @@
 									Margin="0 100" Path="/Assets/Resources/Animations/ChatsSearch.json"
 									IsVisible="{Binding !ChatsAreLoaded}"/>
 					<Viewbox Grid.Column="1" Grid.Row="1">
-						<controls:ButtonWithAnimatedCommand Width="80" Height="80" Classes="AddChat"/>
+						<controls:ButtonWithAnimatedCommand Width="80" Height="80" Classes="AddChat"
+															Command="{Binding OnChatCreation}"/>
 					</Viewbox>
 				</Grid>
 			</Border>

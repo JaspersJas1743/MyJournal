@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.ChatCreation"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			xmlns:interactions="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="800"
+			x:DataType="vm:SingleChatCreationVM"
+			x:Class="MyJournal.Desktop.Views.ChatCreation.SingleChatCreationView">
+	<Grid ColumnDefinitions="20*, 460*, 20*" RowDefinitions="20*, 50*, 10*, 70*, 10*, 70*, 10*, 540*, 20*">
+		<Viewbox Grid.Row="1" Grid.Column="1">
+			<controls:ButtonWithAnimatedCommand Content="Создать беседу" Height="50" Width="460" FontSize="20"
+												Classes="MainAccentColor" CornerRadius="10"/>
+		</Viewbox>
+		<StackPanel Grid.Column="1" Grid.Row="3" Orientation="Vertical">
+			<TextBlock	VerticalAlignment="Center" TextAlignment="Center" Text="или"
+						FontSize="20" TextWrapping="Wrap"/>
+			<TextBlock	VerticalAlignment="Center" TextAlignment="Center" Text="Выберите человека, которому хотите написать"
+						FontSize="20" TextWrapping="Wrap" Width="300"/>
+		</StackPanel>
+		<Viewbox Grid.Column="1" Grid.Row="5">
+			<TextBox Classes="Search" FontSize="20" Width="460" Height="70" Text="{Binding Filter,Mode=TwoWay}"/>
+		</Viewbox>
+		<controls:ListBoxWithLoadOnScroll	ComparisonOperations="GreaterOrEquals" ItemsSource="{Binding Interlocutors}"
+											Grid.Column="1" Grid.Row="7" Classes="Interlocutors" ThresholdPercentage="80"
+											SelectedItem="{Binding Interlocutor,Mode=TwoWay}"
+											Command="{Binding LoadInterlocutors}">
+			<interactivity:Interaction.Behaviors>
+				<interactions:EventTriggerBehavior EventName="SelectionChanged">
+					<interactions:InvokeCommandAction Command="{Binding SelectIntendedInterlocutor}"/>
+				</interactions:EventTriggerBehavior>
+			</interactivity:Interaction.Behaviors>
+		</controls:ListBoxWithLoadOnScroll>
+	</Grid>
+</UserControl>

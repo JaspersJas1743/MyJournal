@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.ChatCreation"
+		x:DataType="vm:ChatCreationWindowVM" Title="" Width="500" Height="800"
+		x:Class="MyJournal.Desktop.Views.ChatCreation.ChatCreationWindow"
+		SystemDecorations="None" Classes="ChatCreationWindow" CanResize="False"
+		mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="800">
+	<TransitioningContentControl	Classes.RightDirection="{Binding HaveRightDirection}"
+									Classes.LeftDirection="{Binding HaveLeftDirection}"
+									Classes.CrossFade="{Binding HaveCrossFade}"
+									Content="{Binding Content}"/>
+</Window>

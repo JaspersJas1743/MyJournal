@@ -43,7 +43,6 @@ public sealed class ListBoxWithLoadOnScroll : ListBox
 		this.WhenAnyValue(property1: listBox => listBox.CurrentScrollHeight).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.MainThreadScheduler)
 			.Where(predicate: offset => MaxScrollHeight > 0 && CheckOffset(offset: offset) && Items.Count >= 10)
-			// .Where(predicate: offset => MaxScrollHeight > 0 && offset >= MaxScrollHeight / 5 * 4 && Items.Count >= 10)
 			.Where(predicate: _ => Command is not null && Command.CanExecute(parameter: CommandParameter))
 			.Subscribe(onNext: _ => Command!.Execute(parameter: CommandParameter));
 	}

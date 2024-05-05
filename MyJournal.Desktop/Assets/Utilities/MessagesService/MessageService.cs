@@ -83,7 +83,7 @@ public sealed class MessageService : IMessageService
 		};
 		window.Show(owner: _mainWindow);
 		Observable.Timer(dueTime: TimeSpan.FromSeconds(value: 3)).Subscribe(
-			onNext: _ => Dispatcher.UIThread.Invoke(callback: () => window.Close())
+			onNext: async _ => await Dispatcher.UIThread.InvokeAsync(callback: () => window.Close())
 		);
 	}
 }

@@ -75,6 +75,7 @@ public sealed class MessagesVM(MessagesModel model) : MenuItemVM(model: model)
 	public ReactiveCommand<Unit, Unit> OnMessagesLoaded => model.OnMessagesLoaded;
 	public ReactiveCommand<Unit, Unit> AppendAttachment => model.AppendAttachment;
 	public ReactiveCommand<Unit, Unit> SendMessage => model.SendMessage;
+	public ReactiveCommand<Unit, Unit> OnChatCreation => model.OnChatCreation;
 
 	public override async Task SetUser(User user)
 	{

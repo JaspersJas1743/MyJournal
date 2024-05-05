@@ -3,6 +3,7 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.FileService;
+using Activity = MyJournal.Core.UserData.Activity;
 
 namespace MyJournal.Core.Collections;
 
@@ -34,7 +35,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 
 	#region Records
 	private sealed record GetInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
-	private sealed record GetInterlocutorsResponse(int UserId);
+	internal sealed record GetInterlocutorsResponse(int Id, string Surname, string Name, string? Patronymic, string? Photo, Activity.Statuses Activity, DateTime? OnlineAt);
 	#endregion
 
 	#region Methods
@@ -42,7 +43,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	internal static async Task<IntendedInterlocutorCollection> Create(
 		ApiClient client,
 		IFileService fileService,
-		bool includeExistedInterlocutors = true,
+		bool includeExistedInterlocutors = false,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -61,14 +62,13 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		return new IntendedInterlocutorCollection(
 			client: client,
 			fileService: fileService,
-			intendedInterlocutors: new AsyncLazy<List<IntendedInterlocutor>>(valueFactory: async () => new List<IntendedInterlocutor>(collection: await Task.WhenAll(
-				tasks: interlocutors.Select(selector: async i => await IntendedInterlocutor.Create(
+			intendedInterlocutors: new AsyncLazy<List<IntendedInterlocutor>>(valueFactory: () => new List<IntendedInterlocutor>(
+				collection: interlocutors.Select(selector: i => IntendedInterlocutor.Create(
 					client: client,
 					fileService: fileService,
-					id: i.UserId,
-					cancellationToken: cancellationToken
+					response: i
 				))
-			))),
+			)),
 			count: basedCount,
 			offset: interlocutors.Count(),
 			includeExistedInterlocutors: includeExistedInterlocutors
@@ -82,7 +82,7 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 	)
 	{
 		IEnumerable<GetInterlocutorsResponse> interlocutors = await Client.GetAsync<IEnumerable<GetInterlocutorsResponse>, GetInterlocutorsRequest>(
-			apiMethod: ChatControllerMethods.GetInterlocutors,
+			apiMethod: ChatControllerMethods.GetIntendedInterlocutors,
 			argQuery: new GetInterlocutorsRequest(
 				IsFiltered: !String.IsNullOrWhiteSpace(value: Filter),
 				Filter: Filter,
@@ -92,14 +92,13 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 			), cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		List<IntendedInterlocutor> collection = await Collection;
-		collection.AddRange(collection: await Task.WhenAll(tasks: interlocutors.Select(
-			selector: async i => await IntendedInterlocutor.Create(
+		collection.AddRange(collection: interlocutors.Select(
+			selector: i => IntendedInterlocutor.Create(
 				client: Client,
 				fileService: _fileService,
-				id: i.UserId,
-				cancellationToken: cancellationToken
+				response: i
 			)
-		)));
+		));
 		Offset = collection.Count;
 	}
 
@@ -128,6 +127,15 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
+	}
+
+	internal async Task Remove(
+		int interlocutorId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		List<IntendedInterlocutor> collection = await Collection;
+		collection.RemoveAll(match: interlocutor => interlocutor.Id == interlocutorId);
 	}
 	#endregion
 

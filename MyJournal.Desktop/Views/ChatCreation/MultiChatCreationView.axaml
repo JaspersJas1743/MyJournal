@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.ChatCreation"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			xmlns:interactions="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="800"
+			x:DataType="vm:MultiChatCreationVM"
+			x:Class="MyJournal.Desktop.Views.ChatCreation.MultiChatCreationView">
+</UserControl>

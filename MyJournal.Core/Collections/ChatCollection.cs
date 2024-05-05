@@ -150,15 +150,11 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await Clear(cancellationToken: cancellationToken);
-		IEnumerable<Chat> chats = await Client.PostAsync<IEnumerable<Chat>, CreateSingleChatRequest>(
+		await Client.PostAsync<CreateSingleChatRequest>(
 			apiMethod: ChatControllerMethods.CreateSingleChat,
 			arg: new CreateSingleChatRequest(InterlocutorId: interlocutorId),
 			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		List<Chat> collection = await Collection;
-		collection.AddRange(collection: chats);
-		Offset = collection.Count;
+		);
 	}
 
 	public async Task AddMultiChat(
@@ -168,15 +164,11 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await Clear(cancellationToken: cancellationToken);
-		IEnumerable<Chat> chats = await Client.PostAsync<IEnumerable<Chat>, CreateMultiChatRequest>(
+		await Client.PostAsync<CreateMultiChatRequest>(
 			apiMethod: ChatControllerMethods.CreateMultiChat,
 			arg: new CreateMultiChatRequest(InterlocutorIds: interlocutorIds, ChatName: chatName, LinkToPhoto: linkToPhoto),
 			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
-		List<Chat> collection = await Collection;
-		collection.AddRange(collection: chats);
-		Offset = collection.Count;
+		);
 	}
 
 	internal async Task OnReceivedMessage(

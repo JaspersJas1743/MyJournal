@@ -83,4 +83,14 @@
 			<Setter Property="CornerRadius" Value="0 0 15 15"/>
 		</Style>
 	</Style>
+
+	<Style Selector="ListBox.Interlocutors ListBoxItem">
+		<Setter Property="CornerRadius" Value="10"/>
+		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	</Style>
 </Styles>

@@ -1,3 +1,4 @@
+using MyJournal.Core.Collections;
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -37,10 +38,6 @@ public sealed class IntendedInterlocutor : ISubEntity
 	public DateTime? OnlineAt { get; init; }
 	#endregion
 
-	#region Records
-	private sealed record InterlocutorResponse(int Id, string Surname, string Name, string? Patronymic, string Photo, Activity.Statuses Activity, DateTime? OnlineAt);
-	#endregion
-
 	#region Methods
 	internal static async Task<IntendedInterlocutor> Create(
 		ApiClient client,
@@ -49,7 +46,7 @@ public sealed class IntendedInterlocutor : ISubEntity
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		InterlocutorResponse response = await client.GetAsync<InterlocutorResponse>(
+		IntendedInterlocutorCollection.GetInterlocutorsResponse response = await client.GetAsync<IntendedInterlocutorCollection.GetInterlocutorsResponse>(
 			apiMethod: UserControllerMethods.GetInformationAbout(userId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
@@ -69,6 +66,29 @@ public sealed class IntendedInterlocutor : ISubEntity
 			onlineAt: response.OnlineAt
 		);
 		return interlocutor;
+	}
+
+	internal static IntendedInterlocutor Create(
+		ApiClient client,
+		IFileService fileService,
+		IntendedInterlocutorCollection.GetInterlocutorsResponse response
+	)
+	{
+		return new IntendedInterlocutor(
+			id: response.Id,
+			personalData: new AsyncLazy<PersonalData>(valueFactory: async () => new PersonalData(
+				name: response.Name,
+				surname: response.Surname,
+				patronymic: response.Patronymic
+			)),
+			photo: new AsyncLazy<ProfilePhoto>(valueFactory: async () => new ProfilePhoto(
+				client: client,
+				fileService: fileService,
+				link: response.Photo
+			)),
+			activity: response.Activity,
+			onlineAt: response.OnlineAt
+		);
 	}
 
 	public async Task<PersonalData> GetPersonalData()

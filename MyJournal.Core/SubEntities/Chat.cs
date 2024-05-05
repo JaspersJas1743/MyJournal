@@ -45,7 +45,7 @@ public sealed class Chat : ISubEntity
 	#endregion
 
 	#region Properties
-	private int? CurrentInterlocutorId { get; init; }
+	public int? CurrentInterlocutorId { get; init; }
 	public int Id { get; init; }
 	public string? Name { get; init; }
 	public string? Photo { get; init; }

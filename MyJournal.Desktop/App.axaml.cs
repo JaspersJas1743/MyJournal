@@ -15,6 +15,7 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.FileService;
 using MyJournal.Core.Utilities.GoogleAuthenticatorService;
 using MyJournal.Desktop.Assets.Utilities;
+using MyJournal.Desktop.Assets.Utilities.ChatCreationService;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.ConfirmationService;
 using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
@@ -33,6 +34,7 @@ using MyJournal.Desktop.Models.Tasks;
 using MyJournal.Desktop.Models.Timetable;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
+using MyJournal.Desktop.ViewModels.ChatCreation;
 using MyJournal.Desktop.ViewModels.ConfirmationCode;
 using MyJournal.Desktop.ViewModels.Marks;
 using MyJournal.Desktop.ViewModels.Profile;
@@ -42,6 +44,7 @@ using MyJournal.Desktop.ViewModels.Tasks;
 using MyJournal.Desktop.ViewModels.Timetable;
 using MyJournal.Desktop.Views;
 using MyJournal.Desktop.Views.Authorization;
+using MyJournal.Desktop.Views.ChatCreation;
 using MyJournal.Desktop.Views.ConfirmationCode;
 using MyJournal.Desktop.Views.Marks;
 using MyJournal.Desktop.Views.Profile;
@@ -70,6 +73,9 @@ public partial class App : Application
 			.AddTransient<SuccessConfirmationVM>()
 			.AddTransient<SuccessConfirmationView>()
 			#endregion
+			#region Chat creation window
+			.AddTransient<SingleChatCreationView>()
+			#endregion
 			#region Welcome
 			.AddSingleton<WelcomeView>()
 			.AddSingleton<WelcomeVM>()
@@ -92,6 +98,7 @@ public partial class App : Application
 			.AddConfirmationService()
 			.AddMenuConfigurationService()
 			.AddThemeConfigurationService()
+			.AddChatCreationService()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()

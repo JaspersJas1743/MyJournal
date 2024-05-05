@@ -233,5 +233,29 @@
 				</DataTemplate>
 			</Setter>
 		</Style>
+
+		<Style Selector="^.Interlocutors">
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="SelectionMode" Value="Single"/>
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="utilities:ExtendedInterlocutor">
+					<Grid ColumnDefinitions="10*, 50*, 10*, 400*" Width="470" Height="50" Margin="10 10 0 10">
+						<Border Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
+							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"/>
+						</Border>
+						<TextBlock Grid.Column="3" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left"
+									FontSize="20" Text="{Binding FullName}" TextAlignment="Left"/>
+					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style>
 	</Style>
 </Styles>

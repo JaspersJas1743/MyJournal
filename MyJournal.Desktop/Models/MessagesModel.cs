@@ -12,6 +12,7 @@ using System.Web;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using Humanizer;
@@ -22,6 +23,7 @@ using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.Utilities;
+using MyJournal.Desktop.Assets.Utilities.ChatCreationService;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
@@ -37,6 +39,7 @@ public sealed class MessagesModel : ModelBase
 	private readonly IFileStorageService _fileStorageService;
 	private readonly IConfigurationService _configurationService;
 	private readonly IMessageService _messageService;
+	private readonly IChatCreationService _chatCreationService;
 
 	private int _previousChatId = -1;
 	private readonly Dictionary<int, string?> _allMessages = new Dictionary<int, string?>();
@@ -55,6 +58,7 @@ public sealed class MessagesModel : ModelBase
 	private bool _chatsAreLoaded = true;
 	private bool _messagesAreLoaded = true;
 	private bool _lastMessageIsSelected = true;
+	private bool _created = false;
 	private string? _subheader = String.Empty;
 	private string? _message = String.Empty;
 	private string _filter = String.Empty;
@@ -63,12 +67,14 @@ public sealed class MessagesModel : ModelBase
 	public MessagesModel(
 		IFileStorageService fileStorageService,
 		IMessageService messageService,
-		IConfigurationService configurationService
+		IConfigurationService configurationService,
+		IChatCreationService chatCreationService
 	)
 	{
 		_fileStorageService = fileStorageService;
 		_messageService = messageService;
 		_configurationService = configurationService;
+		_chatCreationService = chatCreationService;
 
 		OnKeyDown = ReactiveCommand.Create<KeyEventArgs>(execute: KeyDownHandler);
 		OnSelectionChanged = ReactiveCommand.CreateFromTask(execute: SelectionChangedHandler);
@@ -77,6 +83,7 @@ public sealed class MessagesModel : ModelBase
 		OnMessagesLoaded = ReactiveCommand.CreateFromTask(execute: MessageLoadedHandler);
 		AppendAttachment = ReactiveCommand.CreateFromTask(execute: AddAttachment);
 		SendMessage = ReactiveCommand.CreateFromTask(execute: Send);
+		OnChatCreation = ReactiveCommand.CreateFromTask(execute: CreateChat);
 
 		this.WhenAnyValue(property1: model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.5)).InvokeCommand(command: OnFilterChanged);
@@ -97,6 +104,7 @@ public sealed class MessagesModel : ModelBase
 	public ReactiveCommand<string, Unit> OnFilterChanged { get; }
 	public ReactiveCommand<Unit, Unit> OnChatsLoaded { get; }
 	public ReactiveCommand<Unit, Unit> OnMessagesLoaded { get; }
+	public ReactiveCommand<Unit, Unit> OnChatCreation { get; }
 
 	public SelectionModel<ObservableChat> Selection { get; } = new SelectionModel<ObservableChat>();
 
@@ -171,7 +179,14 @@ public sealed class MessagesModel : ModelBase
 	}
 
 	private async void OnUserJoinedInChat(JoinedInChatEventArgs e)
-		=> Chats.Insert(index: 0, item: (await _chatCollection.FindById(id: e.ChatId))!.ToObservable());
+	{
+		Chats.Insert(index: 0, item: (await _chatCollection.FindById(id: e.ChatId))!.ToObservable());
+		if (!_created)
+			return;
+
+		await Dispatcher.UIThread.InvokeAsync(callback: () => Selection.SelectedItem = Chats[index: 0]);
+		_created = false;
+	}
 
 	private void KeyDownHandler(KeyEventArgs e)
 	{
@@ -395,7 +410,7 @@ public sealed class MessagesModel : ModelBase
 	private void OnLostSelection(object? sender, EventArgs args)
 	{
 		if (_chatsUpdate)
-			Selection.SelectedItem = Chats[0];
+			Selection.SelectedItem = Chats[index: 0];
 		_chatsUpdate = false;
 	}
 
@@ -414,4 +429,7 @@ public sealed class MessagesModel : ModelBase
 		SelectedMessage = Messages[_messageFromSelectedChat.Length - currentLength];
 		_lastMessageIsSelected = true;
 	}
+
+	private async Task CreateChat()
+		=> _created = await _chatCreationService.Create(user: _user!);
 }

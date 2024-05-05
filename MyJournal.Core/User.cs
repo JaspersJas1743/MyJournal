@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
+using MyJournal.Core.SubEntities;
 using MyJournal.Core.UserData;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -198,7 +199,19 @@ public abstract class User
 		});
 		_userHubConnection.On<int>(methodName: UserHubMethods.JoinedInChat, handler: async chatId =>
 		{
-			await InvokeIfChatsAreCreated(invocation: async collection => await collection.Append(chatId: chatId, cancellationToken: cancellationToken));
+			int? interlocutorId = null;
+			await InvokeIfChatsAreCreated(invocation: async collection =>
+			{
+				await collection.Append(chatId: chatId, cancellationToken: cancellationToken);
+				Chat? chat = await collection.FirstOrDefaultAsync(predicate: chat => chat.Id == chatId, cancellationToken: cancellationToken);
+				interlocutorId = chat?.CurrentInterlocutorId;
+			});
+			if (interlocutorId is not null)
+			{
+				await InvokeIfIntendedInterlocutorsAreCreated(
+					invocation: async collection => await collection.Remove(interlocutorId: interlocutorId.Value, cancellationToken: cancellationToken)
+				);
+			}
 			JoinedInChat?.Invoke(e: new JoinedInChatEventArgs(chatId: chatId));
 		});
 		_userHubConnection.On<string?>(methodName: UserHubMethods.SetPhone, handler: async phone =>
@@ -225,6 +238,17 @@ public abstract class User
 			return;
 
 		InterlocutorCollection interlocutorCollection = await GetInterlocutors();
+		invocation(obj: interlocutorCollection);
+	}
+
+	private async Task InvokeIfIntendedInterlocutorsAreCreated(
+        Action<IntendedInterlocutorCollection> invocation
+	)
+	{
+		if (!_intendedInterlocutors.IsValueCreated)
+			return;
+
+		IntendedInterlocutorCollection interlocutorCollection = await GetIntendedInterlocutors();
 		invocation(obj: interlocutorCollection);
 	}
 
