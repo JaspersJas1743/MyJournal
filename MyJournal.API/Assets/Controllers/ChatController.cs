@@ -134,7 +134,7 @@ public sealed class ChatController(
 			CreatedAt: chat.CreatedAt,
 			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
 				Content: chat.LastMessageNavigation!.Text,
-				IsFile: chat.LastMessageNavigation!.Text is null && chat.LastMessageNavigation?.Attachments.Count != 0,
+				IsFile: String.IsNullOrWhiteSpace(value: chat.LastMessageNavigation!.Text) && chat.LastMessageNavigation!.Attachments.Count != 0,
 				CreatedAt: chat.LastMessageNavigation!.CreatedAt,
 				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
 				IsRead: chat.LastMessageNavigation.ReadedAt is not null
@@ -201,8 +201,8 @@ public sealed class ChatController(
 			CreatedAt: chat.CreatedAt,
 			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
 				Content: chat.LastMessageNavigation?.Text,
-				IsFile: chat.LastMessageNavigation?.Text is null && chat.LastMessageNavigation.Attachments.Any(),
-				CreatedAt: chat.LastMessageNavigation.CreatedAt,
+				IsFile: String.IsNullOrWhiteSpace(value: chat.LastMessageNavigation!.Text) && chat.LastMessageNavigation!.Attachments.Count != 0,
+				CreatedAt: chat.LastMessageNavigation!.CreatedAt,
 				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
 				IsRead: chat.LastMessageNavigation.ReadedAt is not null
 			) : null,
