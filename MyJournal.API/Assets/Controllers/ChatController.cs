@@ -37,7 +37,7 @@ public sealed class ChatController(
 
 	[Validator<GetIntendedInterlocutorsRequestValidator>]
 	public record GetIntendedInterlocutorsRequest(bool IncludeExistedInterlocutors, bool IsFiltered, string? Filter, int Offset, int Count);
-	public record GetIntendedInterlocutorsResponse(int UserId);
+	public record GetIntendedInterlocutorsResponse(int Id, string Surname, string Name, string? Patronymic, string? Photo, UserActivityStatuses Activity, DateTime? OnlineAt);
 
 	[Validator<GetInterlocutorsRequestValidator>]
 	public record GetInterlocutorsRequest(int Offset, int Count);
@@ -317,9 +317,17 @@ public sealed class ChatController(
 			);
 		}
 
-		return Ok(value: interlocutors.Skip(count: request.Offset).Take(count: request.Count).Select(selector: u => new GetIntendedInterlocutorsResponse(
-			u.Id
-		)));
+		return Ok(value: interlocutors.Skip(count: request.Offset).Take(count: request.Count)
+			.Select(selector: u => new GetIntendedInterlocutorsResponse(
+				u.Id,
+				u.Surname,
+				u.Name,
+				u.Patronymic,
+				u.LinkToPhoto,
+				u.UserActivityStatus.ActivityStatus,
+				u.OnlineAt
+			)
+		));
 	}
 	#endregion
 
