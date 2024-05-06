@@ -10,8 +10,9 @@ public sealed class CreateMultiChatRequestValidator : AbstractValidator<ChatCont
 	{
 		RuleFor(expression: request => request.InterlocutorIds)
 			.Cascade(cascadeMode: CascadeMode.Stop)
-			.AllElementsInCollection(predicate: element => element > 0).WithMessage("Идентификатор собеседника должен быть больше 0.")
-			.IsUniqueCollection().WithMessage("Идентификатор собеседника должен быть уникальным.");
+			.NotEmpty().WithMessage(errorMessage: "Список собеседников не может быть пуст.")
+			.AllElementsInCollection(predicate: element => element > 0).WithMessage(errorMessage: "Идентификатор собеседника должен быть больше 0.")
+			.IsUniqueCollection().WithMessage(errorMessage: "Идентификатор собеседника должен быть уникальным.");
 
 		RuleFor(expression: request => request.ChatName)
 			.HaveText(errorMessage: "Наименование чата имеет некорректный формат.");
