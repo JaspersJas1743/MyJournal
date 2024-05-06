@@ -20,10 +20,13 @@ public delegate void CreatedTaskHandler(CreatedTaskEventArgs e);
 
 #region Messages
 public delegate void ReceivedMessageHandler(ReceivedMessageEventArgs e);
+public delegate void ReadMessageHandler(ReadMessageEventArgs e);
+public delegate void ReadMessagesHandler();
 #endregion
 
 #region Chats
 public delegate void JoinedInChatHandler(JoinedInChatEventArgs e);
+public delegate void ReadChatHandler(ReadChatEventArgs e);
 #endregion
 
 #region Interlocutor

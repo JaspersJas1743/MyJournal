@@ -38,6 +38,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 
 	#region Events
 	public event ReceivedMessageHandler? ReceivedMessageInChat;
+	public event ReadChatHandler? ReadChat;
 	#endregion
 
 	#region Methods
@@ -199,6 +200,19 @@ public sealed class ChatCollection : LazyCollection<Chat>
 			await chat?.OnReceivedMessage(e: e)!;
 		}
 		ReceivedMessageInChat?.Invoke(e: e);
+	}
+
+	internal async Task OnReadChat(
+		ReadChatEventArgs e,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		if (Collection.IsValueCreated)
+		{
+			Chat? chat = await FindById(id: e.ChatId);
+			await chat?.OnReadChat(e: e)!;
+		}
+		ReadChat?.Invoke(e: e);
 	}
 	#endregion
 	#endregion

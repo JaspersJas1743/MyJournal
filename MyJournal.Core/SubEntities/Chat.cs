@@ -64,6 +64,7 @@ public sealed class Chat : ISubEntity
 
 	#region Events
 	public event ReceivedMessageHandler? ReceivedMessage;
+	public event ReadChatHandler? ReadChat;
 	#endregion
 
 	#region Methods
@@ -138,6 +139,15 @@ public sealed class Chat : ISubEntity
 			IsRead = message.IsRead
 		};
 		ReceivedMessage?.Invoke(e: e);
+	}
+
+	internal async Task OnReadChat(ReadChatEventArgs e)
+	{
+		await (await _messages).OnReadMessages();
+		if (LastMessage is not null)
+			LastMessage.IsRead = true;
+
+		ReadChat?.Invoke(e: e);
 	}
 	#endregion
 }

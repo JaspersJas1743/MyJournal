@@ -74,7 +74,7 @@
 							</Border>
 							<Ellipse	Fill="{DynamicResource OnlineStatusColor}" Grid.Row="1" Classes="OpacityTransition"
 										Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Column="1"
-										Opacity="{Binding Selection.SelectedItem.Activity,FallbackValue={x:False},
+										Opacity="{Binding Selection.SelectedItem.Activity,
 										Converter={StaticResource ActivityToDoubleConverter}}"/>
 							<TextBlock	Classes="ChatHeader" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" HorizontalAlignment="Center"
 										VerticalAlignment="Top" Text="{Binding Selection.SelectedItem.Name}"/>

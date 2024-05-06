@@ -4,6 +4,11 @@
 		x:DataType="controls:XamlSvg">
 
 	<Style Selector="controls|XamlSvg.ReadMark">
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+			</Transitions>
+		</Setter>
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate>

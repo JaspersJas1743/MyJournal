@@ -13,4 +13,5 @@ internal static class UserHubMethods
 	internal const string SetPhone = nameof(SetPhone);
 	internal const string SetEmail = nameof(SetEmail);
 	internal const string SendMessage = nameof(SendMessage);
+	internal const string ReadChat = nameof(ReadChat);
 }

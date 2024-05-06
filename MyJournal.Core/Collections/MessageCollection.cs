@@ -3,6 +3,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
@@ -33,6 +34,11 @@ public sealed class MessageCollection : LazyCollection<Message>
 
 	#region Records
 	private sealed record GetMessagesRequest(int ChatId, int Offset, int Count);
+	#endregion
+
+	#region Events
+
+	public event ReadMessagesHandler ReadMessages;
 	#endregion
 
 	#region Methods
@@ -122,6 +128,14 @@ public sealed class MessageCollection : LazyCollection<Message>
 	#region Instance
 	public IMessageBuilder CreateMessage()
 		=> MessageBuilder.Create(client: _client, fileService: _fileService, chatId: _chatId);
+
+	public async Task OnReadMessages()
+	{
+		await foreach(Message message in this.Where(predicate: m => m is { IsRead: false, FromMe: true }))
+			message.OnReadMessage(e: new ReadMessageEventArgs());
+
+		ReadMessages?.Invoke();
+	}
 	#endregion
 	#endregion
 }

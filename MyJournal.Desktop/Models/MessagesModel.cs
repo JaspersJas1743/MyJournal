@@ -243,7 +243,7 @@ public sealed class MessagesModel : ModelBase
 			_ => String.Empty
 		};
 
-		if (Selection.SelectedItem?.IsRead == false)
+		if (Selection.SelectedItem is { IsRead: false, NotFromMe: true })
 			await Selection.SelectedItem?.Read()!;
 
 		if (_previousChatId > 0)
@@ -393,8 +393,10 @@ public sealed class MessagesModel : ModelBase
 	private async void OnReceivedMessageInChat(ReceivedMessageEventArgs e)
 	{
 		ObservableChat? chat = Chats.FirstOrDefault(predicate: chat => chat.Observable.Id == e.ChatId);
+		bool selected = false;
 		if (chat is not null)
 		{
+			selected = true;
 			int indexOfChat = Chats.IndexOf(item: chat);
 			if (indexOfChat != 0)
 				Chats.Move(oldIndex: indexOfChat, newIndex: 0);
@@ -411,6 +413,9 @@ public sealed class MessagesModel : ModelBase
 
 		if (receivedMessage is null)
 			return;
+
+		if (!receivedMessage.Message.FromMe && selected)
+			await chat.Read();
 
 		Messages.Add(item: receivedMessage);
 		SelectedMessage = receivedMessage;

@@ -228,6 +228,12 @@ public abstract class User
 			));
 			ReceivedMessage?.Invoke(e: new ReceivedMessageEventArgs(chatId: chatId, messageId: messageId));
 		});
+		_userHubConnection.On<int>(methodName: UserHubMethods.ReadChat, handler: async chatId =>
+			await InvokeIfChatsAreCreated(invocation: async collection => await collection.OnReadChat(
+				e: new ReadChatEventArgs(chatId: chatId),
+				cancellationToken: cancellationToken
+			))
+		);
 	}
 
 	private async Task InvokeIfInterlocutorsAreCreated(

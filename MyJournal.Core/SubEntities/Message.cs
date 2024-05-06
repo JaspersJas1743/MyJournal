@@ -1,5 +1,6 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
@@ -33,7 +34,11 @@ public sealed class Message : ISubEntity
 	public string SenderName { get; init; }
 	public DateTime CreatedAt { get; init; }
 	public bool FromMe { get; init; }
-	public bool IsRead { get; init; }
+	public bool IsRead { get; internal set; }
+	#endregion
+
+	#region Events
+	public event ReadMessageHandler ReadMessage;
 	#endregion
 
 	#region Records
@@ -73,6 +78,12 @@ public sealed class Message : ISubEntity
 				Attachment.Create(linkToFile: a.LinkToFile, type: a.AttachmentType, fileService: fileService)
 			)
 		);
+	}
+
+	public void OnReadMessage(ReadMessageEventArgs e)
+	{
+		IsRead = true;
+		ReadMessage.Invoke(e: e);
 	}
 	#endregion
 }

@@ -11,15 +11,53 @@ namespace MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 
 public sealed record ExtendedAttachment(string? FileName, ReactiveCommand<Button, Unit> Download);
 
-public sealed record ExtendedMessage(Message Message, IEnumerable<ExtendedAttachment>? Attachments, bool IsSingleChat);
+public sealed class ExtendedMessage : ReactiveObject
+{
+	private readonly Message _message;
+	private IEnumerable<ExtendedAttachment>? _attachments;
+	private readonly bool _isSingleChat;
+
+	public ExtendedMessage(
+		Message message,
+		IEnumerable<ExtendedAttachment>? attachments,
+		bool isSingleChat
+	)
+	{
+		Message = message;
+		Attachments = attachments;
+		IsSingleChat = isSingleChat;
+
+		message.ReadMessage += _ => this.RaisePropertyChanged(propertyName: nameof(MessageIsRead));
+	}
+
+	public Message Message
+	{
+		get => _message;
+		private init => this.RaiseAndSetIfChanged(backingField: ref _message, newValue: value);
+	}
+
+	public bool MessageIsRead => Message.IsRead;
+
+	public IEnumerable<ExtendedAttachment>? Attachments
+	{
+		get => _attachments;
+		set => this.RaiseAndSetIfChanged(backingField: ref _attachments, newValue: value);
+	}
+
+	public bool IsSingleChat
+	{
+		get => _isSingleChat;
+		private init => this.RaiseAndSetIfChanged(backingField: ref _isSingleChat, newValue: value);
+	}
+}
 
 public static class ExtendedMessageExtensions
 {
 	public static ExtendedMessage ToExtended(this Message message, bool isSingleChat, IConfigurationService configurationService)
 	{
-		return new ExtendedMessage(Message: message, Attachments: message.Attachments?.Select(
+		return new ExtendedMessage(message: message, attachments: message.Attachments?.Select(
 			selector: a => a.ToExtended(configurationService: configurationService)
-		), IsSingleChat: isSingleChat);
+		), isSingleChat: isSingleChat);
 	}
 }
 

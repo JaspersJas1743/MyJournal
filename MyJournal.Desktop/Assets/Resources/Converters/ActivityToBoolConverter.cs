@@ -10,8 +10,7 @@ public sealed class ActivityToBoolConverter : IValueConverter
 {
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
-		Activity.Statuses? activity = value as Activity.Statuses?;
-		if (activity is null)
+		if (value is not Activity.Statuses activity)
 			return null;
 
 		return activity == Activity.Statuses.Online;

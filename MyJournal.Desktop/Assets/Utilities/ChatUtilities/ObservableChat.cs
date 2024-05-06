@@ -24,6 +24,8 @@ public class ObservableChat : ReactiveObject
 				this.RaisePropertyChanged(propertyName: propertyInfo.Name);
 			this.RaisePropertyChanged(propertyName: nameof(NotFromMe));
 		};
+
+		_chatToObservable.ReadChat += _ => IsRead = _chatToObservable.LastMessage!.IsRead;
 	}
 
 	public Chat Observable => _chatToObservable;
@@ -58,7 +60,7 @@ public class ObservableChat : ReactiveObject
 	public async Task Read()
 	{
 		await _chatToObservable.Read();
-		if (_chatToObservable.LastMessage is not null)
+		if (_chatToObservable.LastMessage is not null && !_chatToObservable.LastMessage.FromMe)
 			IsRead = true;
 	}
 

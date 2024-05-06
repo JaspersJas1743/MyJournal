@@ -4,7 +4,8 @@
 		xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
 		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.ChatUtilities"
-		xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie">
+		xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
+		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters">
 
 	<Style Selector="ListBox">
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -110,12 +111,12 @@
 							</Ellipse>
 							<controls:XamlSvg   Classes="ReadMark TransitionForeground" Grid.Row="6" Grid.Column="7" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}">
-								<controls:XamlSvg.IsVisible>
-									<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<controls:XamlSvg.Opacity>
+									<MultiBinding Converter="{x:Static converters:ActivityToDoubleMultiValueConverter.Instance}">
 										<Binding Path="FromMe"/>
 										<Binding Path="IsRead"/>
 									</MultiBinding>
-								</controls:XamlSvg.IsVisible>
+								</controls:XamlSvg.Opacity>
 							</controls:XamlSvg>
 							<controls:XamlSvg   Classes="ReadMark TransitionForeground" Grid.Row="6" Grid.Column="8" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}"
@@ -226,12 +227,12 @@
 									<controls:XamlSvg	Grid.Column="0" Grid.ColumnSpan="2" Classes="ReadMark TransitionForeground"
 														Foreground="{DynamicResource MainAccentColor}"
 														VerticalAlignment="Bottom" Height="15">
-										<controls:XamlSvg.IsVisible>
-											<MultiBinding Converter="{x:Static BoolConverters.And}">
+										<controls:XamlSvg.Opacity>
+											<MultiBinding Converter="{x:Static converters:ActivityToDoubleMultiValueConverter.Instance}">
 												<Binding Path="Message.FromMe"/>
-												<Binding Path="Message.IsRead"/>
+												<Binding Path="MessageIsRead"/>
 											</MultiBinding>
-										</controls:XamlSvg.IsVisible>
+										</controls:XamlSvg.Opacity>
 									</controls:XamlSvg>
 									<controls:XamlSvg Grid.Column="1" Grid.ColumnSpan="2" Classes="ReadMark TransitionForeground" VerticalAlignment="Bottom"
 													Foreground="{DynamicResource MainAccentColor}" Height="15"
