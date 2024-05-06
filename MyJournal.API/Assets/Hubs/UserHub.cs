@@ -35,4 +35,7 @@ public sealed class UserHub : Hub<IUserHub>
 
 	public async Task SendMessage(int chatId, int messageId, IEnumerable<string> interlocutorIds)
 		=> await Clients.Users(userIds: interlocutorIds).SendMessage(chatId: chatId, messageId: messageId);
+
+	public async Task ReadChat(int chatId, IEnumerable<string> interlocutorIds)
+		=> await Clients.Users(userIds: interlocutorIds).ReadChat(chatId: chatId);
 }

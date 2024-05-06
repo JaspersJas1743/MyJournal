@@ -500,7 +500,22 @@ public sealed class ChatController(
 				action: m => m.ReadedAt = DateTime.Now,
 				cancellationToken: cancellationToken
 			);
+
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		int lastMessageSenderId = await _context.Chats.AsNoTracking()
+			.Where(predicate: chat => chat.Id == id && chat.LastMessageId.HasValue)
+			.Select(selector: chat => chat.LastMessageNavigation!.SenderId)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+		if (lastMessageSenderId == 0)
+			return Ok();
+
+		await userHubContext.Clients.Users(
+			user1: lastMessageSenderId.ToString(),
+			user2: userId.ToString()
+		).ReadChat(chatId: id);
+
 		return Ok();
 	}
 	#endregion

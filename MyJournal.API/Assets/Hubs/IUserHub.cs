@@ -17,4 +17,5 @@ public interface IUserHub
 	Task SetEmail(string? email);
 
 	Task SendMessage(int chatId, int messageId);
+	Task ReadChat(int chatId);
 }
