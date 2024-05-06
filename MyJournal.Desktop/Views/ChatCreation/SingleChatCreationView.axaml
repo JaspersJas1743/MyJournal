@@ -9,10 +9,15 @@
 			mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="800"
 			x:DataType="vm:SingleChatCreationVM"
 			x:Class="MyJournal.Desktop.Views.ChatCreation.SingleChatCreationView">
+	<interactivity:Interaction.Behaviors>
+		<interactions:EventTriggerBehavior EventName="AttachedToVisualTree">
+			<interactions:InvokeCommandAction Command="{Binding OnAttachedToVisualTree}"/>
+		</interactions:EventTriggerBehavior>
+	</interactivity:Interaction.Behaviors>
 	<Grid ColumnDefinitions="20*, 460*, 20*" RowDefinitions="20*, 50*, 10*, 70*, 10*, 70*, 10*, 540*, 20*">
 		<Viewbox Grid.Row="1" Grid.Column="1">
-			<controls:ButtonWithAnimatedCommand Content="Создать беседу" Height="50" Width="460" FontSize="20"
-												Classes="MainAccentColor" CornerRadius="10"/>
+			<controls:ButtonWithAnimatedCommand Content="Создать беседу" Height="50" Width="460" FontSize="20" Classes="MainAccentColor"
+												CornerRadius="10" Command="{Binding CreateMultiChat}"/>
 		</Viewbox>
 		<StackPanel Grid.Column="1" Grid.Row="3" Orientation="Vertical">
 			<TextBlock	VerticalAlignment="Center" TextAlignment="Center" Text="или"

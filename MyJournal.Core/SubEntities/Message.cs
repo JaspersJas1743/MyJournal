@@ -18,6 +18,7 @@ public sealed class Message : ISubEntity
 		Text = response.Content.Text;
 		Attachments = attachments;
 		Sender = response.Sender;
+		SenderName = $"{response.Sender.Surname} {response.Sender.Name}";
 		CreatedAt = response.CreatedAt;
 		FromMe = response.FromMe;
 		IsRead = response.IsRead;
@@ -29,6 +30,7 @@ public sealed class Message : ISubEntity
 	public string? Text { get; set; }
 	public IEnumerable<Attachment>? Attachments { get; init; }
 	public Sender Sender { get; init; }
+	public string SenderName { get; init; }
 	public DateTime CreatedAt { get; init; }
 	public bool FromMe { get; init; }
 	public bool IsRead { get; init; }

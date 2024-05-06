@@ -278,9 +278,10 @@ public sealed class MessagesModel : ModelBase
 		_messageFromSelectedChat = await Selection.SelectedItem?.Observable.GetMessages()!;
 		List<Message> messages = await _messageFromSelectedChat.ToListAsync();
 		MessagesAreLoaded = true;
-		Messages = new ObservableCollectionExtended<ExtendedMessage>(collection: messages.Select(
-			selector: m => m.ToExtended(configurationService: _configurationService)
-		));
+		Messages = new ObservableCollectionExtended<ExtendedMessage>(collection: messages.Select(selector: m => m.ToExtended(
+			configurationService: _configurationService,
+			isSingleChat: Selection.SelectedItem.Observable.IsSingleChat
+		)));
 
 		_lastMessageIsSelected = false;
 		SelectedMessage = Messages.FirstOrDefault(predicate: m => m.Message is { IsRead: false, FromMe: false })
@@ -349,11 +350,11 @@ public sealed class MessagesModel : ModelBase
 
 	private async Task AddAttachment()
 	{
-		IStorageFile? pickedFile = await _fileStorageService.OpenFile();
-		if (pickedFile is null)
+		IStorageFile? file = await _fileStorageService.OpenFile(fileTypes: new FilePickerFileType[] { FilePickerFileTypes.All });
+		if (file is null)
 			return;
 
-		StorageItemProperties basicProperties = await pickedFile.GetBasicPropertiesAsync();
+		StorageItemProperties basicProperties = await file.GetBasicPropertiesAsync();
 		if (basicProperties.Size / (1024f * 1024f) >= 30)
 		{
 			await _messageService.ShowPopup(
@@ -365,7 +366,7 @@ public sealed class MessagesModel : ModelBase
 			return;
 		}
 
-		string pathToFile = HttpUtility.UrlDecode(pickedFile.Path.AbsolutePath);
+		string pathToFile = HttpUtility.UrlDecode(file.Path.AbsolutePath);
 		Attachment attachment = new Attachment()
 		{
 			FileName = Path.GetFileName(path: pathToFile),
@@ -377,8 +378,16 @@ public sealed class MessagesModel : ModelBase
 			Attachments?.Remove(item: attachment);
 		});
 		Attachments?.Add(item: attachment);
-		await _messageBuilder?.AddAttachment(pathToFile: pathToFile)!;
-		attachment.IsLoaded = true;
+		try
+		{
+			await _messageBuilder?.AddAttachment(pathToFile: pathToFile)!;
+			attachment.IsLoaded = true;
+		}
+		catch (ArgumentException e)
+		{
+			await _messageService.ShowInformationAsPopup(text: e.Message);
+			Attachments?.Remove(item: attachment);
+		}
 	}
 
 	private async void OnReceivedMessageInChat(ReceivedMessageEventArgs e)
@@ -392,12 +401,12 @@ public sealed class MessagesModel : ModelBase
 		}
 		else
 		{
-			ObservableChat newChat = (await _chatCollection.FindById(id: e.ChatId))!.ToObservable();
-			Chats.Insert(index: 0, item: newChat);
+			chat = (await _chatCollection.FindById(id: e.ChatId))!.ToObservable();
+			Chats.Insert(index: 0, item: chat);
 		}
 
 		ExtendedMessage? receivedMessage = (await _messageFromSelectedChat?.FindById(id: e.MessageId)!)?.ToExtended(
-			configurationService: _configurationService
+			configurationService: _configurationService, isSingleChat: chat.IsSingleChat
 		);
 
 		if (receivedMessage is null)
@@ -422,9 +431,10 @@ public sealed class MessagesModel : ModelBase
 		int currentLength = _messageFromSelectedChat.Length;
 		await _messageFromSelectedChat.LoadNext();
 		IEnumerable<Message> messages = await _messageFromSelectedChat.GetByRange(start: 0, end: _messageFromSelectedChat.Length - currentLength);
-		Messages.InsertRange(collection: messages.Select(
-			selector: m => m.ToExtended(configurationService: _configurationService)
-		), index: 0);
+		Messages.InsertRange(collection: messages.Select(selector: m => m.ToExtended(
+			configurationService: _configurationService,
+			isSingleChat: Selection.SelectedItem?.IsSingleChat == true
+		)), index: 0);
 		_lastMessageIsSelected = false;
 		SelectedMessage = Messages[_messageFromSelectedChat.Length - currentLength];
 		_lastMessageIsSelected = true;

@@ -85,6 +85,16 @@
 	</Style>
 
 	<Style Selector="ListBox.Interlocutors ListBoxItem">
+		<Setter Property="CornerRadius" Value="20"/>
+		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	</Style>
+
+	<Style Selector="ListBox.MultiChatInterlocutors ListBoxItem">
 		<Setter Property="CornerRadius" Value="10"/>
 		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
@@ -92,5 +102,15 @@
 	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
 	    </Style>
+		<Style Selector="^:selected">
+			<Style Selector="^ CheckBox.SelectionIndicator">
+				<Setter Property="IsChecked" Value="True"/>
+			</Style>
+		</Style>
+		<Style Selector="^:not(:selected)">
+			<Style Selector="^ CheckBox.SelectionIndicator">
+				<Setter Property="IsChecked" Value="False"/>
+			</Style>
+		</Style>
 	</Style>
 </Styles>

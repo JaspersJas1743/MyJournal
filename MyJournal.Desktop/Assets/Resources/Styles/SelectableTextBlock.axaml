@@ -15,7 +15,7 @@
 			<Setter Property="TextWrapping" Value="Wrap"/>
 			<Setter Property="VerticalAlignment" Value="Center"/>
 			<Setter Property="MaxWidth" Value="510"/>
-			<Setter Property="HorizontalAlignment" Value="Right"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
 			<Setter Property="TextAlignment" Value="Left"/>
 		</Style>
 	</Style>

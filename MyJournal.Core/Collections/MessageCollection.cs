@@ -12,6 +12,7 @@ public sealed class MessageCollection : LazyCollection<Message>
 	#region Fields
 	private readonly int _chatId;
 	private readonly IFileService _fileService;
+	private readonly ApiClient _client;
 	#endregion
 
 	#region Constructor
@@ -24,6 +25,7 @@ public sealed class MessageCollection : LazyCollection<Message>
 		int offset
 	) : base(client: client, collection: messages, count: count, offset: offset)
 	{
+		_client = client;
 		_chatId = chatId;
 		_fileService = fileService;
 	}
@@ -119,7 +121,7 @@ public sealed class MessageCollection : LazyCollection<Message>
 
 	#region Instance
 	public IMessageBuilder CreateMessage()
-		=> MessageBuilder.Create(fileService: _fileService, chatId: _chatId);
+		=> MessageBuilder.Create(client: _client, fileService: _fileService, chatId: _chatId);
 	#endregion
 	#endregion
 }

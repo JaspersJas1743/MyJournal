@@ -11,15 +11,15 @@ namespace MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 
 public sealed record ExtendedAttachment(string? FileName, ReactiveCommand<Button, Unit> Download);
 
-public sealed record ExtendedMessage(Message Message, IEnumerable<ExtendedAttachment>? Attachments);
+public sealed record ExtendedMessage(Message Message, IEnumerable<ExtendedAttachment>? Attachments, bool IsSingleChat);
 
 public static class ExtendedMessageExtensions
 {
-	public static ExtendedMessage ToExtended(this Message message, IConfigurationService configurationService)
+	public static ExtendedMessage ToExtended(this Message message, bool isSingleChat, IConfigurationService configurationService)
 	{
 		return new ExtendedMessage(Message: message, Attachments: message.Attachments?.Select(
 			selector: a => a.ToExtended(configurationService: configurationService)
-		));
+		), IsSingleChat: isSingleChat);
 	}
 }
 

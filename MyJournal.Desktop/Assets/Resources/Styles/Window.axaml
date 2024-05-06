@@ -79,7 +79,8 @@
 										   Classes="WindowHeader CenteredTextBlock" Grid.Row="0"/>
 								<Grid Grid.Column="1" ColumnDefinitions="30, *, Auto" Margin="10" Grid.Row="0" Height="20">
 									<StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-										<Button x:Name="CloseButton" Classes="WindowButton CloseButton" Command="{Binding Path=Close}">
+										<Button x:Name="CloseButton" Classes="WindowButton CloseButton" Command="{Binding Path=Close}"
+												HotKey="Escape">
 											<controls:XamlSvg Classes="Close"/>
 										</Button>
 									</StackPanel>

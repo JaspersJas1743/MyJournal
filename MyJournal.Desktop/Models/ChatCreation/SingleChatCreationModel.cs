@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -12,37 +10,43 @@ using DynamicData.Binding;
 using MyJournal.Core;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
+using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Utilities.ChatCreationService;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
+using MyJournal.Desktop.ViewModels.ChatCreation;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.ChatCreation;
 
 public class SingleChatCreationModel : ModelBase
 {
+	private readonly MultiChatCreationVM _multiChatCreationVM;
+
 	private ObservableCollectionExtended<ExtendedInterlocutor> _interlocutors = new ObservableCollectionExtended<ExtendedInterlocutor>();
 	private IntendedInterlocutorCollection _interlocutorCollection;
 	private ExtendedInterlocutor _interlocutor;
 	private ChatCollection _chatCollection;
 	private string? _filter = String.Empty;
 
-	public SingleChatCreationModel()
+	public SingleChatCreationModel(MultiChatCreationVM multiChatCreationVM)
 	{
+		_multiChatCreationVM = multiChatCreationVM;
+
 		LoadInterlocutors = ReactiveCommand.CreateFromTask(execute: LoadMoreInterlocutors);
 		SelectIntendedInterlocutor = ReactiveCommand.CreateFromTask(execute: CreateSingleChat);
 		OnFilterChanged = ReactiveCommand.CreateFromTask<string>(execute: FilterChangedHandler);
-
-		Interlocutors.CollectionChanged += InterlocutorsOnCollectionChanged;
+		CreateMultiChat = ReactiveCommand.CreateFromTask(execute: ToCreatingMultiChat);
+		OnAttachedToVisualTree = ReactiveCommand.CreateFromTask(execute: AttachedToVisualTreeHandler);
 
 		this.WhenAnyValue(property1: model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.5)).InvokeCommand(command: OnFilterChanged);
 	}
 
-	private void InterlocutorsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	private async Task ToCreatingMultiChat()
 	{
-		Debug.WriteLine($"operation: {e.Action}");
-		Debug.WriteLine($"added: {String.Join(", ", e.NewItems?.OfType<ExtendedInterlocutor>().Select(x => $"{x.UserId}: {x.FullName}") ?? Enumerable.Empty<string>())}");
-		Debug.WriteLine($"removed: {String.Join(", ", e.OldItems?.OfType<ExtendedInterlocutor>().Select(x => $"{x.UserId}: {x.FullName}") ?? Enumerable.Empty<string>())}");
+		MessageBus.Current.SendMessage(message: new ChangeChatCreationVMContentEventArgs(
+			newVM: _multiChatCreationVM, animationType: AnimationType.DirectionToRight
+		));
 	}
 
 	public ObservableCollectionExtended<ExtendedInterlocutor> Interlocutors
@@ -66,6 +70,8 @@ public class SingleChatCreationModel : ModelBase
 	public ReactiveCommand<Unit, Unit> LoadInterlocutors { get; }
 	public ReactiveCommand<Unit, Unit> SelectIntendedInterlocutor { get; }
 	public ReactiveCommand<string, Unit> OnFilterChanged { get; }
+	public ReactiveCommand<Unit, Unit> OnAttachedToVisualTree { get; }
+	public ReactiveCommand<Unit, Unit> CreateMultiChat { get; }
 
 	private async Task FilterChangedHandler(string filter)
 	{
@@ -105,6 +111,11 @@ public class SingleChatCreationModel : ModelBase
 	{
 		_chatCollection = await user.GetChats();
 		_interlocutorCollection = await user.GetIntendedInterlocutors();
+	}
+
+	private async Task AttachedToVisualTreeHandler()
+	{
+		await _interlocutorCollection.SetIncludeExistedInterlocutors(includeExistedInterlocutors: false);
 		List<IntendedInterlocutor> interlocutors = await _interlocutorCollection.ToListAsync();
 		Interlocutors.Load(items: await Task.WhenAll(tasks: interlocutors.Select(selector: async i => await i.ToExtended())));
 	}

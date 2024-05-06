@@ -202,6 +202,16 @@
 							CornerRadius="20" Margin="20 12.5" Padding="15 10">
 						<StackPanel Orientation="Horizontal" Spacing="10">
 							<StackPanel Orientation="Vertical" Spacing="5" VerticalAlignment="Center">
+								<TextBlock	Text="{Binding Message.SenderName}"
+											Foreground="{DynamicResource DateTimeColor}"
+											HorizontalAlignment="Left" VerticalAlignment="Top">
+									<TextBlock.IsVisible>
+										<MultiBinding Converter="{x:Static BoolConverters.And}">
+											<Binding Path="!IsSingleChat"/>
+											<Binding Path="!Message.FromMe"/>
+										</MultiBinding>
+									</TextBlock.IsVisible>
+								</TextBlock>
 								<SelectableTextBlock	Text="{Binding Message.Text}" Classes="Message"
 														IsVisible="{Binding Message.Text,
 														Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
@@ -253,6 +263,32 @@
 						</Border>
 						<TextBlock Grid.Column="3" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left"
 									FontSize="20" Text="{Binding FullName}" TextAlignment="Left"/>
+					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.MultiChatInterlocutors">
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="utilities:ExtendedInterlocutor">
+					<Grid	ColumnDefinitions="10*, 50*, 10*, 350*, 10*, 30*, 10*, 10*" RowDefinitions="10*, 30*, 10*"
+							Width="480" Height="50" Margin="10 10 0 10">
+						<Border Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
+							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"/>
+						</Border>
+						<TextBlock	Grid.Row="0" Grid.RowSpan="3" Grid.Column="3" TextTrimming="CharacterEllipsis"
+									Text="{Binding FullName}" TextAlignment="Left"
+									VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20"/>
+						<CheckBox Grid.Column="5" Grid.Row="1" Classes="SelectionIndicator" IsHitTestVisible="False"/>
 					</Grid>
 				</DataTemplate>
 			</Setter>

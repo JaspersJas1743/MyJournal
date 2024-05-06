@@ -340,13 +340,13 @@ public sealed class ApiClient : IDisposable
 public static class ApiClientExtension
 {
 	public static IServiceCollection AddApiClient(this IServiceCollection serviceCollection, TimeSpan timeout)
-		=> serviceCollection.AddTransient<ApiClient>(implementationFactory: _ => new ApiClient(timeout: timeout));
+		=> serviceCollection.AddScoped<ApiClient>(implementationFactory: _ => new ApiClient(timeout: timeout));
 
 	public static IServiceCollection AddApiClient(this IServiceCollection serviceCollection)
 		=> serviceCollection.AddApiClient(timeout: TimeSpan.FromSeconds(value: 2));
 
 	public static IServiceCollection AddKeyedApiClient(this IServiceCollection serviceCollection, string key, TimeSpan timeout)
-		=> serviceCollection.AddKeyedTransient<ApiClient>(serviceKey: key, implementationFactory: (_, _) => new ApiClient(timeout: timeout));
+		=> serviceCollection.AddKeyedScoped<ApiClient>(serviceKey: key, implementationFactory: (_, _) => new ApiClient(timeout: timeout));
 
 	public static IServiceCollection AddKeyedApiClient(this IServiceCollection serviceCollection, string key)
 		=> serviceCollection.AddKeyedApiClient(key: key, timeout: TimeSpan.FromSeconds(value: 2));

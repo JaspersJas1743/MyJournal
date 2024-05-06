@@ -16,6 +16,7 @@
     <SolidColorBrush x:Key="StrokeOnControlColor" Color="#8DCDF2"/>
     <SolidColorBrush x:Key="TextOnSelectedControlColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="WatermarkOnTextControlColor" Color="#C6C6C6"/>
+	<SolidColorBrush x:Key="CameraOnChatCreation" Color="#000000"/>
     <SolidColorBrush x:Key="TransparentControlPointeroverColor" Color="#E9E9E9"/>
     <SolidColorBrush x:Key="ConfirmedDataColor" Color="#4FB84D"/>
     <SolidColorBrush x:Key="UnconfirmedDataColor" Color="#DD4747"/>
@@ -41,4 +42,5 @@
 	<SolidColorBrush x:Key="RestorePointeroverColor" Color="#D9D9D9"/>
 	<SolidColorBrush x:Key="ClosePointeroverColor" Color="#F35454"/>
 	<SolidColorBrush x:Key="DefaultUserColor" Color="#B3B3B3"/>
+	<SolidColorBrush x:Key="FirstMessageBadgeColor" Color="#68C8FE"/>
 </ResourceDictionary>

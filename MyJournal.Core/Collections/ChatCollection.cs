@@ -9,6 +9,8 @@ namespace MyJournal.Core.Collections;
 
 public sealed class ChatCollection : LazyCollection<Chat>
 {
+	private const string DefaultBucket = "chat_photos";
+
 	private readonly IFileService _fileService;
 
 	#region Constructors
@@ -157,10 +159,20 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		);
 	}
 
+	public async Task<string?> LoadChatPhoto(
+		string pathToPhoto,
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await _fileService.Upload(folderToSave: DefaultBucket, pathToFile: pathToPhoto, cancellationToken: cancellationToken);
+
+	public async Task RemoveChatPhoto(
+		string linkToPhoto,
+		CancellationToken cancellationToken = default(CancellationToken)
+	) => await _fileService.Delete(link: linkToPhoto, cancellationToken: cancellationToken);
+
 	public async Task AddMultiChat(
 		IEnumerable<int> interlocutorIds,
 		string? chatName,
-		string linkToPhoto,
+		string? linkToPhoto,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{

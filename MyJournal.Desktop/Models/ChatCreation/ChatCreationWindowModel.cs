@@ -17,7 +17,7 @@ public class ChatCreationWindowModel : ModelBase
 
 	public ChatCreationWindowModel(SingleChatCreationVM singleChatCreationVM)
 	{
-		MessageBus.Current.Listen<ChangeConfirmationCodeVMContentEventArgs>().Subscribe(onNext: args =>
+		MessageBus.Current.Listen<ChangeChatCreationVMContentEventArgs>().Subscribe(onNext: args =>
 		{
 			Content = args.NewVM;
 			HaveCrossFade = args.AnimationType == AnimationType.CrossFade;

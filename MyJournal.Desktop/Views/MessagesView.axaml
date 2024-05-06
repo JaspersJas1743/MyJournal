@@ -88,11 +88,27 @@
 											Classes="Messages" ItemsSource="{Binding Messages}"
 											ThresholdPercentage="20" ComparisonOperations="LessOrEquals"
 											SelectedItem="{Binding SelectedMessage}"
-											IsVisible="{Binding MessagesAreLoaded}"
+											IsVisible="{Binding !!Messages.Count}"
 											Command="{Binding OnMessagesLoaded}"/>
 								<lottie:Lottie	Path="/Assets/Resources/Animations/ImageAndMessagesLoader.json" Margin="0 100 0 0"
 												Width="200" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center"
 												IsVisible="{Binding !MessagesAreLoaded}"/>
+								<Border Background="{DynamicResource FirstMessageBadgeColor}" Width="300"
+										Height="350" Margin="0 150 0 0" HorizontalAlignment="Center"
+										VerticalAlignment="Top" Padding="20" CornerRadius="15">
+									<Border.IsVisible>
+										<MultiBinding Converter="{x:Static BoolConverters.And}">
+											<Binding Path="MessagesAreLoaded"/>
+											<Binding Path="!Messages.Count"/>
+										</MultiBinding>
+									</Border.IsVisible>
+									<DockPanel>
+										<TextBlock TextWrapping="Wrap" FontSize="16" DockPanel.Dock="Top" TextAlignment="Center">
+											Ваша история сообщений пуста. Вы можете начать с приветствия или сразу перейти к сути!
+										</TextBlock>
+										<lottie:Lottie DockPanel.Dock="Bottom" Path="/Assets/Resources/Animations/Greeting.json"/>
+									</DockPanel>
+								</Border>
 							</Grid>
 						</Border>
 						<Border Grid.Row="2" Classes="AttachmentsBorder" IsVisible="{Binding !!Attachments.Count}">

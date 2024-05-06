@@ -75,6 +75,7 @@ public partial class App : Application
 			#endregion
 			#region Chat creation window
 			.AddTransient<SingleChatCreationView>()
+			.AddTransient<MultiChatCreationView>()
 			#endregion
 			#region Welcome
 			.AddSingleton<WelcomeView>()

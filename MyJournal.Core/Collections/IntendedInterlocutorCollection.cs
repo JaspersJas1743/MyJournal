@@ -145,6 +145,9 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (filter == Filter)
+			return;
+
 		await Clear(cancellationToken: cancellationToken);
 		Filter = filter;
 		await Load(cancellationToken: cancellationToken);
@@ -155,6 +158,9 @@ public sealed class IntendedInterlocutorCollection : LazyCollection<IntendedInte
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (includeExistedInterlocutors == IncludeExistedInterlocutors)
+			return;
+
 		await Clear(cancellationToken: cancellationToken);
 		IncludeExistedInterlocutors = includeExistedInterlocutors;
 		await Load(cancellationToken: cancellationToken);

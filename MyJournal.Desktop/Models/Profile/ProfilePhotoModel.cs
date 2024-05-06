@@ -61,7 +61,7 @@ public sealed class ProfilePhotoModel : ModelBase
 
 	private async Task ChangeUserPhoto()
 	{
-		IStorageFile? pickedFile = await _fileStorageService.OpenFile();
+		IStorageFile? pickedFile = await _fileStorageService.OpenFile(fileTypes: new FilePickerFileType[] { FilePickerFileTypes.ImageAll });
 		if (pickedFile is null)
 			return;
 

@@ -23,12 +23,13 @@ public sealed class FileStorageService : IFileStorageService
 		_configurationService = configurationService;
 	}
 
-	public async Task<IStorageFile?> OpenFile()
+	public async Task<IStorageFile?> OpenFile(IReadOnlyList<FilePickerFileType> fileTypes)
 	{
 		IReadOnlyList<IStorageFile> files = await _target.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 		{
 			Title = "Открыть...",
-			AllowMultiple = false
+			AllowMultiple = false,
+			FileTypeFilter = fileTypes
 		});
 
 		return files.Count >= 1 ? files[0] : null;

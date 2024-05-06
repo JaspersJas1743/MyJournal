@@ -28,4 +28,6 @@ public sealed class SingleChatCreationVM(SingleChatCreationModel model) : BaseVM
 
 	public ReactiveCommand<Unit, Unit> LoadInterlocutors => model.LoadInterlocutors;
 	public ReactiveCommand<Unit, Unit> SelectIntendedInterlocutor => model.SelectIntendedInterlocutor;
+	public ReactiveCommand<Unit, Unit> CreateMultiChat => model.CreateMultiChat;
+	public ReactiveCommand<Unit, Unit> OnAttachedToVisualTree => model.OnAttachedToVisualTree;
 }

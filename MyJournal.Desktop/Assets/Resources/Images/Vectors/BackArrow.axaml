@@ -1,0 +1,29 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		x:DataType="controls:XamlSvg"
+	>
+
+	<Style Selector="controls|XamlSvg.BackArrow">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Image OpacityMask="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}">
+						<Image.Source>
+							<DrawingImage>
+								<DrawingImage.Drawing>
+									<DrawingGroup ClipGeometry="M0,0 V317 H831 V0 H0 Z">
+										<DrawingGroup Opacity="1" Transform="0.1,0,0,-0.1,0,317">
+											<GeometryDrawing Brush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Foreground}" Geometry="F1 M831,317z M0,0z M1460,3144C1413,3123 1308,3022 729,2442 -23,1689 6,1723 5,1590 5,1455 -20,1484 733,732 1485,-19 1453,8 1590,8 1811,8 1958,236 1865,437 1843,486 1784,550 1448,887L1056,1280 4555,1282 8055,1285 8111,1311C8226,1365 8292,1467 8292,1590 8292,1713 8226,1815 8111,1869L8055,1895 4555,1898 1056,1900 1447,2293C1785,2631 1843,2693 1865,2743 1935,2895 1868,3075 1716,3146 1643,3180 1536,3179 1460,3144z" />
+										</DrawingGroup>
+									</DrawingGroup>
+								</DrawingImage.Drawing>
+							</DrawingImage>
+						</Image.Source>
+					</Image>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</Styles>
