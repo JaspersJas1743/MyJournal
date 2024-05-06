@@ -511,10 +511,7 @@ public sealed class ChatController(
 		if (lastMessageSenderId == 0)
 			return Ok();
 
-		await userHubContext.Clients.Users(
-			user1: lastMessageSenderId.ToString(),
-			user2: userId.ToString()
-		).ReadChat(chatId: id);
+		await userHubContext.Clients.Users(user1: lastMessageSenderId.ToString()).ReadChat(chatId: id);
 
 		return Ok();
 	}
