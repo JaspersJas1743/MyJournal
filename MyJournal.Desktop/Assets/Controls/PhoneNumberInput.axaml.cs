@@ -70,9 +70,11 @@ public partial class PhoneNumberInput : UserControl
 						? $"+7({FirstPartOfNumber.Text}){SecondPartOfNumber.Text}-{ThirdPartOfNumber.Text}" 
 						: String.Empty;
 				});
-			mtb.WhenAnyValue(property1: textBox => textBox.Text).Where(predicate: text => text is not null && text.All(predicate: c => c == '_'))
+			mtb.WhenAnyValue(property1: textBox => textBox.Text).WhereNotNull()
+			   .Where(predicate: text => text.All(predicate: c => c == '_'))
 			   .Subscribe(onNext: _ => mtb.Classes.Add(name: "Empty"));
-			mtb.WhenAnyValue(property1: textBox => textBox.Text).Where(predicate: text => text is not null && text.Any(predicate: c => c != '_'))
+			mtb.WhenAnyValue(property1: textBox => textBox.Text).WhereNotNull()
+			   .Where(predicate: text => text.Any(predicate: c => c != '_'))
 			   .Subscribe(onNext: _ => mtb.Classes.Remove(name: "Empty"));
 		}
 	}

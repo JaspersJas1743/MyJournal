@@ -130,8 +130,7 @@ public partial class CodeInput : UserControl
 			tb.AddHandler(routedEvent: TextBox.PastingFromClipboardEvent, handler: OnPastingToCellFromClipboard);
 			tb.AddHandler(routedEvent: KeyDownEvent, handler: OnKeyDownInCell, routes: RoutingStrategies.Tunnel);
 
-			tb.WhenAnyValue(property1: textBox => textBox.Text)
-			  .Where(predicate: text => text is not null)
+			tb.WhenAnyValue(property1: textBox => textBox.Text).WhereNotNull()
 			  .Subscribe(onNext: _ => EntryCode = String.Concat(values: _codeCells.Select(selector: textBox => textBox.Text)).Trim());
 			return tb;
 		}));

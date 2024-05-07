@@ -184,7 +184,9 @@ public sealed class MessagesModel : ModelBase
 
 	private async void OnUserJoinedInChat(JoinedInChatEventArgs e)
 	{
-		Chats.Insert(index: 0, item: (await _chatCollection.FindById(id: e.ChatId))!.ToObservable());
+		await Dispatcher.UIThread.InvokeAsync(callback: async () =>
+			Chats.Insert(index: 0, item: (await _chatCollection.FindById(id: e.ChatId))!.ToObservable())
+		);
 		if (!_created)
 			return;
 

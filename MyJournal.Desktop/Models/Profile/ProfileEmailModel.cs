@@ -33,8 +33,7 @@ public sealed class ProfileEmailModel : ModelWithErrorMessage
 	{
 		_confirmationService = confirmationService;
 
-		this.WhenAnyValue(property1: model => model.EnteredEmail)
-			.Where(predicate: email => email is not null)
+		this.WhenAnyValue(property1: model => model.EnteredEmail).WhereNotNull()
 			.Subscribe(onNext: _ => EmailIsVerified = !String.IsNullOrWhiteSpace(value: _email?.Address) && EnteredEmail == _email?.Address);
 
 		ChangeEmail = ReactiveCommand.CreateFromTask(execute: ChangeUserEmail, canExecute: ValidationContext.Valid);

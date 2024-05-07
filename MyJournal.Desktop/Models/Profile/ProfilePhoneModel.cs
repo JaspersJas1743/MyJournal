@@ -33,8 +33,7 @@ public sealed class ProfilePhoneModel : ModelWithErrorMessage
 	{
 		_confirmationService = confirmationService;
 
-		this.WhenAnyValue(property1: model => model.EnteredPhone)
-			.Where(predicate: email => email is not null)
+		this.WhenAnyValue(property1: model => model.EnteredPhone).WhereNotNull()
 			.Subscribe(onNext: _ => PhoneIsVerified = !String.IsNullOrWhiteSpace(value: _phone?.Number) && EnteredPhone == _phone?.Number);
 
 		ChangePhone = ReactiveCommand.CreateFromTask(execute: ChangeUserPhone, canExecute: ValidationContext.Valid);
