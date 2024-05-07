@@ -20,6 +20,10 @@ public sealed class ChatController(
 	MyJournalContext context
 ) : MyJournalBaseController(context: context)
 {
+	private const string GroupDefault = "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/group_default.png";
+	private const string Favourites = "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/favourites.png";
+	private const string UserDefault = "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/user_default.png";
+
 	private readonly MyJournalContext _context = context;
 
 	#region Records
@@ -60,13 +64,13 @@ public sealed class ChatController(
 	private string GetChatPhoto(Chat chat, User currentUser)
 	{
 		if (chat.ChatType.Type == ChatTypes.Multi)
-			return chat.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/group_default.png";
+			return chat.LinkToPhoto ?? GroupDefault;
 
 		if (chat.Users.Count == 1)
-			return "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/favourites.png";
+			return Favourites;
 
 		User interlocutor = chat.Users.Except(second: new User[1] { currentUser }).Single();
-		return interlocutor.LinkToPhoto ?? "https://myjournal_assets.hb.ru-msk.vkcs.cloud/defaults/user_default.png";
+		return interlocutor.LinkToPhoto ?? UserDefault;
 	}
 
 	private async Task<ChatType> FindChatType(
@@ -113,47 +117,38 @@ public sealed class ChatController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		User user = await _context.Users
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Users)
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.ChatType)
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.LastMessageNavigation)
-				.ThenInclude(navigationPropertyPath: m => m.Sender)
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Messages)
-				.ThenInclude(navigationPropertyPath: m => m.Sender)
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.Messages)
-				.ThenInclude(navigationPropertyPath: m => m.Attachments)
-			.Include(navigationPropertyPath: u => u.Chats).ThenInclude(navigationPropertyPath: c => c.LastMessageNavigation)
-				.ThenInclude(navigationPropertyPath: m => m.Attachments)
-			.SingleOrDefaultAsync(predicate: u => u.Id.Equals(userId), cancellationToken: cancellationToken)
-		?? throw new HttpResponseException(statusCode: StatusCodes.Status401Unauthorized, message: "Некорректный авторизационный токен.");
-
-		IOrderedEnumerable<GetChatsResponse> result = user.Chats.Select(chat => new GetChatsResponse(
-			Id: chat.Id,
-			ChatName: GetChatName(chat: chat, currentUser: user),
-			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
-			CreatedAt: chat.CreatedAt,
-			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
-				Content: chat.LastMessageNavigation!.Text,
-				IsFile: String.IsNullOrWhiteSpace(value: chat.LastMessageNavigation!.Text) && chat.LastMessageNavigation!.Attachments.Count != 0,
-				CreatedAt: chat.LastMessageNavigation!.CreatedAt,
-				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
-				IsRead: chat.LastMessageNavigation.ReadedAt is not null
-			) : null,
-			AdditionalInformation: new AdditionalInformation(
-				IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
-				InterlocutorId: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.Id : null,
-				CountOfParticipants: chat.Users.Count
-			)
-		)).OrderByDescending(keySelector: c => c.LastMessage?.CreatedAt ?? c.CreatedAt);
+		IQueryable<User> users = _context.Users.AsNoTracking().Where(predicate: u => u.Id == userId);
+		IQueryable<GetChatsResponse> chats = users.SelectMany(selector: u => u.Chats)
+			.Select(selector: c => new { Chat = c, Interlocutor = c.Users.SingleOrDefault(u => u.Id != userId) })
+			.Select(selector: c => new GetChatsResponse(
+				c.Chat.Id,
+				c.Chat.ChatType.Type == ChatTypes.Multi ? c.Chat.Name! : c.Chat.Users.Count == 1 ? "Избранное" : $"{c.Interlocutor!.Name} {c.Interlocutor.Surname}",
+				c.Chat.ChatType.Type == ChatTypes.Multi ? c.Chat.LinkToPhoto ?? GroupDefault : c.Chat.Users.Count == 1 ? Favourites : c.Interlocutor!.LinkToPhoto ?? UserDefault,
+				c.Chat.CreatedAt,
+				c.Chat.LastMessageId.HasValue ? new LastMessage(
+					c.Chat.LastMessageNavigation!.Text,
+					String.IsNullOrWhiteSpace(c.Chat.LastMessageNavigation.Text) && c.Chat.LastMessageNavigation!.Attachments.Count != 0,
+					c.Chat.LastMessageNavigation!.CreatedAt,
+					c.Chat.LastMessageNavigation.Sender.Id == userId,
+					c.Chat.LastMessageNavigation.ReadedAt != null
+				) : null,
+				new AdditionalInformation(
+					c.Chat.ChatType.Type == ChatTypes.Single,
+					c.Chat.ChatType.Type == ChatTypes.Single ? c.Interlocutor!.Id : null,
+					c.Chat.Users.Count
+				)
+			));
 
 		if (!request.IsFiltered)
-			return Ok(value: result.Skip(count: request.Offset).Take(count: request.Count));
+			return Ok(value: chats.Skip(count: request.Offset).Take(count: request.Count));
 
-		return Ok(value: result.Where(predicate: c =>
-			c.ChatName.StartsWith(value: request.Filter!, comparisonType: StringComparison.CurrentCultureIgnoreCase) ||
-			(c.ChatName == "Избранное" && $"{user.Surname} {user.Name} {user.Patronymic}".Contains(
-				value: request.Filter!, StringComparison.CurrentCultureIgnoreCase)
-			)
+		User user = await users.SingleAsync(cancellationToken: cancellationToken);
+		return Ok(value: (await chats.ToListAsync(cancellationToken: cancellationToken)).Where(predicate: c =>
+		c.ChatName.StartsWith(request.Filter!, StringComparison.CurrentCultureIgnoreCase) ||
+		c.ChatName == "Избранное" && $"{user.Surname} {user.Name} {user.Patronymic}".Contains(
+			request.Filter!,
+			StringComparison.CurrentCultureIgnoreCase
+		)
 		).Skip(count: request.Offset).Take(count: request.Count));
 	}
 
@@ -185,33 +180,29 @@ public sealed class ChatController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		User user = await GetAuthorizedUser(cancellationToken: cancellationToken);
-		Chat chat = await _context.Chats
-			.Include(navigationPropertyPath: c => c.ChatType)
-			.Include(navigationPropertyPath: c => c.Users)
-			.Include(navigationPropertyPath: c => c.LastMessageNavigation).ThenInclude(navigationPropertyPath: m => m.Attachments)
-			.Include(navigationPropertyPath: c => c.LastMessageNavigation).ThenInclude(navigationPropertyPath: m => m.Sender)
-			.Where(predicate: c => c.Users.Contains(user))
-			.SingleOrDefaultAsync(predicate: c => c.Id.Equals(id), cancellationToken: cancellationToken)
-			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: $"Диалог с идентификатором {id} не найден.");
-		return Ok(value: new GetChatsResponse(
-			Id: chat.Id,
-			ChatName: GetChatName(chat: chat, currentUser: user),
-			ChatPhoto: GetChatPhoto(chat: chat, currentUser: user),
-			CreatedAt: chat.CreatedAt,
-			LastMessage: chat.LastMessageId.HasValue ? new LastMessage(
-				Content: chat.LastMessageNavigation?.Text,
-				IsFile: String.IsNullOrWhiteSpace(value: chat.LastMessageNavigation!.Text) && chat.LastMessageNavigation!.Attachments.Count != 0,
-				CreatedAt: chat.LastMessageNavigation!.CreatedAt,
-				FromMe: chat.LastMessageNavigation.Sender.Id.Equals(user.Id),
-				IsRead: chat.LastMessageNavigation.ReadedAt is not null
-			) : null,
-			AdditionalInformation: new AdditionalInformation(
-				IsSingleChat: chat.ChatType.Type == ChatTypes.Single,
-				InterlocutorId: chat.Users.Count <= 2 ? chat.Users.SingleOrDefault(predicate: u => u.Id != user.Id)?.Id : null,
-				CountOfParticipants: chat.Users.Count
-			)
-		));
+		int userId = GetAuthorizedUserId();
+		GetChatsResponse? chat = await _context.Chats.AsNoTracking()
+			.Where(predicate: c => c.Id == id)
+			.Select(selector: c => new { Chat = c, Interlocutor = c.Users.SingleOrDefault(u => u.Id != userId) })
+			.Select(selector: c => new GetChatsResponse(
+				c.Chat.Id,
+				c.Chat.ChatType.Type == ChatTypes.Multi ? c.Chat.Name! : c.Chat.Users.Count == 1 ? "Избранное" : $"{c.Interlocutor!.Name} {c.Interlocutor.Surname}",
+				c.Chat.ChatType.Type == ChatTypes.Multi ? c.Chat.LinkToPhoto ?? GroupDefault : c.Chat.Users.Count == 1 ? Favourites : c.Interlocutor!.LinkToPhoto ?? UserDefault,
+				c.Chat.CreatedAt,
+				c.Chat.LastMessageId.HasValue ? new LastMessage(
+					c.Chat.LastMessageNavigation!.Text,
+					String.IsNullOrWhiteSpace(c.Chat.LastMessageNavigation.Text) && c.Chat.LastMessageNavigation!.Attachments.Count != 0,
+					c.Chat.LastMessageNavigation!.CreatedAt,
+					c.Chat.LastMessageNavigation.Sender.Id == userId,
+					c.Chat.LastMessageNavigation.ReadedAt != null
+				) : null,
+				new AdditionalInformation(
+					c.Chat.ChatType.Type == ChatTypes.Single,
+					c.Chat.ChatType.Type == ChatTypes.Single ? c.Interlocutor!.Id : null,
+					c.Chat.Users.Count
+				)
+			)).SingleOrDefaultAsync(cancellationToken: cancellationToken);
+		return Ok(value: chat);
 	}
 
 	/// <summary>
