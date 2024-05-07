@@ -34,8 +34,7 @@
 			ColumnDefinitions="20*, 15*, 30*, 25*, 10*, 380*, 20*">
 		<TextBlock	Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" HorizontalAlignment="Center"
 					Text="Создание беседы" FontSize="20"/>
-		<Button Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0"
-				Background="Transparent" Command="{Binding CreateSingleChat}">
+		<Button Grid.Column="2" Grid.Row="1" Classes="EmptyButton" Command="{Binding CreateSingleChat}">
 			<controls:XamlSvg Classes="BackArrow"/>
 		</Button>
 		<Border Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="4" CornerRadius="15 0 0 15" Padding="20 15"
@@ -47,8 +46,7 @@
 				</MultiBinding>
 			</Border.IsVisible>
 			<Grid>
-				<Button VerticalAlignment="Center" HorizontalAlignment="Center" Padding="0" Background="Transparent"
-						BorderThickness="0" Command="{Binding LoadPhoto}">
+				<Button Classes="EmptyButton" Command="{Binding LoadPhoto}">
 					<Button.IsVisible>
 						<MultiBinding Converter="{x:Static BoolConverters.And}">
 							<Binding Path="!LoadingPhoto"/>

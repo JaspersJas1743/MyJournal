@@ -1,9 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia;
 using MyJournal.Core;
 using MyJournal.Core.SubEntities;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 using Activity = MyJournal.Core.UserData.Activity;
 
@@ -16,13 +17,16 @@ public class ObservableChat : ReactiveObject
 
 	public ObservableChat(Chat chatToObservable)
 	{
+		INotificationService notificationService = (Application.Current as App)!.GetService<INotificationService>();
 		_chatToObservable = chatToObservable;
 
-		_chatToObservable.ReceivedMessage += _ =>
+		_chatToObservable.ReceivedMessage += async _ =>
 		{
 			foreach (PropertyInfo propertyInfo in typeof(LastMessage).GetProperties())
 				this.RaisePropertyChanged(propertyName: propertyInfo.Name);
 			this.RaisePropertyChanged(propertyName: nameof(NotFromMe));
+			if (NotFromMe)
+				await notificationService.Show(title: Name, message: Content);
 		};
 
 		_chatToObservable.ReadChat += _ => IsRead = _chatToObservable.LastMessage!.IsRead;

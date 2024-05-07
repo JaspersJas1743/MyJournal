@@ -184,5 +184,13 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
+
+		<Style Selector="^.EmptyButton">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+		</Style>
 	</Style>
 </Styles>

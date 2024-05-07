@@ -22,6 +22,7 @@ using MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.Assets.Utilities.ThemeConfigurationService;
 using MyJournal.Desktop.Models;
 using MyJournal.Desktop.Models.Authorization;
@@ -34,7 +35,6 @@ using MyJournal.Desktop.Models.Tasks;
 using MyJournal.Desktop.Models.Timetable;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Authorization;
-using MyJournal.Desktop.ViewModels.ChatCreation;
 using MyJournal.Desktop.ViewModels.ConfirmationCode;
 using MyJournal.Desktop.ViewModels.Marks;
 using MyJournal.Desktop.ViewModels.Profile;
@@ -100,6 +100,7 @@ public partial class App : Application
 			.AddMenuConfigurationService()
 			.AddThemeConfigurationService()
 			.AddChatCreationService()
+			.AddNotificationService()
 			#endregion
 			#region Authorization
 			.AddSingleton<AuthorizationView>()

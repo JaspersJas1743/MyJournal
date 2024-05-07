@@ -28,6 +28,7 @@ using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 using Attachment = MyJournal.Desktop.Assets.Utilities.ChatUtilities.Attachment;
 
@@ -40,6 +41,7 @@ public sealed class MessagesModel : ModelBase
 	private readonly IConfigurationService _configurationService;
 	private readonly IMessageService _messageService;
 	private readonly IChatCreationService _chatCreationService;
+	private readonly INotificationService _notificationService;
 
 	private int _previousChatId = -1;
 	private readonly Dictionary<int, string?> _allMessages = new Dictionary<int, string?>();
@@ -68,13 +70,15 @@ public sealed class MessagesModel : ModelBase
 		IFileStorageService fileStorageService,
 		IMessageService messageService,
 		IConfigurationService configurationService,
-		IChatCreationService chatCreationService
+		IChatCreationService chatCreationService,
+		INotificationService notificationService
 	)
 	{
 		_fileStorageService = fileStorageService;
 		_messageService = messageService;
 		_configurationService = configurationService;
 		_chatCreationService = chatCreationService;
+		_notificationService = notificationService;
 
 		OnKeyDown = ReactiveCommand.Create<KeyEventArgs>(execute: KeyDownHandler);
 		OnSelectionChanged = ReactiveCommand.CreateFromTask(execute: SelectionChangedHandler);
@@ -406,6 +410,9 @@ public sealed class MessagesModel : ModelBase
 			chat = (await _chatCollection.FindById(id: e.ChatId))!.ToObservable();
 			Chats.Insert(index: 0, item: chat);
 		}
+
+		if (_messageFromSelectedChat is null)
+			return;
 
 		ExtendedMessage? receivedMessage = (await _messageFromSelectedChat?.FindById(id: e.MessageId)!)?.ToExtended(
 			configurationService: _configurationService, isSingleChat: chat.IsSingleChat
