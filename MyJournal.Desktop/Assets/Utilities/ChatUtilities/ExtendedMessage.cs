@@ -70,7 +70,10 @@ public static class ExtendedAttachmentsExtensions
 			Download: ReactiveCommand.CreateFromTask(execute: async (Button button) =>
 			{
 				string path = configurationService.Get(key: ConfigurationKeys.StorageFolder)!;
-				// if ()
+				DirectoryInfo folder = new DirectoryInfo(path: path);
+				if (!folder.Exists)
+					folder.Create();
+
 				await attachment.Download(pathToSave: path);
 				button.Flyout?.ShowAt(placementTarget: button);
 			})
