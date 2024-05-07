@@ -236,7 +236,7 @@ public sealed class MessagesModel : ModelBase
 		Chats.Clear();
 		await _chatCollection.SetFilter(filter: filter);
 		List<Chat> chats = await _chatCollection.ToListAsync();
-		Chats.Load(items: chats.Select(selector: chat => chat.ToObservable()));
+		await Dispatcher.UIThread.InvokeAsync(callback: () => Chats.Load(items: chats.Select(selector: chat => chat.ToObservable())));
 		ChatsAreLoaded = true;
 	}
 
