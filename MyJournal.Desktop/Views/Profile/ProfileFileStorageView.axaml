@@ -11,7 +11,7 @@
 			<TextBlock	Grid.Column="0" Grid.ColumnSpan="5" Text="Путь для сохранения файлов" VerticalAlignment="Center"
 						Grid.Row="1" Classes="ProfileSectionHeader CenteredTextBlock"/>
 			<TextBox	Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3" Watermark="Путь к папке" FontSize="24"
-						Text="{Binding Path,Mode=TwoWay}"/>
+						Text="{Binding Path,Mode=TwoWay}" IsReadOnly="True"/>
 			<Viewbox Grid.Row="5" Grid.Column="1">
 				<controls:ButtonWithAnimatedCommand Content="Изменить папку.." Height="70" Width="240"
 													Classes="MainAccentColor Corner15 SubheaderContent"

@@ -290,8 +290,7 @@ public sealed class MessagesModel : ModelBase
 		)));
 
 		_lastMessageIsSelected = false;
-		SelectedMessage = Messages.FirstOrDefault(predicate: m => m.Message is { IsRead: false, FromMe: false })
-			?? Messages.LastOrDefault() ?? null;
+		SelectedMessage = Messages.LastOrDefault() ?? null;
 		_lastMessageIsSelected = true;
 	}
 
@@ -426,7 +425,7 @@ public sealed class MessagesModel : ModelBase
 		if (!receivedMessage.Message.FromMe && selected)
 			await chat.Read();
 
-		Messages.Add(item: receivedMessage);
+		await Dispatcher.UIThread.InvokeAsync(callback: () => Messages.Add(item: receivedMessage));
 		SelectedMessage = receivedMessage;
 	}
 
