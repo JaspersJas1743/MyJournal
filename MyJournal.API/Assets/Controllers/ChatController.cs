@@ -139,16 +139,19 @@ public sealed class ChatController(
 				)
 			));
 
+		IEnumerable<GetChatsResponse> listOfChats = chats.AsEnumerable()
+			.OrderByDescending(keySelector: r => r.LastMessage?.CreatedAt ?? r.CreatedAt);
+
 		if (!request.IsFiltered)
-			return Ok(value: chats.Skip(count: request.Offset).Take(count: request.Count));
+			return Ok(value: listOfChats.Skip(count: request.Offset).Take(count: request.Count));
 
 		User user = await users.SingleAsync(cancellationToken: cancellationToken);
-		return Ok(value: (await chats.ToListAsync(cancellationToken: cancellationToken)).Where(predicate: c =>
-		c.ChatName.StartsWith(request.Filter!, StringComparison.CurrentCultureIgnoreCase) ||
-		c.ChatName == "Избранное" && $"{user.Surname} {user.Name} {user.Patronymic}".Contains(
-			request.Filter!,
-			StringComparison.CurrentCultureIgnoreCase
-		)
+		return Ok(value: listOfChats.Where(predicate: c =>
+			c.ChatName.StartsWith(request.Filter!, StringComparison.CurrentCultureIgnoreCase) ||
+			c.ChatName == "Избранное" && $"{user.Surname} {user.Name} {user.Patronymic}".Contains(
+				request.Filter!,
+				StringComparison.CurrentCultureIgnoreCase
+			)
 		).Skip(count: request.Offset).Take(count: request.Count));
 	}
 
