@@ -2,7 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:vm="using:MyJournal.Desktop.ViewModels"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-		xmlns:chatCreation="clr-namespace:MyJournal.Desktop.ViewModels.ChatCreation">
+		xmlns:chatCreation="clr-namespace:MyJournal.Desktop.ViewModels.ChatCreation"
+		xmlns:confirmationCode="clr-namespace:MyJournal.Desktop.ViewModels.ConfirmationCode">
 
 	<Style Selector="Window">
 		<Setter Property="ExtendClientAreaChromeHints" Value="NoChrome"/>
@@ -66,7 +67,7 @@
 			<Setter Property="ExtendClientAreaTitleBarHeightHint" Value="0"/>
 			<Setter Property="ExtendClientAreaToDecorationsHint" Value="False"/>
 			<Setter Property="Template">
-				<ControlTemplate x:DataType="chatCreation:ChatCreationWindowVM">
+				<ControlTemplate x:DataType="confirmationCode:ConfirmationCodeWindowVM">
 					<Grid Margin="{TemplateBinding Property=OffScreenMargin}">
 						<Border x:Name="WindowBorder" Background="{DynamicResource ResourceKey=BackgroundColor}" CornerRadius="15" IsHitTestVisible="False"/>
 						<Border x:Name="PART_TransparencyFallback" Background="Transparent" IsHitTestVisible="False"/>
@@ -86,10 +87,10 @@
 									</StackPanel>
 								</Grid>
 								<ContentPresenter HorizontalContentAlignment="{TemplateBinding Property=HorizontalContentAlignment}"
-								                  Margin="{TemplateBinding Property=Padding}" Grid.Column="0" Grid.ColumnSpan="2"
-								                  VerticalContentAlignment="{TemplateBinding Property=VerticalContentAlignment}"
-												  x:Name="PART_ContentPresenter" Content="{TemplateBinding Property=Content}"
-												  Grid.Row="1" ContentTemplate="{TemplateBinding Property=ContentTemplate}"/>
+												Margin="{TemplateBinding Property=Padding}" Grid.Column="0" Grid.ColumnSpan="2"
+												VerticalContentAlignment="{TemplateBinding Property=VerticalContentAlignment}"
+												x:Name="PART_ContentPresenter" Content="{TemplateBinding Property=Content}"
+												Grid.Row="1" ContentTemplate="{TemplateBinding Property=ContentTemplate}"/>
 							</Grid>
 						</VisualLayerManager>
 					</Grid>

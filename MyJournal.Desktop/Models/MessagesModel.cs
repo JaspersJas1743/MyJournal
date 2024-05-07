@@ -172,7 +172,7 @@ public sealed class MessagesModel : ModelBase
 		Task<InterlocutorCollection> task = _user.GetInterlocutors();
 		_chatCollection = await user.GetChats();
 		List<Chat> chats = await _chatCollection.ToListAsync();
-		Chats.Load(items: chats.Select(selector: chat => chat.ToObservable()));
+		Chats.Load(items: chats.Select(selector: chat => chat.ToObservable(notificationService: _notificationService)));
 		_isLoaded = !_isLoaded;
 		InterlocutorCollection interlocutors = await task;
 
@@ -184,9 +184,10 @@ public sealed class MessagesModel : ModelBase
 
 	private async void OnUserJoinedInChat(JoinedInChatEventArgs e)
 	{
-		await Dispatcher.UIThread.InvokeAsync(callback: async () =>
-			Chats.Insert(index: 0, item: (await _chatCollection.FindById(id: e.ChatId))!.ToObservable())
-		);
+		Chat? chat = await _chatCollection.FindById(id: e.ChatId);
+		ObservableChat? observableChat = chat?.ToObservable(notificationService: _notificationService);
+		await observableChat?.LoadInterlocutor(user: _user!)!;
+		await Dispatcher.UIThread.InvokeAsync(callback: () => Chats.Insert(index: 0, item: observableChat));
 		if (!_created)
 			return;
 
@@ -208,15 +209,17 @@ public sealed class MessagesModel : ModelBase
 		if (Selection.SelectedItem!.OnlineAt is null)
 			return "в сети";
 
-		if ((DateTime.Now - Selection.SelectedItem!.OnlineAt).Value.Minutes < 1)
+		TimeSpan dateDifference = (DateTime.Now - Selection.SelectedItem!.OnlineAt).Value;
+		if (dateDifference.Minutes < 1)
 			return "был(-а) в сети только что";
 
-		return (DateTime.Now - Selection.SelectedItem!.OnlineAt).Value.Days switch
-		{
-			> 1 => $"был(-а) в сети {Selection.SelectedItem!.OnlineAt:d MMMM yyyy} в {Selection.SelectedItem!.OnlineAt:HH:mm}",
-			1 => $"был(-а) в сети {Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {Selection.SelectedItem!.OnlineAt:HH:mm}",
-			_ => "был(-а) в сети " + Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)
-		};
+		if (dateDifference.Days < 1)
+			return "был(-а) в сети " + Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture);
+
+		if (dateDifference.Days > 1 || dateDifference.Hours >= 12)
+			return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt:d MMMM} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
+
+		return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
 	}
 
 	private string GetCountOfParticipants()
@@ -236,7 +239,9 @@ public sealed class MessagesModel : ModelBase
 		Chats.Clear();
 		await _chatCollection.SetFilter(filter: filter);
 		List<Chat> chats = await _chatCollection.ToListAsync();
-		await Dispatcher.UIThread.InvokeAsync(callback: () => Chats.Load(items: chats.Select(selector: chat => chat.ToObservable())));
+		await Dispatcher.UIThread.InvokeAsync(callback: () =>
+			Chats.Load(items: chats.Select(selector: chat => chat.ToObservable(notificationService: _notificationService)))
+		);
 		ChatsAreLoaded = true;
 	}
 
@@ -320,7 +325,7 @@ public sealed class MessagesModel : ModelBase
 		int currentLength = _chatCollection.Length;
 		await _chatCollection.LoadNext();
 		IEnumerable<Chat> chats = await _chatCollection.GetByRange(start: currentLength, end: _chatCollection.Length);
-		Chats.Add(items: chats.Select(selector: chat => chat.ToObservable()));
+		Chats.Add(items: chats.Select(selector: chat => chat.ToObservable(notificationService: _notificationService)));
 	}
 
 	private async void OnChatsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -408,7 +413,7 @@ public sealed class MessagesModel : ModelBase
 		}
 		else
 		{
-			chat = (await _chatCollection.FindById(id: e.ChatId))!.ToObservable();
+			chat = (await _chatCollection.FindById(id: e.ChatId))!.ToObservable(notificationService: _notificationService);
 			Chats.Insert(index: 0, item: chat);
 		}
 
@@ -425,7 +430,7 @@ public sealed class MessagesModel : ModelBase
 		if (!receivedMessage.Message.FromMe && selected)
 			await chat.Read();
 
-		await Dispatcher.UIThread.InvokeAsync(callback: () => Messages.Add(item: receivedMessage));
+		Messages.Add(item: receivedMessage);
 		SelectedMessage = receivedMessage;
 	}
 

@@ -8,7 +8,7 @@ public interface INotificationService
 {
 	Task Show(
 		string? title,
-		string? message,
+		string? content,
 		NotificationType type = NotificationType.Information,
 		TimeSpan? expiration = null,
 		Action? onClick = null,

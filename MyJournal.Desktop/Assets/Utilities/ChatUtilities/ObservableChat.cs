@@ -15,9 +15,8 @@ public class ObservableChat : ReactiveObject
 	private readonly Chat _chatToObservable;
 	private string? _draft = String.Empty;
 
-	public ObservableChat(Chat chatToObservable)
+	public ObservableChat(Chat chatToObservable, INotificationService notificationService)
 	{
-		INotificationService notificationService = (Application.Current as App)!.GetService<INotificationService>();
 		_chatToObservable = chatToObservable;
 
 		_chatToObservable.ReceivedMessage += async _ =>
@@ -26,7 +25,7 @@ public class ObservableChat : ReactiveObject
 				this.RaisePropertyChanged(propertyName: propertyInfo.Name);
 			this.RaisePropertyChanged(propertyName: nameof(NotFromMe));
 			if (NotFromMe)
-				await notificationService.Show(title: Name, message: Content);
+				await notificationService.Show(title: Name, content: Content);
 		};
 
 		_chatToObservable.ReadChat += _ => IsRead = _chatToObservable.LastMessage!.IsRead;
@@ -82,6 +81,6 @@ public class ObservableChat : ReactiveObject
 
 public static class ChatExtensions
 {
-	public static ObservableChat ToObservable(this Chat chat)
-		=> new ObservableChat(chatToObservable: chat);
+	public static ObservableChat ToObservable(this Chat chat, INotificationService notificationService)
+		=> new ObservableChat(chatToObservable: chat, notificationService: notificationService);
 }

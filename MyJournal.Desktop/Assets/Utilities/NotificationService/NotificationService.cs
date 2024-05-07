@@ -8,25 +8,22 @@ using MyJournal.Desktop.Views;
 
 namespace MyJournal.Desktop.Assets.Utilities.NotificationService;
 
-public sealed class NotificationService : INotificationService
+public sealed class NotificationService(MainWindowView topLevel) : INotificationService
 {
-	private readonly INotificationManager _notificationManager;
-
-	public NotificationService(MainWindowView topLevel)
-		=> _notificationManager = new WindowNotificationManager(host: TopLevel.GetTopLevel(visual: topLevel));
+	private readonly WindowNotificationManager _notificationManager = new WindowNotificationManager(host: TopLevel.GetTopLevel(visual: topLevel));
 
 	public async Task Show(
 		string? title,
-		string? message,
+		string? content,
 		NotificationType type = NotificationType.Information,
 		TimeSpan? expiration = null,
 		Action? onClick = null,
 		Action? onClose = null
 	)
 	{
-		await Dispatcher.UIThread.InvokeAsync(callback: () => _notificationManager.Show(notification: new Notification(
+		await Dispatcher.UIThread.InvokeAsync(callback: () => _notificationManager.Show(content: new Notification(
 			title: title,
-			message: message,
+			message: content,
 			type: type,
 			expiration: expiration,
 			onClick: onClick,

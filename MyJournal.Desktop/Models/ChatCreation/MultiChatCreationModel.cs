@@ -30,11 +30,12 @@ public class MultiChatCreationModel : ValidatableModel
 	private readonly ExtendedInterlocutorEqualityComparer _comparer = new ExtendedInterlocutorEqualityComparer();
 
 	private bool _loadingPhoto;
-	private ObservableCollectionExtended<ExtendedInterlocutor> _selectedItems = new ObservableCollectionExtended<ExtendedInterlocutor>();
+	private readonly ObservableCollectionExtended<ExtendedInterlocutor> _selectedItems = new ObservableCollectionExtended<ExtendedInterlocutor>();
 	private ObservableCollectionExtended<ExtendedInterlocutor> _interlocutors = new ObservableCollectionExtended<ExtendedInterlocutor>();
 	private IntendedInterlocutorCollection _interlocutorCollection;
 	private ExtendedInterlocutor _interlocutor;
 	private ChatCollection _chatCollection;
+	private bool _programSelection = false;
 	private string _chatName = String.Empty;
 	private string? _photo = String.Empty;
 	private string? _filter = String.Empty;
@@ -56,20 +57,6 @@ public class MultiChatCreationModel : ValidatableModel
 
 		this.WhenAnyValue(property1: model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.5)).InvokeCommand(command: OnFilterChanged);
-	}
-
-	private void OnInterlocutorsSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs<ExtendedInterlocutor> e)
-	{
-		if (e.SelectedItems.Count > 0)
-		{
-			_selectedItems.AddRange(collection: e.SelectedItems.OfType<ExtendedInterlocutor>());
-			return;
-		}
-
-		if (e.DeselectedItems.Count <= 0)
-			return;
-
-		_selectedItems.RemoveMany(itemsToRemove: e.DeselectedItems.OfType<ExtendedInterlocutor>());
 	}
 
 	public SelectionModel<ExtendedInterlocutor> Selection { get; } = new SelectionModel<ExtendedInterlocutor>();
@@ -158,12 +145,14 @@ public class MultiChatCreationModel : ValidatableModel
 				tasks: interlocutors.Select(selector: async i => await i.ToExtended())
 			));
 		});
+		_programSelection = true;
 		foreach (ExtendedInterlocutor selectedInterlocutor in _selectedItems.ToArray())
 		{
 			await Dispatcher.UIThread.InvokeAsync(callback: () => Selection.Select(
 				index: Interlocutors.IndexOf(item: selectedInterlocutor, equalityComparer: _comparer)
 			));
 		}
+		_programSelection = false;
 	}
 
 	private void ToCreatingSingleChat()
@@ -197,6 +186,23 @@ public class MultiChatCreationModel : ValidatableModel
 			linkToPhoto: String.IsNullOrWhiteSpace(value: Photo) ? null : Photo
 		);
 		IChatCreationService.Instance?.Close(dialogResult: true);
+	}
+
+	private void OnInterlocutorsSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs<ExtendedInterlocutor> e)
+	{
+		if (_programSelection)
+			return;
+
+		if (e.SelectedItems.Count > 0)
+		{
+			_selectedItems.AddRange(collection: e.SelectedItems.OfType<ExtendedInterlocutor>());
+			return;
+		}
+
+		if (e.DeselectedItems.Count <= 0)
+			return;
+
+		_selectedItems.RemoveMany(itemsToRemove: e.DeselectedItems.OfType<ExtendedInterlocutor>());
 	}
 
 	protected override void SetValidationRule()

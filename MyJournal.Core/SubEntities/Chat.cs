@@ -20,16 +20,19 @@ public sealed class Chat : ISubEntity
 {
 	#region Fields
 	private readonly ApiClient _client;
+	private readonly IFileService _fileService;
 	private readonly AsyncLazy<MessageCollection> _messages;
 	#endregion
 
 	#region Constructor
 	private Chat(
 		ApiClient client,
+		IFileService fileService,
 		ChatResponse response,
 		AsyncLazy<MessageCollection> messages
 	)
 	{
+		_fileService = fileService;
 		_client = client;
 		Id = response.Id;
 		Name = response.ChatName;
@@ -81,6 +84,7 @@ public sealed class Chat : ISubEntity
 		) ?? throw new InvalidOperationException();
 		return new Chat(
 			client: client,
+			fileService: fileService,
 			response: response,
 			messages: new AsyncLazy<MessageCollection>(valueFactory: async () => await MessageCollection.Create(
 				client: client,
@@ -100,6 +104,7 @@ public sealed class Chat : ISubEntity
 	{
 		return new Chat(
 			client: client,
+			fileService: fileService,
 			response: response,
 			messages: new AsyncLazy<MessageCollection>(valueFactory: async () => await MessageCollection.Create(
 				client: client,
@@ -124,6 +129,11 @@ public sealed class Chat : ISubEntity
 
 		InterlocutorCollection userInterlocutors = await user.GetInterlocutors();
 		CurrentInterlocutor = await userInterlocutors.FindById(id: CurrentInterlocutorId);
+		if (CurrentInterlocutor is not null)
+			return;
+
+		CurrentInterlocutor = await Interlocutor.Create(client: _client, fileService: _fileService, id: CurrentInterlocutorId.Value);
+		await userInterlocutors.Append(instance: CurrentInterlocutor);
 	}
 
 	internal async Task OnReceivedMessage(ReceivedMessageEventArgs e)
