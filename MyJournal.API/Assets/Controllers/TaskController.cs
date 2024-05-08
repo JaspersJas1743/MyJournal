@@ -135,7 +135,7 @@ public class TaskController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IQueryable<DatabaseModels.Task> tasks = _context.Teachers
+		IQueryable<DatabaseModels.Task> tasks = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.Tasks);
 
@@ -184,20 +184,24 @@ public class TaskController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		DatabaseModels.Task task = await _context.Tasks.Where(predicate: t => t.Id == taskId).SingleOrDefaultAsync(cancellationToken: cancellationToken)
+		GetAssignedTasksResponse task = await _context.Tasks.AsNoTracking()
+			.Where(predicate: t => t.Id == taskId)
+			.Select(selector: t => new GetAssignedTasksResponse(
+				t.Id,
+				t.Lesson.Name,
+				t.ReleasedAt,
+				new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
+				EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0
+					? AssignedTaskCompletionStatusResponse.Expired
+					: Enum.Parse<AssignedTaskCompletionStatusResponse>(
+						t.TaskCompletionResults.Single(tcr => tcr.Student.UserId == userId)
+						 .TaskCompletionStatus.CompletionStatus.ToString()
+					)
+			))
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken)
 			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Некорректный идентификатор задачи.");
 
-		return Ok(value: new GetAssignedTasksResponse(
-			task.Id,
-			task.Lesson.Name,
-			task.ReleasedAt,
-			new TaskContent(task.Text, task.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			(DateTime.Now - task.ReleasedAt).Days <= 0
-				? AssignedTaskCompletionStatusResponse.Expired
-				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
-					task.TaskCompletionResults.Single(tcr => tcr.Student.UserId == userId).TaskCompletionStatus.CompletionStatus.ToString()
-				)
-		));
+		return Ok(value: task);
 	}
 
 	/// <summary>
@@ -231,7 +235,8 @@ public class TaskController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		GetCreatedTasksResponse task = await _context.Tasks.Where(predicate: t => t.Id == taskId)
+		GetCreatedTasksResponse task = await _context.Tasks.AsNoTracking()
+			.Where(predicate: t => t.Id == taskId)
 			.Select(selector: task => new GetCreatedTasksResponse(
 				task.Id,
 				task.Class.Name,
@@ -300,7 +305,7 @@ public class TaskController(
 			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
+			EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0
 				? AssignedTaskCompletionStatusResponse.Expired
 				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
 					t.TaskCompletionResults.Single(tcr => tcr.Student.UserId == userId).TaskCompletionStatus.CompletionStatus.ToString()
@@ -355,7 +360,7 @@ public class TaskController(
 			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
+			EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0
 				? AssignedTaskCompletionStatusResponse.Expired
 				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
 					t.TaskCompletionResults.Single(tcr => tcr.Student.UserId == userId).TaskCompletionStatus.CompletionStatus.ToString()
@@ -525,7 +530,7 @@ public class TaskController(
 			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
+			EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0
 				? AssignedTaskCompletionStatusResponse.Expired
 				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
 					t.TaskCompletionResults.Single(tcr => tcr.Student.Parents.Any(p => p.UserId == userId)
@@ -581,7 +586,7 @@ public class TaskController(
 			t.Lesson.Name,
 			t.ReleasedAt,
 			new TaskContent(t.Text, t.Attachments.Select(a => new TaskAttachment(a.Link, a.AttachmentType.Type))),
-			EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0
+			EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0
 				? AssignedTaskCompletionStatusResponse.Expired
 				: Enum.Parse<AssignedTaskCompletionStatusResponse>(
 					t.TaskCompletionResults.Single(tcr => tcr.Student.Parents.Any(p => p.UserId == userId)
