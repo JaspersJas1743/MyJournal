@@ -10,7 +10,6 @@ public sealed class Program
 	public static void Main(string[] args)
 		=> BuildAvaloniaApp().StartWithClassicDesktopLifetime(args: args);
 
-	public static AppBuilder BuildAvaloniaApp()
+	private static AppBuilder BuildAvaloniaApp()
 		=> AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTrace().UseReactiveUI();
 }
-

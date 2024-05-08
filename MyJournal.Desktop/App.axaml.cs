@@ -1,11 +1,15 @@
 using System;
+using System.Diagnostics;
+using System.Reactive;
 using System.Reflection;
+using System.Threading.Tasks;
 using AsyncImageLoader;
 using AsyncImageLoader.Loaders;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
@@ -52,6 +56,7 @@ using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
 using MyJournal.Desktop.Views.Timetable;
+using ReactiveUI;
 
 namespace MyJournal.Desktop;
 
@@ -61,7 +66,14 @@ public partial class App : Application
 
 	public App()
 	{
+		Dispatcher.UIThread.UnhandledException += OnUnhandledExceptionOnUIThread;
+		RxApp.DefaultExceptionHandler = Observer.Create<Exception>(
+			onNext: async exception => await HandleException(ex: exception),
+			onError: async exception => await HandleException(ex: exception)
+		);
+
 		IServiceCollection services = new ServiceCollection()
+		#region Services
 			#region Main window
 			.AddSingleton<MainWindowView>()
 			.AddSingleton<MainWindowVM>()
@@ -292,12 +304,21 @@ public partial class App : Application
 			.AddSingleton<WorkTimetableModel>();
 			#endregion
 			#endregion
-
 		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddWindowsCredentialStorageService());
 		PlatformDetector.RunIfCurrentPlatformIsLinux(action: () => services.AddLinuxCredentialStorageService());
 		PlatformDetector.RunIfCurrentPlatformIsMacOS(action: () => services.AddMacOsCredentialStorageService());
+		#endregion
 
 		_services = services.BuildServiceProvider();
+	}
+
+	private async Task HandleException(Exception ex)
+		=> Debug.WriteLine($"Unhandled exception: {ex.Message}");
+
+	private async void OnUnhandledExceptionOnUIThread(object sender, DispatcherUnhandledExceptionEventArgs e)
+	{
+		await HandleException(ex: e.Exception);
+		e.Handled = true;
 	}
 
 	public T GetService<T>()

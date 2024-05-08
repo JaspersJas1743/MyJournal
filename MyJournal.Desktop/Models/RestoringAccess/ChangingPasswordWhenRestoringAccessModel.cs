@@ -18,9 +18,7 @@ public class ChangingPasswordWhenRestoringAccessModel : ModelWithErrorMessage
 	private string _confirmationOfNewPassword = String.Empty;
 
 	public ChangingPasswordWhenRestoringAccessModel()
-	{
-		ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep, canExecute: ValidationContext.Valid);
-	}
+		=> ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep, canExecute: ValidationContext.Valid);
 
 	public ReactiveCommand<Unit, Unit> ToNextStep { get; }
 
