@@ -3,7 +3,73 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Tasks"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
+			xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="vm:ReceivedTasksVM" x:Class="MyJournal.Desktop.Views.Tasks.ReceivedTasksView">
-	<TextBlock Text="Received tasks" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+	<UserControl.Styles>
+		<Style Selector="Border">
+			<Setter Property="Transitions">
+				<Transitions>
+					<ThicknessTransition Property="Margin" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Border.Open">
+			<Setter Property="Margin" Value="15 20"/>
+		</Style>
+		<Style Selector="Border.Closed">
+			<Setter Property="Margin" Value="-360 20"/>
+		</Style>
+	</UserControl.Styles>
+	<Viewbox>
+		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 90*, 15*, 770*, 40*" Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
+			<TextBox Grid.Column="1" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
+			<Viewbox Grid.Row="3" Grid.Column="1">
+				<ComboBox	DisplayMemberBinding="{Binding Converter={StaticResource EnumToDescriptionConverter}}"
+							Width="500" Height="90" CornerRadius="20" ItemsSource="{Binding EducationPeriods}"
+							SelectedItem="{Binding SelectedStatus}">
+					<interactivity:Interaction.Behaviors>
+						<interaction:EventTriggerBehavior EventName="SelectionChanged">
+							<interaction:InvokeCommandAction Command="{Binding OnTaskCompletionStatusSelectionChanged}"/>
+						</interaction:EventTriggerBehavior>
+					</interactivity:Interaction.Behaviors>
+				</ComboBox>
+			</Viewbox>
+			<Border Grid.Column="1" Grid.Row="5" Classes="TransitionBorderBrush ListBorder">
+				<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+													Classes="Subjects StudyingSubjects" ItemsSource="{Binding StudyingSubjects}"
+													Selection="{Binding SubjectSelectionModel}">
+					<interactivity:Interaction.Behaviors>
+						<interaction:EventTriggerBehavior EventName="SelectionChanged">
+							<interaction:InvokeCommandAction Command="{Binding OnSubjectSelectionChanged}"/>
+						</interaction:EventTriggerBehavior>
+					</interactivity:Interaction.Behaviors>
+				</controls:ListBoxWithLoadOnScroll>
+			</Border>
+			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder" CornerRadius="30">
+				<Grid>
+					<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+														ItemsSource="{Binding Tasks}" Classes="Tasks AssignedTasks"/>
+					<Border Classes="ListBorder " Width="320" Height="930" HorizontalAlignment="Right" CornerRadius="12.5"
+							VerticalAlignment="Top" Background="{DynamicResource BackgroundColor}"
+							Classes.Closed="{Binding !ShowAttachments}"
+							Classes.Open="{Binding ShowAttachments}">
+						<Grid ColumnDefinitions="20*, 110*, 140*, 30*, 20*" RowDefinitions="20*, 30*, 20*, 740*, 20*">
+							<TextBlock Grid.Row="1" Grid.Column="1" Text="Вложения" FontSize="20"/>
+							<Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Classes="TransparentCloseButton"
+									VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10"
+									Command="{Binding CloseAttachments}" HotKey="Escape">
+								<controls:XamlSvg Classes="Close" Margin="5"/>
+							</Button>
+							<ListBox	Grid.Row="3" ItemsSource="{Binding Attachments}"
+										Grid.Column="1" Grid.ColumnSpan="3" Classes="TaskAttachments"/>
+						</Grid>
+					</Border>
+				</Grid>
+			</Border>
+		</Grid>
+	</Viewbox>
 </UserControl>

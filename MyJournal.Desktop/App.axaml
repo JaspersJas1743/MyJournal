@@ -20,6 +20,7 @@
             <converters:ChatsCountIsLargeConverter x:Key="ChatsCountIsLargeConverter"/>
             <converters:StringIsNullOrWhiteSpaceConverter x:Key="StringIsNullOrWhiteSpaceConverter"/>
             <converters:StringIsNotNullOrWhiteSpaceConverter x:Key="StringIsNotNullOrWhiteSpaceConverter"/>
+            <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"/>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"/>

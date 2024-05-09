@@ -391,7 +391,7 @@ public partial class App : Application
 	private void SetTheme(IConfigurationService configurationService)
 	{
 		ThemeVariant currentTheme = (typeof(ThemeVariant).GetProperty(
-			name: configurationService.Get(key: ConfigurationKeys.Theme)!,
+			name: configurationService.Get(key: ConfigurationKeys.Theme) ?? nameof(ThemeVariant.Default),
 			bindingAttr: BindingFlags.Public | BindingFlags.Static
 		)!.GetValue(obj: null) as ThemeVariant)!;
 		IThemeConfigurationService.CurrentTheme = currentTheme == ThemeVariant.Default ? ActualThemeVariant : currentTheme;

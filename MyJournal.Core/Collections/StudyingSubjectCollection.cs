@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
@@ -11,6 +11,7 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 {
 	#region Fields
 	private readonly ApiClient _client;
+	private readonly IFileService _fileService;
 	private readonly AsyncLazy<List<StudyingSubject>> _subjects;
 	private readonly AsyncLazy<List<EducationPeriod>> _educationPeriods;
 
@@ -20,12 +21,14 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 	#region Constructor
 	private StudyingSubjectCollection(
 		ApiClient client,
+		IFileService fileService,
 		AsyncLazy<List<StudyingSubject>> studyingSubjects,
 		AsyncLazy<List<EducationPeriod>> educationPeriods,
 		EducationPeriod currentPeriod
 	)
 	{
 		_client = client;
+		_fileService = fileService;
 		_subjects = studyingSubjects;
 		_educationPeriods = educationPeriods;
 		_currentPeriod = currentPeriod;
@@ -57,6 +60,7 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 
 	public static async Task<StudyingSubjectCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -76,16 +80,18 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 		};
 		return new StudyingSubjectCollection(
 			client: client,
+			fileService: fileService,
 			studyingSubjects: new AsyncLazy<List<StudyingSubject>>(valueFactory: async () =>
 			{
 				List<StudyingSubject> collection = new List<StudyingSubject>(collection: await Task.WhenAll(tasks: subjects.Select(
 					selector: async s => await StudyingSubject.Create(
 						client: client,
+						fileService: fileService,
 						response: s,
 						cancellationToken: cancellationToken
 					)
 				)));
-				collection.Insert(index: 0, item: await StudyingSubject.Create(client: client, name: "Все дисциплины", cancellationToken: cancellationToken));
+				collection.Insert(index: 0, item: await StudyingSubject.Create(client: client, fileService: fileService, name: "Все дисциплины", cancellationToken: cancellationToken));
 				return collection;
 			}),
 			educationPeriods: new AsyncLazy<List<EducationPeriod>>(valueFactory: async () =>
@@ -133,6 +139,7 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 		List<StudyingSubject> subjects = new List<StudyingSubject>(collection: await Task.WhenAll(tasks: response.Select(
 			selector: async s => await StudyingSubject.CreateWithoutTasks(
 				client: _client,
+				fileService: _fileService,
 				response: s,
 				periodId: period.Id,
 				cancellationToken: cancellationToken

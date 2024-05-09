@@ -14,10 +14,10 @@
 		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 875*, 40*" Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
 			<TextBox	Text="{Binding Filter,Mode=TwoWay}"
 						Grid.Column="1" Grid.Row="1" Classes="Search"/>
-			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush Dialogs">
+			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush ListBorder">
 				<Grid RowDefinitions="775*, 80*, 20*" ColumnDefinitions="400*, 80*, 20*">
 					<controls:ListBoxWithLoadOnScroll
-							Classes.LargeCountChats="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+							Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
 							Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" ItemsSource="{Binding Chats}"
 							Command="{Binding OnChatsLoaded}" Selection="{Binding Selection}"
 							Classes="Chats" IsVisible="{Binding !!Chats.Count}" x:Name="Chats"
@@ -49,7 +49,7 @@
 					</Viewbox>
 				</Grid>
 			</Border>
-			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="3" Classes="TransitionBorderBrush Dialogs">
+			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="3" Classes="TransitionBorderBrush ListBorder">
 				<interactivity:Interaction.Behaviors>
 					<interaction:EventTriggerBehavior EventName="KeyDown">
 						<interaction:InvokeCommandAction Command="{Binding OnKeyDown}" PassEventArgsToCommand="True"/>

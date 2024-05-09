@@ -78,10 +78,10 @@
 		</Style>
 
 		<Style Selector="^.Corner30">
-			<Setter Property="CornerRadius" Value="30"></Setter>
+			<Setter Property="CornerRadius" Value="30"/>
 		</Style>
 		<Style Selector="^.Corner20">
-			<Setter Property="CornerRadius" Value="20"></Setter>
+			<Setter Property="CornerRadius" Value="20"/>
 		</Style>
 
 		<Style Selector="^.MainAccentColor">
@@ -191,6 +191,17 @@
 			<Setter Property="Padding" Value="0"/>
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="BorderThickness" Value="0"/>
+		</Style>
+
+		<Style Selector="^.TransparentCloseButton">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Style Selector="^:pointerover">
+				<Setter Property="Background" Value="{DynamicResource ResourceKey=ClosePointeroverColor}"/>
+			</Style>
 		</Style>
 	</Style>
 </Styles>

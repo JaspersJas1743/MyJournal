@@ -8,6 +8,8 @@ public sealed class FileService(
 	ApiClient client
 ) : IFileService
 {
+	public static readonly IFileService Empty = new FileService(client: ApiClient.Empty);
+
 	public ApiClient ApiClient { get; set; } = client;
 
 	private sealed record FileLink(string Link);

@@ -290,7 +290,6 @@ public sealed class MessagesModel : ModelBase
 		List<Message> messages = await _messageFromSelectedChat.ToListAsync();
 		MessagesAreLoaded = true;
 		Messages = new ObservableCollectionExtended<ExtendedMessage>(collection: messages.Select(selector: m => m.ToExtended(
-			configurationService: _configurationService,
 			isSingleChat: Selection.SelectedItem.Observable.IsSingleChat
 		)));
 
@@ -420,9 +419,7 @@ public sealed class MessagesModel : ModelBase
 		if (_messageFromSelectedChat is null)
 			return;
 
-		ExtendedMessage? receivedMessage = (await _messageFromSelectedChat?.FindById(id: e.MessageId)!)?.ToExtended(
-			configurationService: _configurationService, isSingleChat: chat.IsSingleChat
-		);
+		ExtendedMessage? receivedMessage = (await _messageFromSelectedChat?.FindById(id: e.MessageId)!)?.ToExtended(isSingleChat: chat.IsSingleChat);
 
 		if (receivedMessage is null)
 			return;
@@ -450,7 +447,6 @@ public sealed class MessagesModel : ModelBase
 		await _messageFromSelectedChat.LoadNext();
 		IEnumerable<Message> messages = await _messageFromSelectedChat.GetByRange(start: 0, end: _messageFromSelectedChat.Length - currentLength);
 		Messages.InsertRange(collection: messages.Select(selector: m => m.ToExtended(
-			configurationService: _configurationService,
 			isSingleChat: Selection.SelectedItem?.IsSingleChat == true
 		)), index: 0);
 		_lastMessageIsSelected = false;

@@ -57,7 +57,7 @@
 			<Setter Property="BorderThickness" Value="5"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
 		</Style>
-		<Style Selector="^.Dialogs">
+		<Style Selector="^.ListBorder">
 			<Setter Property="CornerRadius" Value="20"/>
 			<Setter Property="BorderThickness" Value="5"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
@@ -127,6 +127,21 @@
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
 			<Setter Property="BorderThickness" Value="0 0 0 5"/>
+		</Style>
+		<Style Selector="^.TaskIsExpired">
+			<Setter Property="BorderThickness" Value="0 0 0 5"/>
+			<Setter Property="Grid.ColumnSpan" Value="7"/>
+		</Style>
+		<Style Selector="^.TaskNotIsExpired">
+			<Setter Property="Grid.ColumnSpan" Value="5"/>
+			<Setter Property="BorderThickness" Value="0 0 5 5"/>
+		</Style>
+		<Style Selector="^.AllSubjects">
+			<Setter Property="BorderThickness" Value="0 0 0 5"/>
+		</Style>
+		<Style Selector="^.NotAllSubjects">
+			<Setter Property="BorderThickness" Value="5 0 0 5"/>
+			<Setter Property="CornerRadius" Value="0 0 0 20"/>
 		</Style>
 	</Style>
 </Styles>

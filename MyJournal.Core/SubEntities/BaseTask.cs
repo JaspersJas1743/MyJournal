@@ -1,7 +1,7 @@
 namespace MyJournal.Core.SubEntities;
 
 public sealed record TaskAttachment(string LinkToFile, Attachment.AttachmentType AttachmentType);
-public sealed record TaskContent(string? Text, IEnumerable<TaskAttachment>? Attachments);
+public sealed record TaskContent(string? Text, IEnumerable<Attachment>? Attachments);
 
 public abstract class BaseTask : ISubEntity
 {

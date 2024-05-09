@@ -120,9 +120,9 @@ internal sealed class TaskBuilder : ITaskBuilder
 			arg: new CreateTasksRequest(
 				SubjectId: _subjectId,
 				ClassId: _classId,
-				Content: new TaskContent(Text: _text.ToString(), Attachments: _attachments.Select(selector: a => new TaskAttachment(
-					 LinkToFile: a.LinkToFile!,
-					 AttachmentType: a.Type
+				Content: new TaskContent(Text: _text.ToString(), Attachments: _attachments.Select(selector: a => Attachment.Create(
+					 linkToFile: a.LinkToFile!,
+					 type: a.Type
 				))),
 				ReleasedAt: _releasedAt
 			),
