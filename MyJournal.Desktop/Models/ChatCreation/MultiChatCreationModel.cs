@@ -10,7 +10,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
-using DynamicData.Kernel;
 using MyJournal.Core;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
@@ -202,7 +201,8 @@ public class MultiChatCreationModel : ValidatableModel
 		if (e.DeselectedItems.Count <= 0)
 			return;
 
-		_selectedItems.RemoveMany(itemsToRemove: e.DeselectedItems.OfType<ExtendedInterlocutor>());
+		foreach (ExtendedInterlocutor extendedInterlocutor in e.DeselectedItems.OfType<ExtendedInterlocutor>())
+			_selectedItems.RemoveMany(itemsToRemove: _selectedItems.Where(predicate: i => i.UserId == extendedInterlocutor.UserId));
 	}
 
 	protected override void SetValidationRule()
