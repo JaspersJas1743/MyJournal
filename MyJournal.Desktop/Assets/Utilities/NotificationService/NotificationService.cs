@@ -35,8 +35,8 @@ public sealed class NotificationService(MainWindowView topLevel) : INotification
 public static class NotificationServiceExtensions
 {
 	public static IServiceCollection AddNotificationService(this IServiceCollection serviceCollection)
-		=> serviceCollection.AddTransient<INotificationService, NotificationService>();
+		=> serviceCollection.AddSingleton<INotificationService, NotificationService>();
 
 	public static IServiceCollection AddKeyedNotificationService(this IServiceCollection serviceCollection, string key)
-		=> serviceCollection.AddKeyedTransient<INotificationService, NotificationService>(serviceKey: key);
+		=> serviceCollection.AddKeyedSingleton<INotificationService, NotificationService>(serviceKey: key);
 }
