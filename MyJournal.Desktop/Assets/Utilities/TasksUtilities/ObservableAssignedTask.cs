@@ -32,7 +32,8 @@ public sealed class ObservableAssignedTask : ReactiveObject
 		MarkUncompleted = ReactiveCommand.CreateFromTask(execute: MarkTaskAsUncompleted);
 		OnAttachedToVisualTree = ReactiveCommand.Create(execute: () => _timer.Start());
 		OnDetachedFromVisualTree = ReactiveCommand.Create(execute: () => _timer.Stop());
-		_isExpired = _taskToObservable.CompletionStatus == AssignedTask.TaskCompletionStatus.Expired;
+		_isExpired = _taskToObservable.CompletionStatus == AssignedTask.TaskCompletionStatus.Expired ||
+			(_taskToObservable.ReleasedAt - DateTime.Now).TotalSeconds <= 0;
 
 		_taskToObservable.Completed += _ => RaiseCompletionStatus();
 		_taskToObservable.Uncompleted += _ => RaiseCompletionStatus();
@@ -43,7 +44,7 @@ public sealed class ObservableAssignedTask : ReactiveObject
 	private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
 	{
 		this.RaisePropertyChanged(propertyName: nameof(ReleasedTime));
-		if (!((_taskToObservable.ReleasedAt - DateTime.Now).TotalSeconds <= 0))
+		if (!((_taskToObservable.ReleasedAt - DateTime.Now).TotalSeconds <= 1))
 			return;
 
 		_isExpired = true;
