@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using Avalonia.Controls.Selection;
+using Avalonia.Input;
 using DynamicData.Binding;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
@@ -16,6 +17,8 @@ public sealed class ReceivedTasksVM(ReceivedTasksModel model) : TasksVM(model: m
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged => model.OnSubjectSelectionChanged;
 	public ReactiveCommand<Unit, Unit> OnTaskCompletionStatusSelectionChanged => model.OnTaskCompletionStatusSelectionChanged;
 	public ReactiveCommand<Unit, Unit> CloseAttachments => model.CloseAttachments;
+	public ReactiveCommand<Unit, Unit> LoadTasks => model.LoadTasks;
+	public ReactiveCommand<Unit, Unit> ClearTasks => model.ClearTasks;
 
 	public ReadOnlyObservableCollection<StudyingSubject> StudyingSubjects => model.StudyingSubjects;
 	public ObservableCollectionExtended<AssignedTaskCollection.AssignedTaskCompletionStatus> EducationPeriods => model.TaskCompletionStatuses;
@@ -39,5 +42,29 @@ public sealed class ReceivedTasksVM(ReceivedTasksModel model) : TasksVM(model: m
 	{
 		get => model.ShowAttachments;
 		set => model.ShowAttachments = value;
+	}
+
+	public bool AllTasksSelected
+	{
+		get => model.AllTasksSelected;
+		set => model.AllTasksSelected = value;
+	}
+
+	public bool ExpiredTasksSelected
+	{
+		get => model.ExpiredTasksSelected;
+		set => model.ExpiredTasksSelected = value;
+	}
+
+	public bool UncompletedTasksSelected
+	{
+		get => model.UncompletedTasksSelected;
+		set => model.UncompletedTasksSelected = value;
+	}
+
+	public bool CompletedTasksSelected
+	{
+		get => model.CompletedTasksSelected;
+		set => model.CompletedTasksSelected = value;
 	}
 }

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Selection;
+using Avalonia.Input;
 using DynamicData;
 using DynamicData.Binding;
 using MyJournal.Core;
@@ -29,12 +31,18 @@ public sealed class ReceivedTasksModel : TasksModel
 	private string? _filter = String.Empty;
 	private AssignedTaskCollection.AssignedTaskCompletionStatus _selectedStatus = 0;
 	private bool _showAttachments = false;
+	private bool _allTasksSelected = false;
+	private bool _expiredTasksSelected = false;
+	private bool _uncompletedTasksSelected = false;
+	private bool _completedTasksSelected = false;
 
 	public ReceivedTasksModel()
 	{
 		OnSubjectSelectionChanged = ReactiveCommand.CreateFromTask(execute: SubjectSelectionChangedHandler);
 		OnTaskCompletionStatusSelectionChanged = ReactiveCommand.CreateFromTask(execute: TaskCompletionStatusSelectionChangedHandler);
 		CloseAttachments = ReactiveCommand.Create(execute: ClearAttachments);
+		LoadTasks = ReactiveCommand.CreateFromTask(execute: LoadMoreTask);
+		ClearTasks = ReactiveCommand.Create(execute: ClearSelection);
 
 		IObservable<Func<StudyingSubject, bool>> filter = this.WhenAnyValue(model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
@@ -57,6 +65,8 @@ public sealed class ReceivedTasksModel : TasksModel
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> OnTaskCompletionStatusSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> CloseAttachments { get; }
+	public ReactiveCommand<Unit, Unit> LoadTasks { get; }
+	public ReactiveCommand<Unit, Unit> ClearTasks { get; }
 
 	public SelectionModel<StudyingSubject> SubjectSelectionModel { get; } = new SelectionModel<StudyingSubject>();
 
@@ -87,6 +97,44 @@ public sealed class ReceivedTasksModel : TasksModel
 	{
 		get => _showAttachments;
 		set => this.RaiseAndSetIfChanged(backingField: ref _showAttachments, newValue: value);
+	}
+
+	public bool AllTasksSelected
+	{
+		get => _allTasksSelected;
+		set => this.RaiseAndSetIfChanged(backingField: ref _allTasksSelected, newValue: value);
+	}
+
+	public bool ExpiredTasksSelected
+	{
+		get => _expiredTasksSelected;
+		set => this.RaiseAndSetIfChanged(backingField: ref _expiredTasksSelected, newValue: value);
+	}
+
+	public bool UncompletedTasksSelected
+	{
+		get => _uncompletedTasksSelected;
+		set => this.RaiseAndSetIfChanged(backingField: ref _uncompletedTasksSelected, newValue: value);
+	}
+
+	public bool CompletedTasksSelected
+	{
+		get => _completedTasksSelected;
+		set => this.RaiseAndSetIfChanged(backingField: ref _completedTasksSelected, newValue: value);
+	}
+
+	private async Task LoadMoreTask()
+	{
+		if (_assignedTaskCollection!.AllItemsAreUploaded)
+			return;
+
+		int currentLength = _assignedTaskCollection.Length;
+		await _assignedTaskCollection.LoadNext();
+		IEnumerable<AssignedTask> tasks = await _assignedTaskCollection.GetByRange(start: currentLength, end: _assignedTaskCollection.Length);
+		Tasks.Add(items: tasks.Select(selector: task => task.ToObservable(
+			showLessonName: SubjectSelectionModel.SelectedItem!.Name!.Contains(value: "Все дисциплины"),
+			showAttachments: GetShowAttachments(task: task)
+		)));
 	}
 
 	private void ClearAttachments()
@@ -127,6 +175,7 @@ public sealed class ReceivedTasksModel : TasksModel
 			showLessonName: SubjectSelectionModel.SelectedItem.Name!.Contains(value: "Все дисциплины"),
 			showAttachments: GetShowAttachments(task: t)
 		)));
+		SetTaskSelection();
 	}
 
 	private async Task SubjectSelectionChangedHandler()
@@ -138,6 +187,15 @@ public sealed class ReceivedTasksModel : TasksModel
 			showLessonName: SubjectSelectionModel.SelectedItem.Name!.Contains(value: "Все дисциплины"),
 			showAttachments: GetShowAttachments(task: t)
 		)));
+		SetTaskSelection();
+	}
+
+	private void SetTaskSelection()
+	{
+		AllTasksSelected = _selectedStatus == AssignedTaskCollection.AssignedTaskCompletionStatus.All;
+		ExpiredTasksSelected = _selectedStatus == AssignedTaskCollection.AssignedTaskCompletionStatus.Expired;
+		UncompletedTasksSelected = _selectedStatus == AssignedTaskCollection.AssignedTaskCompletionStatus.Uncompleted;
+		CompletedTasksSelected = _selectedStatus == AssignedTaskCollection.AssignedTaskCompletionStatus.Completed;
 	}
 
 	private async void OnStudyingSubjectsCreatedTask(CreatedTaskEventArgs e)
@@ -149,14 +207,23 @@ public sealed class ReceivedTasksModel : TasksModel
 		if (task is null)
 			return;
 
-		AssignedTask.TaskCompletionStatus taskStatus = Enum.Parse<AssignedTask.TaskCompletionStatus>(value: _selectedStatus.ToString());
-		if (task.CompletionStatus != taskStatus)
+		if (!Enum.TryParse(value: _selectedStatus.ToString(), out AssignedTask.TaskCompletionStatus taskStatus) &&
+			_selectedStatus != AssignedTaskCollection.AssignedTaskCompletionStatus.All)
+			return;
+
+		if (task.CompletionStatus != taskStatus || _selectedStatus != AssignedTaskCollection.AssignedTaskCompletionStatus.All)
 			return;
 
 		Tasks.Add(item: task.ToObservable(
 			showLessonName: SubjectSelectionModel.SelectedItem?.Name!.Contains(value: "Все дисциплины") == true,
 			showAttachments: GetShowAttachments(task: task)
 		));
+	}
+
+	private void ClearSelection()
+	{
+		SubjectSelectionModel.SelectedItem = null;
+		Tasks.Clear();
 	}
 
 	public override async Task SetUser(User user)

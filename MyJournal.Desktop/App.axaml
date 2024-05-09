@@ -87,5 +87,6 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/NotSelectedChatImage.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/BackArrow.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Camera.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/NotSelectedSubjectImage.axaml"/>
     </Application.Styles>
 </Application>

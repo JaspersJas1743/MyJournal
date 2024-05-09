@@ -86,7 +86,7 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 		int lengthBeforeLoading = Length;
 		await Load(cancellationToken: cancellationToken);
 		int lengthAfterLoading = Length;
-		_allItemsAreUploaded = lengthAfterLoading == lengthBeforeLoading;
+		_allItemsAreUploaded = lengthAfterLoading == lengthBeforeLoading || lengthBeforeLoading - lengthAfterLoading < Count;
 	}
 	#endregion
 
