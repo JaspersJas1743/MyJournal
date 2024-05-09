@@ -71,7 +71,7 @@ public class TaskController(
 			tasks = tasks.Where(predicate: t => t.LessonId == subjectId);
 
 		if (completionStatusRequest == AssignedTaskCompletionStatusRequest.Expired)
-			return tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0);
+			return tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0);
 
 		return tasks.Where(predicate: t => completionStatusRequest == AssignedTaskCompletionStatusRequest.All || t.TaskCompletionResults.Any(tcr =>
 			tcr.Student.UserId == userId &&
@@ -118,7 +118,7 @@ public class TaskController(
 			tasks = tasks.Where(predicate: t => t.LessonId == subjectId);
 
 		if (completionStatusRequest == AssignedTaskCompletionStatusRequest.Expired)
-			return tasks.Where(predicate: t => EF.Functions.DateDiffDay(DateTime.Now, t.ReleasedAt) <= 0);
+			return tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0);
 
 		return tasks.Where(predicate: t => completionStatusRequest == AssignedTaskCompletionStatusRequest.All || t.TaskCompletionResults.Any(tcr =>
 			tcr.Student.Parents.Any(p => p.UserId == userId) &&
