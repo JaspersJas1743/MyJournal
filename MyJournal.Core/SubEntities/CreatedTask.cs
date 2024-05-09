@@ -1,6 +1,7 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -13,13 +14,21 @@ public sealed class CreatedTask : BaseTask
 	#region Constructors
 	private CreatedTask(
 		ApiClient client,
+		IFileService fileService,
 		GetCreatedTasksResponse response
 	)
 	{
 		_client = client;
 		Id = response.TaskId;
 		ReleasedAt = response.ReleasedAt;
-		Content = response.Content;
+		Content = new SubEntities.TaskContent(
+			Text: response.Content.Text,
+			Attachments: response.Content.Attachments?.Select(selector: a => Attachment.Create(
+				linkToFile: a.LinkToFile,
+				type: a.AttachmentType,
+				fileService: fileService
+			))
+		);
 		ClassName = response.ClassName;
 		LessonName = response.LessonName;
 		CountOfCompletedTask = response.CountOfCompletedTask;
@@ -35,6 +44,7 @@ public sealed class CreatedTask : BaseTask
 	#endregion
 
 	#region Records
+	internal sealed record TaskContent(string? Text, IEnumerable<TaskAttachment>? Attachments);
 	internal sealed record GetCreatedTasksResponse(int TaskId, string ClassName, string LessonName, DateTime ReleasedAt, TaskContent Content, int CountOfCompletedTask, int CountOfUncompletedTask);
 	#endregion
 
@@ -48,11 +58,13 @@ public sealed class CreatedTask : BaseTask
 	#region Static
 	internal static async Task<CreatedTask> Create(
 		ApiClient client,
+		IFileService fileService,
 		GetCreatedTasksResponse response
-	) => new CreatedTask(client: client, response: response);
+	) => new CreatedTask(client: client, fileService: fileService, response: response);
 
 	internal static async Task<CreatedTask> Create(
 		ApiClient client,
+		IFileService fileService,
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -61,7 +73,7 @@ public sealed class CreatedTask : BaseTask
 			apiMethod: TaskControllerMethods.GetCreatedTaskById(taskId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		return new CreatedTask(client: client, response: response);
+		return new CreatedTask(client: client, fileService: fileService, response: response);
 	}
 	#endregion
 

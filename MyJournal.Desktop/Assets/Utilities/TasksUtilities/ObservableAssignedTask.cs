@@ -43,11 +43,11 @@ public sealed class ObservableAssignedTask : ReactiveObject
 	private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
 	{
 		this.RaisePropertyChanged(propertyName: nameof(ReleasedTime));
-		if ((_taskToObservable.ReleasedAt - DateTime.Now).TotalSeconds <= 0)
-		{
-			_isExpired = true;
-			RaiseCompletionStatus();
-		}
+		if (!((_taskToObservable.ReleasedAt - DateTime.Now).TotalSeconds <= 0))
+			return;
+
+		_isExpired = true;
+		RaiseCompletionStatus();
 	}
 
 	public AssignedTask Observable => _taskToObservable;

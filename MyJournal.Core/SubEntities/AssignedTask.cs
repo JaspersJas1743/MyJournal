@@ -9,7 +9,7 @@ public sealed class AssignedTask : BaseTask
 {
 	#region Fields
 	private readonly ApiClient _client;
-	private readonly IFileService _fileService;
+
 	#endregion
 
 	#region Constructors
@@ -19,7 +19,6 @@ public sealed class AssignedTask : BaseTask
 		GetAssignedTaskResponse response
 	)
 	{
-		_fileService = fileService;
 		_client = client;
 		Id = response.TaskId;
 		ReleasedAt = response.ReleasedAt;
@@ -28,7 +27,7 @@ public sealed class AssignedTask : BaseTask
 			Attachments: response.Content.Attachments?.Select(selector: a => Attachment.Create(
 				linkToFile: a.LinkToFile,
 				type: a.AttachmentType,
-				fileService: _fileService
+				fileService: fileService
 			))
 		);
 		CompletionStatus = response.CompletionStatus;

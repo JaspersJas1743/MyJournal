@@ -3,6 +3,7 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
@@ -36,6 +37,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	#region Static
 	internal static async Task<ClassCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -46,6 +48,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 		return new ClassCollection(classes: new AsyncLazy<List<Class>>(valueFactory: async () => new List<Class>(collection: await Task.WhenAll(
 			tasks: classes.Select(async c => await Class.Create(
 				client: client,
+				fileService: fileService,
 				classId: c.Id,
 				name: c.Name,
 				cancellationToken: cancellationToken

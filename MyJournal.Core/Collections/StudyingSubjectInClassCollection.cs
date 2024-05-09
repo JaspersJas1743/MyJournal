@@ -2,6 +2,7 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
@@ -49,6 +50,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 
 	public static async Task<StudyingSubjectInClassCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		int classId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -75,6 +77,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 				List<StudyingSubjectInClass> collection = new List<StudyingSubjectInClass>(collection: await Task.WhenAll(
 					tasks: subjects.Select(selector: async s => await StudyingSubjectInClass.Create(
 						client: client,
+						fileService: fileService,
 						classId: classId,
 						response: s,
 						cancellationToken: cancellationToken
@@ -82,6 +85,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 				));
 				collection.Insert(index: 0, item: await StudyingSubjectInClass.Create(
 					client: client,
+					fileService: fileService,
 					classId: classId,
 					name: "Все дисциплины",
 					cancellationToken: cancellationToken

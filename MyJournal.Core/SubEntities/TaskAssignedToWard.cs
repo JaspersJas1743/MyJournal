@@ -1,6 +1,7 @@
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -8,13 +9,20 @@ public sealed class TaskAssignedToWard : BaseTask
 {
 	#region Constructors
 	private TaskAssignedToWard(
-		ApiClient client,
+		IFileService fileService,
 		GetAssignedTaskResponse response
 	)
 	{
 		Id = response.TaskId;
 		ReleasedAt = response.ReleasedAt;
-		Content = response.Content;
+		Content = new SubEntities.TaskContent(
+			Text: response.Content.Text,
+			Attachments: response.Content.Attachments?.Select(selector: a => Attachment.Create(
+				linkToFile: a.LinkToFile,
+				type: a.AttachmentType,
+				fileService: fileService
+			))
+		);
 		CompletionStatus = response.CompletionStatus;
 		LessonName = response.LessonName;
 	}
@@ -35,6 +43,7 @@ public sealed class TaskAssignedToWard : BaseTask
 	#endregion
 
 	#region Records
+	internal sealed record TaskContent(string? Text, IEnumerable<TaskAttachment>? Attachments);
 	internal sealed record GetAssignedTaskResponse(int TaskId, string LessonName, DateTime ReleasedAt, TaskContent Content, TaskCompletionStatus CompletionStatus);
 	#endregion
 
@@ -47,12 +56,13 @@ public sealed class TaskAssignedToWard : BaseTask
 	#region Methods
 	#region Static
 	internal static async Task<TaskAssignedToWard> Create(
-		ApiClient client,
+		IFileService fileService,
 		GetAssignedTaskResponse response
-	) => new TaskAssignedToWard(client: client, response: response);
+	) => new TaskAssignedToWard(fileService: fileService, response: response);
 
 	internal static async Task<TaskAssignedToWard> Create(
 		ApiClient client,
+		IFileService fileService,
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -61,7 +71,7 @@ public sealed class TaskAssignedToWard : BaseTask
 			apiMethod: TaskControllerMethods.GetAssignedTaskById(taskId: id),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
-		return new TaskAssignedToWard(client: client, response: response);
+		return new TaskAssignedToWard(fileService: fileService, response: response);
 	}
 	#endregion
 

@@ -18,7 +18,7 @@
 			</Setter>
 		</Style>
 		<Style Selector="Border.Open">
-			<Setter Property="Margin" Value="15 20"/>
+			<Setter Property="Margin" Value="20 20"/>
 		</Style>
 		<Style Selector="Border.Closed">
 			<Setter Property="Margin" Value="-360 20"/>

@@ -58,6 +58,7 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 
 	public static async Task<WardSubjectStudyingCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -82,12 +83,14 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 				List<WardSubjectStudying> collection = new List<WardSubjectStudying>(collection: await Task.WhenAll(tasks: subjects.Select(
 					selector: async s => await WardSubjectStudying.Create(
 						client: client,
+						fileService: fileService,
 						response: s,
 						cancellationToken: cancellationToken
 					)
 				)));
 				collection.Insert(index: 0, item: await WardSubjectStudying.Create(
 					client: client,
+					fileService: fileService,
 					name: "Все дисциплины",
 					cancellationToken: cancellationToken
 				));

@@ -1,6 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+		xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities">
 
 	<Style Selector="ListBoxItem">
 		<Setter Property="Padding" Value="0"/>

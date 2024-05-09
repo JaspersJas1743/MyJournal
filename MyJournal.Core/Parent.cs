@@ -66,6 +66,7 @@ public sealed class Parent : User
 			information: information,
 			wardSubjectsStudying: new AsyncLazy<WardSubjectStudyingCollection>(valueFactory: async () => await WardSubjectStudyingCollection.Create(
 				client: client,
+				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
 			timetable: new AsyncLazy<TimetableForWardCollection>(valueFactory: async () => await TimetableForWardCollection.Create(

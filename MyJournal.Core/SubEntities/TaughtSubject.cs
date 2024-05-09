@@ -115,6 +115,7 @@ public sealed class TaughtSubject : ISubEntity
 			response: response,
 			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
+				fileService: fileService,
 				classId: response.Class.Id,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
@@ -147,6 +148,7 @@ public sealed class TaughtSubject : ISubEntity
 			name: name,
 			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
+				fileService: fileService,
 				subjectId: 0,
 				cancellationToken: cancellationToken
 			)),

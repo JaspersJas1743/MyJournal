@@ -2,11 +2,11 @@ using System;
 using System.Reactive;
 using Avalonia.Controls;
 using MyJournal.Core;
-using MyJournal.Core.UserData;
 using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.Views;
 using ReactiveUI;
+using Activity = MyJournal.Core.UserData.Activity;
 
 namespace MyJournal.Desktop.Models;
 
