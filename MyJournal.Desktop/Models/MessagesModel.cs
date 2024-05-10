@@ -210,13 +210,13 @@ public sealed class MessagesModel : ModelBase
 			return "в сети";
 
 		TimeSpan dateDifference = (DateTime.Now - Selection.SelectedItem!.OnlineAt).Value;
-		if (dateDifference.Minutes < 1)
+		if (dateDifference.TotalMinutes < 1)
 			return "был(-а) в сети только что";
 
 		if (dateDifference.Days < 1)
 			return "был(-а) в сети " + Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture);
 
-		if (dateDifference.Days > 1 || dateDifference.Hours >= 12)
+		if (dateDifference.Days >= 1 || dateDifference.Hours >= 12)
 			return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt:d MMMM} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
 
 		return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
