@@ -15,6 +15,9 @@ public sealed class CreateTasksRequestValidator : AbstractValidator<TaskControll
 		RuleFor(expression: request => request.ClassId)
 			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор класса не может быть отрицательным.");
 
+		RuleFor(expression: request => request.ReleasedAt)
+			.GreaterThan(valueToCompare: DateTime.Now).WithMessage(errorMessage: "Дата для выполнения задания некорректна.");
+
 		When(predicate: request => request.Content.Attachments is not null, action: () =>
 		{
 			RuleForEach(expression: request => request.Content.Attachments).ChildRules(action: r =>

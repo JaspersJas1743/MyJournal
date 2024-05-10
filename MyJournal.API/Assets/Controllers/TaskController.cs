@@ -65,7 +65,10 @@ public class TaskController(
 	{
 		IQueryable<DatabaseModels.Task> tasks = _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
-			.SelectMany(selector: s => s.Class.Tasks);
+			.SelectMany(selector: s => s.Class.Tasks)
+			.OrderByDescending(keySelector: t => t.TaskCompletionResults.Single(r => r.Student.UserId == userId).TaskCompletionStatus)
+			.ThenBy(keySelector: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0 ? 1 : 0)
+			.ThenBy(keySelector: t => t.ReleasedAt);
 
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.LessonId == subjectId);
@@ -89,7 +92,8 @@ public class TaskController(
 	{
 		IQueryable<DatabaseModels.Task> tasks = _context.Classes.AsNoTracking()
 			.Where(predicate: t => t.Id == classId)
-			.SelectMany(selector: c => c.Tasks);
+			.SelectMany(selector: c => c.Tasks)
+			.OrderBy(keySelector: t => t.ReleasedAt);
 
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.LessonId == subjectId);
@@ -112,7 +116,11 @@ public class TaskController(
 	{
 		IQueryable<DatabaseModels.Task> tasks = _context.Parents.AsNoTracking()
 			.Where(predicate: p => p.UserId == userId)
-			.SelectMany(selector: p => p.Children.Class.Tasks);
+			.SelectMany(selector: p => p.Children.Class.Tasks)
+			.OrderByDescending(keySelector: t => t.TaskCompletionResults.Single(
+				r => r.Student.Parents.Any(p => p.UserId == userId)).TaskCompletionStatus
+			).ThenBy(keySelector: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0 ? 1 : 0)
+			.ThenBy(keySelector: t => t.ReleasedAt);
 
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.LessonId == subjectId);
@@ -137,7 +145,8 @@ public class TaskController(
 	{
 		IQueryable<DatabaseModels.Task> tasks = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
-			.SelectMany(selector: t => t.Tasks);
+			.SelectMany(selector: t => t.Tasks)
+			.OrderBy(keySelector: t => t.ReleasedAt);
 
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.ClassId == classId && t.LessonId == subjectId);
@@ -802,8 +811,11 @@ public class TaskController(
 		IEnumerable<string> studentIds = _context.Students.AsNoTracking()
 			.Where(predicate: s => s.ClassId == request.ClassId && s.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
 			.Select(selector: s => s.UserId.ToString());
-		IQueryable<string> parentIds = _context.Users.Where(predicate: u => u.Id == userId && u.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
-			.SelectMany(selector: u => u.Parents.Select(p => p.UserId.ToString()));
+		IEnumerable<string> parentIds = _context.Students.AsNoTracking()
+			.Where(predicate: s => s.ClassId == request.ClassId)
+			.SelectMany(selector: s => s.Parents)
+			.Where(predicate: p => p.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online)
+			.Select(selector: s => s.UserId.ToString());
 		IQueryable<string> adminIds = _context.Administrators.Where(
 			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
 		).Select(selector: a => a.UserId.ToString());
