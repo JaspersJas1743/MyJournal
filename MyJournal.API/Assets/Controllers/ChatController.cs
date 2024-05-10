@@ -49,30 +49,6 @@ public sealed class ChatController(
 	#endregion
 
 	#region Methods
-	private string GetChatName(Chat chat, User currentUser)
-	{
-		if (chat.ChatType.Type == ChatTypes.Multi)
-			return chat.Name!;
-
-		if (chat.Users.Count == 1)
-			return "Избранное";
-
-		User interlocutor = chat.Users.Except(second: new User[1] { currentUser }).Single();
-		return $"{interlocutor.Surname} {interlocutor.Name}";
-	}
-
-	private string GetChatPhoto(Chat chat, User currentUser)
-	{
-		if (chat.ChatType.Type == ChatTypes.Multi)
-			return chat.LinkToPhoto ?? GroupDefault;
-
-		if (chat.Users.Count == 1)
-			return Favourites;
-
-		User interlocutor = chat.Users.Except(second: new User[1] { currentUser }).Single();
-		return interlocutor.LinkToPhoto ?? UserDefault;
-	}
-
 	private async Task<ChatType> FindChatType(
 		ChatTypes type,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -140,7 +116,8 @@ public sealed class ChatController(
 			));
 
 		IEnumerable<GetChatsResponse> listOfChats = chats.AsEnumerable()
-			.OrderByDescending(keySelector: r => r.LastMessage?.CreatedAt ?? r.CreatedAt);
+			.OrderByDescending(keySelector: r => r.LastMessage?.CreatedAt)
+			.ThenByDescending(keySelector: r => r.CreatedAt);
 
 		if (!request.IsFiltered)
 			return Ok(value: listOfChats.Skip(count: request.Offset).Take(count: request.Count));
