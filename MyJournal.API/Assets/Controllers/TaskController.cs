@@ -66,8 +66,8 @@ public class TaskController(
 		IQueryable<DatabaseModels.Task> tasks = _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
 			.SelectMany(selector: s => s.Class.Tasks)
-			.OrderByDescending(keySelector: t => t.TaskCompletionResults.Single(r => r.Student.UserId == userId).TaskCompletionStatus)
-			.ThenBy(keySelector: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0 ? 1 : 0)
+			.OrderBy(keySelector: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0 ? 1 : 0)
+			.ThenByDescending(keySelector: t => t.TaskCompletionResults.Single(r => r.Student.UserId == userId).TaskCompletionStatus)
 			.ThenBy(keySelector: t => t.ReleasedAt);
 
 		if (!allSubject)
