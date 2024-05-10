@@ -3,7 +3,8 @@
 		xmlns:vm="using:MyJournal.Desktop.ViewModels"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
 		xmlns:chatCreation="clr-namespace:MyJournal.Desktop.ViewModels.ChatCreation"
-		xmlns:confirmationCode="clr-namespace:MyJournal.Desktop.ViewModels.ConfirmationCode">
+		xmlns:confirmationCode="clr-namespace:MyJournal.Desktop.ViewModels.ConfirmationCode"
+		xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia">
 
 	<Style Selector="Window">
 		<Setter Property="ExtendClientAreaChromeHints" Value="NoChrome"/>
@@ -147,6 +148,11 @@
 				<Setter Property="IsVisible" Value="False"/>
 			</Style>
 		</Style>
+	</Style>
+
+	<Style Selector="dialogHostAvalonia|DialogOverlayPopupHost">
+		<Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
+		<Setter Property="CornerRadius" Value="15"/>
 	</Style>
 
 </Styles>
