@@ -154,6 +154,16 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 	#endregion
 
 	#region LazyCollection<AssignedTask>
+	internal override async Task Add(
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		List<AssignedTask> collection = await Collection;
+		await Append(id: id, cancellationToken: cancellationToken);
+		collection.Sort(comparison: (first, second) => first.ReleasedAt.CompareTo(value: second.ReleasedAt));
+	}
+
 	internal override async Task Append(
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)

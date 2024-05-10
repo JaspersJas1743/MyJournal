@@ -223,7 +223,7 @@ public sealed class StudyingSubject : Subject
 	{
 		await InvokeIfTasksAreCreated(invocation: async collection =>
 		{
-			await collection.Append(id: e.TaskId);
+			await collection.Add(id: e.TaskId);
 			await foreach (AssignedTask task in collection.Where(predicate: t => t.Id == e.TaskId))
 				task.OnCreatedTask(e: e);
 		});

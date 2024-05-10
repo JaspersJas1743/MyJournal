@@ -1,10 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using Avalonia.Controls.Selection;
-using Avalonia.Input;
 using DynamicData.Binding;
-using MyJournal.Core.Collections;
-using MyJournal.Core.SubEntities;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 using MyJournal.Desktop.Assets.Utilities.TasksUtilities;
 using MyJournal.Desktop.Models.Tasks;
@@ -20,10 +17,10 @@ public sealed class ReceivedTasksVM(ReceivedTasksModel model) : TasksVM(model: m
 	public ReactiveCommand<Unit, Unit> LoadTasks => model.LoadTasks;
 	public ReactiveCommand<Unit, Unit> ClearTasks => model.ClearTasks;
 
-	public ReadOnlyObservableCollection<StudyingSubject> StudyingSubjects => model.StudyingSubjects;
-	public ObservableCollectionExtended<AssignedTaskCollection.AssignedTaskCompletionStatus> EducationPeriods => model.TaskCompletionStatuses;
-	public ObservableCollectionExtended<ObservableAssignedTask> Tasks => model.Tasks;
-	public SelectionModel<StudyingSubject> SubjectSelectionModel => model.SubjectSelectionModel;
+	public ReadOnlyObservableCollection<StudentSubject> StudyingSubjects => model.StudyingSubjects;
+	public ObservableCollectionExtended<TaskCompletionStatus> EducationPeriods => model.TaskCompletionStatuses;
+	public ObservableCollectionExtended<ObservableReceivedTask> Tasks => model.Tasks;
+	public SelectionModel<StudentSubject> SubjectSelectionModel => model.SubjectSelectionModel;
 	public ObservableCollectionExtended<ExtendedAttachment> Attachments => model.Attachments;
 
 	public string? Filter
@@ -32,7 +29,7 @@ public sealed class ReceivedTasksVM(ReceivedTasksModel model) : TasksVM(model: m
 		set => model.Filter = value;
 	}
 
-	public AssignedTaskCollection.AssignedTaskCompletionStatus SelectedStatus
+	public TaskCompletionStatus SelectedStatus
 	{
 		get => model.SelectedStatus;
 		set => model.SelectedStatus = value;

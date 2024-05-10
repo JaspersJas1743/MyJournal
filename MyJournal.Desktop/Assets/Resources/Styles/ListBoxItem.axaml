@@ -151,7 +151,7 @@
 	</Style>
 
 	<Style Selector="ListBox.AssignedTasks ListBoxItem:nth-child(odd)">
-		<Setter Property="Margin" Value="0 10 10 10"/>
+		<Setter Property="Margin" Value="20 10 10 10"/>
 	</Style>
 
 	<Style Selector="ListBox.AssignedTasks ListBoxItem:nth-child(even)">

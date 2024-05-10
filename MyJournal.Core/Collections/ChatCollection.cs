@@ -101,7 +101,7 @@ public sealed class ChatCollection : LazyCollection<Chat>
 		Offset = collection.Count;
 	}
 
-	public override async Task Clear(
+	internal override async Task Clear(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{

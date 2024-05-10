@@ -112,5 +112,11 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style Selector="^.TaskStatus">
+            <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="{TemplateBinding Background}" />
+                <Setter Property="Opacity" Value="1"/>
+            </Style>
+        </Style>
     </Style>
 </Styles>

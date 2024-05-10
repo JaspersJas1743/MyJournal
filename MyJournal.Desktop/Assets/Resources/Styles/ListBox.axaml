@@ -316,18 +316,18 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="0" />
 			<Setter Property="Padding" Value="0" />
-			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
 			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
 			<Setter Property="ItemsPanel">
 				<ItemsPanelTemplate>
-					<WrapPanel Orientation="Horizontal" Width="1350" HorizontalAlignment="Center" Margin="20 10"/>
+					<WrapPanel Orientation="Horizontal" Width="1350" HorizontalAlignment="Center" Margin="0 10"/>
 				</ItemsPanelTemplate>
 			</Setter>
 		</Style>
 
 		<Style Selector="^.StudyingSubjects">
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="entities:StudyingSubject">
+				<DataTemplate DataType="tasksUtilities:StudentSubject">
 					<Grid Margin="20 10" Width="450" Height="50">
 						<StackPanel Orientation="Vertical" VerticalAlignment="Center">
 							<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
@@ -343,7 +343,7 @@
 
 		<Style Selector="^.AssignedTasks">
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="tasksUtilities:ObservableAssignedTask">
+				<DataTemplate DataType="tasksUtilities:ObservableReceivedTask">
 					<Border BorderBrush="{DynamicResource StrokeColor}" CornerRadius="15"
 							Classes="TransitionBackground TransitionBorderBrush" BorderThickness="5"
 							Background="Transparent" Width="645" Height="400" >
@@ -378,20 +378,22 @@
 										HorizontalAlignment="Center" VerticalAlignment="Center"/>
 							<Viewbox Grid.Row="2" Grid.Column="1">
 								<controls:ButtonWithAnimatedCommand Background="{DynamicResource CompletedTaskColor}" Content="Выполнено"
-																	IsVisible="{Binding IsCompleted}"
-																	Width="150" Height="50" FontSize="20" Classes="Corner10"
-																	Command="{Binding MarkUncompleted}"/>
+																	IsEnabled="{Binding !Observable.IsReceivedToWard}"
+																	Width="150" Height="50" FontSize="20" Classes="Corner10 TaskStatus"
+																	Command="{Binding MarkUncompleted}"
+																	IsVisible="{Binding IsCompleted}"/>
 							</Viewbox>
 							<Viewbox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
 								<controls:ButtonWithAnimatedCommand Background="{DynamicResource UncompletedTaskColor}" FontSize="20"
-																	Content="Не выполнено" Classes="Corner10" Width="175" Height="50"
+																	IsEnabled="{Binding !Observable.IsReceivedToWard}"
+																	Content="Не выполнено" Classes="Corner10 TaskStatus" Width="175" Height="50"
 																	IsVisible="{Binding IsUncompleted}"
 																	Command="{Binding MarkCompleted}"/>
 							</Viewbox>
 							<Viewbox Grid.Row="2" Grid.Column="1">
 								<controls:ButtonWithAnimatedCommand Background="{DynamicResource ExpiredTaskColor}" IsEnabled="False"
 																	Content="Завершено" IsVisible="{Binding IsExpired}"
-																	Width="150" Height="50" FontSize="20" Classes="Corner10"/>
+																	Width="150" Height="50" FontSize="20" Classes="Corner10 TaskStatus"/>
 							</Viewbox>
 							<Viewbox Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2">
 								<controls:ButtonWithAnimatedCommand Background="{DynamicResource MainAccentColor}"

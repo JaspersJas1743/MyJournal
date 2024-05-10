@@ -61,7 +61,7 @@ public class ParentTest
 	#endregion
 
 	#region Lessons
-	private async Task CheckWardSubjectsStudying(WardSubjectStudyingCollection collection, int startIndex)
+	private async Task CheckWardSubjectsStudying(WardStudyingSubjectCollection collection, int startIndex)
 	{
 		WardSubjectStudying secondStudyingSubject = await collection.GetByIndex(index: startIndex);
 		Assert.That(actual: secondStudyingSubject.Name, expression: Is.EqualTo(expected: "Русский язык"));
@@ -90,7 +90,7 @@ public class ParentTest
 	public async Task ParentGetStudyingSubjects_WithCorrectData_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
 		WardSubjectStudying firstStudyingSubject = await studyingSubjects.GetByIndex(index: 0);
 		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
@@ -101,7 +101,7 @@ public class ParentTest
 	public async Task ParentGetStudyingSubjectsForPeriod_WithCorrectData_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
 		EducationPeriod educationPeriod = educationPeriods.Last();
 		await studyingSubjects.SetEducationPeriod(period: educationPeriod);
@@ -113,7 +113,7 @@ public class ParentTest
 	public async Task ParentGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
 		EducationPeriod lastEducationPeriod = educationPeriods.Last();
 		EducationPeriod firstEducationPeriod = educationPeriods.First();
@@ -157,7 +157,7 @@ public class ParentTest
 		Assert.That(actual: task.CompletionStatus, expression: Is.EqualTo(expected: TaskAssignedToWard.TaskCompletionStatus.Expired));
 	}
 
-	private async Task<TaskAssignedToWardCollection> GetAllTasks(WardSubjectStudyingCollection collection)
+	private async Task<TaskAssignedToWardCollection> GetAllTasks(WardStudyingSubjectCollection collection)
 	{
 		Assert.That(actual: await collection.GetLength(), expression: Is.EqualTo(expected: 4));
 		WardSubjectStudying firstSubject = await collection.GetByIndex(index: 0);
@@ -169,7 +169,7 @@ public class ParentTest
 	public async Task ParentGetTasksAssignedToWard_WithDefaultValues_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection collection = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection collection = await parent.GetWardSubjectsStudying();
 		TaskAssignedToWardCollection allTasks = await GetAllTasks(collection: collection);
 		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
 		await CheckTaskWithIdEqualsFive(task: await allTasks.ElementAtAsync(index: 0));
@@ -196,7 +196,7 @@ public class ParentTest
 	public async Task ParentGetTasksAssignedToWard_WithChangeStatusToUncompleted_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection collection = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection collection = await parent.GetWardSubjectsStudying();
 		TaskAssignedToWardCollection allTasks = await GetAllTasks(collection: collection);
 		await allTasks.SetCompletionStatus(status: TaskAssignedToWardCollection.AssignedTaskCompletionStatus.Uncompleted);
 		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 2));
@@ -208,7 +208,7 @@ public class ParentTest
 	public async Task ParentGetTasksAssignedToWard_WithChangeStatusToCompleted_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection collection = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection collection = await parent.GetWardSubjectsStudying();
 		TaskAssignedToWardCollection allTasks = await GetAllTasks(collection: collection);
 		await allTasks.SetCompletionStatus(status: TaskAssignedToWardCollection.AssignedTaskCompletionStatus.Completed);
 		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 1));
@@ -219,7 +219,7 @@ public class ParentTest
 	public async Task ParentGetTasksAssignedToWard_WithChangeStatusToExpired_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection collection = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection collection = await parent.GetWardSubjectsStudying();
 		TaskAssignedToWardCollection allTasks = await GetAllTasks(collection: collection);
 		await allTasks.SetCompletionStatus(status: TaskAssignedToWardCollection.AssignedTaskCompletionStatus.Expired);
 		Assert.That(actual: allTasks.Length, expression: Is.EqualTo(expected: 3));
@@ -230,7 +230,7 @@ public class ParentTest
 	#endregion
 
 	#region Assessments
-	private async Task<Grade<Estimation>> GetGrade(WardSubjectStudyingCollection collection)
+	private async Task<Grade<Estimation>> GetGrade(WardStudyingSubjectCollection collection)
 	{
 		WardSubjectStudying physicalEducation = await collection.SingleAsync(predicate: s => s.Id == 47);
 		Assert.That(actual: physicalEducation.Name, expression: Is.EqualTo(expected: "Физическая культура"));
@@ -340,7 +340,7 @@ public class ParentTest
 	public async Task ParentGetAssessmentsForWard_WithDefaultValue_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
 		Grade<Estimation> grade = await GetGrade(collection: studyingSubjects);
 		await CheckGrade(grade: grade);
@@ -350,7 +350,7 @@ public class ParentTest
 	public async Task ParentGetAssessments_WithChangePeriod_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
 		await studyingSubjects.SetEducationPeriod(period: educationPeriods.Single(predicate: ep => ep.Id == 8));
 		Grade<Estimation> grade = await GetGrade(collection: studyingSubjects);
@@ -364,7 +364,7 @@ public class ParentTest
 	public async Task ParentGetAssessmentsForWard_AfterAddedAssessment_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
 		Grade<Estimation> grade = await GetGrade(collection: studyingSubjects);
 		await CheckGrade(grade: grade);
@@ -380,7 +380,7 @@ public class ParentTest
 	public async Task StudentGetAssessments_AfterChangedAssessment_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
 		Grade<Estimation> grade = await GetGrade(collection: studyingSubjects);
 		await CheckGrade(grade: grade);
@@ -409,7 +409,7 @@ public class ParentTest
 	public async Task StudentGetAssessments_AfterDeletedAssessment_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection studyingSubjects = await parent.GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
 		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
 		Grade<Estimation> grade = await GetGrade(collection: studyingSubjects);
 		await CheckGrade(grade: grade);
@@ -496,8 +496,8 @@ public class ParentTest
 	public async Task ParentGetTimetableBySubject_WithDefaultValue_ShouldPassed()
 	{
 		Parent? student = await GetParent();
-		WardSubjectStudyingCollection subjects = await student?.GetWardSubjectsStudying()!;
-		WardSubjectStudying subject = await subjects.SingleAsync(s => s.Id == 47);
+		WardStudyingSubjectCollection studyingSubjects = await student?.GetWardSubjectsStudying()!;
+		WardSubjectStudying subject = await studyingSubjects.SingleAsync(s => s.Id == 47);
 		IEnumerable<TimetableForStudent> timetables = await subject.GetTimetable();
 		foreach (TimetableForStudent timetable in timetables)
 			await CheckTimetable(timetable: timetable);
@@ -515,8 +515,8 @@ public class ParentTest
 	public async Task ParentGetTimetableBySubject_AfterChangeTimetable_ShouldPassed()
 	{
 		Parent? parent = await GetParent();
-		WardSubjectStudyingCollection subjects = await parent?.GetWardSubjectsStudying()!;
-		WardSubjectStudying subject = await subjects.SingleAsync(s => s.Id == 47);
+		WardStudyingSubjectCollection studyingSubjects = await parent?.GetWardSubjectsStudying()!;
+		WardSubjectStudying subject = await studyingSubjects.SingleAsync(s => s.Id == 47);
 		await PrintTimetable(timetable: await subject.GetTimetable());
 
 		Administrator? administrator = await GetAdministrator();

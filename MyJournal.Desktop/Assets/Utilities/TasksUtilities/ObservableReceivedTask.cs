@@ -12,15 +12,15 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Utilities.TasksUtilities;
 
-public sealed class ObservableAssignedTask : ReactiveObject
+public sealed class ObservableReceivedTask : ReactiveObject
 {
-	private readonly AssignedTask _taskToObservable;
+	private readonly ReceivedTask _taskToObservable;
 	private List<ExtendedAttachment>? _attachments;
 	private bool _showLessonName;
 	private bool _isExpired = false;
 	private readonly Timer _timer = new Timer(interval: TimeSpan.FromSeconds(value: 1));
 
-	public ObservableAssignedTask(AssignedTask task, bool showLessonName, ReactiveCommand<Unit, Unit> showAttachments)
+	public ObservableReceivedTask(ReceivedTask task, bool showLessonName, ReactiveCommand<Unit, Unit> showAttachments)
 	{
 		_taskToObservable = task;
 		_timer.Elapsed += OnTimerElapsed;
@@ -32,14 +32,14 @@ public sealed class ObservableAssignedTask : ReactiveObject
 		MarkUncompleted = ReactiveCommand.CreateFromTask(execute: MarkTaskAsUncompleted);
 		OnAttachedToVisualTree = ReactiveCommand.Create(execute: () => _timer.Start());
 		OnDetachedFromVisualTree = ReactiveCommand.Create(execute: () => _timer.Stop());
-		_isExpired = _taskToObservable.CompletionStatus == AssignedTask.TaskCompletionStatus.Expired ||
+		_isExpired = _taskToObservable.CompletionStatus == ReceivedTask.TaskCompletionStatus.Expired ||
 			(_taskToObservable.ReleasedAt - DateTime.Now).TotalSeconds <= 0;
 
 		_taskToObservable.Completed += _ => RaiseCompletionStatus();
 		_taskToObservable.Uncompleted += _ => RaiseCompletionStatus();
 	}
 
-	~ObservableAssignedTask() => _timer.Dispose();
+	~ObservableReceivedTask() => _timer.Dispose();
 
 	private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
 	{
@@ -51,7 +51,7 @@ public sealed class ObservableAssignedTask : ReactiveObject
 		RaiseCompletionStatus();
 	}
 
-	public AssignedTask Observable => _taskToObservable;
+	public ReceivedTask Observable => _taskToObservable;
 	public int Id => _taskToObservable.Id;
 	public DateTime ReleasedAt => _taskToObservable.ReleasedAt;
 	public string ReleasedTime => (_taskToObservable.ReleasedAt - DateTime.Now).Humanize(maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)
@@ -69,9 +69,9 @@ public sealed class ObservableAssignedTask : ReactiveObject
 		set => this.RaiseAndSetIfChanged(backingField: ref _showLessonName, newValue: value);
 	}
 
-	public bool IsExpired => _taskToObservable.CompletionStatus == AssignedTask.TaskCompletionStatus.Expired || _isExpired;
-	public bool IsCompleted => _taskToObservable.CompletionStatus == AssignedTask.TaskCompletionStatus.Completed && !_isExpired;
-	public bool IsUncompleted => _taskToObservable.CompletionStatus == AssignedTask.TaskCompletionStatus.Uncompleted && !_isExpired;
+	public bool IsExpired => _taskToObservable.CompletionStatus == ReceivedTask.TaskCompletionStatus.Expired || _isExpired;
+	public bool IsCompleted => _taskToObservable.CompletionStatus == ReceivedTask.TaskCompletionStatus.Completed && !_isExpired;
+	public bool IsUncompleted => _taskToObservable.CompletionStatus == ReceivedTask.TaskCompletionStatus.Uncompleted && !_isExpired;
 	public string LessonName => _taskToObservable.LessonName;
 	public ReactiveCommand<Unit, Unit> ShowAttachments { get; }
 	public ReactiveCommand<Unit, Unit> MarkCompleted { get; }
@@ -95,12 +95,18 @@ public sealed class ObservableAssignedTask : ReactiveObject
 
 public static class ObservableAssignedTaskExtensions
 {
-	public static ObservableAssignedTask ToObservable(this AssignedTask task, bool showLessonName, ReactiveCommand<Unit, Unit> showAttachments)
+	public static ObservableReceivedTask ToObservable(this ReceivedTask task, bool showLessonName, ReactiveCommand<Unit, Unit> showAttachments)
 	{
-		ObservableAssignedTask observableTask = new ObservableAssignedTask(task: task, showLessonName: showLessonName, showAttachments: showAttachments);
+		ObservableReceivedTask observableTask = new ObservableReceivedTask(task: task, showLessonName: showLessonName, showAttachments: showAttachments);
 		observableTask.Attachments = new List<ExtendedAttachment>(collection: task.Content.Attachments?.Select(
 			selector: a => a.ToExtended()
 		) ?? Enumerable.Empty<ExtendedAttachment>());
 		return observableTask;
 	}
+
+	public static ObservableReceivedTask ToObservable(this AssignedTask task, bool showLessonName, ReactiveCommand<Unit, Unit> showAttachments)
+		=> new ReceivedTask(assignedTask: task).ToObservable(showLessonName: showLessonName, showAttachments: showAttachments);
+
+	public static ObservableReceivedTask ToObservable(this TaskAssignedToWard task, bool showLessonName, ReactiveCommand<Unit, Unit> showAttachments)
+		=> new ReceivedTask(taskAssignedToWard: task).ToObservable(showLessonName: showLessonName, showAttachments: showAttachments);
 }

@@ -1,4 +1,3 @@
-using System.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -8,7 +7,7 @@ using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
-public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubjectStudying>
+public sealed class WardStudyingSubjectCollection : IAsyncEnumerable<WardSubjectStudying>
 {
 	#region Fields
 	private readonly ApiClient _client;
@@ -19,7 +18,7 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 	#endregion
 
 	#region Constructor
-	private WardSubjectStudyingCollection(
+	private WardStudyingSubjectCollection(
 		ApiClient client,
 		AsyncLazy<List<WardSubjectStudying>> studyingSubjects,
 		AsyncLazy<List<EducationPeriod>> educationPeriods,
@@ -56,7 +55,7 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 		) ?? throw new InvalidOperationException();
 	}
 
-	public static async Task<WardSubjectStudyingCollection> Create(
+	public static async Task<WardStudyingSubjectCollection> Create(
 		ApiClient client,
 		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -76,7 +75,7 @@ public sealed class WardSubjectStudyingCollection : IAsyncEnumerable<WardSubject
 			Id = 0,
 			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть"
 		};
-		return new WardSubjectStudyingCollection(
+		return new WardStudyingSubjectCollection(
 			client: client,
 			studyingSubjects: new AsyncLazy<List<WardSubjectStudying>>(valueFactory: async () =>
 			{
