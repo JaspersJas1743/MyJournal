@@ -73,10 +73,10 @@ public class TaskController(
 		if (completionStatusRequest == AssignedTaskCompletionStatusRequest.Expired)
 			return tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0);
 
-		return tasks.Where(predicate: t => completionStatusRequest == AssignedTaskCompletionStatusRequest.All || t.TaskCompletionResults.Any(tcr =>
+		return tasks.Where(predicate: t => completionStatusRequest == AssignedTaskCompletionStatusRequest.All || (t.TaskCompletionResults.Any(tcr =>
 			tcr.Student.UserId == userId &&
 			tcr.TaskCompletionStatus.CompletionStatus == Enum.Parse<TaskCompletionStatuses>(completionStatusRequest.ToString())
-		));
+		) && EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) > 0));
 	}
 
 	private async Task<IQueryable<DatabaseModels.Task>> GetTasksForAdministrator(
@@ -120,10 +120,10 @@ public class TaskController(
 		if (completionStatusRequest == AssignedTaskCompletionStatusRequest.Expired)
 			return tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0);
 
-		return tasks.Where(predicate: t => completionStatusRequest == AssignedTaskCompletionStatusRequest.All || t.TaskCompletionResults.Any(tcr =>
+		return tasks.Where(predicate: t => completionStatusRequest == AssignedTaskCompletionStatusRequest.All || (t.TaskCompletionResults.Any(tcr =>
 			tcr.Student.Parents.Any(p => p.UserId == userId) &&
 			tcr.TaskCompletionStatus.CompletionStatus == Enum.Parse<TaskCompletionStatuses>(completionStatusRequest.ToString())
-		));
+		) && EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) > 0));
 	}
 
 	private async Task<IQueryable<DatabaseModels.Task>> GetTasksForTeacher(
