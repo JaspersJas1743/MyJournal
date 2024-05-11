@@ -880,7 +880,7 @@ public class TaskController(
 
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		IQueryable<string> parentIds = _context.Users.Where(predicate: u => u.Id == userId)
+		IQueryable<string> parentIds = _context.Students.Where(predicate: u => u.UserId == userId)
 			.SelectMany(selector: u => u.Parents.Select(p => p.UserId.ToString()));
 		IQueryable<string> adminIds = _context.Administrators.Where(
 			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
@@ -888,6 +888,7 @@ public class TaskController(
 		string creatorId = await _context.Tasks.Where(predicate: t => t.Id == taskId)
 			.Select(selector: t => t.Creator.UserId.ToString())
 			.SingleAsync(cancellationToken: cancellationToken);
+
 		if (status == TaskCompletionStatuses.Completed)
 		{
 			await studentHubContext.Clients.User(userId: userId.ToString()).CompletedTask(taskId: taskId);
