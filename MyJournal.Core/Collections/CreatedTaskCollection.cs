@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -14,18 +15,12 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	private readonly int _classId;
 	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 
-	public static readonly CreatedTaskCollection Empty = new CreatedTaskCollection(
-		client: ApiClient.Empty,
-		fileService: FileService.Empty,
-		subjectId: -1,
-		classId: -1,
-		count: -1,
-		offset: -1,
-		collection: new AsyncLazy<List<CreatedTask>>(valueFactory: () => new List<CreatedTask>())
-	);
+	public static readonly CreatedTaskCollection Empty = new CreatedTaskCollection();
 	#endregion
 
 	#region Constructor
+	private CreatedTaskCollection() { }
+
 	private CreatedTaskCollection(
 		ApiClient client,
 		IFileService fileService,
@@ -45,8 +40,11 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	#region Enum
 	public enum TaskCompletionStatus
 	{
+		[Description(description: "Все задачи")]
 		All,
+		[Description(description: "Завершенные")]
 		Expired,
+		[Description(description: "Открытые")]
 		NotExpired
 	}
 	#endregion

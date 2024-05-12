@@ -18,6 +18,8 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 	#endregion
 
 	#region Constructor
+	protected LazyCollection() { }
+
 	protected LazyCollection(
 		ApiClient client,
 		AsyncLazy<List<T>> collection,

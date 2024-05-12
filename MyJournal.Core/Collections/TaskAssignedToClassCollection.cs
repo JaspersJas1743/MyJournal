@@ -14,18 +14,12 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 	private readonly int _classId;
 	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 
-	public static readonly TaskAssignedToClassCollection Empty = new TaskAssignedToClassCollection(
-		client: ApiClient.Empty,
-		fileService: FileService.Empty,
-		subjectId: -1,
-		classId: -1,
-		count: -1,
-		offset: -1,
-		collection: new AsyncLazy<List<TaskAssignedToClass>>(valueFactory: () => new List<TaskAssignedToClass>())
-	);
+	public static readonly TaskAssignedToClassCollection Empty = new TaskAssignedToClassCollection();
 	#endregion
 
 	#region Constructor
+	private TaskAssignedToClassCollection() { }
+
 	private TaskAssignedToClassCollection(
 		ApiClient client,
 		IFileService fileService,
@@ -36,6 +30,7 @@ public sealed class TaskAssignedToClassCollection :  LazyCollection<TaskAssigned
 		int offset
 	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
+		_fileService = fileService;
 		_subjectId = subjectId;
 		_classId = classId;
 	}

@@ -93,7 +93,7 @@ public sealed class ObservableReceivedTask : ReactiveObject
 		=> await _taskToObservable.MarkCompleted();
 }
 
-public static class ObservableAssignedTaskExtensions
+public static class ObservableReceivedTaskExtensions
 {
 	public static ObservableReceivedTask ToObservable(this ReceivedTask task, bool showLessonName, ReactiveCommand<Unit, Unit> showAttachments)
 	{

@@ -14,16 +14,11 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 
 	private AssignedTaskCompletionStatus _currentStatus = AssignedTaskCompletionStatus.All;
 
-	public static readonly AssignedTaskCollection Empty = new AssignedTaskCollection(
-		client: ApiClient.Empty,
-		fileService: FileService.Empty,
-		collection: new AsyncLazy<List<AssignedTask>>(valueFactory: () => new List<AssignedTask>()),
-		subjectId: -1,
-		count: -1,
-		offset: -1
-	);
+	public static readonly AssignedTaskCollection Empty = new AssignedTaskCollection();
 
 	#region Constructor
+	private AssignedTaskCollection() { }
+
 	private AssignedTaskCollection(
 		ApiClient client,
 		IFileService fileService,

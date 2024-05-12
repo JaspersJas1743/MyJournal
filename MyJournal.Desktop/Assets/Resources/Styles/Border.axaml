@@ -128,13 +128,21 @@
 			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
 			<Setter Property="BorderThickness" Value="0 0 0 5"/>
 		</Style>
-		<Style Selector="^.TaskIsExpired">
+		<Style Selector="^.AssignedTaskIsExpired">
 			<Setter Property="BorderThickness" Value="0 0 0 5"/>
+			<Setter Property="Grid.ColumnSpan" Value="7"/>
+		</Style>
+		<Style Selector="^.AssignedTaskNotIsExpired">
+			<Setter Property="Grid.ColumnSpan" Value="5"/>
+			<Setter Property="BorderThickness" Value="0 0 5 5"/>
+		</Style>
+		<Style Selector="^.TaskIsExpired">
+			<Setter Property="BorderThickness" Value="5 0 0 5"/>
 			<Setter Property="Grid.ColumnSpan" Value="7"/>
 		</Style>
 		<Style Selector="^.TaskNotIsExpired">
 			<Setter Property="Grid.ColumnSpan" Value="5"/>
-			<Setter Property="BorderThickness" Value="0 0 5 5"/>
+			<Setter Property="BorderThickness" Value="5 0 5 5"/>
 		</Style>
 		<Style Selector="^.AllSubjects">
 			<Setter Property="BorderThickness" Value="0 0 0 5"/>

@@ -24,7 +24,7 @@ public sealed class ReceivedTasksModel : TasksModel
 	private StudentSubjectCollection _studentSubjectCollection;
 	private ReceivedTaskCollection? _taskCollection;
 	private string? _filter = String.Empty;
-	private TaskCompletionStatus _selectedStatus = 0;
+	private ReceivedTaskCompletionStatus _selectedStatus = 0;
 	private bool _showAttachments = false;
 	private bool _allTasksSelected = false;
 	private bool _expiredTasksSelected = false;
@@ -51,7 +51,7 @@ public sealed class ReceivedTasksModel : TasksModel
 		_ = _studyingSubjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
 			.Bind(readOnlyObservableCollection: out _studyingSubjects).DisposeMany().Subscribe();
 
-		TaskCompletionStatuses.Load(items: Enum.GetValues<TaskCompletionStatus>());
+		TaskCompletionStatuses.Load(items: Enum.GetValues<ReceivedTaskCompletionStatus>());
 		SelectedStatus = 0;
 
 		SubjectSelectionModel.LostSelection += OnSubjectSelectionLost;
@@ -67,8 +67,8 @@ public sealed class ReceivedTasksModel : TasksModel
 
 	public ReadOnlyObservableCollection<StudentSubject> StudyingSubjects => _studyingSubjects;
 
-	public ObservableCollectionExtended<TaskCompletionStatus> TaskCompletionStatuses { get; }
-		= new ObservableCollectionExtended<TaskCompletionStatus>();
+	public ObservableCollectionExtended<ReceivedTaskCompletionStatus> TaskCompletionStatuses { get; }
+		= new ObservableCollectionExtended<ReceivedTaskCompletionStatus>();
 
 	public ObservableCollectionExtended<ObservableReceivedTask> Tasks { get; }
 		= new ObservableCollectionExtended<ObservableReceivedTask>();
@@ -76,7 +76,7 @@ public sealed class ReceivedTasksModel : TasksModel
 	public ObservableCollectionExtended<ExtendedAttachment> Attachments { get; }
 		= new ObservableCollectionExtended<ExtendedAttachment>();
 
-	public TaskCompletionStatus SelectedStatus
+	public ReceivedTaskCompletionStatus SelectedStatus
 	{
 		get => _selectedStatus;
 		set => this.RaiseAndSetIfChanged(backingField: ref _selectedStatus, newValue: value);
@@ -192,10 +192,10 @@ public sealed class ReceivedTasksModel : TasksModel
 
 	private void SetTaskSelection()
 	{
-		AllTasksSelected = _selectedStatus == TaskCompletionStatus.All;
-		ExpiredTasksSelected = _selectedStatus == TaskCompletionStatus.Expired;
-		UncompletedTasksSelected = _selectedStatus == TaskCompletionStatus.Uncompleted;
-		CompletedTasksSelected = _selectedStatus == TaskCompletionStatus.Completed;
+		AllTasksSelected = _selectedStatus == ReceivedTaskCompletionStatus.All;
+		ExpiredTasksSelected = _selectedStatus == ReceivedTaskCompletionStatus.Expired;
+		UncompletedTasksSelected = _selectedStatus == ReceivedTaskCompletionStatus.Uncompleted;
+		CompletedTasksSelected = _selectedStatus == ReceivedTaskCompletionStatus.Completed;
 	}
 
 	private async void OnStudyingSubjectsCreatedTask(CreatedTaskEventArgs e)
@@ -208,10 +208,10 @@ public sealed class ReceivedTasksModel : TasksModel
 			return;
 
 		if (!Enum.TryParse(value: _selectedStatus.ToString(), out ReceivedTask.TaskCompletionStatus taskStatus) &&
-			_selectedStatus != TaskCompletionStatus.All)
+			_selectedStatus != ReceivedTaskCompletionStatus.All)
 			return;
 
-		if (task.CompletionStatus != taskStatus || _selectedStatus != TaskCompletionStatus.All)
+		if (task.CompletionStatus != taskStatus || _selectedStatus != ReceivedTaskCompletionStatus.All)
 			return;
 
 		int index = Math.Max(val1: await _taskCollection.GetIndex(task: task), val2: 0);
@@ -219,7 +219,6 @@ public sealed class ReceivedTasksModel : TasksModel
 			showLessonName: SubjectSelectionModel.SelectedItem?.Name!.Contains(value: "Все дисциплины") == true,
 			showAttachments: GetShowAttachments(task: task)
 		), index: index);
-		Debug.WriteLine($"END");
 	}
 
 	private void ClearSelection()

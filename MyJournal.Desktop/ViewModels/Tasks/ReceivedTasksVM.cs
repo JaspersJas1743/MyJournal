@@ -18,7 +18,7 @@ public sealed class ReceivedTasksVM(ReceivedTasksModel model) : TasksVM(model: m
 	public ReactiveCommand<Unit, Unit> ClearTasks => model.ClearTasks;
 
 	public ReadOnlyObservableCollection<StudentSubject> StudyingSubjects => model.StudyingSubjects;
-	public ObservableCollectionExtended<TaskCompletionStatus> EducationPeriods => model.TaskCompletionStatuses;
+	public ObservableCollectionExtended<ReceivedTaskCompletionStatus> EducationPeriods => model.TaskCompletionStatuses;
 	public ObservableCollectionExtended<ObservableReceivedTask> Tasks => model.Tasks;
 	public SelectionModel<StudentSubject> SubjectSelectionModel => model.SubjectSelectionModel;
 	public ObservableCollectionExtended<ExtendedAttachment> Attachments => model.Attachments;
@@ -29,7 +29,7 @@ public sealed class ReceivedTasksVM(ReceivedTasksModel model) : TasksVM(model: m
 		set => model.Filter = value;
 	}
 
-	public TaskCompletionStatus SelectedStatus
+	public ReceivedTaskCompletionStatus SelectedStatus
 	{
 		get => model.SelectedStatus;
 		set => model.SelectedStatus = value;

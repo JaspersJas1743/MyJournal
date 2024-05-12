@@ -271,11 +271,6 @@ public partial class App : Application
 			#endregion
 			#endregion
 			#region Tasks
-			#region All tasks
-			.AddSingleton<AllTasksView>()
-			.AddSingleton<AllTasksVM>()
-			.AddSingleton<AllTasksModel>()
-			#endregion
 			#region Created tasks
 			.AddSingleton<CreatedTasksView>()
 			.AddSingleton<CreatedTasksVM>()

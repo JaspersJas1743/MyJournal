@@ -9,6 +9,7 @@ namespace MyJournal.Desktop.Assets.Utilities.TasksUtilities;
 public sealed class ReceivedTask : ReactiveObject
 {
 	private readonly AssignedTask? _assignedTask;
+	private readonly TaskAssignedToWard? _taskAssignedToWard;
 
 	public ReceivedTask(AssignedTask? assignedTask)
 	{
@@ -16,23 +17,10 @@ public sealed class ReceivedTask : ReactiveObject
 			return;
 
 		_assignedTask = assignedTask;
-		Id = assignedTask.Id;
-		ReleasedAt = assignedTask.ReleasedAt;
-		Content = assignedTask.Content;
-		CompletionStatus = Enum.Parse<TaskCompletionStatus>(value: assignedTask.CompletionStatus.ToString());
-		LessonName = assignedTask.LessonName;
 		IsReceivedToWard = false;
 
-		assignedTask.Completed += e =>
-		{
-			CompletionStatus = TaskCompletionStatus.Completed;
-			Completed?.Invoke(e: e);
-		};
-		assignedTask.Uncompleted += e =>
-		{
-			CompletionStatus = TaskCompletionStatus.Uncompleted;
-			Uncompleted?.Invoke(e: e);
-		};
+		assignedTask.Completed += e => Completed?.Invoke(e: e);
+		assignedTask.Uncompleted += e => Uncompleted?.Invoke(e: e);
 	}
 
 	public ReceivedTask(TaskAssignedToWard? taskAssignedToWard)
@@ -40,23 +28,21 @@ public sealed class ReceivedTask : ReactiveObject
 		if (taskAssignedToWard is null)
 			return;
 
-		Id = taskAssignedToWard.Id;
-		ReleasedAt = taskAssignedToWard.ReleasedAt;
-		Content = taskAssignedToWard.Content;
-		CompletionStatus = Enum.Parse<TaskCompletionStatus>(value: taskAssignedToWard.CompletionStatus.ToString());
-		LessonName = taskAssignedToWard.LessonName;
+		_taskAssignedToWard = taskAssignedToWard;
 		IsReceivedToWard = true;
 
 		taskAssignedToWard.Completed += e => Completed?.Invoke(e: e);
 		taskAssignedToWard.Uncompleted += e => Uncompleted?.Invoke(e: e);
 	}
 
-	public int Id { get; init; }
-	public DateTime ReleasedAt { get; init; }
-	public TaskContent Content { get; init; }
-	public TaskCompletionStatus CompletionStatus { get; private set; }
-	public string LessonName { get; init; }
-	public bool IsReceivedToWard { get; }
+	public int Id => _assignedTask?.Id ?? _taskAssignedToWard!.Id;
+	public DateTime ReleasedAt => _assignedTask?.ReleasedAt ?? _taskAssignedToWard!.ReleasedAt;
+	public TaskContent Content => _assignedTask?.Content ?? _taskAssignedToWard!.Content;
+	public TaskCompletionStatus CompletionStatus => Enum.Parse<TaskCompletionStatus>(
+		value: _assignedTask?.CompletionStatus.ToString() ?? _taskAssignedToWard!.CompletionStatus.ToString()
+	);
+	public string LessonName => _assignedTask?.LessonName ?? _taskAssignedToWard!.LessonName;
+	public bool IsReceivedToWard { get; init; }
 
 	public event CompletedTaskHandler Completed;
 	public event UncompletedTaskHandler Uncompleted;

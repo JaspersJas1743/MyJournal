@@ -4,7 +4,6 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Tasks"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-			xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
 			xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"

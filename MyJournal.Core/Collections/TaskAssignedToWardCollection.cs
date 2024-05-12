@@ -13,17 +13,12 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 	private AssignedTaskCompletionStatus _currentStatus = AssignedTaskCompletionStatus.All;
 	private readonly int _subjectId;
 
-	public static readonly TaskAssignedToWardCollection Empty = new TaskAssignedToWardCollection(
-		client: ApiClient.Empty,
-		fileService: FileService.Empty,
-		collection: new AsyncLazy<List<TaskAssignedToWard>>(valueFactory: () => new List<TaskAssignedToWard>()),
-		subjectId: -1,
-		count: -1,
-		offset: -1
-	);
+	public static readonly TaskAssignedToWardCollection Empty = new TaskAssignedToWardCollection();
 	#endregion
 
 	#region Constructor
+	private TaskAssignedToWardCollection() { }
+
 	private TaskAssignedToWardCollection(
 		ApiClient client,
 		IFileService fileService,

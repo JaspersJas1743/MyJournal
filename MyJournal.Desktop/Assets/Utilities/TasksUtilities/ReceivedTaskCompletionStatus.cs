@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace MyJournal.Desktop.Assets.Utilities.TasksUtilities;
 
-public enum TaskCompletionStatus
+public enum ReceivedTaskCompletionStatus
 {
 	[Description(description: "Все задачи")]
 	All,

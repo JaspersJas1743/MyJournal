@@ -22,10 +22,12 @@ public sealed class ApiClient : IDisposable
 		PropertyNamingPolicy = null
 	};
 
-	public static readonly ApiClient Empty = new ApiClient(timeout: TimeSpan.Zero);
+	public static readonly ApiClient Empty = new ApiClient();
 	#endregion
 
 	#region Constructors
+	private ApiClient() { }
+
 	public ApiClient(TimeSpan timeout)
 	{
 		_client = new HttpClient() { Timeout = timeout };

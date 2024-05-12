@@ -85,7 +85,7 @@ public sealed class ReceivedTaskCollection
 		await _taskAssignedToWardCollection!.LoadNext(cancellationToken: cancellationToken);
 	}
 
-	public async Task SetCompletionStatus(TaskCompletionStatus status)
+	public async Task SetCompletionStatus(ReceivedTaskCompletionStatus status)
 	{
 		if (_assignedTaskCollection is not null)
 		{
