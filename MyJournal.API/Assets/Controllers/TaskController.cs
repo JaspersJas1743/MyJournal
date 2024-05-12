@@ -93,15 +93,16 @@ public class TaskController(
 		IQueryable<DatabaseModels.Task> tasks = _context.Classes.AsNoTracking()
 			.Where(predicate: t => t.Id == classId)
 			.SelectMany(selector: c => c.Tasks)
-			.OrderBy(keySelector: t => t.ReleasedAt);
+			.OrderBy(keySelector: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0 ? 1 : 0)
+			.ThenBy(keySelector: t => t.ReleasedAt);
 
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.LessonId == subjectId);
 
 		return completionStatusRequest switch
 		{
-			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => DateTime.Now >= t.ReleasedAt),
-			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => DateTime.Now < t.ReleasedAt),
+			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0),
+			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) > 0),
 			_ => tasks
 		};
 	}
@@ -146,15 +147,16 @@ public class TaskController(
 		IQueryable<DatabaseModels.Task> tasks = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.Tasks)
-			.OrderBy(keySelector: t => t.ReleasedAt);
+			.OrderBy(keySelector: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0 ? 1 : 0)
+			.ThenBy(keySelector: t => t.ReleasedAt);
 
 		if (!allSubject)
 			tasks = tasks.Where(predicate: t => t.ClassId == classId && t.LessonId == subjectId);
 
 		return completionStatusRequest switch
 		{
-			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => DateTime.Now >= t.ReleasedAt),
-			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => DateTime.Now < t.ReleasedAt),
+			CreatedTaskCompletionStatusRequest.Expired => tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) <= 0),
+			CreatedTaskCompletionStatusRequest.NotExpired => tasks.Where(predicate: t => EF.Functions.DateDiffSecond(DateTime.Now.AddHours(3), t.ReleasedAt) > 0),
 			_ => tasks
 		};
 	}
@@ -880,7 +882,7 @@ public class TaskController(
 
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-		IQueryable<string> parentIds = _context.Users.Where(predicate: u => u.Id == userId)
+		IQueryable<string> parentIds = _context.Students.Where(predicate: u => u.UserId == userId)
 			.SelectMany(selector: u => u.Parents.Select(p => p.UserId.ToString()));
 		IQueryable<string> adminIds = _context.Administrators.Where(
 			predicate: a => a.User.UserActivityStatus.ActivityStatus == UserActivityStatuses.Online
@@ -888,6 +890,7 @@ public class TaskController(
 		string creatorId = await _context.Tasks.Where(predicate: t => t.Id == taskId)
 			.Select(selector: t => t.Creator.UserId.ToString())
 			.SingleAsync(cancellationToken: cancellationToken);
+
 		if (status == TaskCompletionStatuses.Completed)
 		{
 			await studentHubContext.Clients.User(userId: userId.ToString()).CompletedTask(taskId: taskId);
