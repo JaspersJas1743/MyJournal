@@ -1,28 +1,41 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Avalonia.Controls.Selection;
+using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Binding;
+using MsBox.Avalonia.Enums;
 using MyJournal.Core;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
+using MyJournal.Desktop.Assets.Utilities.FileService;
+using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.Assets.Utilities.TasksUtilities;
 using ReactiveUI;
+using Class = MyJournal.Desktop.Assets.Utilities.TasksUtilities.Class;
 using CreatedTask = MyJournal.Desktop.Assets.Utilities.TasksUtilities.CreatedTask;
 using CreatedTaskCollection = MyJournal.Desktop.Assets.Utilities.TasksUtilities.CreatedTaskCollection;
+using Subject = MyJournal.Desktop.Assets.Utilities.TasksUtilities.Subject;
 
 namespace MyJournal.Desktop.Models.Tasks;
 
 public sealed class CreatedTasksModel : TasksModel
 {
-	private Dictionary<Class, IEnumerable<Subject>> _subjects = new Dictionary<Class, IEnumerable<Subject>>();
+	private List<Class> _classes;
+	private ObservableCreatedTask _taskCreator;
+	private readonly INotificationService _notificationService;
+	private readonly IFileStorageService _fileStorageService;
+	private readonly IMessageService _messageService;
 	private readonly SourceCache<TeacherSubject, int> _teacherSubjectsCache = new SourceCache<TeacherSubject, int>(keySelector: s => s.Id);
 	private readonly ReadOnlyObservableCollection<TeacherSubject> _studyingSubjects;
 	private TeacherSubjectCollection _teacherSubjectCollection;
@@ -37,13 +50,23 @@ public sealed class CreatedTasksModel : TasksModel
 	private bool _expiredTasksSelected = false;
 	private bool _notExpiredTasksSelected = false;
 
-	public CreatedTasksModel()
+	public CreatedTasksModel(
+		INotificationService notificationService,
+		IFileStorageService fileStorageService,
+		IMessageService messageService
+	)
 	{
+		_fileStorageService = fileStorageService;
+		_messageService = messageService;
+		_notificationService = notificationService;
+
 		OnSubjectSelectionChanged = ReactiveCommand.CreateFromTask(execute: SubjectSelectionChangedHandler);
 		OnTaskCompletionStatusSelectionChanged = ReactiveCommand.CreateFromTask(execute: TaskCompletionStatusSelectionChangedHandler);
 		CloseAttachments = ReactiveCommand.Create(execute: ClearAttachments);
+		CloseCreatedAttachments = ReactiveCommand.Create(execute: ClearCreatedAttachments);
 		LoadTasks = ReactiveCommand.CreateFromTask(execute: LoadMoreTask);
 		ClearTasks = ReactiveCommand.Create(execute: ClearSelection);
+		LoadAttachment = ReactiveCommand.CreateFromTask(execute: AddAttachmentsToTask);
 
 		IObservable<Func<TeacherSubject, bool>> filter = this.WhenAnyValue(model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
@@ -62,14 +85,54 @@ public sealed class CreatedTasksModel : TasksModel
 
 		SubjectSelectionModel.LostSelection += OnSubjectSelectionLost;
 
-		MessageBus.Current.Listen<AttachmentAddedToTaskEventArgs>().Subscribe(onNext: _ => LastAttachmentAreLoaded = true);
-		// MessageBus.Current.Listen<AttachmentRemovedToTaskEventArgs>().Subscribe(onNext: _ => );
+		MessageBus.Current.Listen<AttachmentAddedToTaskEventArgs>().Subscribe(onNext: _ => AttachmentsForCreatedTask.Last().IsLoaded = true);
+
+		MessageBus.Current.Listen<TaskSavedEventArgs>().Subscribe(onNext: _ => AttachmentsForCreatedTask.Clear());
+	}
+
+	private void ClearCreatedAttachments()
+		=> ShowEditableAttachments = false;
+
+	private async Task AddAttachmentsToTask()
+	{
+		IStorageFile? file = await _fileStorageService.OpenFile(fileTypes: new FilePickerFileType[] { FilePickerFileTypes.All });
+		if (file is null)
+			return;
+
+		StorageItemProperties basicProperties = await file.GetBasicPropertiesAsync();
+		if (basicProperties.Size / (1024f * 1024f) >= 30)
+		{
+			await _messageService.ShowPopup(
+				text: "Максимальный размер файла: 30Мбайт.",
+				title: String.Empty,
+				buttons: ButtonEnum.Ok,
+				image: Icon.Warning
+			);
+			return;
+		}
+
+		string pathToFile = HttpUtility.UrlDecode(str: file.Path.AbsolutePath);
+		Attachment attachment = new Attachment()
+		{
+			FileName = Path.GetFileName(path: pathToFile),
+			IsLoaded = false
+		};
+		attachment.Remove = ReactiveCommand.CreateFromTask(execute: async () =>
+		{
+			AttachmentsForCreatedTask.Remove(item: attachment);
+			MessageBus.Current.SendMessage(message: new RemoveAttachmentFromTaskEventArgs(pathToFile: pathToFile));
+		});
+
+		AttachmentsForCreatedTask.Add(item: attachment);
+		MessageBus.Current.SendMessage(message: new AddAttachmentToTaskEventArgs(pathToFile: pathToFile));
 	}
 
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> OnTaskCompletionStatusSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> CloseAttachments { get; }
+	public ReactiveCommand<Unit, Unit> CloseCreatedAttachments { get; }
 	public ReactiveCommand<Unit, Unit> LoadTasks { get; }
+	public ReactiveCommand<Unit, Unit> LoadAttachment { get; }
 	public ReactiveCommand<Unit, Unit> ClearTasks { get; }
 
 	public SelectionModel<TeacherSubject> SubjectSelectionModel { get; } = new SelectionModel<TeacherSubject>();
@@ -85,8 +148,8 @@ public sealed class CreatedTasksModel : TasksModel
 	public ObservableCollectionExtended<ExtendedAttachment> Attachments { get; }
 		= new ObservableCollectionExtended<ExtendedAttachment>();
 
-	public ObservableCollectionExtended<ExtendedAttachment> AttachmentsForCreatedTask { get; }
-		= new ObservableCollectionExtended<ExtendedAttachment>();
+	public ObservableCollectionExtended<Attachment> AttachmentsForCreatedTask { get; }
+		= new ObservableCollectionExtended<Attachment>();
 
 	public CreatedTaskCompletionStatus SelectedStatus
 	{
@@ -116,12 +179,6 @@ public sealed class CreatedTasksModel : TasksModel
 	{
 		get => _showEditableAttachments;
 		set => this.RaiseAndSetIfChanged(backingField: ref _showEditableAttachments, newValue: value);
-	}
-
-	public bool LastAttachmentAreLoaded
-	{
-		get => _lastAttachmentAreLoaded;
-		set => this.RaiseAndSetIfChanged(backingField: ref _lastAttachmentAreLoaded, newValue: value);
 	}
 
 	public bool AllTasksSelected
@@ -159,12 +216,10 @@ public sealed class CreatedTasksModel : TasksModel
 
 		if (_selectedStatus == CreatedTaskCompletionStatus.All && ShowTaskCreation)
 		{
-			Tasks.Insert(index: 0, new ObservableCreatedTask(
-				classSubjects: _subjects,
-				selectedClassId: SubjectSelectionModel.SelectedItem.ClassId,
-				selectedSubjectId: SubjectSelectionModel.SelectedItem.Id,
-				showAttachments: ReactiveCommand.Create(execute: () => { ShowEditableAttachments = true; })
-			));
+			Class? selectedClass = _classes.FirstOrDefault(predicate: c => c?.Id == SubjectSelectionModel.SelectedItem.ClassId);
+			await _taskCreator.SetSelectedClass(selectedClass: selectedClass);
+			await _taskCreator.SetSelectedSubject(selectedSubjectId: SubjectSelectionModel.SelectedItem.Id);
+			Tasks.Insert(index: 0, item: _taskCreator);
 		}
 
 		SetTaskSelection();
@@ -201,12 +256,11 @@ public sealed class CreatedTasksModel : TasksModel
 		if (_selectedStatus == CreatedTaskCompletionStatus.Expired)
 			return;
 
-		int index = Math.Max(val1: await _taskCollection.GetIndex(task: task), val2: 0);
 		Tasks.Insert(item: task.ToObservable(
 			showLessonName: SubjectSelectionModel.SelectedItem.Name!.Contains(value: "Все классы") ||
 							SubjectSelectionModel.SelectedItem.Name!.Contains(value: "Все дисциплины"),
 			showAttachments: GetShowAttachments(task: task)
-		), index: _selectedStatus == CreatedTaskCompletionStatus.All ? index + 1 : index);
+		), index: _selectedStatus == CreatedTaskCompletionStatus.All ? 1 : 0);
 	}
 
 	private async Task TaskCompletionStatusSelectionChangedHandler()
@@ -225,12 +279,10 @@ public sealed class CreatedTasksModel : TasksModel
 
 		if (_selectedStatus == CreatedTaskCompletionStatus.All && ShowTaskCreation)
 		{
-			Tasks.Insert(index: 0, new ObservableCreatedTask(
-				classSubjects: _subjects,
-				selectedClassId: SubjectSelectionModel.SelectedItem.ClassId,
-				selectedSubjectId: SubjectSelectionModel.SelectedItem.Id,
-				showAttachments: ReactiveCommand.Create(execute: () => { ShowEditableAttachments = true; })
-			));
+			Class? selectedClass = _classes.FirstOrDefault(predicate: c => c?.Id == SubjectSelectionModel.SelectedItem.ClassId);
+			await _taskCreator.SetSelectedClass(selectedClass: selectedClass);
+			await _taskCreator.SetSelectedSubject(selectedSubjectId: SubjectSelectionModel.SelectedItem.Id);
+			Tasks.Insert(index: 0, item: _taskCreator);
 		}
 
 		SetTaskSelection();
@@ -282,35 +334,32 @@ public sealed class CreatedTasksModel : TasksModel
 			? new TeacherSubjectCollection(taughtSubjectCollection: taughtSubjectCollection)
             : new TeacherSubjectCollection(classCollection: classCollection!);
 
-		_subjects = taughtSubjectCollection is not null
-			? await taughtSubjectCollection.SelectAwait(selector: async s => new
+		if (taughtSubjectCollection is not null)
+		{
+			_classes = await taughtSubjectCollection.SelectAwait(selector: async s => new
 				{
 					Subject = new Subject(subject: s),
 					Class = await s.GetTaughtClass()
-				}).Select(selector: c => new
-				{
-					Class = new Class(Id: c.Class.Id, Name: c.Class.Name),
-					Subject = c.Subject
-				}).GroupBy(keySelector: o => o.Class)
-				.ToDictionaryAsync(
-					keySelector: o => o.Key,
-					elementSelector: c => c.Select(selector: x => x.Subject).ToEnumerable()
-				)
-			: await classCollection!.SelectAwait(selector: async c => new
-			{
-				Class = new Class(Id: c.Id, Name: c.Name),
-				Subjects = await c.GetStudyingSubjects()
-			}).Select(selector: o => new
-			{
-				Class = o.Class,
-				Subjects = o.Subjects.Select(selector: s => new Subject(subject: s)).ToEnumerable()
-			}).ToDictionaryAsync(keySelector: o => o.Class, elementSelector: o => o.Subjects);
+				})
+				.GroupBy(keySelector: o => o.Class).Skip(count: 1)
+				.Select(selector: o => new Class(
+					id: o.Key.Id,
+					name: o.Key.Name,
+					subjectsFactory: async () => await o.Select(selector: x => x.Subject).ToListAsync()
+				)).ToListAsync();
+		}
 
 		List<TeacherSubject> subjects = await _teacherSubjectCollection.ToListAsync();
 		_teacherSubjectsCache.Edit(updateAction: (a) => a.AddOrUpdate(items: subjects));
 
 		ShowTaskCreation = administrator is null;
 
+		_taskCreator = new ObservableCreatedTask(
+			classes: _classes,
+			taskBuilderFactory: () => _teacherSubjectCollection.CreateTask(),
+			showAttachments: ReactiveCommand.Create(execute: () => { ShowEditableAttachments = true; }),
+			notificationService: _notificationService
+		);
 		_teacherSubjectCollection.CreatedTask += OnTaughtSubjectsCreatedTask;
 	}
 }

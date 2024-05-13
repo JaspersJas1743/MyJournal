@@ -23,6 +23,12 @@
 		<Style Selector="Border.Closed">
 			<Setter Property="Margin" Value="-360 20"/>
 		</Style>
+		<Style Selector="lottie|Lottie.EmptyTasks">
+			<Setter Property="Path" Value="/Assets/Resources/Animations/EmptyTasks.json"/>
+		</Style>
+		<Style Selector="lottie|Lottie.NotCompletedTasks">
+			<Setter Property="Path" Value="/Assets/Resources/Animations/NotCompletedTasks.json"/>
+		</Style>
 	</UserControl.Styles>
 	<Viewbox>
 		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 90*, 15*, 770*, 40*" Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
@@ -53,10 +59,17 @@
 			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder" CornerRadius="30">
 				<Grid>
 					<Grid IsVisible="{Binding !!Tasks.Count}">
-						<controls:ListBoxWithLoadOnScroll	ItemsSource="{Binding Tasks}" Classes.FirstTask="{Binding ShowTaskCreation}"
+						<controls:ListBoxWithLoadOnScroll	ItemsSource="{Binding Tasks}"
 															Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
 															ThresholdPercentage="80" ComparisonOperations="GreaterOrEquals" Command="{Binding LoadTasks}"
-															Classes="Tasks CreatedTasks"/>
+															Classes="Tasks CreatedTasks">
+							<Classes.FirstTask>
+								<MultiBinding Converter="{x:Static BoolConverters.And}">
+									<Binding Path="ShowTaskCreation"/>
+									<Binding Path="AllTasksSelected"/>
+								</MultiBinding>
+							</Classes.FirstTask>
+						</controls:ListBoxWithLoadOnScroll>
 						<Border Classes="ListBorder " Width="320" Height="930" HorizontalAlignment="Right" CornerRadius="12.5"
 								VerticalAlignment="Top" Background="{DynamicResource BackgroundColor}"
 								Classes.Closed="{Binding !ShowAttachments}"
@@ -72,68 +85,68 @@
 											Grid.Column="1" Grid.ColumnSpan="3" Classes="TaskAttachments"/>
 							</Grid>
 						</Border>
+						<Border Classes="ListBorder" Width="320" Height="930" HorizontalAlignment="Right" CornerRadius="12.5"
+								VerticalAlignment="Top" Background="{DynamicResource BackgroundColor}"
+								Classes.Closed="{Binding !ShowEditableAttachments}"
+								Classes.Open="{Binding ShowEditableAttachments}">
+							<Grid ColumnDefinitions="20*, 110*, 140*, 30*, 20*" RowDefinitions="20*, 30*, 20*, 670*, 20*, 50*, 20*">
+								<TextBlock Grid.Row="1" Grid.Column="1" Text="Вложения" FontSize="20"/>
+								<Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Classes="TransparentCloseButton"
+										VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10"
+										Command="{Binding CloseCreatedAttachments}" HotKey="Escape">
+									<controls:XamlSvg Classes="Close" Margin="5"/>
+								</Button>
+								<ListBox	Grid.Row="3" ItemsSource="{Binding AttachmentsForCreatedTask}"
+											Grid.Column="1" Grid.ColumnSpan="3" Classes="CreatedAttachmentsList"/>
+								<Viewbox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3">
+									<Button Classes="MainAccentColor" Command="{Binding LoadAttachment}" FontSize="20"
+											Content="Выбрать файл..." Width="280" Height="50" CornerRadius="7.5"/>
+								</Viewbox>
+							</Grid>
+						</Border>
 					</Grid>
-				<!-- 	<Grid	VerticalAlignment="Center" Height="75" HorizontalAlignment="Center" -->
-				<!-- 			Width="320" ColumnDefinitions="75*, 10*, 235"> -->
-				<!-- 		<Grid.IsVisible> -->
-				<!-- 			<MultiBinding Converter="{x:Static BoolConverters.And}"> -->
-				<!-- 				<Binding Path="!Tasks.Count"/> -->
-				<!-- 				<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNull}"/> -->
-				<!-- 			</MultiBinding> -->
-				<!-- 		</Grid.IsVisible> -->
-				<!-- 		<controls:XamlSvg	Grid.Column="0" Foreground="{DynamicResource MainAccentColor}" -->
-				<!-- 							Classes="NotSelectedSubjectImage"/> -->
-				<!-- 		<TextBlock Grid.Column="2" TextWrapping="Wrap" Text="Выберите дисциплину для просмотра" -->
-				<!-- 					FontSize="20" VerticalAlignment="Center"/> -->
-				<!-- 	</Grid> -->
-				<!-- 	<Grid	VerticalAlignment="Center" Height="150" HorizontalAlignment="Center" -->
-				<!-- 			Width="250" RowDefinitions="115*, 10*, 25*"> -->
-				<!-- 		<Grid.IsVisible> -->
-				<!-- 			<MultiBinding Converter="{x:Static BoolConverters.And}"> -->
-				<!-- 				<Binding Path="!Tasks.Count"/> -->
-				<!-- 				<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/> -->
-				<!-- 				<Binding Path="UncompletedTasksSelected"/> -->
-				<!-- 			</MultiBinding> -->
-				<!-- 		</Grid.IsVisible> -->
-				<!-- 		<lottie:Lottie	Grid.Row="0" Classes.AllTasksAreCompleted="{Binding $parent[Grid].IsVisible}" -->
-				<!-- 						RepeatCount="1" Margin="-80"/> -->
-				<!-- 		<TextBlock	TextWrapping="Wrap" Text="Все задачи выполнены." -->
-				<!-- 					HorizontalAlignment="Center" Grid.Row="2" -->
-				<!-- 					FontSize="20" VerticalAlignment="Center"/> -->
-				<!-- 	</Grid> -->
-				<!-- 	<Grid	VerticalAlignment="Center" Height="175" HorizontalAlignment="Center" -->
-				<!-- 			Width="250" RowDefinitions="115*, 10*, 50*"> -->
-				<!-- 		<Grid.IsVisible> -->
-				<!-- 			<MultiBinding Converter="{x:Static BoolConverters.And}"> -->
-				<!-- 				<Binding Path="!Tasks.Count"/> -->
-				<!-- 				<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/> -->
-				<!-- 				<Binding Path="CompletedTasksSelected"/> -->
-				<!-- 			</MultiBinding> -->
-				<!-- 		</Grid.IsVisible> -->
-				<!-- 		<lottie:Lottie	Grid.Row="0" Classes.NotCompletedTasks="{Binding $parent[Grid].IsVisible}" -->
-				<!-- 						RepeatCount="1" Margin="-20 "/> -->
-				<!-- 		<TextBlock	TextWrapping="Wrap" Text="Список выполненных задач пуст." Grid.Row="2" -->
-				<!-- 					HorizontalAlignment="Center" TextAlignment="Center" -->
-				<!-- 					FontSize="20" VerticalAlignment="Center"/> -->
-				<!-- 	</Grid> -->
-				<!-- 	<Grid	VerticalAlignment="Center" Height="150" HorizontalAlignment="Center" -->
-				<!-- 			Width="250" RowDefinitions="115*, 10*, 25*"> -->
-				<!-- 		<Grid.IsVisible> -->
-				<!-- 			<MultiBinding Converter="{x:Static BoolConverters.And}"> -->
-				<!-- 				<Binding Path="!Tasks.Count"/> -->
-				<!-- 				<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/> -->
-				<!-- 				<MultiBinding Converter="{x:Static BoolConverters.Or}"> -->
-				<!-- 					<Binding Path="AllTasksSelected"/> -->
-				<!-- 					<Binding Path="ExpiredTasksSelected"/> -->
-				<!-- 				</MultiBinding> -->
-				<!-- 			</MultiBinding> -->
-				<!-- 		</Grid.IsVisible> -->
-				<!-- 		<lottie:Lottie	Grid.Row="0" Classes.EmptyTasks="{Binding $parent[Grid].IsVisible}" RepeatCount="1" -->
-				<!-- 						Margin="-10"/> -->
-				<!-- 		<TextBlock	TextWrapping="Wrap" Text="Список задач пуст." -->
-				<!-- 					HorizontalAlignment="Center" Grid.Row="2" -->
-				<!-- 					FontSize="20" VerticalAlignment="Center"/> -->
-				<!-- 	</Grid> -->
+					<Grid	VerticalAlignment="Center" Height="75" HorizontalAlignment="Center"
+							Width="320" ColumnDefinitions="75*, 10*, 235">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Tasks.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNull}"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<controls:XamlSvg	Grid.Column="0" Foreground="{DynamicResource MainAccentColor}"
+											Classes="NotSelectedSubjectImage"/>
+						<TextBlock Grid.Column="2" TextWrapping="Wrap" Text="Выберите дисциплину для просмотра"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+					<Grid	VerticalAlignment="Center" Height="175" HorizontalAlignment="Center"
+							Width="250" RowDefinitions="115*, 10*, 50*">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Tasks.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+								<Binding Path="ExpiredTasksSelected"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<lottie:Lottie	Grid.Row="0" Classes.NotCompletedTasks="{Binding $parent[Grid].IsVisible}"
+										RepeatCount="1" Margin="-20 "/>
+						<TextBlock	TextWrapping="Wrap" Text="Список завершенных задач пуст." Grid.Row="2"
+									HorizontalAlignment="Center" TextAlignment="Center"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+					<Grid	VerticalAlignment="Center" Height="150" HorizontalAlignment="Center"
+							Width="250" RowDefinitions="115*, 10*, 25*">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Tasks.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+								<Binding Path="NotExpiredTasksSelected"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<lottie:Lottie	Grid.Row="0" Classes.EmptyTasks="{Binding $parent[Grid].IsVisible}" RepeatCount="1"
+										Margin="-10"/>
+						<TextBlock	TextWrapping="Wrap" Text="Открытые задачи отсутствуют." HorizontalAlignment="Center"
+									Grid.Row="2" FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
 				</Grid>
 			</Border>
 		</Grid>

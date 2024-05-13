@@ -3,7 +3,8 @@
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
 		xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 		xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities">
+		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities"
+		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters">
 
 	<Style Selector="ListBoxItem">
 		<Setter Property="Padding" Value="0"/>
@@ -193,10 +194,35 @@
 										Classes.Single="{Binding SingleSubject}"
 										PlaceholderText="Не выбрано" PlaceholderForeground="{DynamicResource StrokeColor}"/>
 						</Viewbox>
-
+						<Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="8">
+							<Border Background="Transparent" Classes="OpacityTransition">
+								<Border.Opacity>
+									<MultiBinding Converter="{x:Static converters:BoolToDoubleMultiValueConverter.And}">
+										<Binding Path="!#TaskContent.IsFocused"/>
+										<Binding Path="#TaskContent.Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+ 									</MultiBinding>
+								</Border.Opacity>
+								<TextBlock	Text="Нажмите для ввода текста задания..." Foreground="{DynamicResource StrokeColor}"
+											FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							</Border>
+							<TextBox	Classes.TaskWatermark="{Binding !$self.IsFocused,RelativeSource={RelativeSource Mode=Self}}"
+										Classes="TaskInput" x:Name="TaskContent" Text="{Binding EnteredText,Mode=TwoWay}"/>
+						</Grid>
 						<Viewbox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
-							<DatePicker Width="250" Height="50" SelectedDate="{Binding SelectedDate}"
+							<DatePicker Width="250" Height="50" SelectedDate="{Binding SelectedDate,Mode=TwoWay}"
 										CornerRadius="10" Background="{DynamicResource BackgroundColor}"/>
+						</Viewbox>
+						<Viewbox Grid.Row="2" Grid.Column="4">
+							<TimePicker Width="100" Height="50" SelectedTime="{Binding SelectedTime,Mode=TwoWay}"
+										CornerRadius="10" Background="{DynamicResource BackgroundColor}"/>
+						</Viewbox>
+						<Viewbox Grid.Row="2" Grid.Column="6">
+							<Button Width="125" Height="50" Content="Вложения" Classes="MainAccentColor Corner10" FontSize="20"
+									Command="{Binding ShowAttachments}"/>
+						</Viewbox>
+						<Viewbox Grid.Row="2" Grid.Column="8">
+							<Button Width="125" Height="50" Content="Сохранить" Classes="MainAccentColor Corner10 TransitionBackground"
+									Command="{Binding SaveTask}" FontSize="20"/>
 						</Viewbox>
 					</Grid>
 				</Border>
@@ -217,6 +243,18 @@
 		<Setter Property="HorizontalContentAlignment" Value="Center" />
 	</Style>
 	<Style Selector="ListBoxItem.DayItem">
+		<Setter Property="FontSize" Value="16"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="ListBoxItem.HourItem">
+		<Setter Property="FontSize" Value="16"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="ListBoxItem.MinuteItem">
 		<Setter Property="FontSize" Value="16"/>
 		<Setter Property="Padding" Value="0"/>
 		<Setter Property="Margin" Value="0"/>

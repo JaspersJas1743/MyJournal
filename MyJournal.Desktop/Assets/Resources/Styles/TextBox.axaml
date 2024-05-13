@@ -201,5 +201,41 @@
 				</Style>
 			</Style>
 		</Style>
+
+		<Style Selector="^.TaskInput">
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="MaxLength" Value="500"/>
+			<Setter Property="CornerRadius" Value="0"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+			<Setter Property="CaretBrush" Value="{DynamicResource ForegroundColor}"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+			<Setter Property="AcceptsReturn" Value="True"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ TextBlock#PART_Watermark">
+					<Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}"/>
+				</Style>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="BorderBrush" Value="Transparent"/>
+					<Setter Property="Background" Value="Transparent"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="BorderThickness" Value="0" />
+					<Setter Property="BorderBrush" Value="Transparent"/>
+					<Setter Property="Background" Value="Transparent"/>
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.TaskWatermark">
+			<Setter Property="Cursor" Value="IBeam"/>
+		</Style>
     </Style>
 </Styles>

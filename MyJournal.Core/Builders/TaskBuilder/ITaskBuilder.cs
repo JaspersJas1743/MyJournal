@@ -4,7 +4,7 @@ namespace MyJournal.Core.Builders.TaskBuilder;
 
 public interface ITaskBuilder
 {
-	ITaskBuilder SetText(string text);
+	ITaskBuilder SetText(string? text);
 	Task<ITaskBuilder> AddAttachment(string pathToFile, CancellationToken cancellationToken = default(CancellationToken));
 	Task<ITaskBuilder> RemoveAttachment(string pathToFile, CancellationToken cancellationToken = default(CancellationToken));
 	ITaskBuilder SetDateOfRelease(DateTime dateOfRelease);

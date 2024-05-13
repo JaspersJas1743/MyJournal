@@ -14,14 +14,17 @@ public sealed class CreatedTasksVM(CreatedTasksModel model) : TasksVM(model: mod
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged => model.OnSubjectSelectionChanged;
 	public ReactiveCommand<Unit, Unit> OnTaskCompletionStatusSelectionChanged => model.OnTaskCompletionStatusSelectionChanged;
 	public ReactiveCommand<Unit, Unit> CloseAttachments => model.CloseAttachments;
+	public ReactiveCommand<Unit, Unit> CloseCreatedAttachments => model.CloseCreatedAttachments;
 	public ReactiveCommand<Unit, Unit> LoadTasks => model.LoadTasks;
 	public ReactiveCommand<Unit, Unit> ClearTasks => model.ClearTasks;
+	public ReactiveCommand<Unit, Unit> LoadAttachment => model.LoadAttachment;
 
 	public ReadOnlyObservableCollection<TeacherSubject> StudyingSubjects => model.StudyingSubjects;
 	public ObservableCollectionExtended<CreatedTaskCompletionStatus> EducationPeriods => model.TaskCompletionStatuses;
 	public ObservableCollectionExtended<ObservableCreatedTask> Tasks => model.Tasks;
 	public SelectionModel<TeacherSubject> SubjectSelectionModel => model.SubjectSelectionModel;
 	public ObservableCollectionExtended<ExtendedAttachment> Attachments => model.Attachments;
+	public ObservableCollectionExtended<Attachment> AttachmentsForCreatedTask => model.AttachmentsForCreatedTask;
 
 	public string? Filter
 	{
@@ -39,6 +42,12 @@ public sealed class CreatedTasksVM(CreatedTasksModel model) : TasksVM(model: mod
 	{
 		get => model.ShowAttachments;
 		set => model.ShowAttachments = value;
+	}
+
+	public bool ShowEditableAttachments
+	{
+		get => model.ShowEditableAttachments;
+		set => model.ShowEditableAttachments = value;
 	}
 
 	public bool ShowTaskCreation
@@ -59,7 +68,7 @@ public sealed class CreatedTasksVM(CreatedTasksModel model) : TasksVM(model: mod
 		set => model.ExpiredTasksSelected = value;
 	}
 
-	public bool NonExpiredTasksSelected
+	public bool NotExpiredTasksSelected
 	{
 		get => model.NotExpiredTasksSelected;
 		set => model.NotExpiredTasksSelected = value;

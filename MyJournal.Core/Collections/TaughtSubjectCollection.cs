@@ -1,3 +1,4 @@
+using MyJournal.Core.Builders.TaskBuilder;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
@@ -164,6 +165,9 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		collection.AddRange(collection: subjects);
 		_currentPeriod = period;
 	}
+
+	public ITaskBuilder CreateTask()
+		=> TaskBuilder.Create(fileService: _fileService);
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MyJournal.Core.Builders.TaskBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
@@ -49,4 +50,7 @@ public sealed class TeacherSubjectCollection
 			return subject;
 		}).ToArrayAsync()));
 	}
+
+	public ITaskBuilder? CreateTask()
+		=> _taughtSubjectCollection?.CreateTask();
 }

@@ -115,7 +115,7 @@
 							<controls:XamlSvg   Classes="ReadMark TransitionForeground" Grid.Row="6" Grid.Column="7" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}">
 								<controls:XamlSvg.Opacity>
-									<MultiBinding Converter="{x:Static converters:ActivityToDoubleMultiValueConverter.Instance}">
+									<MultiBinding Converter="{x:Static converters:BoolToDoubleMultiValueConverter.And}">
 										<Binding Path="FromMe"/>
 										<Binding Path="IsRead"/>
 									</MultiBinding>
@@ -231,7 +231,7 @@
 														Foreground="{DynamicResource MainAccentColor}"
 														VerticalAlignment="Bottom" Height="15">
 										<controls:XamlSvg.Opacity>
-											<MultiBinding Converter="{x:Static converters:ActivityToDoubleMultiValueConverter.Instance}">
+											<MultiBinding Converter="{x:Static converters:BoolToDoubleMultiValueConverter.And}">
 												<Binding Path="Message.FromMe"/>
 												<Binding Path="MessageIsRead"/>
 											</MultiBinding>
@@ -461,9 +461,13 @@
 								<TextBlock	Text="{Binding ReleasedTime}" TextTrimming="CharacterEllipsis"
 											VerticalAlignment="Center" FontSize="20" HorizontalAlignment="Center"/>
 							</Border>
-							<TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
-										TextAlignment="Center" Text="{Binding Text}" FontSize="20"
-										HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+										TextAlignment="Center" Text="{Binding Text}" FontSize="20" HorizontalAlignment="Center"
+										VerticalAlignment="Center"/>
+							<TextBlock	FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource StrokeColor}"
+										IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" TextAlignment="Center" Text="Текст задания отсутствует."/>
 							<Viewbox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
 								<controls:ButtonWithAnimatedCommand Background="{DynamicResource CompletedTaskColor}" IsEnabled="False"
 																	Content="{Binding CountOfCompletedTask,StringFormat='Выполнено: {0}'}"
@@ -519,6 +523,34 @@
 								</Flyout>
 							</Button.Flyout>
 						</Button>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.CreatedAttachmentsList">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Spacing="10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="chatUtilities:Attachment">
+					<Viewbox Height="50" Width="270">
+						<Border Height="50" Width="280" CornerRadius="15" Background="{DynamicResource MainAccentColor}">
+							<Grid ColumnDefinitions="10*, 230*, 10*, 20*, 10*">
+								<Grid Grid.Column="1">
+									<TextBlock	Text="{Binding FileName}" Classes="AttachmentName"
+												IsVisible="{Binding IsLoaded}"/>
+									<lottie:Lottie	Path="/Assets/Resources/Animations/Loading.json" HorizontalAlignment="Left"
+													IsVisible="{Binding !IsLoaded}"/>
+								</Grid>
+								<Button Grid.Column="3" Classes="RemoveAttachment" Command="{Binding Remove}"/>
+							</Grid>
+						</Border>
 					</Viewbox>
 				</DataTemplate>
 			</Setter>
