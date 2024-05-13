@@ -20,6 +20,7 @@
 		</Style>
 		<Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="{TemplateBinding Background}" />
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
 			<Setter Property="Opacity" Value="0.7"/>
 		</Style>
 		<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">

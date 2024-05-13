@@ -39,7 +39,8 @@
 					    <Grid Name="PART_FlyoutButtonContentGrid">
 									<Border x:Name="PART_FirstPickerHost" Grid.Column="0" Padding="5"
 											HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-					            <TextBlock x:Name="PART_HourTextBlock" HorizontalAlignment="Center"
+					            <TextBlock	x:Name="PART_HourTextBlock" HorizontalAlignment="Center"
+											Foreground="{TemplateBinding Foreground}"
 											FontSize="{TemplateBinding FontSize}"
 											VerticalAlignment="Center" Text="Час"/>
 					        </Border>
@@ -48,16 +49,17 @@
 					        <Border x:Name="PART_SecondPickerHost" Grid.Column="2" Padding="5"
 									HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 					            <TextBlock	x:Name="PART_MinuteTextBlock" HorizontalAlignment="Center"
+											Foreground="{TemplateBinding Foreground}"
+											FontSize="{TemplateBinding FontSize}"
 											VerticalAlignment="Center" Text="Минута"
-											FontSize="{TemplateBinding FontSize}"/>
+											/>
 					        </Border>
 					        <Rectangle Name="PART_SecondColumnDivider" Fill="{DynamicResource StrokeColor}"
 					                   Width="5" HorizontalAlignment="Center" Grid.Column="3" />
 					        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
 									x:Name="PART_ThirdPickerHost" Grid.Column="4" Padding="5">
-					            <TextBlock	FontSize="{TemplateBinding FontSize}"
-											x:Name="PART_PeriodTextBlock"
-											HorizontalAlignment="Center"/>
+					            <TextBlock	Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center"
+											FontSize="{TemplateBinding FontSize}" x:Name="PART_PeriodTextBlock"/>
 					        </Border>
 					    </Grid>
 					</Button>
@@ -68,18 +70,6 @@
 				</Grid>
 	        </ControlTemplate>
 	    </Setter>
-
-	    <Style Selector="^:disabled /template/ Rectangle">
-	      <Setter Property="Fill" Value="{DynamicResource TimePickerSpacerFillDisabled}"/>
-	    </Style>
-
-	    <Style Selector="^:hasnotime /template/ Button#PART_FlyoutButton TextBlock">
-	      <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
-	    </Style>
-
-	    <Style Selector="^:error /template/ Button#PART_FlyoutButton">
-	      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
-	    </Style>
 	</Style>
 
 	<Style Selector="TimePickerPresenter">
