@@ -41,6 +41,12 @@ public sealed class CreatedTasksVM(CreatedTasksModel model) : TasksVM(model: mod
 		set => model.ShowAttachments = value;
 	}
 
+	public bool ShowTaskCreation
+	{
+		get => model.ShowTaskCreation;
+		set => model.ShowTaskCreation = value;
+	}
+
 	public bool AllTasksSelected
 	{
 		get => model.AllTasksSelected;

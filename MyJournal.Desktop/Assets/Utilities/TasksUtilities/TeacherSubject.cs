@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MyJournal.Core.Builders.TaskBuilder;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
 
@@ -9,23 +10,26 @@ public sealed class TeacherSubject
 	private readonly TaughtSubject? _taughtSubject;
 	private readonly StudyingSubjectInClass? _studyingSubjectInClass;
 
-	public TeacherSubject(TaughtSubject taughtSubject)
+	public TeacherSubject(TaughtSubject taughtSubject, int classId, string? className)
 	{
 		_taughtSubject = taughtSubject;
 		Id = taughtSubject.Id;
 		Name = taughtSubject.Name;
+		ClassName = className;
+		ClassId = classId;
 
 		taughtSubject.CompletedTask += e => CompletedTask?.Invoke(e: e);
 		taughtSubject.UncompletedTask += e => UncompletedTask?.Invoke(e: e);
 	}
 
-	public TeacherSubject(StudyingSubjectInClass studyingSubjectInClass, string? @class)
+	public TeacherSubject(StudyingSubjectInClass studyingSubjectInClass, int classId, string? className)
 	{
 		_studyingSubjectInClass = studyingSubjectInClass;
 
 		Id = studyingSubjectInClass.Id;
 		Name = studyingSubjectInClass.Name;
-		ClassName = @class;
+		ClassId = classId;
+		ClassName = className;
 
 		studyingSubjectInClass.CompletedTask += e => CompletedTask?.Invoke(e: e);
 		studyingSubjectInClass.UncompletedTask += e => UncompletedTask?.Invoke(e: e);
@@ -33,6 +37,7 @@ public sealed class TeacherSubject
 
 	public int Id { get; init; }
 	public string? Name { get; init; }
+	public int? ClassId { get; private set; }
 	public string? ClassName { get; private set; }
 
 	public event CompletedTaskHandler CompletedTask;
@@ -48,4 +53,7 @@ public sealed class TeacherSubject
 
 		return new CreatedTaskCollection(taskAssignedToClassCollection: await _studyingSubjectInClass!.GetTasks());
 	}
+
+	public ITaskBuilder? CreateTask()
+		=> _taughtSubject?.CreateTask()!;
 }

@@ -4,13 +4,13 @@ namespace MyJournal.Core.Builders.TaskBuilder;
 
 public interface ITaskBuilder
 {
-	ITaskBuilder AddText(string text);
+	ITaskBuilder SetText(string text);
 	Task<ITaskBuilder> AddAttachment(string pathToFile, CancellationToken cancellationToken = default(CancellationToken));
-	Task<ITaskBuilder> RemoveAttachment(int index, CancellationToken cancellationToken = default(CancellationToken));
-	ITaskBuilder AddReleaseDate(DateTime dateOfRelease);
-	ITaskBuilder ForClass(int classId);
-	ITaskBuilder ForClass(Class @class);
-	ITaskBuilder ForSubject(int subjectId);
-	ITaskBuilder ForSubject(Subject subject);
+	Task<ITaskBuilder> RemoveAttachment(string pathToFile, CancellationToken cancellationToken = default(CancellationToken));
+	ITaskBuilder SetDateOfRelease(DateTime dateOfRelease);
+	ITaskBuilder SetClass(int classId);
+	ITaskBuilder SetClass(Class @class);
+	ITaskBuilder SetSubject(int subjectId);
+	ITaskBuilder SetSubject(Subject subject);
 	Task<string> Save(CancellationToken cancellationToken = default(CancellationToken));
 }

@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
 	<Style Selector="ComboBox">
 		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
@@ -11,6 +12,7 @@
 		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
 		<Setter Property="FontFeatures" Value="+lnum"/>
 		<Setter Property="FontSize" Value="24"/>
+		<Setter Property="Padding" Value="20 0 0 0"/>
 		<Setter Property="FontWeight" Value="SemiBold"/>
 		<Setter Property="FocusAdorner" Value="{x:Null}" />
 		<Setter Property="Transitions">
@@ -42,13 +44,12 @@
 	                           Grid.Column="0"
 	                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
 	                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-	                           Margin="{TemplateBinding Padding}"
+	                           Margin="{TemplateBinding Padding}" FontSize="{TemplateBinding FontSize}"
 	                           Text="{TemplateBinding PlaceholderText}"
 	                           Foreground="{TemplateBinding PlaceholderForeground}"
-	                           IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}" />
-	                <ContentControl x:Name="ContentPresenter"
-	                                Content="{TemplateBinding SelectionBoxItem}"
-	                                Grid.Column="0" Margin="20 0"
+	                           IsVisible="{TemplateBinding SelectedItem,Converter={x:Static ObjectConverters.IsNull}}" />
+	                <ContentControl x:Name="ContentPresenter" Grid.Column="0" Margin="20 0"
+	                                Content="{TemplateBinding SelectionBoxItem}" FontSize="{TemplateBinding FontSize}"
 	                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
 	                                ContentTemplate="{TemplateBinding ItemTemplate}"
 	                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
@@ -79,8 +80,7 @@
 	                            BorderBrush="{TemplateBinding BorderBrush}"
 	                            BorderThickness="{TemplateBinding BorderThickness}"
 	                            HorizontalAlignment="Stretch" CornerRadius="30"
-								Opacity="{TemplateBinding IsDropDownOpen,Converter={StaticResource BoolToDoubleConverter}}"
-								>
+								Opacity="{TemplateBinding IsDropDownOpen,Converter={StaticResource BoolToDoubleConverter}}">
 							<ScrollViewer	HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
 											VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
 											IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}">
@@ -118,6 +118,60 @@
 					<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
 				</Transitions>
 			</Setter>
+		</Style>
+		<Style Selector="^.ClassAndSubjectSelection">
+			<Setter Property="FontSize" Value="20"/>
+			<Style Selector="^ /template/ Popup > Border#PopupBorder">
+				<Setter Property="CornerRadius" Value="10"/>
+				<Setter Property="Background" Value="{TemplateBinding Background}"/>
+				<Setter Property="BorderBrush" Value="Transparent"/>
+				<Setter Property="BorderThickness" Value="0"/>
+			</Style>
+			<Style Selector="^ /template/ ContentControl#ContentPresenter">
+				<Setter Property="Margin" Value="20 0 0 5"/>
+			</Style>
+			<Style Selector="^ ComboBoxItem">
+				<Setter Property="HorizontalContentAlignment" Value="Left"/>
+				<Setter Property="VerticalContentAlignment" Value="Center"/>
+				<Setter Property="BorderThickness" Value="0"/>
+				<Setter Property="FontSize" Value="20"/>
+				<Setter Property="Template">
+					<ControlTemplate>
+						<Grid Background="{TemplateBinding Background}">
+							<ContentPresenter Name="PART_ContentPresenter" Margin="10 0 0 0"
+											Background="{TemplateBinding Background}"
+											Foreground="{TemplateBinding Foreground}"
+											CornerRadius="{TemplateBinding CornerRadius}"
+											ContentTemplate="{TemplateBinding ContentTemplate}"
+											Content="{TemplateBinding Content}"
+											FontSize="{TemplateBinding FontSize}"
+											HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+											VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+											Padding="{TemplateBinding Padding}" />
+						</Grid>
+					</ControlTemplate>
+				</Setter>
+				<Style Selector="^:nth-child(1) /template/ ContentPresenter#PART_ContentPresenter">
+					<Setter Property="Margin" Value="10 10 0 0 "/>
+					<Setter Property="CornerRadius" Value="10 10 0 0"/>
+					<Style Selector="^:pointerover">
+						<Setter Property="CornerRadius" Value="10 10 0 0"/>
+					</Style>
+				</Style>
+				<Style Selector="^:nth-last-child(1) /template/ ContentPresenter#PART_ContentPresenter">
+					<Setter Property="Margin" Value="10 0 0 10 "/>
+					<Setter Property="CornerRadius" Value="0 0 10 10"/>
+					<Style Selector="^:pointerover">
+						<Setter Property="CornerRadius" Value="0 0 10 10"/>
+					</Style>
+				</Style>
+				<Style Selector="^:pointerover">
+					<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.ClassAndSubjectSelection.Single ComboBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Margin" Value="10 10 0 10"/>
 		</Style>
 	</Style>
 </Styles>

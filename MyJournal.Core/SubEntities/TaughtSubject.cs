@@ -209,8 +209,8 @@ public sealed class TaughtSubject : ISubEntity
 	public async Task<IEnumerable<TimetableForTeacher>> GetTimetable()
 		=> await _timetable;
 
-	public IInitTaskBuilder CreateTask()
-		=> InitTaskBuilder.Create(fileService: _fileService);
+	public ITaskBuilder CreateTask()
+		=> TaskBuilder.Create(fileService: _fileService);
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{

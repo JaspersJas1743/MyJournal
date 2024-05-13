@@ -7,58 +7,32 @@ namespace MyJournal.Core.Builders.TaskBuilder;
 
 internal sealed class TaskBuilder : ITaskBuilder
 {
-	private readonly StringBuilder _text = new StringBuilder();
-	private readonly List<Attachment> _attachments = new List<Attachment>();
+	private readonly Dictionary<string, Attachment> _attachments = new Dictionary<string, Attachment>();
+	private string _text = String.Empty;
 	private readonly IFileService _fileService;
-	private DateTime _releasedAt;
-	private int _classId;
-	private int _subjectId;
+	private DateTime _releasedAt = DateTime.Now;
+	private int _classId = 0;
+	private int _subjectId = 0;
 
-	private TaskBuilder(
-		IFileService fileService,
-		StringBuilder builder,
-		IEnumerable<Attachment> attachments,
-		DateTime releasedAt,
-		int classId,
-		int subjectId
-	)
-	{
-		_text.Append(value: builder);
-		_attachments.AddRange(collection: attachments);
-		_fileService = fileService;
-		_releasedAt = releasedAt;
-		_classId = classId;
-		_subjectId = subjectId;
-	}
+	private TaskBuilder(IFileService fileService)
+		=> _fileService = fileService;
 
 	internal static TaskBuilder Create(
-		IFileService fileService,
-		StringBuilder builder,
-		IEnumerable<Attachment> attachments,
-		DateTime releasedAt,
-		int classId,
-		int subjectId
-	)
-	{
-		return new TaskBuilder(
-			fileService: fileService,
-			builder: builder,
-			attachments: attachments,
-			releasedAt: releasedAt,
-			classId: classId,
-			subjectId: subjectId
-		);
-	}
+		IFileService fileService
+	) => new TaskBuilder(fileService: fileService);
 
-	public ITaskBuilder AddText(string text)
+	public ITaskBuilder SetText(string text)
 	{
-		_text.Append(value: text);
+		_text = text;
 		return this;
 	}
 
 	public async Task<ITaskBuilder> AddAttachment(string pathToFile, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		_attachments.Add(item: await Attachment.Create(
+		if (_attachments.ContainsKey(key: pathToFile))
+			throw new ArgumentException(message: "Файл уже загружен!");
+
+		_attachments.Add(key: pathToFile, value: await Attachment.Create(
 			fileService: _fileService,
 			pathToFile: pathToFile,
 			cancellationToken: cancellationToken
@@ -66,39 +40,39 @@ internal sealed class TaskBuilder : ITaskBuilder
 		return this;
 	}
 
-	public async Task<ITaskBuilder> RemoveAttachment(int index, CancellationToken cancellationToken = default(CancellationToken))
+	public async Task<ITaskBuilder> RemoveAttachment(string pathToFile, CancellationToken cancellationToken = default(CancellationToken))
 	{
-		Attachment attachment = _attachments[index: index];
+		Attachment attachment = _attachments[key: pathToFile];
 		await _fileService.Delete(link: attachment.LinkToFile, cancellationToken: cancellationToken);
-		_attachments.Remove(attachment);
+		_attachments.Remove(key: pathToFile);
 		return this;
 	}
 
-	public ITaskBuilder AddReleaseDate(DateTime dateOfRelease)
+	public ITaskBuilder SetDateOfRelease(DateTime dateOfRelease)
 	{
 		_releasedAt = dateOfRelease;
 		return this;
 	}
 
-	public ITaskBuilder ForClass(int classId)
+	public ITaskBuilder SetClass(int classId)
 	{
 		_classId = classId;
 		return this;
 	}
 
-	public ITaskBuilder ForClass(Class @class)
+	public ITaskBuilder SetClass(Class @class)
 	{
 		_classId = @class.Id;
 		return this;
 	}
 
-	public ITaskBuilder ForSubject(int subjectId)
+	public ITaskBuilder SetSubject(int subjectId)
 	{
 		_subjectId = subjectId;
 		return this;
 	}
 
-	public ITaskBuilder ForSubject(Subject subject)
+	public ITaskBuilder SetSubject(Subject subject)
 	{
 		_subjectId = subject.Id;
 		return this;
@@ -120,7 +94,7 @@ internal sealed class TaskBuilder : ITaskBuilder
 			arg: new CreateTasksRequest(
 				SubjectId: _subjectId,
 				ClassId: _classId,
-				Content: new TaskContent(Text: _text.ToString(), Attachments: _attachments.Select(selector: a => Attachment.Create(
+				Content: new TaskContent(Text: _text, Attachments: _attachments.Values.Select(selector: a => Attachment.Create(
 					 linkToFile: a.LinkToFile!,
 					 type: a.Type
 				))),

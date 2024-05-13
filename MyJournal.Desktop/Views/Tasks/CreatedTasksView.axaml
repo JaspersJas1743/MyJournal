@@ -52,10 +52,11 @@
 			</Border>
 			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder" CornerRadius="30">
 				<Grid>
-					<Grid IsVisible="{Binding !!Tasks.Count}" >
-						<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
-															ItemsSource="{Binding Tasks}" Classes="Tasks CreatedTasks" ThresholdPercentage="80"
-															ComparisonOperations="GreaterOrEquals" Command="{Binding LoadTasks}"/>
+					<Grid IsVisible="{Binding !!Tasks.Count}">
+						<controls:ListBoxWithLoadOnScroll	ItemsSource="{Binding Tasks}" Classes.FirstTask="{Binding ShowTaskCreation}"
+															Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+															ThresholdPercentage="80" ComparisonOperations="GreaterOrEquals" Command="{Binding LoadTasks}"
+															Classes="Tasks CreatedTasks"/>
 						<Border Classes="ListBorder " Width="320" Height="930" HorizontalAlignment="Right" CornerRadius="12.5"
 								VerticalAlignment="Top" Background="{DynamicResource BackgroundColor}"
 								Classes.Closed="{Binding !ShowAttachments}"
