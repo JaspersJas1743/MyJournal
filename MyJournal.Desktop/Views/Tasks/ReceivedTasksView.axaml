@@ -74,7 +74,7 @@
 								<Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Classes="TransparentCloseButton"
 										VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10"
 										Command="{Binding CloseAttachments}" HotKey="Escape">
-									<controls:XamlSvg Classes="Close" Margin="5"/>
+									<controls:XamlSvg Classes="Close" Margin="5" Foreground="{DynamicResource ForegroundColor}"/>
 								</Button>
 								<ListBox	Grid.Row="3" ItemsSource="{Binding Attachments}"
 											Grid.Column="1" Grid.ColumnSpan="3" Classes="TaskAttachments"/>

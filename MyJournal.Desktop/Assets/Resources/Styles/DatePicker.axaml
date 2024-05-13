@@ -1,16 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui"
-		xmlns:sys="using:System"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<Design.PreviewWith>
-		<Border Padding="20" Height="500" Width="400">
-			<StackPanel Spacing="20" VerticalAlignment="Center" HorizontalAlignment="Center">
-				<DatePicker Width="250" />
-				<DatePicker CornerRadius="10" />
-				<DatePicker IsEnabled="False" />
-			</StackPanel>
-		</Border>
-	</Design.PreviewWith>
-
 	<Style Selector="DatePicker">
 		<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
 		<Setter Property="BorderThickness" Value="5"/>
@@ -36,14 +25,16 @@
 
 							<Grid Name="PART_ButtonContentGrid" ColumnDefinitions="30*,auto,120*,auto,100*">
 			                      <TextBlock Name="PART_DayTextBlock" Text="День" TextAlignment="Center"
-											FontSize="{TemplateBinding FontSize}"
+											FontSize="{TemplateBinding FontSize}" Foreground="{DynamicResource ForegroundColor}"
 											HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 5"/>
 			                      <TextBlock Name="PART_MonthTextBlock" Text="Месяц" TextAlignment="Center"
-											FontSize="{TemplateBinding FontSize}"
+											FontSize="{TemplateBinding FontSize}" Foreground="{DynamicResource ForegroundColor}"
 											HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10 5" />
 			                      <TextBlock Name="PART_YearTextBlock" Text="Год" TextAlignment="Center"
 											FontSize="{TemplateBinding FontSize}" Margin="10 5"
-											HorizontalAlignment="Center" VerticalAlignment="Center"/>
+											Foreground="{DynamicResource ForegroundColor}"
+											HorizontalAlignment="Center" VerticalAlignment="Center"
+											/>
 			                      <Rectangle x:Name="PART_FirstSpacer"
 			                            Fill="{TemplateBinding BorderBrush}"
 			                            HorizontalAlignment="Center"

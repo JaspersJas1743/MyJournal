@@ -79,7 +79,7 @@
 								<Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Classes="TransparentCloseButton"
 										VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10"
 										Command="{Binding CloseAttachments}" HotKey="Escape">
-									<controls:XamlSvg Classes="Close" Margin="5"/>
+									<controls:XamlSvg Classes="Close" Margin="5" Foreground="{DynamicResource ForegroundColor}"/>
 								</Button>
 								<ListBox	Grid.Row="3" ItemsSource="{Binding Attachments}"
 											Grid.Column="1" Grid.ColumnSpan="3" Classes="TaskAttachments"/>
@@ -94,7 +94,7 @@
 								<Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Classes="TransparentCloseButton"
 										VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10"
 										Command="{Binding CloseCreatedAttachments}" HotKey="Escape">
-									<controls:XamlSvg Classes="Close" Margin="5"/>
+									<controls:XamlSvg Classes="Close" Margin="5" Foreground="{DynamicResource ForegroundColor}"/>
 								</Button>
 								<ListBox	Grid.Row="3" ItemsSource="{Binding AttachmentsForCreatedTask}"
 											Grid.Column="1" Grid.ColumnSpan="3" Classes="CreatedAttachmentsList"/>
@@ -139,12 +139,15 @@
 							<MultiBinding Converter="{x:Static BoolConverters.And}">
 								<Binding Path="!Tasks.Count"/>
 								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
-								<Binding Path="NotExpiredTasksSelected"/>
+								<MultiBinding Converter="{x:Static BoolConverters.Or}">
+									<Binding Path="AllTasksSelected"/>
+									<Binding Path="NotExpiredTasksSelected"/>
+								</MultiBinding>
 							</MultiBinding>
 						</Grid.IsVisible>
 						<lottie:Lottie	Grid.Row="0" Classes.EmptyTasks="{Binding $parent[Grid].IsVisible}" RepeatCount="1"
 										Margin="-10"/>
-						<TextBlock	TextWrapping="Wrap" Text="Открытые задачи отсутствуют." HorizontalAlignment="Center"
+						<TextBlock	TextWrapping="Wrap" Text="Список задач пуст." HorizontalAlignment="Center"
 									Grid.Row="2" FontSize="20" VerticalAlignment="Center"/>
 					</Grid>
 				</Grid>

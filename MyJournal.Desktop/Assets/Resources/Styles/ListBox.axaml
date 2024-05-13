@@ -388,10 +388,15 @@
 									BorderBrush="{DynamicResource StrokeColor}">
 								<TextBlock	HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" TextAlignment="Center"
 											Text="{Binding ReleasedTime}" TextTrimming="CharacterEllipsis"/>
-								</Border>
-							<TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+							</Border>
+							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
 										TextAlignment="Center" Text="{Binding Text}" FontSize="20"
 										HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+										TextAlignment="Center" Text="Текст задания отсутствует" Foreground="{DynamicResource StrokeColor}"
+										FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 							<Viewbox Grid.Row="2" Grid.Column="1">
 								<controls:ButtonWithAnimatedCommand Background="{DynamicResource CompletedTaskColor}" Content="Выполнено"
 																	IsEnabled="{Binding !Observable.IsReceivedToWard}"

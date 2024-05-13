@@ -2,11 +2,11 @@ using System;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls.Notifications;
 using MyJournal.Core;
 using MyJournal.Core.Registration;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Resources.Transitions;
-using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.ViewModels.Registration;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
@@ -16,18 +16,18 @@ namespace MyJournal.Desktop.Models.Registration;
 public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 {
 	private readonly IRegistrationService<User> _registrationService;
-	private readonly IMessageService _messageService;
+	private readonly INotificationService _notificationService;
 
 	private string _password = String.Empty;
 	private string _confirmationPassword = String.Empty;
 
 	public ThirdStepOfRegistrationModel(
 		IRegistrationService<User> registrationService,
-		IMessageService messageService
+		INotificationService notificationService
 	)
 	{
 		_registrationService = registrationService;
-		_messageService = messageService;
+		_notificationService = notificationService;
 
 		ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep, canExecute: ValidationContext.Valid);
 	}
@@ -58,7 +58,11 @@ public sealed class ThirdStepOfRegistrationModel : ValidatableModel
 		});
 		if (!registrationIsSuccessful)
 		{
-			await _messageService.ShowErrorAsPopup(text: "В процессе регистрации произошла ошибка. Обратитесь к Вашей учебной организации.");
+			await _notificationService.Show(
+				title: "Неизвестная ошибка",
+				content: "В процессе регистрации произошла ошибка. Обратитесь к Вашей учебной организации.",
+				type: NotificationType.Error
+			);
 			return;
 		}
 

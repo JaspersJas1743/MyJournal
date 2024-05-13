@@ -2,13 +2,13 @@ using System;
 using System.Reactive;
 using System.Threading.Tasks;
 using System.Web;
+using Avalonia.Controls.Notifications;
 using Avalonia.Platform.Storage;
-using MsBox.Avalonia.Enums;
 using MyJournal.Core;
 using MyJournal.Core.UserData;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.FileService;
-using MyJournal.Desktop.Assets.Utilities.MessagesService;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.Profile;
@@ -16,7 +16,7 @@ namespace MyJournal.Desktop.Models.Profile;
 public sealed class ProfilePhotoModel : ModelBase
 {
 	private readonly IFileStorageService _fileStorageService;
-	private readonly IMessageService _messageService;
+	private readonly INotificationService _notificationService;
 
 	private string _nameAndPatronymic = String.Empty;
 	private string? _role = String.Empty;
@@ -25,11 +25,11 @@ public sealed class ProfilePhotoModel : ModelBase
 
 	public ProfilePhotoModel(
 		IFileStorageService fileStorageService,
-		IMessageService messageService
+		INotificationService notificationService
 	)
 	{
 		_fileStorageService = fileStorageService;
-		_messageService = messageService;
+		_notificationService = notificationService;
 
 		ChangePhoto = ReactiveCommand.CreateFromTask(execute: ChangeUserPhoto);
 		DeletePhoto = ReactiveCommand.CreateFromTask(execute: DeleteUserPhoto);
@@ -75,11 +75,10 @@ public sealed class ProfilePhotoModel : ModelBase
 		StorageItemProperties basicProperties = await pickedFile.GetBasicPropertiesAsync();
 		if (basicProperties.Size / (1024f * 1024f) > 1)
 		{
-			await _messageService.ShowPopup(
-				text: "Максимальный размер изображения - 1Мбайт.",
-				title: String.Empty,
-				buttons: ButtonEnum.Ok,
-				image: Icon.Warning
+			await _notificationService.Show(
+				title: "Слишком большой файл",
+				content: "Максимальный размер изображения - 1Мбайт.",
+				type: NotificationType.Warning
 			);
 			return;
 		}

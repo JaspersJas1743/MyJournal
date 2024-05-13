@@ -7,18 +7,17 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Selection;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Binding;
-using MsBox.Avalonia.Enums;
 using MyJournal.Core;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 using MyJournal.Desktop.Assets.Utilities.FileService;
-using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.Assets.Utilities.TasksUtilities;
 using ReactiveUI;
@@ -35,7 +34,6 @@ public sealed class CreatedTasksModel : TasksModel
 	private ObservableCreatedTask _taskCreator;
 	private readonly INotificationService _notificationService;
 	private readonly IFileStorageService _fileStorageService;
-	private readonly IMessageService _messageService;
 	private readonly SourceCache<TeacherSubject, int> _teacherSubjectsCache = new SourceCache<TeacherSubject, int>(keySelector: s => s.Id);
 	private readonly ReadOnlyObservableCollection<TeacherSubject> _studyingSubjects;
 	private TeacherSubjectCollection _teacherSubjectCollection;
@@ -45,19 +43,16 @@ public sealed class CreatedTasksModel : TasksModel
 	private bool _showAttachments = false;
 	private bool _showTaskCreation = false;
 	private bool _showEditableAttachments = false;
-	private bool _lastAttachmentAreLoaded = false;
 	private bool _allTasksSelected = false;
 	private bool _expiredTasksSelected = false;
 	private bool _notExpiredTasksSelected = false;
 
 	public CreatedTasksModel(
 		INotificationService notificationService,
-		IFileStorageService fileStorageService,
-		IMessageService messageService
+		IFileStorageService fileStorageService
 	)
 	{
 		_fileStorageService = fileStorageService;
-		_messageService = messageService;
 		_notificationService = notificationService;
 
 		OnSubjectSelectionChanged = ReactiveCommand.CreateFromTask(execute: SubjectSelectionChangedHandler);
@@ -102,11 +97,10 @@ public sealed class CreatedTasksModel : TasksModel
 		StorageItemProperties basicProperties = await file.GetBasicPropertiesAsync();
 		if (basicProperties.Size / (1024f * 1024f) >= 30)
 		{
-			await _messageService.ShowPopup(
-				text: "Максимальный размер файла: 30Мбайт.",
-				title: String.Empty,
-				buttons: ButtonEnum.Ok,
-				image: Icon.Warning
+			await _notificationService.Show(
+				title: "Слишком большой файл",
+				content: "Максимальный размер файла - 30Мбайт.",
+				type: NotificationType.Warning
 			);
 			return;
 		}
