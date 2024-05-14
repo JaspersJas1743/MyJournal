@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
@@ -16,7 +17,6 @@ using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using Humanizer;
-using MsBox.Avalonia.Enums;
 using MyJournal.Core;
 using MyJournal.Core.Builders.MessageBuilder;
 using MyJournal.Core.Collections;
@@ -27,7 +27,6 @@ using MyJournal.Desktop.Assets.Utilities.ChatCreationService;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
-using MyJournal.Desktop.Assets.Utilities.MessagesService;
 using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 using Attachment = MyJournal.Desktop.Assets.Utilities.ChatUtilities.Attachment;
@@ -39,7 +38,6 @@ public sealed class MessagesModel : ModelBase
 	private readonly Timer _timer = new Timer(interval: TimeSpan.FromSeconds(value: 30));
 	private readonly IFileStorageService _fileStorageService;
 	private readonly IConfigurationService _configurationService;
-	private readonly IMessageService _messageService;
 	private readonly IChatCreationService _chatCreationService;
 	private readonly INotificationService _notificationService;
 
@@ -68,14 +66,12 @@ public sealed class MessagesModel : ModelBase
 
 	public MessagesModel(
 		IFileStorageService fileStorageService,
-		IMessageService messageService,
 		IConfigurationService configurationService,
 		IChatCreationService chatCreationService,
 		INotificationService notificationService
 	)
 	{
 		_fileStorageService = fileStorageService;
-		_messageService = messageService;
 		_configurationService = configurationService;
 		_chatCreationService = chatCreationService;
 		_notificationService = notificationService;
@@ -210,13 +206,13 @@ public sealed class MessagesModel : ModelBase
 			return "в сети";
 
 		TimeSpan dateDifference = (DateTime.Now - Selection.SelectedItem!.OnlineAt).Value;
-		if (dateDifference.Minutes < 1)
+		if (dateDifference.TotalMinutes < 1)
 			return "был(-а) в сети только что";
 
 		if (dateDifference.Days < 1)
 			return "был(-а) в сети " + Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture);
 
-		if (dateDifference.Days > 1 || dateDifference.Hours >= 12)
+		if (dateDifference.Days >= 1 || dateDifference.Hours >= 12)
 			return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt:d MMMM} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
 
 		return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
@@ -290,7 +286,6 @@ public sealed class MessagesModel : ModelBase
 		List<Message> messages = await _messageFromSelectedChat.ToListAsync();
 		MessagesAreLoaded = true;
 		Messages = new ObservableCollectionExtended<ExtendedMessage>(collection: messages.Select(selector: m => m.ToExtended(
-			configurationService: _configurationService,
 			isSingleChat: Selection.SelectedItem.Observable.IsSingleChat
 		)));
 
@@ -367,11 +362,10 @@ public sealed class MessagesModel : ModelBase
 		StorageItemProperties basicProperties = await file.GetBasicPropertiesAsync();
 		if (basicProperties.Size / (1024f * 1024f) >= 30)
 		{
-			await _messageService.ShowPopup(
-				text: "Максимальный размер файла: 30Мбайт.",
-				title: String.Empty,
-				buttons: ButtonEnum.Ok,
-				image: Icon.Warning
+			await _notificationService.Show(
+				title: "Слишком большой файл",
+				content: "Максимальный размер файла - 30Мбайт.",
+				type: NotificationType.Warning
 			);
 			return;
 		}
@@ -395,7 +389,11 @@ public sealed class MessagesModel : ModelBase
 		}
 		catch (ArgumentException e)
 		{
-			await _messageService.ShowInformationAsPopup(text: e.Message);
+			await _notificationService.Show(
+				title: "Непредвиденная ошибка",
+				content: e.Message,
+				type: NotificationType.Error
+			);
 			Attachments?.Remove(item: attachment);
 		}
 	}
@@ -420,9 +418,7 @@ public sealed class MessagesModel : ModelBase
 		if (_messageFromSelectedChat is null)
 			return;
 
-		ExtendedMessage? receivedMessage = (await _messageFromSelectedChat?.FindById(id: e.MessageId)!)?.ToExtended(
-			configurationService: _configurationService, isSingleChat: chat.IsSingleChat
-		);
+		ExtendedMessage? receivedMessage = (await _messageFromSelectedChat?.FindById(id: e.MessageId)!)?.ToExtended(isSingleChat: chat.IsSingleChat);
 
 		if (receivedMessage is null)
 			return;
@@ -450,7 +446,6 @@ public sealed class MessagesModel : ModelBase
 		await _messageFromSelectedChat.LoadNext();
 		IEnumerable<Message> messages = await _messageFromSelectedChat.GetByRange(start: 0, end: _messageFromSelectedChat.Length - currentLength);
 		Messages.InsertRange(collection: messages.Select(selector: m => m.ToExtended(
-			configurationService: _configurationService,
 			isSingleChat: Selection.SelectedItem?.IsSingleChat == true
 		)), index: 0);
 		_lastMessageIsSelected = false;

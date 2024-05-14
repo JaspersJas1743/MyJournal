@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using Avalonia;
 using Avalonia.Controls;
 using MyJournal.Core.SubEntities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
@@ -53,18 +54,19 @@ public sealed class ExtendedMessage : ReactiveObject
 
 public static class ExtendedMessageExtensions
 {
-	public static ExtendedMessage ToExtended(this Message message, bool isSingleChat, IConfigurationService configurationService)
+	public static ExtendedMessage ToExtended(this Message message, bool isSingleChat)
 	{
 		return new ExtendedMessage(message: message, attachments: message.Attachments?.Select(
-			selector: a => a.ToExtended(configurationService: configurationService)
+			selector: a => a.ToExtended()
 		), isSingleChat: isSingleChat);
 	}
 }
 
 public static class ExtendedAttachmentsExtensions
 {
-	public static ExtendedAttachment ToExtended(this Core.SubEntities.Attachment attachment, IConfigurationService configurationService)
+	public static ExtendedAttachment ToExtended(this Core.SubEntities.Attachment attachment)
 	{
+		IConfigurationService configurationService = (Application.Current as App)!.GetService<IConfigurationService>();
 		return new ExtendedAttachment(
 			FileName: Path.GetFileName(path: attachment.LinkToFile),
 			Download: ReactiveCommand.CreateFromTask(execute: async (Button button) =>

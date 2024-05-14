@@ -18,6 +18,8 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 	#endregion
 
 	#region Constructor
+	protected LazyCollection() { }
+
 	protected LazyCollection(
 		ApiClient client,
 		AsyncLazy<List<T>> collection,
@@ -40,6 +42,21 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 
 	#region Methods
 	#region Instance
+	public async Task<int> GetIndex(T instance)
+	{
+		List<T> collection = await Collection;
+		return collection.IndexOf(item: instance);
+	}
+
+	public async Task<int> GetIndexById(int id)
+	{
+		T? instance = await FindById(id: id);
+		if (instance is null)
+			return -1;
+
+		return await GetIndex(instance: instance);
+	}
+
 	public async Task<T> GetByIndex(int index)
 	{
 		List<T> collection = await Collection;
@@ -86,12 +103,21 @@ public abstract class LazyCollection<T> : IAsyncEnumerable<T> where T: ISubEntit
 		int lengthBeforeLoading = Length;
 		await Load(cancellationToken: cancellationToken);
 		int lengthAfterLoading = Length;
-		_allItemsAreUploaded = lengthAfterLoading == lengthBeforeLoading;
+		_allItemsAreUploaded = lengthAfterLoading == lengthBeforeLoading || lengthBeforeLoading - lengthAfterLoading < Count;
 	}
 	#endregion
 
 	#region Virtual
-	public virtual async Task Clear(
+	internal virtual async Task Add(
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await Append(id: id, cancellationToken: cancellationToken);
+		(await Collection).Sort();
+	}
+
+	internal virtual async Task Clear(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{

@@ -14,15 +14,12 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	protected string _average;
 	protected string? _final;
 
-	internal static readonly Grade<Estimation> Empty = new Grade<Estimation>(
-		client: ApiClient.Empty,
-		estimations: new AsyncLazy<List<Estimation>>(valueFactory: async () => new List<Estimation>()),
-		average: String.Empty,
-		final: String.Empty
-	);
+	internal static readonly Grade<Estimation> Empty = new Grade<Estimation>();
 	#endregion
 
 	#region Constructors
+	protected Grade() { }
+
 	protected Grade(
 		ApiClient client,
 		AsyncLazy<List<T>> estimations,

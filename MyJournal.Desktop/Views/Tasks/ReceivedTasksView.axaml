@@ -3,7 +3,147 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Tasks"
-			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
+			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="vm:ReceivedTasksVM" x:Class="MyJournal.Desktop.Views.Tasks.ReceivedTasksView">
-	<TextBlock Text="Received tasks" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+	<UserControl.Styles>
+		<Style Selector="Border">
+			<Setter Property="Transitions">
+				<Transitions>
+					<ThicknessTransition Property="Margin" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Border.Open">
+			<Setter Property="Margin" Value="20 20"/>
+		</Style>
+		<Style Selector="Border.Closed">
+			<Setter Property="Margin" Value="-360 20"/>
+		</Style>
+		<Style Selector="lottie|Lottie.AllTasksAreCompleted">
+			<Setter Property="Path" Value="/Assets/Resources/Animations/AllTasksAreCompleted.json"/>
+		</Style>
+		<Style Selector="lottie|Lottie.EmptyTasks">
+			<Setter Property="Path" Value="/Assets/Resources/Animations/EmptyTasks.json"/>
+		</Style>
+		<Style Selector="lottie|Lottie.NotCompletedTasks">
+			<Setter Property="Path" Value="/Assets/Resources/Animations/NotCompletedTasks.json"/>
+		</Style>
+	</UserControl.Styles>
+	<Viewbox>
+		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 90*, 15*, 770*, 40*" Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
+			<Button Command="{Binding ClearTasks}" IsVisible="False" HotKey="Escape"/>
+			<TextBox Grid.Column="1" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
+			<Viewbox Grid.Row="3" Grid.Column="1">
+				<ComboBox	DisplayMemberBinding="{Binding Converter={StaticResource EnumToDescriptionConverter}}"
+							Width="500" Height="90" CornerRadius="20" ItemsSource="{Binding EducationPeriods}"
+							SelectedItem="{Binding SelectedStatus,Mode=TwoWay}">
+					<interactivity:Interaction.Behaviors>
+						<interaction:EventTriggerBehavior EventName="SelectionChanged">
+							<interaction:InvokeCommandAction Command="{Binding OnTaskCompletionStatusSelectionChanged}"/>
+						</interaction:EventTriggerBehavior>
+					</interactivity:Interaction.Behaviors>
+				</ComboBox>
+			</Viewbox>
+			<Border Grid.Column="1" Grid.Row="5" Classes="TransitionBorderBrush ListBorder">
+				<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+													Classes="Subjects StudyingSubjects" ItemsSource="{Binding StudyingSubjects}"
+													Selection="{Binding SubjectSelectionModel}" x:Name="Subjects">
+					<interactivity:Interaction.Behaviors>
+						<interaction:EventTriggerBehavior EventName="SelectionChanged">
+							<interaction:InvokeCommandAction Command="{Binding OnSubjectSelectionChanged}"/>
+						</interaction:EventTriggerBehavior>
+					</interactivity:Interaction.Behaviors>
+				</controls:ListBoxWithLoadOnScroll>
+			</Border>
+			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder" CornerRadius="30">
+				<Grid>
+					<Grid IsVisible="{Binding !!Tasks.Count}" >
+						<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+															ItemsSource="{Binding Tasks}" Classes="Tasks AssignedTasks" ThresholdPercentage="80"
+															ComparisonOperations="GreaterOrEquals" Command="{Binding LoadTasks}"/>
+						<Border Classes="ListBorder " Width="320" Height="930" HorizontalAlignment="Right" CornerRadius="12.5"
+								VerticalAlignment="Top" Background="{DynamicResource BackgroundColor}"
+								Classes.Closed="{Binding !ShowAttachments}"
+								Classes.Open="{Binding ShowAttachments}">
+							<Grid ColumnDefinitions="20*, 110*, 140*, 30*, 20*" RowDefinitions="20*, 30*, 20*, 740*, 20*">
+								<TextBlock Grid.Row="1" Grid.Column="1" Text="Вложения" FontSize="20"/>
+								<Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Classes="TransparentCloseButton"
+										VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10"
+										Command="{Binding CloseAttachments}" HotKey="Escape">
+									<controls:XamlSvg Classes="Close" Margin="5" Foreground="{DynamicResource ForegroundColor}"/>
+								</Button>
+								<ListBox	Grid.Row="3" ItemsSource="{Binding Attachments}"
+											Grid.Column="1" Grid.ColumnSpan="3" Classes="TaskAttachments"/>
+							</Grid>
+						</Border>
+					</Grid>
+					<Grid	VerticalAlignment="Center" Height="75" HorizontalAlignment="Center"
+							Width="320" ColumnDefinitions="75*, 10*, 235">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Tasks.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNull}"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<controls:XamlSvg	Grid.Column="0" Foreground="{DynamicResource MainAccentColor}"
+											Classes="NotSelectedSubjectImage"/>
+						<TextBlock Grid.Column="2" TextWrapping="Wrap" Text="Выберите дисциплину для просмотра"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+					<Grid	VerticalAlignment="Center" Height="150" HorizontalAlignment="Center"
+							Width="250" RowDefinitions="115*, 10*, 25*">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Tasks.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+								<Binding Path="UncompletedTasksSelected"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<lottie:Lottie	Grid.Row="0" Classes.AllTasksAreCompleted="{Binding $parent[Grid].IsVisible}"
+										RepeatCount="1" Margin="-80"/>
+						<TextBlock	TextWrapping="Wrap" Text="Все задачи выполнены."
+									HorizontalAlignment="Center" Grid.Row="2"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+					<Grid	VerticalAlignment="Center" Height="175" HorizontalAlignment="Center"
+							Width="250" RowDefinitions="115*, 10*, 50*">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Tasks.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+								<Binding Path="CompletedTasksSelected"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<lottie:Lottie	Grid.Row="0" Classes.NotCompletedTasks="{Binding $parent[Grid].IsVisible}"
+										RepeatCount="1" Margin="-20 "/>
+						<TextBlock	TextWrapping="Wrap" Text="Список выполненных задач пуст." Grid.Row="2"
+									HorizontalAlignment="Center" TextAlignment="Center"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+					<Grid	VerticalAlignment="Center" Height="150" HorizontalAlignment="Center"
+							Width="250" RowDefinitions="115*, 10*, 25*">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Tasks.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+								<MultiBinding Converter="{x:Static BoolConverters.Or}">
+									<Binding Path="AllTasksSelected"/>
+									<Binding Path="ExpiredTasksSelected"/>
+								</MultiBinding>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<lottie:Lottie	Grid.Row="0" Classes.EmptyTasks="{Binding $parent[Grid].IsVisible}" RepeatCount="1"
+										Margin="-10"/>
+						<TextBlock	TextWrapping="Wrap" Text="Список задач пуст."
+									HorizontalAlignment="Center" Grid.Row="2"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+				</Grid>
+			</Border>
+		</Grid>
+	</Viewbox>
 </UserControl>

@@ -1,0 +1,25 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<ControlTheme x:Key="DatePickerButton" TargetType="Button">
+		<Setter Property="RenderTransform" Value="none" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<ContentPresenter	Name="PART_ContentPresenter"
+									BorderBrush="{TemplateBinding BorderBrush}"
+									Background="{TemplateBinding Background}"
+									BorderThickness="{TemplateBinding BorderThickness}"
+									Content="{TemplateBinding Content}"
+									Foreground="{TemplateBinding Foreground}"
+									HorizontalContentAlignment="Stretch"
+									VerticalContentAlignment="Stretch"
+									CornerRadius="{TemplateBinding CornerRadius}"/>
+			</ControlTemplate>
+		</Setter>
+
+		<Style Selector="^:pressed">
+			<Setter Property="RenderTransform" Value="scale(0.98)" />
+		</Style>
+	</ControlTheme>
+
+</ResourceDictionary>

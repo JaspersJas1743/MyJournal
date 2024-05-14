@@ -1,32 +1,34 @@
+using System.ComponentModel;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
 public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 {
-	private AssignedTaskCompletionStatus _currentStatus = AssignedTaskCompletionStatus.All;
+	private readonly IFileService _fileService;
 	private readonly int _subjectId;
 
-	public static readonly AssignedTaskCollection Empty = new AssignedTaskCollection(
-		client: ApiClient.Empty,
-		collection: new AsyncLazy<List<AssignedTask>>(valueFactory: () => new List<AssignedTask>()),
-		subjectId: -1,
-		count: -1,
-		offset: -1
-	);
+	private AssignedTaskCompletionStatus _currentStatus = AssignedTaskCompletionStatus.All;
+
+	public static readonly AssignedTaskCollection Empty = new AssignedTaskCollection();
 
 	#region Constructor
+	private AssignedTaskCollection() { }
+
 	private AssignedTaskCollection(
 		ApiClient client,
+		IFileService fileService,
 		AsyncLazy<List<AssignedTask>> collection,
 		int subjectId,
 		int count,
 		int offset
 	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
+		_fileService = fileService;
 		_subjectId = subjectId;
 	}
 	#endregion
@@ -34,9 +36,13 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 	#region Enum
 	public enum AssignedTaskCompletionStatus
 	{
+		[Description(description: "Все задачи")]
 		All,
+		[Description(description: "Открытые")]
 		Uncompleted,
+		[Description(description: "Выполненные")]
 		Completed,
+		[Description(description: "Завершенные")]
 		Expired
 	}
 	#endregion
@@ -88,6 +94,7 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 
 	internal static async Task<AssignedTaskCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		int subjectId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -111,8 +118,13 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 			);
 		return new AssignedTaskCollection(
 			client: client,
+			fileService: fileService,
 			collection: new AsyncLazy<List<AssignedTask>>(valueFactory: async () => new List<AssignedTask>(collection: await Task.WhenAll(
-				tasks: tasks.Select(selector: async t => await AssignedTask.Create(client: client, response: t))
+				tasks: tasks.Select(selector: async t => await AssignedTask.Create(
+					client: client,
+					fileService: fileService,
+					response: t
+				))
 			))),
 			subjectId: subjectId,
 			count: basedCount,
@@ -127,6 +139,9 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (_currentStatus == status)
+			return;
+
 		await Clear(cancellationToken: cancellationToken);
 		_currentStatus = status;
 		await Load(cancellationToken: cancellationToken);
@@ -134,6 +149,16 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 	#endregion
 
 	#region LazyCollection<AssignedTask>
+	internal override async Task Add(
+		int id,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		List<AssignedTask> collection = await Collection;
+		await Append(id: id, cancellationToken: cancellationToken);
+		collection.Sort(comparison: (first, second) => first.ReleasedAt.CompareTo(value: second.ReleasedAt));
+	}
+
 	internal override async Task Append(
 		int id,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -142,6 +167,7 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 		await base.Append(instance: await AssignedTask.Create(
 			client: Client,
 			id: id,
+			fileService: _fileService,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
 	}
@@ -155,6 +181,7 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 		await base.Insert(index: index, instance: await AssignedTask.Create(
 			client: Client,
 			id: id,
+			fileService: _fileService,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
 	}
@@ -180,7 +207,7 @@ public sealed class AssignedTaskCollection : LazyCollection<AssignedTask>
 			);
 		List<AssignedTask> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
-			selector: async t => await AssignedTask.Create(client: Client, response: t)
+			selector: async t => await AssignedTask.Create(client: Client, fileService: _fileService, response: t)
 		)));
 		Offset = collection.Count;
 	}

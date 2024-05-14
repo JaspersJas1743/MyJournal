@@ -22,6 +22,15 @@ public sealed class Attachment
 		LinkToFile = linkToFile;
 		Type = type;
 	}
+
+	private Attachment(
+		string? linkToFile,
+		AttachmentType type
+	)
+	{
+		LinkToFile = linkToFile;
+		Type = type;
+	}
 	#endregion
 
 	#region Properties
@@ -62,6 +71,11 @@ public sealed class Attachment
 		AttachmentType type,
 		IFileService fileService
 	) => new Attachment(linkToFile: linkToFile, type: type, fileService: fileService);
+
+	internal static Attachment Create(
+		string? linkToFile,
+		AttachmentType type
+	) => new Attachment(linkToFile: linkToFile, type: type);
 
 	public async Task Download(
 		string pathToSave,

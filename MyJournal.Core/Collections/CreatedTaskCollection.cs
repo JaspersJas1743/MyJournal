@@ -1,30 +1,29 @@
+using System.ComponentModel;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
 public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 {
 	#region Fields
-	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
+	private readonly IFileService _fileService;
 	private readonly int _subjectId;
 	private readonly int _classId;
+	private TaskCompletionStatus _currentStatus = TaskCompletionStatus.All;
 
-	public static readonly CreatedTaskCollection Empty = new CreatedTaskCollection(
-		client: ApiClient.Empty,
-		subjectId: -1,
-		classId: -1,
-		count: -1,
-		offset: -1,
-		collection: new AsyncLazy<List<CreatedTask>>(valueFactory: () => new List<CreatedTask>())
-	);
+	public static readonly CreatedTaskCollection Empty = new CreatedTaskCollection();
 	#endregion
 
 	#region Constructor
+	private CreatedTaskCollection() { }
+
 	private CreatedTaskCollection(
 		ApiClient client,
+		IFileService fileService,
 		AsyncLazy<List<CreatedTask>> collection,
 		int subjectId,
 		int classId,
@@ -32,6 +31,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 		int offset
 	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
+		_fileService = fileService;
 		_subjectId = subjectId;
 		_classId = classId;
 	}
@@ -40,8 +40,11 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	#region Enum
 	public enum TaskCompletionStatus
 	{
+		[Description(description: "Все задачи")]
 		All,
+		[Description(description: "Завершенные")]
 		Expired,
+		[Description(description: "Открытые")]
 		NotExpired
 	}
 	#endregion
@@ -95,6 +98,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 
 	internal static async Task<CreatedTaskCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		int subjectId,
 		int classId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -120,9 +124,11 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 			);
 		return new CreatedTaskCollection(
 			client: client,
+			fileService: fileService,
 			collection: new AsyncLazy<List<CreatedTask>>(valueFactory: async () => new List<CreatedTask>(collection: await Task.WhenAll(
 				tasks: tasks.Select(selector: async t => await CreatedTask.Create(
 					client: client,
+					fileService: fileService,
 					response: t
 				))
 			))),
@@ -154,6 +160,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	{
 		await base.Append(instance: await CreatedTask.Create(
 			client: Client,
+			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -167,6 +174,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 	{
 		await base.Insert(index: index, instance: await CreatedTask.Create(
 			client: Client,
+			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -194,7 +202,7 @@ public sealed class CreatedTaskCollection : LazyCollection<CreatedTask>
 			);
 		List<CreatedTask> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
-			selector: t => CreatedTask.Create(client: Client, response: t)
+			selector: t => CreatedTask.Create(client: Client, fileService: _fileService, response: t)
 		)));
 		Offset = collection.Count;
 	}

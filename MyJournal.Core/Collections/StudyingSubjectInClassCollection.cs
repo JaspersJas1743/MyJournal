@@ -2,6 +2,8 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
@@ -33,6 +35,15 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 	}
 	#endregion
 
+	#region Events
+	public event CompletedTaskHandler CompletedTask;
+	public event UncompletedTaskHandler UncompletedTask;
+	public event CreatedTaskHandler CreatedTask;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
+	#endregion
+
 	#region Methods
 	#region Static
 	private static async Task<IEnumerable<StudyingSubjectInClass.StudyingSubjectResponse>> LoadSubjectCollection(
@@ -49,6 +60,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 
 	public static async Task<StudyingSubjectInClassCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		int classId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -75,6 +87,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 				List<StudyingSubjectInClass> collection = new List<StudyingSubjectInClass>(collection: await Task.WhenAll(
 					tasks: subjects.Select(selector: async s => await StudyingSubjectInClass.Create(
 						client: client,
+						fileService: fileService,
 						classId: classId,
 						response: s,
 						cancellationToken: cancellationToken
@@ -82,6 +95,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 				));
 				collection.Insert(index: 0, item: await StudyingSubjectInClass.Create(
 					client: client,
+					fileService: fileService,
 					classId: classId,
 					name: "Все дисциплины",
 					cancellationToken: cancellationToken
@@ -149,6 +163,24 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 		collection.AddRange(collection: subjects);
 		_currentPeriod = period;
 	}
+
+	internal void OnCompletedTask(CompletedTaskEventArgs e)
+		=> CompletedTask?.Invoke(e: e);
+
+	internal void OnUncompletedTask(UncompletedTaskEventArgs e)
+		=> UncompletedTask?.Invoke(e: e);
+
+	internal void OnCreatedTask(CreatedTaskEventArgs e)
+		=> CreatedTask?.Invoke(e: e);
+
+	internal void OnCreatedAssessment(CreatedAssessmentEventArgs e)
+		=> CreatedAssessment?.Invoke(e: e);
+
+	internal void OnChangedAssessment(ChangedAssessmentEventArgs e)
+		=> ChangedAssessment?.Invoke(e: e);
+
+	internal void OnDeletedAssessment(DeletedAssessmentEventArgs e)
+		=> DeletedAssessment?.Invoke(e: e);
 	#endregion
 
 	#region IAsyncEnumerable<StudyingSubjectInClass>

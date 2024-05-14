@@ -12,7 +12,7 @@ namespace MyJournal.Core;
 
 public sealed class Parent : User
 {
-	private readonly AsyncLazy<WardSubjectStudyingCollection> _wardSubjectsStudying;
+	private readonly AsyncLazy<WardStudyingSubjectCollection> _wardSubjectsStudying;
 	private readonly HubConnection _parentHubConnection;
 
 	private AsyncLazy<TimetableForWardCollection> _timetable;
@@ -22,7 +22,7 @@ public sealed class Parent : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
-		AsyncLazy<WardSubjectStudyingCollection> wardSubjectsStudying,
+		AsyncLazy<WardStudyingSubjectCollection> wardSubjectsStudying,
 		AsyncLazy<TimetableForWardCollection> timetable
 	) : base(
 		client: client,
@@ -45,7 +45,7 @@ public sealed class Parent : User
 	private async void OnClosedCurrentSession()
 		=> await _parentHubConnection.StopAsync();
 
-	public async Task<WardSubjectStudyingCollection> GetWardSubjectsStudying()
+	public async Task<WardStudyingSubjectCollection> GetWardSubjectsStudying()
 		=> await _wardSubjectsStudying;
 
 	public async Task<TimetableForWardCollection> GetTimetable()
@@ -64,8 +64,9 @@ public sealed class Parent : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
-			wardSubjectsStudying: new AsyncLazy<WardSubjectStudyingCollection>(valueFactory: async () => await WardSubjectStudyingCollection.Create(
+			wardSubjectsStudying: new AsyncLazy<WardStudyingSubjectCollection>(valueFactory: async () => await WardStudyingSubjectCollection.Create(
 				client: client,
+				fileService: fileService,
 				cancellationToken: cancellationToken
 			)),
 			timetable: new AsyncLazy<TimetableForWardCollection>(valueFactory: async () => await TimetableForWardCollection.Create(
@@ -140,12 +141,12 @@ public sealed class Parent : User
 		});
 	}
 
-	private async Task InvokeIfWardSubjectStudyingAreCreated(Func<WardSubjectStudyingCollection, Task> invocation)
+	private async Task InvokeIfWardSubjectStudyingAreCreated(Func<WardStudyingSubjectCollection, Task> invocation)
 	{
 		if (!_wardSubjectsStudying.IsValueCreated)
 			return;
 
-		WardSubjectStudyingCollection studyingSubjects = await GetWardSubjectsStudying();
+		WardStudyingSubjectCollection studyingSubjects = await GetWardSubjectsStudying();
 		await invocation(arg: studyingSubjects);
 	}
 }

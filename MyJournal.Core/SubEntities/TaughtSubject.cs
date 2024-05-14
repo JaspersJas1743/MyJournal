@@ -1,4 +1,3 @@
-using System.Collections;
 using MyJournal.Core.Builders.TaskBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
@@ -115,6 +114,7 @@ public sealed class TaughtSubject : ISubEntity
 			response: response,
 			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
+				fileService: fileService,
 				classId: response.Class.Id,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
@@ -147,6 +147,7 @@ public sealed class TaughtSubject : ISubEntity
 			name: name,
 			tasks: new AsyncLazy<CreatedTaskCollection>(valueFactory: async () => await CreatedTaskCollection.Create(
 				client: client,
+				fileService: fileService,
 				subjectId: 0,
 				cancellationToken: cancellationToken
 			)),
@@ -208,8 +209,8 @@ public sealed class TaughtSubject : ISubEntity
 	public async Task<IEnumerable<TimetableForTeacher>> GetTimetable()
 		=> await _timetable;
 
-	public IInitTaskBuilder CreateTask()
-		=> InitTaskBuilder.Create(fileService: _fileService);
+	public ITaskBuilder CreateTask()
+		=> TaskBuilder.Create(fileService: _fileService);
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{

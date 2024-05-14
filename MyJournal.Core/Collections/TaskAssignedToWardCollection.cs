@@ -2,27 +2,26 @@ using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
 public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedToWard>
 {
 	#region Fields
+	private readonly IFileService _fileService;
 	private AssignedTaskCompletionStatus _currentStatus = AssignedTaskCompletionStatus.All;
 	private readonly int _subjectId;
 
-	public static readonly TaskAssignedToWardCollection Empty = new TaskAssignedToWardCollection(
-		client: ApiClient.Empty,
-		collection: new AsyncLazy<List<TaskAssignedToWard>>(valueFactory: () => new List<TaskAssignedToWard>()),
-		subjectId: -1,
-		count: -1,
-		offset: -1
-	);
+	public static readonly TaskAssignedToWardCollection Empty = new TaskAssignedToWardCollection();
 	#endregion
 
 	#region Constructor
+	private TaskAssignedToWardCollection() { }
+
 	private TaskAssignedToWardCollection(
 		ApiClient client,
+		IFileService fileService,
 		AsyncLazy<List<TaskAssignedToWard>> collection,
 		int subjectId,
 		int count,
@@ -90,6 +89,7 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 
 	internal static async Task<TaskAssignedToWardCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		int subjectId,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -113,8 +113,12 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 			);
 		return new TaskAssignedToWardCollection(
 			client: client,
+			fileService: fileService,
 			collection: new AsyncLazy<List<TaskAssignedToWard>>(valueFactory: async () => new List<TaskAssignedToWard>(collection: await Task.WhenAll(
-				tasks: tasks.Select(selector: async t => await TaskAssignedToWard.Create(client: client, response: t))
+				tasks: tasks.Select(selector: async t => await TaskAssignedToWard.Create(
+					fileService: fileService,
+					response: t
+				))
 			))),
 			subjectId: subjectId,
 			count: basedCount,
@@ -143,6 +147,7 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 	{
 		await base.Append(instance: await TaskAssignedToWard.Create(
 			client: Client,
+			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -156,6 +161,7 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 	{
 		await base.Insert(index: index, instance: await TaskAssignedToWard.Create(
 			client: Client,
+			fileService: _fileService,
 			id: id,
 			cancellationToken: cancellationToken
 		), cancellationToken: cancellationToken);
@@ -182,7 +188,7 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 			);
 		List<TaskAssignedToWard> collection = await Collection;
 		collection.AddRange(collection: await Task.WhenAll(tasks: tasks.Select(
-			selector: async t => await TaskAssignedToWard.Create(client: Client, response: t)
+			selector: async t => await TaskAssignedToWard.Create(fileService: _fileService, response: t)
 		)));
 		Offset = collection.Count;
 	}

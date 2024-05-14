@@ -3,6 +3,7 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.Collections;
 
@@ -36,6 +37,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	#region Static
 	internal static async Task<ClassCollection> Create(
 		ApiClient client,
+		IFileService fileService,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -46,6 +48,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 		return new ClassCollection(classes: new AsyncLazy<List<Class>>(valueFactory: async () => new List<Class>(collection: await Task.WhenAll(
 			tasks: classes.Select(async c => await Class.Create(
 				client: client,
+				fileService: fileService,
 				classId: c.Id,
 				name: c.Name,
 				cancellationToken: cancellationToken
@@ -67,6 +70,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnCompletedTask(e: e),
+			collectionInvocation: collection => collection.OnCompletedTask(e: e),
 			taskFilter: subject => subject.Id == e.TaskId
 		);
 
@@ -77,6 +81,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnUncompletedTask(e: e),
+			collectionInvocation: collection => collection.OnUncompletedTask(e: e),
 			taskFilter: subject => subject.Id == e.TaskId
 		);
 
@@ -87,6 +92,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnCreatedTask(e: e),
+			collectionInvocation: collection => collection.OnCreatedTask(e: e),
 			classFilter: @class => @class.Id == e.ClassId,
 			subjectFilter: subject => (subject.Id == 0 || subject.Id == e.SubjectId) && subject.TasksAreCreated
 		);
@@ -98,6 +104,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnCreatedAssessment(e: e),
+			collectionInvocation: collection => collection.OnCreatedAssessment(e: e),
 			subjectFilter: subject => subject.Id == e.SubjectId
 		);
 
@@ -108,6 +115,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnChangedAssessment(e: e),
+			collectionInvocation: collection => collection.OnChangedAssessment(e: e),
 			subjectFilter: subject => subject.Id == e.SubjectId
 		);
 
@@ -118,6 +126,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnDeletedAssessment(e: e),
+			collectionInvocation: collection => collection.OnDeletedAssessment(e: e),
 			subjectFilter: subject => subject.Id == e.SubjectId
 		);
 
@@ -132,6 +141,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 
 	private async Task InvokeIfSubjectsAreCreated(
 		Func<StudyingSubjectInClass, Task> invocation,
+		Action<StudyingSubjectInClassCollection> collectionInvocation,
 		Predicate<Class> classFilter,
 		Func<StudyingSubjectInClass, bool> subjectFilter
 	)
@@ -148,16 +158,27 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 		{
 			await foreach (StudyingSubjectInClass subject in subjects.Where(predicate: subjectFilter))
 				await invocation(arg: subject);
+			collectionInvocation(obj: subjects);
 		}
 	}
 
 	private async Task InvokeIfSubjectsAreCreated(
 		Func<StudyingSubjectInClass, Task> invocation,
+		Action<StudyingSubjectInClassCollection> collectionInvocation,
 		Func<StudyingSubjectInClass, bool> subjectFilter
-	) => await InvokeIfSubjectsAreCreated(invocation: invocation, classFilter: _ => true, subjectFilter: subjectFilter);
+	)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: invocation,
+			collectionInvocation: collectionInvocation,
+			classFilter: _ => true,
+			subjectFilter: subjectFilter
+		);
+	}
 
 	private async Task InvokeIfSubjectsAreCreated(
 		Func<StudyingSubjectInClass, Task> invocation,
+		Action<StudyingSubjectInClassCollection> collectionInvocation,
 		Func<TaskAssignedToClass, bool> taskFilter
 	)
 	{
@@ -177,6 +198,7 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 				if (await tasks.AnyAsync(predicate: taskFilter))
 					await invocation(arg: subject);
 			}
+			collectionInvocation(obj: subjects);
 		}
 	}
 	#endregion

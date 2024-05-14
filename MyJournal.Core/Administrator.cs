@@ -60,6 +60,7 @@ public sealed class Administrator : User
 			information: information,
 			classes: new AsyncLazy<ClassCollection>(valueFactory: async () => await ClassCollection.Create(
 				client: client,
+				fileService: fileService,
 				cancellationToken: cancellationToken
 			))
 		);

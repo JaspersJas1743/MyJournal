@@ -4,11 +4,16 @@ using MyJournal.Core.Utilities.Constants.Controllers;
 
 namespace MyJournal.Core.Utilities.FileService;
 
-public sealed class FileService(
-	ApiClient client
-) : IFileService
+public sealed class FileService : IFileService
 {
-	public ApiClient ApiClient { get; set; } = client;
+	public static readonly IFileService Empty = new FileService();
+
+	private FileService() { }
+
+	public FileService(ApiClient client)
+		=> ApiClient = client;
+
+	public ApiClient ApiClient { get; set; }
 
 	private sealed record FileLink(string Link);
 

@@ -1,9 +1,9 @@
-using System.Collections;
 using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -103,6 +103,7 @@ public sealed class WardSubjectStudying : Subject
 
 	internal static async Task<WardSubjectStudying> Create(
 		ApiClient client,
+		IFileService fileService,
 		StudyingSubjectResponse response,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -112,6 +113,7 @@ public sealed class WardSubjectStudying : Subject
 			response: response,
 			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
+				fileService: fileService,
 				subjectId: response.Id,
 				cancellationToken: cancellationToken
 			)),
@@ -127,6 +129,7 @@ public sealed class WardSubjectStudying : Subject
 
 	internal static async Task<WardSubjectStudying> Create(
 		ApiClient client,
+		IFileService fileService,
 		string name,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -136,6 +139,7 @@ public sealed class WardSubjectStudying : Subject
 			name: name,
 			tasks: new AsyncLazy<TaskAssignedToWardCollection>(valueFactory: async () => await TaskAssignedToWardCollection.Create(
 				client: client,
+				fileService: fileService,
 				subjectId: 0,
 				cancellationToken: cancellationToken
 			)),

@@ -40,7 +40,6 @@ public static class RoleHelper
 		MessagesVM messages = app.GetService<MessagesVM>();
 		TasksVM receivedTasks = app.GetService<ReceivedTasksVM>();
 		TasksVM createdTasks = app.GetService<CreatedTasksVM>();
-		TasksVM allTasks = app.GetService<AllTasksVM>();
 		MarksVM receivedMarks = app.GetService<ReceivedMarksVM>();
 		MarksVM createdMarks = app.GetService<CreatedMarksVM>();
 		TimetableVM teacherTimetable = app.GetService<WorkTimetableVM>();
@@ -48,9 +47,9 @@ public static class RoleHelper
 		TimetableVM administratorTimetable = app.GetService<CreatingTimetableVM>();
 
 		ContentsForTeacher          = new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	teacherTimetable };
-		ContentsForStudent          = new MenuItemVM[] { profile, messages, receivedTasks, receivedMarks,	studentTimetable };
-		ContentsForParent			= new MenuItemVM[] { profile, messages, receivedTasks, receivedMarks,	studentTimetable };
-		ContentsForAdministrator	= new MenuItemVM[] { profile, messages, allTasks,		createdMarks,	administratorTimetable };
+		ContentsForStudent          = new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable };
+		ContentsForParent			= new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable };
+		ContentsForAdministrator	= new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	administratorTimetable };
 	}
 
 	public static async Task<IEnumerable<MenuItem>> GetMenu(User user)

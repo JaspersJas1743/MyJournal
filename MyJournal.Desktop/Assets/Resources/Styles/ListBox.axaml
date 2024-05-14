@@ -3,9 +3,12 @@
 		xmlns:entities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
 		xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.ChatUtilities"
+		xmlns:chatUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.ChatUtilities"
 		xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
-		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters">
+		xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+		xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
+		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities">
 
 	<Style Selector="ListBox">
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -57,7 +60,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="utilities:ObservableChat">
+				<DataTemplate DataType="chatUtilities:ObservableChat">
 					<Viewbox Width="490" Height="115">
 						<Grid	Width="505" ColumnDefinitions="15*, 70*, 15*, 15*, 255*, 70*, 20*, 5*, 15*, 5*, 10*, 10*"
 								Height="115" RowDefinitions="15*, 25*, 5*, 10*, 20*, 10*, 15*, 5*, 10*">
@@ -112,7 +115,7 @@
 							<controls:XamlSvg   Classes="ReadMark TransitionForeground" Grid.Row="6" Grid.Column="7" Grid.ColumnSpan="2"
 												Foreground="{DynamicResource MainAccentColor}">
 								<controls:XamlSvg.Opacity>
-									<MultiBinding Converter="{x:Static converters:ActivityToDoubleMultiValueConverter.Instance}">
+									<MultiBinding Converter="{x:Static converters:BoolToDoubleMultiValueConverter.And}">
 										<Binding Path="FromMe"/>
 										<Binding Path="IsRead"/>
 									</MultiBinding>
@@ -136,7 +139,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="utilities:Attachment">
+				<DataTemplate DataType="chatUtilities:Attachment">
 					<Viewbox Height="50">
 						<Border Height="50" CornerRadius="15" Background="{DynamicResource MainAccentColor}">
 							<StackPanel Orientation="Horizontal" Spacing="10" Margin="10 0">
@@ -163,7 +166,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="utilities:ExtendedAttachment">
+				<DataTemplate DataType="chatUtilities:ExtendedAttachment">
 					<Viewbox>
 						<Button Command="{Binding Download}" Classes="Corner10 MainAccentColor"
 								CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"
@@ -197,7 +200,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="utilities:ExtendedMessage">
+				<DataTemplate DataType="chatUtilities:ExtendedMessage">
 					<Border MaxWidth="600" Classes.NotFromMe="{Binding !Message.FromMe}"
 							MinHeight="55" Classes.FromMe="{Binding Message.FromMe}"
 							CornerRadius="20" Margin="20 12.5" Padding="15 10">
@@ -228,7 +231,7 @@
 														Foreground="{DynamicResource MainAccentColor}"
 														VerticalAlignment="Bottom" Height="15">
 										<controls:XamlSvg.Opacity>
-											<MultiBinding Converter="{x:Static converters:ActivityToDoubleMultiValueConverter.Instance}">
+											<MultiBinding Converter="{x:Static converters:BoolToDoubleMultiValueConverter.And}">
 												<Binding Path="Message.FromMe"/>
 												<Binding Path="MessageIsRead"/>
 											</MultiBinding>
@@ -257,7 +260,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="utilities:ExtendedInterlocutor">
+				<DataTemplate DataType="chatUtilities:ExtendedInterlocutor">
 					<Grid ColumnDefinitions="10*, 50*, 10*, 400*" Width="470" Height="50" Margin="10 10 0 10">
 						<Border Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
 							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"/>
@@ -280,7 +283,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="utilities:ExtendedInterlocutor">
+				<DataTemplate DataType="chatUtilities:ExtendedInterlocutor">
 					<Grid	ColumnDefinitions="10*, 50*, 10*, 350*, 10*, 30*, 10*, 10*" RowDefinitions="10*, 30*, 10*"
 							Width="480" Height="50" Margin="10 10 0 10">
 						<Border Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
@@ -291,6 +294,269 @@
 									VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20"/>
 						<CheckBox Grid.Column="5" Grid.Row="1" Classes="SelectionIndicator" IsHitTestVisible="False"/>
 					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.Subjects">
+			<Setter Property="VerticalAlignment" Value="Top" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<VirtualizingStackPanel Orientation="Vertical"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.Tasks">
+			<Setter Property="VerticalAlignment" Value="Top" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<WrapPanel Orientation="Horizontal" Width="1350" HorizontalAlignment="Center" Margin="0 10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.StudyingSubjects">
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="tasksUtilities:StudentSubject">
+					<Grid Margin="20 10" Width="450" Height="50">
+						<StackPanel Orientation="Vertical" VerticalAlignment="Center">
+							<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
+										VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="SubjectName"/>
+							<TextBlock	Text="{Binding Teacher.FullName}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SubheaderColor}"
+										IsVisible="{Binding Teacher,Converter={x:Static ObjectConverters.IsNotNull}}"
+										VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="SubjectTeacher"/>
+						</StackPanel>
+					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.TeacherSubjects">
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="tasksUtilities:TeacherSubject">
+					<Grid Margin="20 10" Width="450" Height="50">
+						<StackPanel Orientation="Vertical" VerticalAlignment="Center">
+							<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
+										VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="SubjectName"/>
+							<TextBlock	Text="{Binding ClassName}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SubheaderColor}"
+										IsVisible="{Binding ClassName,Converter={x:Static ObjectConverters.IsNotNull}}"
+										VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="SubjectTeacher"/>
+						</StackPanel>
+					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.AssignedTasks">
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="tasksUtilities:ObservableReceivedTask">
+					<Border BorderBrush="{DynamicResource StrokeColor}" CornerRadius="15"
+							Classes="TransitionBackground TransitionBorderBrush" BorderThickness="5"
+							Background="Transparent" Width="645" Height="400" >
+						<interactivity:Interaction.Behaviors>
+							<interaction:EventTriggerBehavior EventName="AttachedToVisualTree">
+								<interaction:InvokeCommandAction Command="{Binding OnAttachedToVisualTree}"/>
+							</interaction:EventTriggerBehavior>
+							<interaction:EventTriggerBehavior EventName="DetachedFromVisualTree">
+								<interaction:InvokeCommandAction Command="{Binding OnDetachedFromVisualTree}"/>
+							</interaction:EventTriggerBehavior>
+						</interactivity:Interaction.Behaviors>
+						<Grid RowDefinitions="50*, 290*, 50*, 10*" ColumnDefinitions="10*, 150*, 25*, 300*, 25*, 125*, 10*">
+							<Border Grid.Row="0" Grid.Column="0" BorderBrush="{DynamicResource StrokeColor}"
+									Classes.AssignedTaskIsExpired="{Binding IsExpired}"
+									Classes.AssignedTaskNotIsExpired="{Binding !IsExpired}"
+									IsVisible="{Binding ShowLessonName}" Padding="20 0 0 0">
+								<TextBlock	Width="490" VerticalAlignment="Center" FontSize="20"
+											Text="{Binding LessonName}" TextTrimming="CharacterEllipsis"
+											Classes.TaskIsExpired="{Binding IsExpired}"
+											Classes.TaskNotIsExpired="{Binding !IsExpired}"/>
+							</Border>
+							<Border Grid.Row="0" Grid.Column="5" Grid.ColumnSpan="2"
+									IsVisible="{Binding !IsExpired}"
+									Classes.AllSubjects="{Binding ShowLessonName}"
+									Classes.NotAllSubjects="{Binding !ShowLessonName}"
+									BorderBrush="{DynamicResource StrokeColor}">
+								<TextBlock	HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" TextAlignment="Center"
+											Text="{Binding ReleasedTime}" TextTrimming="CharacterEllipsis"/>
+							</Border>
+							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+										TextAlignment="Center" Text="{Binding Text}" FontSize="20"
+										HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+										TextAlignment="Center" Text="Текст задания отсутствует" Foreground="{DynamicResource StrokeColor}"
+										FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							<Viewbox Grid.Row="2" Grid.Column="1">
+								<controls:ButtonWithAnimatedCommand Background="{DynamicResource CompletedTaskColor}" Content="Выполнено"
+																	IsEnabled="{Binding !Observable.IsReceivedToWard}"
+																	Width="150" Height="50" FontSize="20" Classes="Corner10 TaskStatus"
+																	Command="{Binding MarkUncompleted}"
+																	IsVisible="{Binding IsCompleted}"/>
+							</Viewbox>
+							<Viewbox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
+								<controls:ButtonWithAnimatedCommand Background="{DynamicResource UncompletedTaskColor}" FontSize="20"
+																	IsEnabled="{Binding !Observable.IsReceivedToWard}"
+																	Content="Не выполнено" Classes="Corner10 TaskStatus" Width="175" Height="50"
+																	IsVisible="{Binding IsUncompleted}"
+																	Command="{Binding MarkCompleted}"/>
+							</Viewbox>
+							<Viewbox Grid.Row="2" Grid.Column="1">
+								<controls:ButtonWithAnimatedCommand Background="{DynamicResource ExpiredTaskColor}" IsEnabled="False"
+																	Content="Завершено" IsVisible="{Binding IsExpired}"
+																	Width="150" Height="50" FontSize="20" Classes="Corner10 TaskStatus"/>
+							</Viewbox>
+							<Viewbox Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2">
+								<controls:ButtonWithAnimatedCommand Background="{DynamicResource MainAccentColor}"
+																	Content="Вложения" IsVisible="{Binding !!Attachments.Count}"
+																	Command="{Binding ShowAttachments}"
+																	Width="150" Height="50" FontSize="20" Classes="Corner10"/>
+							</Viewbox>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.CreatedTasks">
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="tasksUtilities:ObservableCreatedTask">
+					<Border BorderBrush="{DynamicResource StrokeColor}" CornerRadius="15"
+							Classes="TransitionBackground TransitionBorderBrush" BorderThickness="5"
+							Background="Transparent" Width="645" Height="400" >
+						<interactivity:Interaction.Behaviors>
+							<interaction:EventTriggerBehavior EventName="AttachedToVisualTree">
+								<interaction:InvokeCommandAction Command="{Binding OnAttachedToVisualTree}"/>
+							</interaction:EventTriggerBehavior>
+							<interaction:EventTriggerBehavior EventName="DetachedFromVisualTree">
+								<interaction:InvokeCommandAction Command="{Binding OnDetachedFromVisualTree}"/>
+							</interaction:EventTriggerBehavior>
+						</interactivity:Interaction.Behaviors>
+						<Grid RowDefinitions="50*, 290*, 50*, 10*" ColumnDefinitions="10*, 140*, 20*, 10*, 200*, 125*, 20*, 115*, 10*">
+							<Border Grid.Row="0" Grid.Column="0" BorderBrush="{DynamicResource StrokeColor}"
+									IsVisible="{Binding ShowClassAndLesson}"
+									BorderThickness="0 0 0 5" Grid.ColumnSpan="2">
+								<TextBlock	Text="{Binding Class}" TextTrimming="CharacterEllipsis"
+											VerticalAlignment="Center" FontSize="20" HorizontalAlignment="Center"/>
+							</Border>
+							<Border Padding="20 0 0 0"
+									Classes.TaskIsExpired="{Binding IsExpired}"
+									Classes.TaskNotIsExpired="{Binding !IsExpired}"
+									Grid.Row="0" Grid.Column="2" BorderBrush="{DynamicResource StrokeColor}"
+									IsVisible="{Binding ShowClassAndLesson}">
+								<TextBlock	Text="{Binding Lesson}" TextTrimming="CharacterEllipsis"
+											Width="345" VerticalAlignment="Center" FontSize="20" HorizontalAlignment="Center"
+											Classes.TaskNotIsExpired="{Binding !IsExpired}"
+											Classes.TaskIsExpired="{Binding IsExpired}"/>
+							</Border>
+							<Border Grid.Row="0" Grid.Column="7" BorderBrush="{DynamicResource StrokeColor}"
+									Classes.NotAllSubjects="{Binding !ShowClassAndLesson}"
+									IsVisible="{Binding !IsExpired}" Grid.ColumnSpan="2"
+									Classes.AllSubjects="{Binding ShowClassAndLesson}">
+								<TextBlock	Text="{Binding ReleasedTime}" TextTrimming="CharacterEllipsis"
+											VerticalAlignment="Center" FontSize="20" HorizontalAlignment="Center"/>
+							</Border>
+							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+										TextAlignment="Center" Text="{Binding Text}" FontSize="20" HorizontalAlignment="Center"
+										VerticalAlignment="Center"/>
+							<TextBlock	FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource StrokeColor}"
+										IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNullOrEmpty}}"
+										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" TextAlignment="Center" Text="Текст задания отсутствует."/>
+							<Viewbox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
+								<controls:ButtonWithAnimatedCommand Background="{DynamicResource CompletedTaskColor}" IsEnabled="False"
+																	Content="{Binding CountOfCompletedTask,StringFormat='Выполнено: {0}'}"
+																	Width="160" Height="50" FontSize="20" Classes="Corner10 TaskStatus"
+																	IsVisible="{Binding !IsExpired}"/>
+							</Viewbox>
+							<Viewbox Grid.Row="2" Grid.Column="4">
+								<controls:ButtonWithAnimatedCommand Content="{Binding CountOfUncompletedTask,StringFormat='Не выполнено: {0}'}"
+																	Background="{DynamicResource UncompletedTaskColor}" FontSize="20"
+																	IsEnabled="False" Classes="Corner10 TaskStatus" Width="200" Height="50"
+																	IsVisible="{Binding !IsExpired}"/>
+							</Viewbox>
+							<Viewbox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
+								<controls:ButtonWithAnimatedCommand Background="{DynamicResource ExpiredTaskColor}" IsEnabled="False"
+																	Content="Завершено" IsVisible="{Binding IsExpired}"
+																	Width="160" Height="50" FontSize="20" Classes="Corner10 TaskStatus"/>
+							</Viewbox>
+							<Viewbox Grid.Row="2" Grid.Column="6" Grid.ColumnSpan="2">
+								<controls:ButtonWithAnimatedCommand Background="{DynamicResource MainAccentColor}"
+																	Content="Вложения" IsVisible="{Binding !!Attachments.Count}"
+																	Command="{Binding ShowAttachments}"
+																	Width="150" Height="50" FontSize="20" Classes="Corner10"/>
+							</Viewbox>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.TaskAttachments">
+			<Setter Property="VerticalAlignment" Value="Top" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Spacing="10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="chatUtilities:ExtendedAttachment">
+					<Viewbox>
+						<Button Command="{Binding Download}" Classes="Corner10 MainAccentColor"
+								CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"
+								Height="35" MaxWidth="280" Padding="10 0">
+							<Button.Content>
+								<TextBlock	Text="{Binding FileName}" FontSize="20"
+											TextTrimming="CharacterEllipsis"/>
+							</Button.Content>
+							<Button.Flyout>
+								<Flyout ShowMode="TransientWithDismissOnPointerMoveAway" Placement="Bottom">
+									Файл успешно сохранен!
+								</Flyout>
+							</Button.Flyout>
+						</Button>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.CreatedAttachmentsList">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Spacing="10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="chatUtilities:Attachment">
+					<Viewbox Height="50" Width="270">
+						<Border Height="50" Width="280" CornerRadius="15" Background="{DynamicResource MainAccentColor}">
+							<Grid ColumnDefinitions="10*, 230*, 10*, 20*, 10*">
+								<Grid Grid.Column="1">
+									<TextBlock	Text="{Binding FileName}" Classes="AttachmentName"
+												IsVisible="{Binding IsLoaded}"/>
+									<lottie:Lottie	Path="/Assets/Resources/Animations/Loading.json" HorizontalAlignment="Left"
+													IsVisible="{Binding !IsLoaded}"/>
+								</Grid>
+								<Button Grid.Column="3" Classes="RemoveAttachment" Command="{Binding Remove}"/>
+							</Grid>
+						</Border>
+					</Viewbox>
 				</DataTemplate>
 			</Setter>
 		</Style>

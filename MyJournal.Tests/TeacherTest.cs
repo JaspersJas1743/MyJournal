@@ -182,10 +182,10 @@ public class TeacherTest
 		DateTime release = DateTime.Today.AddDays(3);
 		const string text = "Тестовое задание";
 		_ = await allSubjects.CreateTask()
-			.ForClass(classId: 11)
-			.ForSubject(subjectId: 47)
-			.AddReleaseDate(dateOfRelease: release)
-			.AddText(text: text)
+			.SetClass(classId: 11)
+			.SetSubject(subjectId: 47)
+			.SetDateOfRelease(dateOfRelease: release)
+			.SetText(text: text)
 			.Save();
 		await Task.Delay(millisecondsDelay: 50);
 

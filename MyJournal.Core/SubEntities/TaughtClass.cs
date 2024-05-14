@@ -12,14 +12,9 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 	private readonly AsyncLazy<IEnumerable<StudentInTaughtClass>> _students;
 	private readonly AsyncLazy<IEnumerable<CommentsForAssessment>> _commentsForTruancy;
 
-	public static readonly TaughtClass Empty = new TaughtClass(
-		client: ApiClient.Empty,
-		subjectId: -1,
-		id: -1,
-		name: String.Empty,
-		students: new AsyncLazy<IEnumerable<StudentInTaughtClass>>(valueFactory: Enumerable.Empty<StudentInTaughtClass>),
-		commentsForTruancy: new AsyncLazy<IEnumerable<CommentsForAssessment>>(valueFactory: Enumerable.Empty<CommentsForAssessment>)
-	);
+	public static readonly TaughtClass Empty = new TaughtClass();
+
+	private TaughtClass() { }
 
 	private TaughtClass(
 		ApiClient client,

@@ -4,6 +4,7 @@ using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Core.Utilities.FileService;
 
 namespace MyJournal.Core.SubEntities;
 
@@ -73,6 +74,7 @@ public class Class : ISubEntity
 
 	internal static async Task<Class> Create(
 		ApiClient client,
+		IFileService fileService,
 		int classId,
 		string name,
 		CancellationToken cancellationToken = default(CancellationToken)
@@ -84,6 +86,7 @@ public class Class : ISubEntity
 			client: client,
 			studyingSubjects: new AsyncLazy<StudyingSubjectInClassCollection>(valueFactory: async () => await StudyingSubjectInClassCollection.Create(
 				client: client,
+				fileService: fileService,
 				classId: classId,
 				cancellationToken: cancellationToken
 			)),

@@ -1,6 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+		xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+		xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities"
+		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters">
 
 	<Style Selector="ListBoxItem">
 		<Setter Property="Padding" Value="0"/>
@@ -78,7 +82,7 @@
 		</Style>
 	</Style>
 
-	<Style Selector="ListBox.LargeCountChats ListBoxItem">
+	<Style Selector="ListBox.LargeCount ListBoxItem">
 		<Style Selector="^:nth-last-child(1)">
 			<Setter Property="CornerRadius" Value="0 0 15 15"/>
 		</Style>
@@ -112,5 +116,148 @@
 				<Setter Property="IsChecked" Value="False"/>
 			</Style>
 		</Style>
+	</Style>
+
+	<Style Selector="ListBox.Subjects ListBoxItem">
+		<Setter Property="FocusAdorner" Value="{x:Null}"/>
+	    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:selected">
+			<Style Selector="^ TextBlock.SubjectName">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ TextBlock.SubjectTeacher">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+	            <Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	    </Style>
+		<Style Selector="^:nth-child(1)">
+			<Setter Property="CornerRadius" Value="15 15 0 0"/>
+		</Style>
+	</Style>
+
+	<Style Selector="ListBox.AssignedTasks ListBoxItem:nth-child(odd)">
+		<Setter Property="Margin" Value="20 10 10 10"/>
+	</Style>
+
+	<Style Selector="ListBox.AssignedTasks ListBoxItem:nth-child(even)">
+		<Setter Property="Margin" Value="10 10 0 10"/>
+	</Style>
+
+	<Style Selector="ListBox.CreatedTasks ListBoxItem:nth-child(odd)">
+		<Setter Property="Margin" Value="20 10 10 10"/>
+	</Style>
+
+	<Style Selector="ListBox.CreatedTasks ListBoxItem:nth-child(even)">
+		<Setter Property="Margin" Value="10 10 0 10"/>
+	</Style>
+
+	<Style Selector="ListBox.FirstTask ListBoxItem:nth-child(1) /template/ ContentPresenter">
+ 		<Setter Property="ContentTemplate">
+			<DataTemplate x:DataType="tasksUtilities:ObservableCreatedTask">
+				<Border BorderBrush="{DynamicResource StrokeColor}" CornerRadius="15"
+						Classes="TransitionBackground TransitionBorderBrush" BorderThickness="5"
+						Background="Transparent" Width="645" Height="400" >
+					<Grid ColumnDefinitions="10, 190*, 60*, 10*, 100*, 10*, 125*, 10*, 125*, 10*" RowDefinitions="50*, 290*, 50*, 10*">
+						<Viewbox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0">
+							<ComboBox ItemsSource="{Binding Classes}" Width="200" Height="50"  BorderBrush="{DynamicResource StrokeColor}"
+									DisplayMemberBinding="{Binding Name}" BorderThickness="0 0 0 5" Classes="ClassAndSubjectSelection"
+									CornerRadius="15 0 0 0" SelectedItem="{Binding SelectedClass,Mode=TwoWay}"
+									Classes.Single="{Binding SingleClass}"
+									PlaceholderText="Не выбрано" PlaceholderForeground="{DynamicResource StrokeColor}">
+								<interactivity:Interaction.Behaviors>
+									<interaction:EventTriggerBehavior EventName="SelectionChanged">
+										<interaction:InvokeCommandAction Command="{Binding OnClassSelectionChanged}"/>
+									</interaction:EventTriggerBehavior>
+								</interactivity:Interaction.Behaviors>
+							</ComboBox>
+						</Viewbox>
+						<Viewbox Grid.Column="2" Grid.ColumnSpan="8" Grid.Row="0">
+							<ComboBox	ItemsSource="{Binding Subjects}" Width="450" Height="50" BorderBrush="{DynamicResource StrokeColor}"
+										DisplayMemberBinding="{Binding Name}" BorderThickness="5 0 0 5" Classes="ClassAndSubjectSelection"
+										CornerRadius="0 15 0 0" SelectedItem="{Binding SelectedSubject,Mode=TwoWay}"
+										Classes.Single="{Binding SingleSubject}"
+										PlaceholderText="Не выбрано" PlaceholderForeground="{DynamicResource StrokeColor}"/>
+						</Viewbox>
+						<Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="8">
+							<Border Background="Transparent" Classes="OpacityTransition">
+								<Border.Opacity>
+									<MultiBinding Converter="{x:Static converters:BoolToDoubleMultiValueConverter.And}">
+										<Binding Path="!#TaskContent.IsFocused"/>
+										<Binding Path="#TaskContent.Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+ 									</MultiBinding>
+								</Border.Opacity>
+								<TextBlock	Text="Нажмите для ввода текста задания..." Foreground="{DynamicResource StrokeColor}"
+											FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							</Border>
+							<TextBox	Classes.TaskWatermark="{Binding !$self.IsFocused,RelativeSource={RelativeSource Mode=Self}}"
+										Classes="TaskInput" x:Name="TaskContent" Text="{Binding EnteredText,Mode=TwoWay}"/>
+						</Grid>
+						<Viewbox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
+							<DatePicker Width="250" Height="50" SelectedDate="{Binding SelectedDate,Mode=TwoWay}"
+										CornerRadius="10" Background="{DynamicResource BackgroundColor}"/>
+						</Viewbox>
+						<Viewbox Grid.Row="2" Grid.Column="4">
+							<TimePicker Width="100" Height="50" SelectedTime="{Binding SelectedTime,Mode=TwoWay}"
+										CornerRadius="10" Background="{DynamicResource BackgroundColor}"/>
+						</Viewbox>
+						<Viewbox Grid.Row="2" Grid.Column="6">
+							<Button Width="125" Height="50" Content="Вложения" Classes="MainAccentColor Corner10" FontSize="20"
+									Command="{Binding ShowAttachments}"/>
+						</Viewbox>
+						<Viewbox Grid.Row="2" Grid.Column="8">
+							<Button Width="125" Height="50" Content="Сохранить" Classes="MainAccentColor Corner10 TransitionBackground"
+									Command="{Binding SaveTask}" FontSize="20"/>
+						</Viewbox>
+					</Grid>
+				</Border>
+			</DataTemplate>
+		</Setter>
+	</Style>
+
+	<Style Selector="ListBoxItem.MonthItem">
+		<Setter Property="FontSize" Value="16"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="ListBoxItem.YearItem">
+		<Setter Property="FontSize" Value="16"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="ListBoxItem.DayItem">
+		<Setter Property="FontSize" Value="16"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="ListBoxItem.HourItem">
+		<Setter Property="FontSize" Value="16"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+	<Style Selector="ListBoxItem.MinuteItem">
+		<Setter Property="FontSize" Value="16"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Margin" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
 	</Style>
 </Styles>

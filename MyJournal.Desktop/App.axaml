@@ -20,6 +20,11 @@
             <converters:ChatsCountIsLargeConverter x:Key="ChatsCountIsLargeConverter"/>
             <converters:StringIsNullOrWhiteSpaceConverter x:Key="StringIsNullOrWhiteSpaceConverter"/>
             <converters:StringIsNotNullOrWhiteSpaceConverter x:Key="StringIsNotNullOrWhiteSpaceConverter"/>
+            <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/DatePickerButton.axaml"/>
+                <ResourceInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TimePickerButton.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Light}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/LightTheme.axaml"/>
                 <ResourceInclude x:Key="{x:Static Member=colors:ColorThemes.Dark}" Source="avares://MyJournal.Desktop/Assets/Resources/ColorThemes/DarkTheme.axaml"/>
@@ -56,6 +61,8 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/ScrollViewer.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/Ellipse.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/SelectableTextBlock.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/DatePicker.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TimePicker.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"/>
@@ -86,5 +93,6 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/NotSelectedChatImage.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/BackArrow.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Camera.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/NotSelectedSubjectImage.axaml"/>
     </Application.Styles>
 </Application>
