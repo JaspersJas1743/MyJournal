@@ -126,12 +126,16 @@ public class AuthorizationModel : ModelWithErrorMessage
 			);
 			if (dialogResult == ButtonResult.Yes)
 			{
-				Process.Start(startInfo: new ProcessStartInfo(fileName: "/bin/bash", arguments: "-c \"sudo apt-get install libsecret-1-dev\""));
+				Process.Start(startInfo: new ProcessStartInfo(fileName: "/bin/bash", arguments: "-c \"sudo apt-get install libsecret-1-dev\"")
+				{
+					UseShellExecute = false,
+					CreateNoWindow = false
+				});
 				await _messageService.ShowWindow(
 					text: "Установка libsecret инициирована. При окончании установки нажмите кнопку \"Ок\"",
 					title: "Установка зависимостей",
 					buttons: ButtonEnum.Ok,
-					image: Icon.Setting
+					image: Icon.Info
 				);
 			}
 			else
