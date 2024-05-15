@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 
-[Untested]
+[Untested(comment: "Хранилище учетных данных для macOS не было протестировано.")]
 [SupportedOSPlatform(platformName: "MacOS")]
 public class MacOsCredentialStorageService : ICredentialStorageService
 {

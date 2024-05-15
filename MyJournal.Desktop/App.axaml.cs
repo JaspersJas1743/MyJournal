@@ -1,11 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.Tasks;
 using AsyncImageLoader;
 using AsyncImageLoader.Loaders;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Notifications;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -96,7 +98,7 @@ public partial class App : Application
 			.AddSingleton<WelcomeModel>()
 			#endregion
 			#region Utilities
-			.AddApiClient(timeout: TimeSpan.FromDays(value: 1))
+			.AddApiClient(timeout: TimeSpan.FromSeconds(value: 15))
 			.AddGoogleAuthenticator()
 			.AddFileService()
 			.AddFileStorageService()
@@ -309,7 +311,19 @@ public partial class App : Application
 	}
 
 	private async Task HandleException(Exception ex)
-		=> Debug.WriteLine($"Unhandled exception: {ex.Message}");
+	{
+		INotificationService notificationService = GetService<INotificationService>();
+		if (ex is SocketException or TaskCanceledException)
+		{
+			await notificationService.Show(
+				title: "Ошибка",
+				content: "Проверьте Ваше интернет-соединение и повторите попытку позже!",
+				type: NotificationType.Warning
+			);
+		}
+		else
+			await notificationService.Show(title: "Непредвиденная ошибка", content: ex.Message, type: NotificationType.Error);
+	}
 
 	private async void OnUnhandledExceptionOnUIThread(object sender, DispatcherUnhandledExceptionEventArgs e)
 	{
@@ -375,10 +389,11 @@ public partial class App : Application
 				catch (UnauthorizedAccessException e)
 				{
 					credentialStorageService.Remove();
+					MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 				}
-			}
+			} else
+				MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 
-			MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 			initialLoadingVM.StopTimer();
 		}
 
