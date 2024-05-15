@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Reactive;
 using System.Reflection;
 using System.Threading.Tasks;
 using AsyncImageLoader;
@@ -10,6 +9,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using GnomeStack.Secrets.Linux;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
@@ -56,7 +56,6 @@ using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
 using MyJournal.Desktop.Views.Timetable;
-using ReactiveUI;
 
 namespace MyJournal.Desktop;
 
@@ -66,11 +65,13 @@ public partial class App : Application
 
 	public App()
 	{
+#if RELEASE
 		Dispatcher.UIThread.UnhandledException += OnUnhandledExceptionOnUIThread;
 		RxApp.DefaultExceptionHandler = Observer.Create<Exception>(
 			onNext: async exception => await HandleException(ex: exception),
 			onError: async exception => await HandleException(ex: exception)
 		);
+#endif
 
 		IServiceCollection services = new ServiceCollection()
 		#region Services
@@ -351,7 +352,15 @@ public partial class App : Application
 			desktop.MainWindow.DataContext = mainWindowVM;
 
 			ICredentialStorageService credentialStorageService = GetService<ICredentialStorageService>();
-			UserCredential credential = credentialStorageService.Get();
+			UserCredential credential;
+			try
+			{
+				credential = credentialStorageService.Get();
+			}
+			catch (GException ex)
+			{
+				credential = UserCredential.Empty;
+			}
 			if (credential != UserCredential.Empty)
 			{
 				try
