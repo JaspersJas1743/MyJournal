@@ -126,7 +126,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 				image: Icon.Question
 			);
 			if (dialogResult == ButtonResult.Yes)
-				Process.Start(startInfo: new ProcessStartInfo(fileName: "bash", arguments: "sudo apt-get install libsecret-1-dev"));
+				Process.Start(startInfo: new ProcessStartInfo(fileName: "/bin/bash", arguments: "-c sudo apt-get install libsecret-1-dev"));
 			else
 			{
 				_ = _messageService.ShowMessageWindow(text: "Учетные данные не будут сохранены.");

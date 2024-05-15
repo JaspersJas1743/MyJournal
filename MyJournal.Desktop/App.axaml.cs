@@ -375,11 +375,10 @@ public partial class App : Application
 				catch (UnauthorizedAccessException e)
 				{
 					credentialStorageService.Remove();
-					MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 				}
 			}
-			else
-				MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
+
+			MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 			initialLoadingVM.StopTimer();
 		}
 
