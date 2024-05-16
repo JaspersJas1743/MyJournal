@@ -259,7 +259,7 @@ public sealed class UserController(
 	{
 		(int userId, DateTime? onlineAt) = await SetActivityStatus(
 			activityStatus: UserActivityStatuses.Offline,
-			onlineAt: DateTime.Now.AddHours(value: 3),
+			onlineAt: DateTime.Now,
 			cancellationToken: cancellationToken
 		);
 		await userHubContext.Clients.Users(
