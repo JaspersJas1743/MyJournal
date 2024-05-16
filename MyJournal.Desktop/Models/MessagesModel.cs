@@ -205,17 +205,19 @@ public sealed class MessagesModel : ModelBase
 		if (Selection.SelectedItem!.OnlineAt is null)
 			return "в сети";
 
-		TimeSpan dateDifference = (DateTime.Now - Selection.SelectedItem!.OnlineAt).Value;
-		if (dateDifference.TotalMinutes < 1)
+		DateTime userOnlineAt = Selection.SelectedItem!.OnlineAt.Value.ToLocalTime();
+		TimeSpan? dateDifference = (DateTime.Now - userOnlineAt);
+
+		if (dateDifference?.TotalMinutes is < 1 and > 0)
 			return "был(-а) в сети только что";
 
-		if (dateDifference.Days < 1)
-			return "был(-а) в сети " + Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture);
+		if (dateDifference?.Days < 1)
+			return "был(-а) в сети " + userOnlineAt.Humanize(culture: CultureInfo.InstalledUICulture);
 
-		if (dateDifference.Days >= 1 || dateDifference.Hours >= 12)
-			return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt:d MMMM} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
+		if (dateDifference?.Days > 1 || dateDifference?.Hours >= 12)
+			return $"был(-а) в сети {userOnlineAt:d MMMM} в {userOnlineAt:HH:mm}";
 
-		return $"был(-а) в сети {Selection.SelectedItem!.OnlineAt.Humanize(culture: CultureInfo.CurrentUICulture)} в {Selection.SelectedItem!.OnlineAt:HH:mm}";
+		return $"был(-а) в сети {userOnlineAt.Humanize(culture: CultureInfo.InstalledUICulture)} в {userOnlineAt:HH:mm}";
 	}
 
 	private string GetCountOfParticipants()
@@ -272,7 +274,10 @@ public sealed class MessagesModel : ModelBase
 		_allMessages[key: _previousChatId] = Message?.Trim();
 		_allAttachments[key: _previousChatId] = Attachments;
 		_allMessageBuilders[key: _previousChatId] = _messageBuilder;
-		ObservableChat previousChat = Chats.First(predicate: c => c.Observable.Id == _previousChatId);
+		ObservableChat? previousChat = Chats.FirstOrDefault(predicate: c => c.Observable.Id == _previousChatId);
+		if (previousChat is null)
+			return;
+
 		previousChat.Draft = Message;
 		if (Attachments?.Any() == true)
 			previousChat.Draft = $"[{String.Join(", ", Attachments.Select(selector: a => a.FileName))}]";
