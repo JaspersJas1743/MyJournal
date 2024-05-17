@@ -31,8 +31,12 @@ public sealed class AssessmentController(
 	public sealed record GetAssessmentsByIdResponse(string AverageAssessment, IEnumerable<Grade> Assessments);
 
 	[Validator<GetAverageAssessmentRequestValidator>]
-	public sealed record GetAverageAssessmentRequest(int SubjectId);
+	public sealed record GetAverageAssessmentRequest(int SubjectId, int PeriodId);
 	public sealed record GetAverageAssessmentResponse(string AverageAssessment);
+
+	[Validator<GetFinalAssessmentRequestValidator>]
+	public sealed record GetFinalAssessmentRequest(int SubjectId, int PeriodId);
+	public sealed record GetFinalAssessmentResponse(string? FinalAssessment);
 
 	[Validator<GetAssessmentsRequestValidator>]
 	public sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
@@ -171,12 +175,8 @@ public sealed class AssessmentController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		var period = await _context.Students.AsNoTracking()
-			.Where(predicate: s => s.UserId == userId)
-			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
-			.Select(selector: epfc => epfc.EducationPeriod)
-			.Where(predicate: ep => EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
+		var period = await _context.EducationPeriods.AsNoTracking()
+			.Where(predicate: ep => ep.Id == request.PeriodId)
 			.Select(selector: ep => new
 			{
 				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
@@ -195,6 +195,46 @@ public sealed class AssessmentController(
 		return Ok(value: new GetAverageAssessmentResponse(
 			AverageAssessment: avg.ToString(format: "F2", CultureInfo.InvariantCulture).Replace(oldValue: "0.00", newValue: "-.--")
 		));
+	}
+
+    /// <summary>
+	/// [Ученик] Получение итоговой отметки за указанный учебный период по указанной дисциплине
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/final/me/get?SubjectId=0&PeriodId=0
+	///
+	/// Параметры:
+	///
+	///	SubjectId - идентификатор дисциплины, по которой необходимо получить средний балл
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить средний балл
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Итоговый балл по указанной дисциплине за указанный период</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	[HttpGet(template: "final/me/get")]
+	[Authorize(Policy = nameof(UserRoles.Student))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetFinalAssessmentResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetFinalAssessmentResponse>> GetFinalAssessment(
+		[FromQuery] GetFinalAssessmentRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		string? final = await _context.FinalGradesForEducationPeriods
+			.Where(predicate: fgfep =>
+						 fgfep.EducationPeriodId == request.PeriodId &&
+						 fgfep.Student.UserId == userId &&
+						 fgfep.LessonId == request.SubjectId
+			).Select(selector: fgfep => fgfep.Grade.Assessment)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? null : final + ".00"));
 	}
 
 	/// <summary>
@@ -273,6 +313,47 @@ public sealed class AssessmentController(
 	}
 
 	/// <summary>
+	/// [Преподаватель/Администратор] Получение итогового балла за указанный период указанного ученика по указанной дисциплине
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/final/student/{studentId:int}/get?SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	studentId - идентификатор студента, средний балл которого необходимо получить
+	///	SubjectId - идентификатор дисциплины, средний балл по которой необходимо получить
+	///	PeriodId - идентификатор учебного периода, итоговый балл за который необходимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Итоговый балл указанного студента по указанной дисциплине</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	[HttpGet(template: "final/student/{studentId:int}/get")]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetFinalAssessmentResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetFinalAssessmentResponse>> GetAverageAssessmentById(
+		[FromRoute] int studentId,
+		[FromQuery] GetFinalAssessmentRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		string? final = await _context.FinalGradesForEducationPeriods
+			.Where(predicate: fgfep =>
+				fgfep.EducationPeriodId == request.PeriodId &&
+				fgfep.Student.Id == studentId &&
+				fgfep.LessonId == request.SubjectId
+			).Select(selector: fgfep => fgfep.Grade.Assessment)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? null : final + ".00"));
+	}
+
+	/// <summary>
 	/// [Преподаватель/Администратор] Получение среднего балла указанного ученика по указанной дисциплине
 	/// </summary>
 	/// <remarks>
@@ -301,12 +382,8 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		var period = await _context.Students.AsNoTracking()
-			.Where(predicate: s => s.Id == studentId)
-			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
-			.Select(selector: epfc => epfc.EducationPeriod)
-			.Where(predicate: ep => EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
+		var period = await _context.EducationPeriods.AsNoTracking()
+			.Where(predicate: ep => ep.Id == request.PeriodId)
 			.Select(selector: ep => new
 			{
 				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
@@ -407,13 +484,13 @@ public sealed class AssessmentController(
 	}
 
 	/// <summary>
-	/// [Родитель] Получение информации об оценках подопечного за указанный период
+	/// [Родитель] Получение итогового балла подопечного за указанный период
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	GET api/assessments/ward/get?PeriodId=0&SubjectId=0
+	///	GET api/assessments/final/ward/get?PeriodId=0&SubjectId=0
 	///
 	/// Параметры:
 	///
@@ -422,7 +499,49 @@ public sealed class AssessmentController(
 	///
 	/// ]]>
 	/// </remarks>
-	/// <response code="200">Информация об оценках подопечного</response>
+	/// <response code="200">Итоговый балл подопечного</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
+	[HttpGet(template: "final/ward/get")]
+	[Authorize(Policy = nameof(UserRoles.Parent))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<GetAverageAssessmentResponse>> GetAverageAssessmentsForWard(
+		[FromQuery] GetFinalAssessmentRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		string? final = await _context.FinalGradesForEducationPeriods
+			.Where(predicate: fgfep =>
+				fgfep.EducationPeriodId == request.PeriodId &&
+				fgfep.Student.Parents.Any(p => p.UserId == userId) &&
+				fgfep.LessonId == request.SubjectId
+			).Select(selector: fgfep => fgfep.Grade.Assessment)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? null : final + ".00"));
+	}
+
+	/// <summary>
+	/// [Родитель] Получение среднего балла подопечного за указанный период
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/average/ward/get?PeriodId=0&SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках (0, если за текущий период)
+	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Средний балл подопечного</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
 	[HttpGet(template: "average/ward/get")]
@@ -438,11 +557,8 @@ public sealed class AssessmentController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		var period = await _context.Parents.AsNoTracking()
-			.Where(predicate: p => p.UserId == userId)
-			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
-			.Select(selector: epfc => epfc.EducationPeriod)
-			.Where(predicate: ep => EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
+		var period = await _context.EducationPeriods.AsNoTracking()
+			.Where(predicate: ep => ep.Id == request.PeriodId)
 			.Select(selector: ep => new
 			{
 				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
@@ -712,7 +828,7 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(-3));
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
 		EducationPeriod period = await _context.Students.AsNoTracking()
 			.Where(predicate: s => s.Id == request.StudentId)
 			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
