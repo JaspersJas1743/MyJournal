@@ -15,7 +15,7 @@ public class AuthorizationTests
 	public void Setup()
 	{
 		ServiceCollection serviceCollection = new ServiceCollection();
-		serviceCollection.AddApiClient();
+		serviceCollection.AddApiClient(timeout: TimeSpan.FromSeconds(value: 5));
 		serviceCollection.AddGoogleAuthenticator();
 		serviceCollection.AddFileService();
 		serviceCollection.AddKeyedTransient<IAuthorizationService<User>, AuthorizationWithCredentialsService>(serviceKey: nameof(AuthorizationWithCredentialsService));
@@ -171,7 +171,7 @@ public class AuthorizationTests
 	{
 		IAuthorizationService<User> service = _serviceProvider.GetKeyedService<IAuthorizationService<User>>(serviceKey: nameof(AuthorizationWithTokenService))!;
 		UserTokenCredentials credentials = new UserTokenCredentials(
-			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjYwODIiLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.NHBk4-u2umnXNMYfslNcHSTu-m8UR5fgSm-VrUeuym8"
+			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJteWpvdXJuYWw6aWRlbnRpZmllciI6IjUiLCJteWpvdXJuYWw6cm9sZSI6IlN0dWRlbnQiLCJteWpvdXJuYWw6c2Vzc2lvbiI6IjY5MDkiLCJpc3MiOiJKYXNwZXJzSmFzMTc0MyIsImF1ZCI6Ik15Sm91cm5hbFVzZXIifQ.wyigcSVyPOw5kEposw60e3hkS06G7-KzSN-ozaa8gd8"
 		);
 		_ = await service.SignIn(credentials: credentials);
 		Assert.Pass();

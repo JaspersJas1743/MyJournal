@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MyJournal.Desktop.Assets.Utilities.CredentialStorageService;
 
-[Untested]
+[Untested(comment: "Хранилище учетных данных для Linux не было протестировано.")]
 [SupportedOSPlatform(platformName: "Linux")]
 public class LinuxCredentialStorageService : ICredentialStorageService
 {

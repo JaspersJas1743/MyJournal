@@ -39,6 +39,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	public event CreatedAssessmentHandler CreatedAssessment;
 	public event ChangedAssessmentHandler ChangedAssessment;
 	public event DeletedAssessmentHandler DeletedAssessment;
@@ -172,6 +173,9 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 
 	internal void OnCreatedTask(CreatedTaskEventArgs e)
 		=> CreatedTask?.Invoke(e: e);
+
+	internal void OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+		=> CreatedFinalAssessment?.Invoke(e: e);
 
 	internal void OnCreatedAssessment(CreatedAssessmentEventArgs e)
 		=> CreatedAssessment?.Invoke(e: e);

@@ -20,6 +20,9 @@ public sealed class AdministratorHub : Hub<IAdministratorHub>
 	public async Task CreatedAssessmentToStudent(int assessmentId, int studentId, int subjectId)
 		=> await Clients.Caller.CreatedAssessmentToStudent(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 
+	public async Task CreatedFinalAssessmentToStudent(int assessmentId, int studentId, int subjectId, int periodId)
+		=> await Clients.Caller.CreatedFinalAssessmentToStudent(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId, periodId: periodId);
+
 	public async Task ChangedAssessmentToStudent(int assessmentId, int studentId, int subjectId)
 		=> await Clients.Caller.ChangedAssessmentToStudent(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 

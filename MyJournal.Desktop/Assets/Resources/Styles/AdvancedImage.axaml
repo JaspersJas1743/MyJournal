@@ -6,7 +6,8 @@
 	<Style Selector="asyncImageLoader|AdvancedImage">
 		<Setter Property="Template">
 			<ControlTemplate>
-				<lottie:Lottie Path="/Assets/Resources/Animations/ImageAndMessagesLoader.json" IsVisible="{TemplateBinding IsLoading}"/>
+				<lottie:Lottie	Path="/Assets/Resources/Animations/ImageAndMessagesLoader.json"
+								IsVisible="{TemplateBinding IsLoading}"/>
 			</ControlTemplate>
 		</Setter>
 		<Style Selector="^.LargeChatPhoto">

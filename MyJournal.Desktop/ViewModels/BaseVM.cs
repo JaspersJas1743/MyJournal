@@ -7,7 +7,4 @@ public class BaseVM : ReactiveObject
 {
 	public BaseVM(ModelBase model)
 		=> model.PropertyChanged += (_, args) => this.RaisePropertyChanged(propertyName: args.PropertyName);
-
-	public BaseVM()
-	{ }
 }

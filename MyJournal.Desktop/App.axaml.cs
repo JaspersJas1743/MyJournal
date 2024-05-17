@@ -1,15 +1,24 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Reactive;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using AsyncImageLoader;
 using AsyncImageLoader.Loaders;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Notifications;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using GnomeStack.Secrets.Linux;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
 using MyJournal.Core.Authorization;
@@ -66,11 +75,13 @@ public partial class App : Application
 
 	public App()
 	{
+#if RELEASE
 		Dispatcher.UIThread.UnhandledException += OnUnhandledExceptionOnUIThread;
 		RxApp.DefaultExceptionHandler = Observer.Create<Exception>(
 			onNext: async exception => await HandleException(ex: exception),
 			onError: async exception => await HandleException(ex: exception)
 		);
+#endif
 
 		IServiceCollection services = new ServiceCollection()
 		#region Services
@@ -95,7 +106,7 @@ public partial class App : Application
 			.AddSingleton<WelcomeModel>()
 			#endregion
 			#region Utilities
-			.AddApiClient(timeout: TimeSpan.FromDays(value: 1))
+			.AddApiClient(timeout: TimeSpan.FromSeconds(value: 15))
 			.AddGoogleAuthenticator()
 			.AddFileService()
 			.AddFileStorageService()
@@ -308,7 +319,34 @@ public partial class App : Application
 	}
 
 	private async Task HandleException(Exception ex)
-		=> Debug.WriteLine($"Unhandled exception: {ex.Message}");
+	{
+		INotificationService notificationService = GetService<INotificationService>();
+		string message = ex.Message;
+		if (ex is SocketException or TaskCanceledException or HttpRequestException)
+			message = "Проверьте Ваше интернет-соединение и повторите попытку позже!";
+
+		if (await CheckConnection())
+			message = "В данный момент удаленный сервер недоступен :(\nПопробуйте попытку позже.";
+
+		string content = String.Join("\n\t", ex.GetType().GetProperties().Select(selector: p => $"{p.Name}: {p.GetValue(obj: ex)}"));
+		DirectoryInfo directory = Directory.CreateTempSubdirectory(prefix: "MyJournal");
+		await File.WriteAllTextAsync(path: $"{directory.FullName}/log_{DateTime.Now:dd_MM_yyyy_hh_mm_ss}.txt", contents: content);
+		
+		await notificationService.Show(title: "Непредвиденная ошибка", content: message, type: NotificationType.Error);
+	}
+
+	private async Task<bool> CheckConnection()
+	{
+		try
+		{
+			await Dns.GetHostEntryAsync(hostNameOrAddress: "my-journal.ru");
+			return true;
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+	}
 
 	private async void OnUnhandledExceptionOnUIThread(object sender, DispatcherUnhandledExceptionEventArgs e)
 	{
@@ -351,7 +389,15 @@ public partial class App : Application
 			desktop.MainWindow.DataContext = mainWindowVM;
 
 			ICredentialStorageService credentialStorageService = GetService<ICredentialStorageService>();
-			UserCredential credential = credentialStorageService.Get();
+			UserCredential credential;
+			try
+			{
+				credential = credentialStorageService.Get();
+			}
+			catch (GException ex)
+			{
+				credential = UserCredential.Empty;
+			}
 			if (credential != UserCredential.Empty)
 			{
 				try
@@ -368,9 +414,9 @@ public partial class App : Application
 					credentialStorageService.Remove();
 					MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
 				}
-			}
-			else
+			} else
 				MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
+
 			initialLoadingVM.StopTimer();
 		}
 

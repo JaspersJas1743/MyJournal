@@ -22,6 +22,7 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 	}
 
 	#region Events
+	internal event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	internal event CreatedAssessmentHandler CreatedAssessment;
 	internal event ChangedAssessmentHandler ChangedAssessment;
 	internal event DeletedAssessmentHandler DeletedAssessment;
@@ -55,6 +56,13 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 
 	public async Task<GradeOfStudent> GetGrade()
 		=> await _grade;
+
+	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+	{
+		GradeOfStudent grade = await _grade;
+		await grade.OnCreatedFinalAssessment(e: e);
+		CreatedFinalAssessment?.Invoke(e: e);
+	}
 
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{

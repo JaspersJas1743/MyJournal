@@ -11,8 +11,9 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	protected readonly ApiClient _client;
 	protected readonly AsyncLazy<List<T>> _estimations;
 
+	private readonly int _periodId;
+	private string? _final;
 	protected string _average;
-	protected string? _final;
 
 	internal static readonly Grade<Estimation> Empty = new Grade<Estimation>();
 	#endregion
@@ -24,12 +25,14 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		ApiClient client,
 		AsyncLazy<List<T>> estimations,
 		string average,
+		int periodId,
 		string? final = null
 	)
 	{
 		_client = client;
 		_estimations = estimations;
 		_average = average;
+		_periodId = periodId;
 		_final = final;
 	}
 	#endregion
@@ -37,22 +40,27 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	#region Properties
 	public string AverageAssessment => _average;
 	public string? FinalAssessment => _final;
+	protected int? PeriodId => _periodId;
 	internal bool EstimationsAreCreated => _estimations.IsValueCreated;
 	#endregion
 
 	#region Events
+	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	public event CreatedAssessmentHandler CreatedAssessment;
 	public event ChangedAssessmentHandler ChangedAssessment;
 	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	#region Records
-	protected sealed record GetAverageAssessmentRequest(int SubjectId);
+	protected sealed record GetAverageAssessmentRequest(int SubjectId, int PeriodId);
 	protected sealed record GetAverageAssessmentResponse(string AverageAssessment);
+	protected sealed record GetFinalAssessmentRequest(int SubjectId, int PeriodId);
+	protected sealed record GetFinalAssessmentResponse(string FinalAssessment);
+	protected sealed record GetFinalAssessmentByIdResponse(int? FinalAssessment);
 	protected sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
 	protected sealed record EstimationResponse(int Id, string Assessment, DateTime CreatedAt, string? Comment, string? Description, GradeTypes GradeType);
 	protected sealed record GetAssessmentsResponse(string AverageAssessment, string? FinalAssessment, IEnumerable<EstimationResponse> Assessments);
-	protected sealed record GetAssessmentsByIdResponse(string AverageAssessment, IEnumerable<EstimationResponse> Assessments);
+	protected sealed record GetAssessmentsByIdResponse(string AverageAssessment, int? FinalAssessment, IEnumerable<EstimationResponse> Assessments);
 	protected sealed record GetAssessmentResponse(string AverageAssessment, EstimationResponse Assessment);
 	#endregion
 
@@ -86,6 +94,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 				))
 			))),
 			average: assessments.AverageAssessment,
+			periodId: periodId,
 			final: assessments.FinalAssessment
 		);
 	}
@@ -94,6 +103,16 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	#region Instance
 	public async Task<IEnumerable<Estimation>> GetEstimations()
 		=> await _estimations;
+
+	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+	{
+		GetFinalAssessmentResponse response = await _client.GetAsync<GetFinalAssessmentResponse>(
+			apiMethod: e.ApiMethodForFinalSP
+		) ?? throw new InvalidOperationException();
+
+		_final = response.FinalAssessment;
+		CreatedFinalAssessment?.Invoke(e: e);
+	}
 
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{
@@ -117,6 +136,9 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 
 	protected void InvokeCreatedAssessment(CreatedAssessmentEventArgs e)
 		=> CreatedAssessment?.Invoke(e: e);
+
+	protected void InvokeCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+		=> CreatedFinalAssessment?.Invoke(e: e);
 
 	internal async Task OnChangedAssessment(ChangedAssessmentEventArgs e)
 	{
@@ -143,7 +165,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 
 		GetAverageAssessmentResponse response = await _client.GetAsync<GetAverageAssessmentResponse, GetAverageAssessmentRequest>(
 			apiMethod: e.ApiMethod,
-			argQuery: new GetAverageAssessmentRequest(SubjectId: e.SubjectId)
+			argQuery: new GetAverageAssessmentRequest(SubjectId: e.SubjectId, PeriodId: _periodId)
 		) ?? throw new InvalidOperationException();
 
 		_average = response.AverageAssessment;

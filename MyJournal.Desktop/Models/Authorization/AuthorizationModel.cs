@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
@@ -126,10 +125,22 @@ public class AuthorizationModel : ModelWithErrorMessage
 				image: Icon.Question
 			);
 			if (dialogResult == ButtonResult.Yes)
-				Process.Start(startInfo: new ProcessStartInfo(fileName: "bash", arguments: "sudo apt-get install libsecret-1-dev"));
+			{
+				Process.Start(startInfo: new ProcessStartInfo(fileName: "/bin/bash", arguments: "-c \"sudo apt-get install libsecret-1-dev\"")
+				{
+					UseShellExecute = false,
+					CreateNoWindow = false
+				});
+				await _messageService.ShowWindow(
+					text: "Установка libsecret инициирована. При окончании установки нажмите кнопку \"Ок\"",
+					title: "Установка зависимостей",
+					buttons: ButtonEnum.Ok,
+					image: Icon.Info
+				);
+			}
 			else
 			{
-				_ = _messageService.ShowMessageWindow(text: "Учетные данные не будут сохранены.");
+				await _messageService.ShowMessageWindow(text: "Учетные данные не будут сохранены.");
 				return;
 			}
 		}

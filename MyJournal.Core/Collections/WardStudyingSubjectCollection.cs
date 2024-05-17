@@ -36,6 +36,7 @@ public sealed class WardStudyingSubjectCollection : IAsyncEnumerable<WardSubject
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	public event CreatedAssessmentHandler CreatedAssessment;
 	public event ChangedAssessmentHandler ChangedAssessment;
 	public event DeletedAssessmentHandler DeletedAssessment;
@@ -188,6 +189,16 @@ public sealed class WardStudyingSubjectCollection : IAsyncEnumerable<WardSubject
 		);
 
 		CreatedTask?.Invoke(e: e);
+	}
+
+	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(
+			invocation: async subject => await subject.OnCreatedFinalAssessment(e: e),
+			filter: subject => subject.Id == e.SubjectId && subject.GradeIsCreated
+		);
+
+		CreatedFinalAssessment?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)

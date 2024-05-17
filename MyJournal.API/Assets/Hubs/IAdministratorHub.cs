@@ -5,6 +5,7 @@ public interface IAdministratorHub
 	Task StudentCompletedTask(int taskId);
 	Task StudentUncompletedTask(int taskId);
 	Task CreatedTaskToStudents(int taskId, int subjectId, int classId);
+	Task CreatedFinalAssessmentToStudent(int assessmentId, int studentId, int subjectId, int periodId);
 	Task CreatedAssessmentToStudent(int assessmentId, int studentId, int subjectId);
 	Task ChangedAssessmentToStudent(int assessmentId, int studentId, int subjectId);
 	Task DeletedAssessmentToStudent(int assessmentId, int studentId, int subjectId);
