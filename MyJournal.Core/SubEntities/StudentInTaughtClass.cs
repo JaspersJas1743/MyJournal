@@ -57,6 +57,13 @@ public sealed class StudentInTaughtClass : BaseStudent
 		);
 	}
 
+	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+	{
+		GradeOfStudent grade = await _grade;
+		await grade.OnCreatedFinalAssessment(e: e);
+		CreatedAssessment?.Invoke(e: e);
+	}
+
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{
 		GradeOfStudent grade = await _grade;

@@ -43,6 +43,7 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 	private sealed record SetAttendanceRequest(int SubjectId, DateTime Datetime, IEnumerable<Attendance> Attendances);
 
 	#region Events
+	internal event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	internal event CreatedAssessmentHandler CreatedAssessment;
 	internal event ChangedAssessmentHandler ChangedAssessment;
 	internal event DeletedAssessmentHandler DeletedAssessment;
@@ -119,6 +120,12 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 
 			yield return student;
 		}
+	}
+
+	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+	{
+		await InvokeIfStudentIsCreated(invocation: student => student.OnCreatedFinalAssessment(e: e), studentId: e.StudentId);
+		CreatedFinalAssessment?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)

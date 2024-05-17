@@ -356,7 +356,7 @@ public sealed class AssessmentController(
 	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetFinalAssessmentByIdResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetFinalAssessmentByIdResponse>> GetAverageAssessmentById(
+	public async Task<ActionResult<GetFinalAssessmentByIdResponse>> GetFinalAssessmentById(
 		[FromRoute] int studentId,
 		[FromQuery] GetFinalAssessmentRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)

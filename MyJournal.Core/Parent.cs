@@ -102,6 +102,16 @@ public sealed class Parent : User
 				e: new CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: -1)
 			));
 		});
+		_parentHubConnection.On<int, int, int, int>(methodName: ParentHubMethods.CreatedFinalAssessmentToWard, handler: async (assessmentId, studentId, subjectId, periodId) =>
+		{
+			await InvokeIfWardSubjectStudyingAreCreated(invocation: async collection => await collection.OnCreatedFinalAssessment(
+				e: new CreatedFinalAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId, periodId: periodId)
+				{
+					ApiMethod = AssessmentControllerMethods.Get(assessmentId: assessmentId),
+					ApiMethodForFinalSP = AssessmentControllerMethods.GetFinalAssessmentsForWard
+				}
+			));
+		});
 		_parentHubConnection.On<int, int, int>(methodName: ParentHubMethods.CreatedAssessmentToWard, handler: async (assessmentId, studentId, subjectId) =>
 		{
 			await InvokeIfWardSubjectStudyingAreCreated(invocation: async collection => await collection.OnCreatedAssessment(

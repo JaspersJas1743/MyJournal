@@ -40,6 +40,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;
 	public event CreatedTaskHandler CreatedTask;
+	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	public event CreatedAssessmentHandler CreatedAssessment;
 	public event ChangedAssessmentHandler ChangedAssessment;
 	public event DeletedAssessmentHandler DeletedAssessment;
@@ -203,6 +204,18 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		CreatedTask?.Invoke(e: e);
 	}
 
+	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+	{
+		await InvokeIfSubjectsAreCreated(invocation: async subject =>
+		{
+			TaughtClass taughtClass = await subject.GetTaughtClass();
+			if (taughtClass.StudentsAreCreated)
+				await taughtClass.OnCreatedFinalAssessment(e: e);
+		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
+
+		CreatedFinalAssessment?.Invoke(e: e);
+	}
+
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
@@ -245,6 +258,8 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 			invocation: async subject => await subject.OnChangedTimetable(e: e),
 			filter: subject => subject.ClassId == e.ClassId && e.SubjectIds.Contains(value: subject.Id)
 		);
+
+		ChangedTimetable?.Invoke(e: e);
 	}
 
 	private async Task InvokeIfSubjectsAreCreated(

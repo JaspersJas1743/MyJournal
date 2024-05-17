@@ -103,6 +103,16 @@ public sealed class Teacher : User
 				e: new CreatedTaskEventArgs(taskId: taskId, subjectId: subjectId, classId: -1)
 			));
 		});
+		_teacherHubConnection.On<int, int, int, int>(methodName: TeacherHubMethods.CreatedFinalAssessment, handler: async (assessmentId, studentId, subjectId, periodId) =>
+		{
+			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCreatedFinalAssessment(
+				e: new CreatedFinalAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId, periodId: periodId)
+				{
+					ApiMethod = AssessmentControllerMethods.Get(assessmentId: assessmentId),
+					ApiMethodForFinalAT = AssessmentControllerMethods.GetFinalAssessmentById
+				}
+			));
+		});
 		_teacherHubConnection.On<int, int, int>(methodName: TeacherHubMethods.CreatedAssessment, handler: async (assessmentId, studentId, subjectId) =>
 		{
 			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnCreatedAssessment(

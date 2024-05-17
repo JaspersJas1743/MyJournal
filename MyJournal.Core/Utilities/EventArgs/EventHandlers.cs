@@ -42,6 +42,7 @@ public delegate void ClosedSessionHandler(ClosedSessionEventArgs e);
 #endregion
 
 #region Assessments
+public delegate void CreatedFinalAssessmentHandler(CreatedFinalAssessmentEventArgs e);
 public delegate void CreatedAssessmentHandler(CreatedAssessmentEventArgs e);
 public delegate void ChangedAssessmentHandler(ChangedAssessmentEventArgs e);
 public delegate void DeletedAssessmentHandler(DeletedAssessmentEventArgs e);

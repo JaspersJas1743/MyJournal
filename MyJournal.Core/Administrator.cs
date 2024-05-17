@@ -101,6 +101,16 @@ public sealed class Administrator : User
 				}
 			));
 		});
+		_administratorHubConnection.On<int, int, int, int>(methodName: AdministratorHubMethod.CreatedFinalAssessmentToStudent, handler: async (assessmentId, studentId, subjectId, periodId) =>
+		{
+			await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnCreatedFinalAssessment(
+				e: new CreatedFinalAssessmentEventArgs(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId, periodId: periodId)
+				{
+					ApiMethod = AssessmentControllerMethods.Get(assessmentId: assessmentId),
+					ApiMethodForFinalAT = AssessmentControllerMethods.GetFinalAssessmentById
+				}
+			));
+		});
 		_administratorHubConnection.On<int, int, int>(methodName: AdministratorHubMethod.ChangedAssessmentToStudent, handler: async (assessmentId, studentId, subjectId) =>
 		{
 			await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnChangedAssessment(
