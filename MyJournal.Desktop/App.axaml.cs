@@ -1,7 +1,14 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Reactive;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using AsyncImageLoader;
 using AsyncImageLoader.Loaders;
@@ -58,6 +65,7 @@ using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
 using MyJournal.Desktop.Views.Timetable;
+using ReactiveUI;
 
 namespace MyJournal.Desktop;
 
@@ -313,16 +321,31 @@ public partial class App : Application
 	private async Task HandleException(Exception ex)
 	{
 		INotificationService notificationService = GetService<INotificationService>();
-		if (ex is SocketException or TaskCanceledException)
+		string message = ex.Message;
+		if (ex is SocketException or TaskCanceledException or HttpRequestException)
+			message = "Проверьте Ваше интернет-соединение и повторите попытку позже!";
+
+		if (await CheckConnection())
+			message = "В данный момент удаленный сервер недоступен :(\nПопробуйте попытку позже.";
+
+		string content = String.Join("\n\t", ex.GetType().GetProperties().Select(selector: p => $"{p.Name}: {p.GetValue(obj: ex)}"));
+		DirectoryInfo directory = Directory.CreateTempSubdirectory(prefix: "MyJournal");
+		await File.WriteAllTextAsync(path: $"{directory.FullName}/log_{DateTime.Now:dd_MM_yyyy_hh_mm_ss}.txt", contents: content);
+		
+		await notificationService.Show(title: "Непредвиденная ошибка", content: message, type: NotificationType.Error);
+	}
+
+	private async Task<bool> CheckConnection()
+	{
+		try
 		{
-			await notificationService.Show(
-				title: "Ошибка",
-				content: "Проверьте Ваше интернет-соединение и повторите попытку позже!",
-				type: NotificationType.Warning
-			);
+			await Dns.GetHostEntryAsync(hostNameOrAddress: "my-journal.ru");
+			return true;
 		}
-		else
-			await notificationService.Show(title: "Непредвиденная ошибка", content: ex.Message, type: NotificationType.Error);
+		catch (Exception e)
+		{
+			return false;
+		}
 	}
 
 	private async void OnUnhandledExceptionOnUIThread(object sender, DispatcherUnhandledExceptionEventArgs e)

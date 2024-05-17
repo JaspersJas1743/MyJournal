@@ -17,7 +17,6 @@ namespace MyJournal.API.Assets.Controllers;
 [Route(template: "api/assessments")]
 public sealed class AssessmentController(
 	MyJournalContext context,
-	ILogger<AssessmentController> logger,
 	IHubContext<TeacherHub, ITeacherHub> teacherHubContext,
 	IHubContext<StudentHub, IStudentHub> studentHubContext,
 	IHubContext<ParentHub, IParentHub> parentHubContext,
@@ -47,6 +46,9 @@ public sealed class AssessmentController(
 
 	[Validator<CreateAssessmentRequestValidator>]
 	public sealed record CreateAssessmentRequest(int GradeId, DateTime Datetime, int CommentId, int SubjectId, int StudentId);
+
+	[Validator<CreateFinalAssessmentRequestValidator>]
+	public sealed record CreateFinalAssessmentRequest(int GradeId, int SubjectId, int StudentId);
 
 	[Validator<SetAttendanceRequestValidator>]
 	public sealed record SetAttendanceRequest(int SubjectId, DateTime Datetime, IEnumerable<Attendance> Attendances);
@@ -668,6 +670,103 @@ public sealed class AssessmentController(
             assessmentId: assessment.Id,
             studentId: request.StudentId,
             subjectId: assessment.LessonId
+		);
+		return Ok();
+	}
+
+	/// <summary>
+	/// [Преподаватель/Администратор] Установка итоговой оценки для ученика за текущий учебный период
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	POST api/assessments/final/create
+	///	{
+	///		"GradeId": 0,
+	///		"SubjectId": 0,
+	///		"StudentId": 0,
+	///	}
+	///
+	/// Параметры:
+	///
+	///	GradeId - идентификатор полученной оценки
+	///	SubjectId - идентификатор дисциплины, по которой получена оценка
+	///	StudentId - идентификатор ученика, получившего оценку
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Итоговая оценка успешно установлена</response>
+	/// <response code="400">Пользователь пытается установить оценку раньше возможного времени</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
+	[HttpPost(template: "final/create")]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult> CreateFinalGrade(
+		[FromBody] CreateFinalAssessmentRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(-3));
+		EducationPeriod period = await _context.Students.AsNoTracking()
+			.Where(predicate: s => s.Id == request.StudentId)
+			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => EF.Functions.DateDiffDay(ep.StartDate, now) >= 0
+				&& EF.Functions.DateDiffDay(ep.EndDate, now) <= 0
+				&& EF.Functions.DateDiffDay(now, ep.EndDate) <= 10
+			).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
+				statusCode: StatusCodes.Status400BadRequest,
+				message: "Устанавливать итоговую оценку можно только в пределах 10 дней до окончания учебного периода"
+			);
+
+		FinalGradesForEducationPeriod assessment = new FinalGradesForEducationPeriod()
+		{
+			GradeId = request.GradeId,
+			EducationPeriodId = period.Id,
+			LessonId = request.SubjectId,
+			StudentId = request.StudentId
+		};
+
+		await _context.AddAsync(entity: assessment, cancellationToken: cancellationToken);
+		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		IQueryable<string> studentId = _context.Students.Where(predicate: s => s.Id == request.StudentId)
+			.Select(selector: s => s.UserId.ToString());
+
+		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == request.StudentId)
+			.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
+
+		IQueryable<string> adminIds = _context.Administrators.Select(selector: a => a.UserId.ToString());
+
+		await teacherHubContext.Clients.User(userId: GetAuthorizedUserId().ToString()).CreatedFinalAssessment(
+            assessmentId: assessment.Id,
+            studentId: request.StudentId,
+            subjectId: assessment.LessonId,
+			periodId: period.Id
+		);
+		await studentHubContext.Clients.Users(userIds: studentId).TeacherCreatedFinalAssessment(
+            assessmentId: assessment.Id,
+            studentId: request.StudentId,
+            subjectId: assessment.LessonId,
+			periodId: period.Id
+		);
+		await parentHubContext.Clients.Users(userIds: parentIds).CreatedFinalAssessmentToWard(
+            assessmentId: assessment.Id,
+            studentId: request.StudentId,
+            subjectId: assessment.LessonId,
+			periodId: period.Id
+		);
+		await administratorHubContext.Clients.Users(userIds: adminIds).CreatedFinalAssessmentToStudent(
+            assessmentId: assessment.Id,
+            studentId: request.StudentId,
+            subjectId: assessment.LessonId,
+			periodId: period.Id
 		);
 		return Ok();
 	}

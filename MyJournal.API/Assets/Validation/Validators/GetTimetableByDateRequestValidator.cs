@@ -9,6 +9,7 @@ public sealed class GetTimetableByDateRequestValidator : AbstractValidator<Timet
 	{
 		int currentYear = DateTime.Now.Year;
 		RuleFor(expression: request => request.Day)
-			.Must(predicate: d => currentYear - 1 <= d.Year && currentYear + 1 >= d.Year).WithMessage(errorMessage: "Указанная дата является некорректной.");
+			.Must(predicate: d => currentYear - 1 <= d.Year && currentYear + 1 >= d.Year)
+			.WithMessage(errorMessage: "Указанная дата является некорректной.");
 	}
 }

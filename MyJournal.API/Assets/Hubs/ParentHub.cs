@@ -17,6 +17,9 @@ public sealed class ParentHub : Hub<IParentHub>
 	public async Task CreatedTaskToWard(int taskId, int subjectId)
 		=> await Clients.Caller.CreatedTaskToWard(taskId: taskId, subjectId: subjectId);
 
+	public async Task CreatedFinalAssessmentToWard(int assessmentId, int studentId, int subjectId, int periodId)
+		=> await Clients.Caller.CreatedFinalAssessmentToWard(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId, periodId: periodId);
+
 	public async Task CreatedAssessmentToWard(int assessmentId, int studentId, int subjectId)
 		=> await Clients.Caller.CreatedAssessmentToWard(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 

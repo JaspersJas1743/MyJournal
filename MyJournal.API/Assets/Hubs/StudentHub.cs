@@ -17,6 +17,9 @@ public sealed class StudentHub : Hub<IStudentHub>
 	public async Task TeacherCreatedTask(int taskId, int subjectId)
 		=> await Clients.Caller.TeacherCreatedTask(taskId: taskId, subjectId: subjectId);
 
+	public async Task TeacherCreatedFinalAssessment(int assessmentId, int studentId, int subjectId, int periodId)
+		=> await Clients.Caller.TeacherCreatedFinalAssessment(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId, periodId: periodId);
+
 	public async Task TeacherCreatedAssessment(int assessmentId, int studentId, int subjectId)
 		=> await Clients.Caller.TeacherCreatedAssessment(assessmentId: assessmentId, studentId: studentId, subjectId: subjectId);
 
