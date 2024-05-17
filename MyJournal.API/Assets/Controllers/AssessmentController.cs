@@ -28,7 +28,7 @@ public sealed class AssessmentController(
 	#region Records
 	public sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, string Description, GradeTypes GradeType);
 
-	public sealed record GetAssessmentsByIdResponse(string AverageAssessment, IEnumerable<Grade> Assessments);
+	public sealed record GetAssessmentsByIdResponse(string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
 
 	[Validator<GetAverageAssessmentRequestValidator>]
 	public sealed record GetAverageAssessmentRequest(int SubjectId, int PeriodId);
@@ -37,6 +37,7 @@ public sealed class AssessmentController(
 	[Validator<GetFinalAssessmentRequestValidator>]
 	public sealed record GetFinalAssessmentRequest(int SubjectId, int PeriodId);
 	public sealed record GetFinalAssessmentResponse(string? FinalAssessment);
+	public sealed record GetFinalAssessmentByIdResponse(int? FinalAssessment);
 
 	[Validator<GetAssessmentsRequestValidator>]
 	public sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
@@ -175,9 +176,12 @@ public sealed class AssessmentController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		var period = await _context.EducationPeriods.AsNoTracking()
-			.Where(predicate: ep => ep.Id == request.PeriodId)
-			.Select(selector: ep => new
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		var period = await _context.Students.AsNoTracking()
+			.Where(predicate: s => s.UserId == userId)
+			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)			.Select(selector: ep => new
 			{
 				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
 				End = ep.EndDate.ToDateTime(TimeOnly.MaxValue)
@@ -226,12 +230,17 @@ public sealed class AssessmentController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
 		string? final = await _context.FinalGradesForEducationPeriods
 			.Where(predicate: fgfep =>
-						 fgfep.EducationPeriodId == request.PeriodId &&
-						 fgfep.Student.UserId == userId &&
-						 fgfep.LessonId == request.SubjectId
-			).Select(selector: fgfep => fgfep.Grade.Assessment)
+				fgfep.EducationPeriodId == request.PeriodId || ((request.PeriodId == 0
+					&& EF.Functions.DateDiffDay(fgfep.EducationPeriod.StartDate, now) >= 0
+					&& EF.Functions.DateDiffDay(fgfep.EducationPeriod.EndDate, now) <= 0
+				)) &&
+				fgfep.Student.UserId == userId &&
+				fgfep.LessonId == request.SubjectId
+			)
+			.Select(selector: fgfep => fgfep.Grade.Assessment)
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
 		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? null : final + ".00"));
@@ -280,6 +289,7 @@ public sealed class AssessmentController(
 				(request.PeriodId == 0 && EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
 			).Select(selector: ep => new
 			{
+				Id = ep.Id,
 				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
 				End = ep.EndDate.ToDateTime(TimeOnly.MaxValue)
 			}).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
@@ -299,8 +309,18 @@ public sealed class AssessmentController(
 			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
 			.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
 
+		int? final = await _context.FinalGradesForEducationPeriods
+			.Where(predicate: fgfep =>
+				fgfep.EducationPeriodId == period.Id &&
+				fgfep.Student.Id == studentId &&
+				fgfep.LessonId == request.SubjectId
+			).Select(selector: fgfep => fgfep.Grade.Id)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+
 		return Ok(value: new GetAssessmentsByIdResponse(
 			AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+			FinalAssessment: final,
 			Assessments: assessments.Select(selector: a => new Grade(
 				a.Id,
 				a.Grade.Assessment,
@@ -334,23 +354,27 @@ public sealed class AssessmentController(
 	[HttpGet(template: "final/student/{studentId:int}/get")]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetFinalAssessmentResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetFinalAssessmentByIdResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetFinalAssessmentResponse>> GetAverageAssessmentById(
+	public async Task<ActionResult<GetFinalAssessmentByIdResponse>> GetAverageAssessmentById(
 		[FromRoute] int studentId,
 		[FromQuery] GetFinalAssessmentRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		string? final = await _context.FinalGradesForEducationPeriods
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		int? final = await _context.FinalGradesForEducationPeriods
 			.Where(predicate: fgfep =>
-				fgfep.EducationPeriodId == request.PeriodId &&
+				fgfep.EducationPeriodId == request.PeriodId || ((request.PeriodId == 0
+					&& EF.Functions.DateDiffDay(fgfep.EducationPeriod.StartDate, now) >= 0
+					&& EF.Functions.DateDiffDay(fgfep.EducationPeriod.EndDate, now) <= 0
+				)) &&
 				fgfep.Student.Id == studentId &&
 				fgfep.LessonId == request.SubjectId
-			).Select(selector: fgfep => fgfep.Grade.Assessment)
+			).Select(selector: fgfep => fgfep.Grade.Id)
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? null : final + ".00"));
+		return Ok(value: new GetFinalAssessmentByIdResponse(FinalAssessment: final));
 	}
 
 	/// <summary>
@@ -382,8 +406,12 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		var period = await _context.EducationPeriods.AsNoTracking()
-			.Where(predicate: ep => ep.Id == request.PeriodId)
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		var period = await _context.Students.AsNoTracking()
+			.Where(predicate: s => s.Id == studentId)
+			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
 			.Select(selector: ep => new
 			{
 				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
@@ -464,7 +492,7 @@ public sealed class AssessmentController(
 		string? final = await _context.FinalGradesForEducationPeriods
 			.Where(predicate: fgfep =>
 				fgfep.EducationPeriodId == period.Id &&
-				fgfep.Student.UserId == userId &&
+				fgfep.Student.Parents.Any(p => p.UserId == userId) &&
 				fgfep.LessonId == request.SubjectId
 			).Select(selector: fgfep => fgfep.Grade.Assessment)
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
@@ -514,9 +542,13 @@ public sealed class AssessmentController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
 		string? final = await _context.FinalGradesForEducationPeriods
 			.Where(predicate: fgfep =>
-				fgfep.EducationPeriodId == request.PeriodId &&
+				fgfep.EducationPeriodId == request.PeriodId || ((request.PeriodId == 0
+					&& EF.Functions.DateDiffDay(fgfep.EducationPeriod.StartDate, now) >= 0
+					&& EF.Functions.DateDiffDay(fgfep.EducationPeriod.EndDate, now) <= 0
+				)) &&
 				fgfep.Student.Parents.Any(p => p.UserId == userId) &&
 				fgfep.LessonId == request.SubjectId
 			).Select(selector: fgfep => fgfep.Grade.Assessment)
@@ -557,8 +589,11 @@ public sealed class AssessmentController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		var period = await _context.EducationPeriods.AsNoTracking()
-			.Where(predicate: ep => ep.Id == request.PeriodId)
+		var period = await _context.Parents.AsNoTracking()
+			.Where(predicate: p => p.UserId == userId)
+			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
 			.Select(selector: ep => new
 			{
 				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
