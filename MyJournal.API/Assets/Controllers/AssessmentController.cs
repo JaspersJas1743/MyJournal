@@ -136,7 +136,7 @@ public sealed class AssessmentController(
 
 		return Ok(value: new GetAssessmentsResponse(
 			AverageAssessment: avg.ToString(format: "F2", CultureInfo.InvariantCulture).Replace(oldValue: "0.00", newValue: "-.--"),
-			FinalAssessment: final is null ? null : final + ".00",
+			FinalAssessment: final is null ? "-.--" : final + ".00",
 			Assessments: assessments.Select(selector: a => new Grade(
 				a.Id,
 				a.Grade.Assessment,
@@ -243,7 +243,7 @@ public sealed class AssessmentController(
 			.Select(selector: fgfep => fgfep.Grade.Assessment)
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? null : final + ".00"));
+		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? "-.--" : final + ".00"));
 	}
 
 	/// <summary>
@@ -499,7 +499,7 @@ public sealed class AssessmentController(
 
 		return Ok(value: new GetAssessmentsResponse(
 			AverageAssessment: avg.ToString(format: "F2", CultureInfo.InvariantCulture).Replace(oldValue: "0.00", newValue: "-.--"),
-			FinalAssessment: final is null ? null : final + ".00",
+			FinalAssessment: final is null ? "-.--" : final + ".00",
 			Assessments: assessments.Select(selector: a => new Grade(
 				a.Id,
 				a.Grade.Assessment,
@@ -554,7 +554,7 @@ public sealed class AssessmentController(
 			).Select(selector: fgfep => fgfep.Grade.Assessment)
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? null : final + ".00"));
+		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? "-.--" : final + ".00"));
 	}
 
 	/// <summary>
@@ -636,7 +636,7 @@ public sealed class AssessmentController(
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetPossibleAssessmentsResponse>> GetPossibleAssessments(
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => Ok(value: _context.Grades.Select(selector: g => new GetPossibleAssessmentsResponse(g.Id, g.Assessment)));
+	) => Ok(value: _context.Grades.AsNoTracking().Select(selector: g => new GetPossibleAssessmentsResponse(g.Id, g.Assessment)));
 
 	/// <summary>
 	/// Получение списка возможных комментариев к оценке
@@ -665,7 +665,8 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return Ok(value: _context.Grades.Where(predicate: g => g.Id == assessmentId).SelectMany(selector: g => g.GradeType.CommentsOnGrades)
+		return Ok(value: _context.Grades.AsNoTracking().Where(predicate: g => g.Id == assessmentId)
+			.SelectMany(selector: g => g.GradeType.CommentsOnGrades)
 			.Select(selector: c => new GetCommentsForAssessmentsResponse(c.Id, c.Comment, c.Description))
 		);
 	}
@@ -694,7 +695,8 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return Ok(value: _context.GradeTypes.Where(predicate: gt => gt.Type == GradeTypes.Truancy).SelectMany(selector: gt => gt.CommentsOnGrades)
+		return Ok(value: _context.GradeTypes.AsNoTracking().Where(predicate: gt => gt.Type == GradeTypes.Truancy)
+			.SelectMany(selector: gt => gt.CommentsOnGrades)
 			.Select(selector: c => new GetCommentsForAssessmentsResponse(c.Id, c.Comment, c.Description))
 		);
 	}
@@ -728,7 +730,7 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return Ok(value: await _context.Assessments.Where(predicate: a => a.Id == assessmentId)
+		return Ok(value: await _context.Assessments.AsNoTracking().Where(predicate: a => a.Id == assessmentId)
 			.Select(selector: a => new GetAssessmentResponse(
 				a.Student.Assessments.Where(asses => EF.Functions.IsNumeric(asses.Grade.Assessment) && asses.LessonId == a.LessonId)
 					.Select(asses => asses.Grade.Assessment).DefaultIfEmpty().Select(assess => assess ?? "0")
