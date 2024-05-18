@@ -1058,13 +1058,15 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Assessment assessment = await _context.Assessments.SingleOrDefaultAsync(
-			predicate: a => a.Id == request.ChangedAssessmentId,
-			cancellationToken: cancellationToken
-		) ?? throw new HttpResponseException(
-			statusCode: StatusCodes.Status404NotFound,
-			message: "Оценка с указанным идентификатором не найдена."
-		);
+		Assessment assessment = await _context.Assessments
+			.Include(assessment => assessment.Student)
+			.SingleOrDefaultAsync(
+				predicate: a => a.Id == request.ChangedAssessmentId,
+				cancellationToken: cancellationToken
+			) ?? throw new HttpResponseException(
+				statusCode: StatusCodes.Status404NotFound,
+				message: "Оценка с указанным идентификатором не найдена."
+			);
 
 		assessment.Datetime = request.Datetime == DateTime.MinValue ? assessment.Datetime : request.Datetime;
 		assessment.CommentId = request.CommentId == -1 ? assessment.CommentId : request.CommentId;
@@ -1081,7 +1083,7 @@ public sealed class AssessmentController(
 			studentId: assessment.StudentId,
 			subjectId: assessment.LessonId
 		);
-		await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherChangedAssessment(
+		await studentHubContext.Clients.User(userId: assessment.Student.UserId.ToString()).TeacherChangedAssessment(
 			assessmentId: assessment.Id,
 			studentId: assessment.StudentId,
 			subjectId: assessment.LessonId
