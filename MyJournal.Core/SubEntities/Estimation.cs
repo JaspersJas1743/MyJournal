@@ -1,6 +1,3 @@
-using MyJournal.Core.Utilities.Api;
-using MyJournal.Core.Utilities.Constants.Controllers;
-
 namespace MyJournal.Core.SubEntities;
 
 public enum GradeTypes
@@ -19,9 +16,7 @@ public class Estimation
 		DateTime createdAt,
 		string? comment,
 		string? description,
-		GradeTypes gradeType,
-		IEnumerable<CommentsForAssessment> commentsForAssessments
-	)
+		GradeTypes gradeType	)
 	{
 		Id = id;
 		Assessment = assessment;
@@ -29,7 +24,6 @@ public class Estimation
 		Comment = comment;
 		Description = description;
 		GradeType = gradeType;
-		CommentsForAssessments = commentsForAssessments;
 	}
 
 	public int Id { get; internal set; }
@@ -38,31 +32,23 @@ public class Estimation
 	public string? Comment { get; internal set; }
 	public string? Description { get; internal set; }
 	public GradeTypes GradeType { get; internal set; }
-	public IEnumerable<CommentsForAssessment> CommentsForAssessments { get; init; }
 
-	internal static async Task<Estimation> Create(
-		ApiClient client,
+	internal static Estimation Create(
 		int id,
 		string assessment,
 		DateTime createdAt,
 		string? comment,
 		string? description,
-		GradeTypes gradeType,
-		CancellationToken cancellationToken = default(CancellationToken)
+		GradeTypes gradeType
 	)
 	{
-		IEnumerable<CommentsForAssessment> commentsForAssessments = await client.GetAsync<IEnumerable<CommentsForAssessment>>(
-			apiMethod: AssessmentControllerMethods.GetCommentsForAssessments(assessmentId: id),
-			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
 		return new Estimation(
 			id: id,
 			assessment: assessment,
 			createdAt: createdAt,
 			comment: comment,
 			description: description,
-			gradeType: gradeType,
-			commentsForAssessments: commentsForAssessments
+			gradeType: gradeType
 		);
 	}
 }

@@ -260,4 +260,12 @@
 		<Setter Property="Margin" Value="0"/>
 		<Setter Property="HorizontalContentAlignment" Value="Center" />
 	</Style>
+
+	<Style Selector="ListBox.Estimation ListBoxItem:nth-child(12n)">
+		<Setter Property="Margin" Value="0 0 10 0"/>
+	</Style>
+
+	<Style Selector="ListBox.Estimation ListBoxItem:nth-child(12n+1)">
+		<Setter Property="Margin" Value="10 0 0 0"/>
+	</Style>
 </Styles>

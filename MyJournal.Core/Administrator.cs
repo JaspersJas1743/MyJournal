@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
+using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -13,6 +13,7 @@ namespace MyJournal.Core;
 
 public sealed class Administrator : User
 {
+	private readonly AsyncLazy<IEnumerable<PossibleAssessment>> _possibleAssessments;
 	private readonly AsyncLazy<ClassCollection> _classes;
 	private readonly HubConnection _administratorHubConnection;
 
@@ -21,6 +22,7 @@ public sealed class Administrator : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
+		AsyncLazy<IEnumerable<PossibleAssessment>> possibleAssessments,
 		AsyncLazy<ClassCollection> classes
 	) : base(
 		client: client,
@@ -29,6 +31,7 @@ public sealed class Administrator : User
 		information: information
 	)
 	{
+		_possibleAssessments = possibleAssessments;
 		_classes = classes;
 		_administratorHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
 			url: AdministratorHubMethod.HubEndpoint,
@@ -58,6 +61,10 @@ public sealed class Administrator : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
+			possibleAssessments: new AsyncLazy<IEnumerable<PossibleAssessment>>(valueFactory: async () => await PossibleAssessment.Create(
+				client: client,
+				cancellationToken: cancellationToken
+			)),
 			classes: new AsyncLazy<ClassCollection>(valueFactory: async () => await ClassCollection.Create(
 				client: client,
 				fileService: fileService,
@@ -68,6 +75,9 @@ public sealed class Administrator : User
 		await administrator.ConnectToAdministratorHub(cancellationToken: cancellationToken);
 		return administrator;
 	}
+
+	public async Task<IEnumerable<PossibleAssessment>> GetPossibleAssessments()
+		=> await _possibleAssessments;
 
 	private async Task ConnectToAdministratorHub(
 		CancellationToken cancellationToken = default(CancellationToken)

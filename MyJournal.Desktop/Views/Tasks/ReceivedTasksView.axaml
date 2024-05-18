@@ -59,7 +59,7 @@
 					</interactivity:Interaction.Behaviors>
 				</controls:ListBoxWithLoadOnScroll>
 			</Border>
-			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder" CornerRadius="30">
+			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder">
 				<Grid>
 					<Grid IsVisible="{Binding !!Tasks.Count}" >
 						<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"

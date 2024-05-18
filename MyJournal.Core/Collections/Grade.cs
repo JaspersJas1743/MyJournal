@@ -8,11 +8,13 @@ namespace MyJournal.Core.Collections;
 public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 {
 	#region Fields
+	protected readonly string _apiMethod;
 	protected readonly ApiClient _client;
-	protected readonly AsyncLazy<List<T>> _estimations;
+	protected AsyncLazy<List<T>> _estimations;
 
-	private readonly int _periodId;
-	private string? _final;
+	private readonly int _subjectId;
+	protected int _periodId;
+	protected string? _final;
 	protected string _average;
 
 	internal static readonly Grade<Estimation> Empty = new Grade<Estimation>();
@@ -24,15 +26,19 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	protected Grade(
 		ApiClient client,
 		AsyncLazy<List<T>> estimations,
+		string apiMethod,
 		string average,
+		int subjectId,
 		int periodId,
 		string? final = null
 	)
 	{
+		_apiMethod = apiMethod;
 		_client = client;
 		_estimations = estimations;
 		_average = average;
 		_periodId = periodId;
+		_subjectId = subjectId;
 		_final = final;
 	}
 	#endregion
@@ -81,20 +87,20 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		) ?? throw new InvalidOperationException();
 		return new Grade<Estimation>(
 			client: client,
-			estimations: new AsyncLazy<List<Estimation>>(valueFactory: async () => new List<Estimation>(collection: await Task.WhenAll(
-				tasks: assessments.Assessments.Select(selector: async e => await Estimation.Create(
-					client: client,
+			apiMethod: apiMethod,
+			estimations: new AsyncLazy<List<Estimation>>(valueFactory: async () => new List<Estimation>(
+				collection: assessments.Assessments.Select(selector: e => Estimation.Create(
 					id: e.Id,
 					assessment: e.Assessment,
 					createdAt: e.CreatedAt,
 					comment: e.Comment,
 					description: e.Description,
-					gradeType: e.GradeType,
-					cancellationToken: cancellationToken
-				))
+					gradeType: e.GradeType
+				)
 			))),
 			average: assessments.AverageAssessment,
 			periodId: periodId,
+			subjectId: subjectId,
 			final: assessments.FinalAssessment
 		);
 	}
@@ -103,6 +109,27 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	#region Instance
 	public async Task<IEnumerable<Estimation>> GetEstimations()
 		=> await _estimations;
+
+	public virtual async Task SetEducationPeriod(int educationPeriodId)
+	{
+		_periodId = educationPeriodId;
+		GetAssessmentsResponse assessments = await _client.GetAsync<GetAssessmentsResponse, GetAssessmentsRequest>(
+			apiMethod: _apiMethod,
+			argQuery: new GetAssessmentsRequest(PeriodId: _periodId, SubjectId: _subjectId)
+		) ?? throw new InvalidOperationException();
+		_estimations = new AsyncLazy<List<T>>(valueFactory: async () => new List<T>(
+			collection: assessments.Assessments.Select(selector: e => (T)Estimation.Create(
+				id: e.Id,
+				assessment: e.Assessment,
+				createdAt: e.CreatedAt,
+				comment: e.Comment,
+				description: e.Description,
+				gradeType: e.GradeType
+			))
+		));
+		_average = assessments.AverageAssessment;
+		_final = assessments.FinalAssessment;
+	}
 
 	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
 	{
@@ -116,14 +143,14 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{
-		GetAssessmentResponse response = await _client.GetAsync<GetAssessmentResponse>(
-			apiMethod: e.ApiMethod
+		GetAssessmentResponse response = await _client.GetAsync<GetAssessmentResponse, GetFinalAssessmentRequest>(
+			apiMethod: e.ApiMethod,
+			argQuery: new GetFinalAssessmentRequest(SubjectId: _subjectId, PeriodId: _periodId)
 		) ?? throw new InvalidOperationException();
 
 		_average = response.AverageAssessment;
 		List<T> estimations = await _estimations;
-		estimations.Add(item: (T)await Estimation.Create(
-			client: _client,
+		estimations.Add(item: (T)Estimation.Create(
 			id: response.Assessment.Id,
 			assessment: response.Assessment.Assessment,
 			createdAt: response.Assessment.CreatedAt,
@@ -147,7 +174,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		) ?? throw new InvalidOperationException();
 		_average = response.AverageAssessment;
 		List<T> estimations = await _estimations;
-		T estimation = estimations.Single(predicate: estimation => estimation.Id == e.AssessmentId);
+		Estimation estimation = estimations.Single(predicate: estimation => estimation.Id == e.AssessmentId);
 		estimation.Id = response.Assessment.Id;
 		estimation.Assessment = response.Assessment.Assessment;
 		estimation.CreatedAt = response.Assessment.CreatedAt;

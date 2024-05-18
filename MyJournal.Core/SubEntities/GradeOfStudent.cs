@@ -9,27 +9,33 @@ namespace MyJournal.Core.SubEntities;
 
 public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 {
-	private readonly AsyncLazy<IEnumerable<PossibleAssessment>> _possibleAssessments;
 	private readonly int _subjectId;
 	private readonly int _studentId;
-	private int? _final;
 
 	private GradeOfStudent(
 		ApiClient client,
+		string apiMethod,
 		int subjectId,
 		int studentId,
 		string average,
 		int periodId,
 		AsyncLazy<List<EstimationOfStudent>> estimations,
-		AsyncLazy<IEnumerable<PossibleAssessment>> possibleAssessments,
 		int? final = null
-	) : base(client: client, estimations: estimations, average: average, periodId: periodId)
+	) : base(
+		client: client,
+		estimations: estimations,
+		apiMethod: apiMethod,
+		average: average,
+		subjectId: subjectId,
+		periodId: periodId
+	)
 	{
 		_subjectId = subjectId;
 		_studentId = studentId;
-		_possibleAssessments = possibleAssessments;
-		_final = final;
+		Final = final;
 	}
+
+	public int? Final { get; private set; }
 
 	private sealed record CreateFinalAssessmentRequest(int GradeId, int SubjectId, int StudentId);
 
@@ -41,18 +47,20 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		string apiMethod = AssessmentControllerMethods.GetAssessmentsById(studentId: studentId);
 		GetAssessmentsByIdResponse assessments = await client.GetAsync<GetAssessmentsByIdResponse, GetAssessmentsRequest>(
-			apiMethod: AssessmentControllerMethods.GetAssessmentsById(studentId: studentId),
+			apiMethod: apiMethod,
 			argQuery: new GetAssessmentsRequest(PeriodId: periodId, SubjectId: subjectId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new GradeOfStudent(
 			client: client,
+			apiMethod: apiMethod,
 			subjectId: subjectId,
 			studentId: studentId,
 			periodId: periodId,
-			estimations: new AsyncLazy<List<EstimationOfStudent>>(valueFactory: async () => new List<EstimationOfStudent>(collection: await Task.WhenAll(
-				tasks: assessments.Assessments.Select(selector: async e => await EstimationOfStudent.Create(
+			estimations: new AsyncLazy<List<EstimationOfStudent>>(valueFactory: async () => new List<EstimationOfStudent>(
+				collection: assessments.Assessments.Select(selector: e => EstimationOfStudent.Create(
 					client: client,
 					id: e.Id,
 					assessment: e.Assessment,
@@ -61,16 +69,32 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 					description: e.Description,
 					gradeType: e.GradeType
 				))
-			))),
-			possibleAssessments: new AsyncLazy<IEnumerable<PossibleAssessment>>(
-				valueFactory: async () => await client.GetAsync<IEnumerable<PossibleAssessment>>(
-					apiMethod: AssessmentControllerMethods.GetPossibleAssessments,
-					cancellationToken: cancellationToken
-				) ?? throw new InvalidOperationException()
-			),
+			)),
 			average: assessments.AverageAssessment,
 			final: assessments.FinalAssessment
 		);
+	}
+
+	public override async Task SetEducationPeriod(int educationPeriodId)
+	{
+		_periodId = educationPeriodId;
+		GetAssessmentsByIdResponse assessments = await _client.GetAsync<GetAssessmentsByIdResponse, GetAssessmentsRequest>(
+			apiMethod: _apiMethod,
+			argQuery: new GetAssessmentsRequest(PeriodId: _periodId, SubjectId: _subjectId)
+		) ?? throw new InvalidOperationException();
+		_estimations = new AsyncLazy<List<EstimationOfStudent>>(valueFactory: async () => new List<EstimationOfStudent>(
+			collection: assessments.Assessments.Select(selector: e => EstimationOfStudent.Create(
+				client: _client,
+				id: e.Id,
+				assessment: e.Assessment,
+				createdAt: e.CreatedAt,
+				comment: e.Comment,
+				description: e.Description,
+				gradeType: e.GradeType
+			))
+		));
+		_average = assessments.AverageAssessment;
+		Final = assessments.FinalAssessment;
 	}
 
 	public IEstimationBuilder Add()
@@ -85,15 +109,12 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 		);
 	}
 
-	public async Task<IEnumerable<PossibleAssessment>> GetPossibleAssessments()
-		=> await _possibleAssessments;
-
 	internal new async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
 	{
 		GetFinalAssessmentByIdResponse response = await _client.GetAsync<GetFinalAssessmentByIdResponse>(
 			apiMethod: e.ApiMethodForFinalAT(arg: _studentId)
 		) ?? throw new InvalidOperationException();
-		_final = response.FinalAssessment;
+		Final = response.FinalAssessment;
 		InvokeCreatedFinalAssessment(e: e);
 	}
 
@@ -104,7 +125,7 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 		) ?? throw new InvalidOperationException();
 		_average = response.AverageAssessment;
 		List<EstimationOfStudent> estimations = await _estimations;
-		estimations.Add(item: await EstimationOfStudent.Create(
+		estimations.Add(item: EstimationOfStudent.Create(
 			client: _client,
 			id: response.Assessment.Id,
 			assessment: response.Assessment.Assessment,

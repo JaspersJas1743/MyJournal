@@ -15,16 +15,14 @@ public sealed class EstimationOfStudent : Estimation
 		DateTime createdAt,
 		string? comment,
 		string? description,
-		GradeTypes gradeType,
-		IEnumerable<CommentsForAssessment> commentsForAssessments
+		GradeTypes gradeType
 	) : base(
 		id: id,
 		assessment: assessment,
 		createdAt: createdAt,
 		comment: comment,
 		description: description,
-		gradeType: gradeType,
-		commentsForAssessments: commentsForAssessments
+		gradeType: gradeType
 	)
 	{
 		_client = client;
@@ -32,21 +30,16 @@ public sealed class EstimationOfStudent : Estimation
 
 	private sealed record DeleteAssessmentRequest(int AssessmentId);
 
-	internal static async Task<EstimationOfStudent> Create(
+	internal static EstimationOfStudent Create(
 		ApiClient client,
 		int id,
 		string assessment,
 		DateTime createdAt,
 		string? comment,
 		string? description,
-		GradeTypes gradeType,
-		CancellationToken cancellationToken = default(CancellationToken)
+		GradeTypes gradeType
 	)
 	{
-		IEnumerable<CommentsForAssessment> commentsForAssessments = await client.GetAsync<IEnumerable<CommentsForAssessment>>(
-			apiMethod: AssessmentControllerMethods.GetCommentsForAssessments(assessmentId: id),
-			cancellationToken: cancellationToken
-		) ?? throw new InvalidOperationException();
 		return new EstimationOfStudent(
 			client: client,
 			id: id,
@@ -54,13 +47,12 @@ public sealed class EstimationOfStudent : Estimation
 			createdAt: createdAt,
 			comment: comment,
 			description: description,
-			gradeType: gradeType,
-			commentsForAssessments: commentsForAssessments
+			gradeType: gradeType
 		);
 	}
 
 	public IEstimationChanger Change()
-		=> Builders.EstimationChanger.EstimationChanger.Create(client: _client, estimation: this);
+		=> EstimationChanger.Create(client: _client, estimation: this);
 
 	public async Task Delete(
 		CancellationToken cancellationToken = default(CancellationToken)

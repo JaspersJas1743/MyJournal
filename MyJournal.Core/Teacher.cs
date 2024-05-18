@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR.Client;
 using MyJournal.Core.Collections;
+using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -13,6 +13,7 @@ namespace MyJournal.Core;
 
 public sealed class Teacher : User
 {
+	private readonly AsyncLazy<IEnumerable<PossibleAssessment>> _possibleAssessments;
 	private readonly AsyncLazy<TaughtSubjectCollection> _taughtSubjectCollection;
 	private readonly HubConnection _teacherHubConnection;
 
@@ -23,6 +24,7 @@ public sealed class Teacher : User
 		IFileService fileService,
 		IGoogleAuthenticatorService googleAuthenticatorService,
 		UserInformationResponse information,
+		AsyncLazy<IEnumerable<PossibleAssessment>> possibleAssessments,
 		AsyncLazy<TaughtSubjectCollection> taughtSubjects,
 		AsyncLazy<TimetableForTeacherCollection> timetable
 	) : base(
@@ -32,6 +34,7 @@ public sealed class Teacher : User
 		information: information
 	)
 	{
+		_possibleAssessments = possibleAssessments;
 		_taughtSubjectCollection = taughtSubjects;
 		_teacherHubConnection = DefaultHubConnectionBuilder.CreateHubConnection(
 			url: TeacherHubMethods.HubEndpoint,
@@ -65,6 +68,10 @@ public sealed class Teacher : User
 			fileService: fileService,
 			googleAuthenticatorService: googleAuthenticatorService,
 			information: information,
+			possibleAssessments: new AsyncLazy<IEnumerable<PossibleAssessment>>(valueFactory: async () => await PossibleAssessment.Create(
+				client: client,
+				cancellationToken: cancellationToken
+			)),
 			taughtSubjects: new AsyncLazy<TaughtSubjectCollection>(valueFactory: async () => await TaughtSubjectCollection.Create(
 				client: client,
 				fileService: fileService,
@@ -79,6 +86,9 @@ public sealed class Teacher : User
 		await teacher.ConnectToTeacherHub(cancellationToken: cancellationToken);
 		return teacher;
 	}
+
+	public async Task<IEnumerable<PossibleAssessment>> GetPossibleAssessments()
+		=> await _possibleAssessments;
 
 	private async Task ConnectToTeacherHub(
 		CancellationToken cancellationToken = default(CancellationToken)
