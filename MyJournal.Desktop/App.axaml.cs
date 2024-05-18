@@ -106,7 +106,7 @@ public partial class App : Application
 			.AddSingleton<WelcomeModel>()
 			#endregion
 			#region Utilities
-			.AddApiClient(timeout: TimeSpan.FromSeconds(value: 15))
+			.AddApiClient(timeout: TimeSpan.FromSeconds(value: 30))
 			.AddGoogleAuthenticator()
 			.AddFileService()
 			.AddFileStorageService()
@@ -325,7 +325,7 @@ public partial class App : Application
 		if (ex is SocketException or TaskCanceledException or HttpRequestException)
 			message = "Проверьте Ваше интернет-соединение и повторите попытку позже!";
 
-		if (await CheckConnection())
+		if (!await CheckConnection())
 			message = "В данный момент удаленный сервер недоступен :(\nПопробуйте попытку позже.";
 
 		string content = String.Join("\n\t", ex.GetType().GetProperties().Select(selector: p => $"{p.Name}: {p.GetValue(obj: ex)}"));
@@ -339,8 +339,9 @@ public partial class App : Application
 	{
 		try
 		{
-			await Dns.GetHostEntryAsync(hostNameOrAddress: "my-journal.ru");
-			return true;
+			Ping ping = new Ping();
+			PingReply result = await ping.SendPingAsync(hostNameOrAddress: "my-journal.ru");
+			return result.Status == IPStatus.Success;
 		}
 		catch (Exception e)
 		{
@@ -402,9 +403,12 @@ public partial class App : Application
 			{
 				try
 				{
-					IAuthorizationService<User> authorizationService = GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
+					IAuthorizationService<User> authorizationService =
+						GetKeyedService<IAuthorizationService<User>>(key: nameof(AuthorizationWithTokenService));
 					MainVM mainVM = GetService<MainVM>();
-					Authorized<User> authorizedUser = await authorizationService.SignIn(credentials: new UserTokenCredentials(token: credential.AccessToken));
+					Authorized<User> authorizedUser = await authorizationService.SignIn(
+						credentials: new UserTokenCredentials(token: credential.AccessToken)
+					);
 					await mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
 					mainWindowVM.SetUser(user: authorizedUser.Instance);
 					mainWindowVM.Content = mainVM;
@@ -413,6 +417,15 @@ public partial class App : Application
 				{
 					credentialStorageService.Remove();
 					MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
+				}
+				catch (HttpRequestException e)
+				{
+					INotificationService notificationService = GetService<INotificationService>();
+					await notificationService.Show(
+						title: "Непредвиденная ошибка",
+						content: "Проверьте Ваше интернет-соединение и повторите попытку позже!",
+						type: NotificationType.Error
+					);
 				}
 			} else
 				MoveToAuthorizationPage(mainWindowVM: mainWindowVM);
