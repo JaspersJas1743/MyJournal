@@ -120,7 +120,7 @@ public sealed class AssessmentController(
 				a.LessonId == request.SubjectId &&
 				EF.Functions.DateDiffDay(a.Datetime, start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, end) >= 0
-			);
+			).OrderByDescending(keySelector: a => a.Datetime);
 
 		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
 			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
@@ -303,7 +303,7 @@ public sealed class AssessmentController(
 				a.LessonId == request.SubjectId &&
 				EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
-			);
+			).OrderByDescending(keySelector: a => a.Datetime);
 
 		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
 			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
@@ -483,7 +483,7 @@ public sealed class AssessmentController(
 				a.LessonId == request.SubjectId &&
 				EF.Functions.DateDiffDay(a.Datetime, start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, end) >= 0
-			);
+			).OrderByDescending(keySelector: a => a.Datetime);
 
 		double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
 			.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
