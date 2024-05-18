@@ -133,8 +133,9 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 
 	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
 	{
-		GetFinalAssessmentResponse response = await _client.GetAsync<GetFinalAssessmentResponse>(
-			apiMethod: e.ApiMethodForFinalSP
+		GetFinalAssessmentResponse response = await _client.GetAsync<GetFinalAssessmentResponse, GetFinalAssessmentRequest>(
+			apiMethod: e.ApiMethodForFinalSP,
+			argQuery: new GetFinalAssessmentRequest(SubjectId: _subjectId, PeriodId: _periodId)
 		) ?? throw new InvalidOperationException();
 
 		_final = response.FinalAssessment;
@@ -158,6 +159,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 			description: response.Assessment.Description,
 			gradeType: response.Assessment.GradeType
 		));
+		estimations.Sort(comparison: (first, second) => 0 - first.CreatedAt.CompareTo(value: second.CreatedAt));
 		CreatedAssessment?.Invoke(e: e);
 	}
 
@@ -181,6 +183,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		estimation.Comment = response.Assessment.Comment;
 		estimation.Description = response.Assessment.Description;
 		estimation.GradeType = response.Assessment.GradeType;
+		estimation.OnChangedAssessment(e: e);
 
 		ChangedAssessment?.Invoke(e: e);
 	}

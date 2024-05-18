@@ -9,7 +9,8 @@
 		xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
 		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities"
-		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities">
+		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities"
+		xmlns:marksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.MarksUtilities">
 
 	<Style Selector="ListBox">
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -566,13 +567,14 @@
 			<Setter Property="VerticalAlignment" Value="Top"/>
 			<Setter Property="Margin" Value="0" />
 			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
 			<Setter Property="ItemsPanel">
 				<ItemsPanelTemplate>
 					<WrapPanel Orientation="Horizontal" Width="1350" HorizontalAlignment="Center" Margin="0 10"/>
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="entities:Estimation">
+				<DataTemplate DataType="marksUtilities:ObservableEstimation">
 					<Viewbox Height="90" Width="90" Margin="10">
 						<Border Height="90" Width="90" CornerRadius="15" ToolTip.Tip="{Binding Description}" ToolTip.ShowDelay="150"
 								Classes.Five="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsFive}}"

@@ -1,3 +1,5 @@
+using MyJournal.Core.Utilities.EventArgs;
+
 namespace MyJournal.Core.SubEntities;
 
 public enum GradeTypes
@@ -33,6 +35,8 @@ public class Estimation
 	public string? Description { get; internal set; }
 	public GradeTypes GradeType { get; internal set; }
 
+	public event ChangedAssessmentHandler ChangedAssessment;
+
 	internal static Estimation Create(
 		int id,
 		string assessment,
@@ -51,4 +55,7 @@ public class Estimation
 			gradeType: gradeType
 		);
 	}
+
+	internal void OnChangedAssessment(ChangedAssessmentEventArgs e)
+		=> ChangedAssessment?.Invoke(e: e);
 }

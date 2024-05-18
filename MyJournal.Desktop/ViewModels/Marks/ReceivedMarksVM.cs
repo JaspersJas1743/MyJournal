@@ -14,7 +14,7 @@ public sealed class ReceivedMarksVM(ReceivedMarksModel model): MarksVM(model: mo
 	public ReadOnlyObservableCollection<StudentSubject> StudyingSubjects => model.StudyingSubjects;
 	public SelectionModel<StudentSubject> SubjectSelectionModel => model.SubjectSelectionModel;
 	public ObservableCollectionExtended<EducationPeriod> EducationPeriods => model.EducationPeriods;
-	public ObservableCollectionExtended<Estimation> Estimations => model.Estimations;
+	public ObservableCollectionExtended<ObservableEstimation> Estimations => model.Estimations;
 
 	public string? Filter
 	{
@@ -22,17 +22,7 @@ public sealed class ReceivedMarksVM(ReceivedMarksModel model): MarksVM(model: mo
 		set => model.Filter = value;
 	}
 
-	public string? Average
-	{
-		get => model.Average;
-		set => model.Average = value;
-	}
-
-	public string? Final
-	{
-		get => model.Final;
-		set => model.Final = value;
-	}
+	public ObservableGrade Grade => model.Grade;
 
 	public EducationPeriod? SelectedPeriod
 	{

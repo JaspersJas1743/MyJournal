@@ -31,6 +31,13 @@ public sealed class StudentSubjectCollection
 	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	public event CreatedAssessmentHandler CreatedAssessment;
 
+	public async Task<StudentSubject> FindById(int id)
+	{
+		return _studyingSubjectCollection is not null
+			? new StudentSubject(studyingSubject: await _studyingSubjectCollection.GetById(id: id))
+			: new StudentSubject(wardSubjectStudying: await _wardStudyingSubjectCollection!.GetById(id: id));
+	}
+
 	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
 	{
 		return _studyingSubjectCollection is not null

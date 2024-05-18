@@ -14,23 +14,24 @@ using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.Utilities.MarksUtilities;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.Marks;
 
 public sealed class ReceivedMarksModel : MarksModel
 {
+	private readonly INotificationService _notificationService;
 	private readonly ReadOnlyObservableCollection<StudentSubject> _studyingSubjects;
 	private readonly SourceCache<StudentSubject, int> _studyingSubjectsCache = new SourceCache<StudentSubject, int>(keySelector: s => s.Id);
-	private Grade<Estimation> _grade;
+	private ObservableGrade? _grade;
 	private StudentSubjectCollection _studentSubjectCollection;
 	private string? _filter = String.Empty;
-	private string? _final = String.Empty;
-	private string? _average = String.Empty;
 	private EducationPeriod? _selectedPeriod = null;
 
-	public ReceivedMarksModel()
+	public ReceivedMarksModel(INotificationService notificationService)
 	{
+		_notificationService = notificationService;
 		OnTaskCompletionStatusSelectionChanged = ReactiveCommand.CreateFromTask(execute: TaskCompletionStatusSelectionChangedHandler);
 		OnSubjectSelectionChanged = ReactiveCommand.CreateFromTask(execute: SubjectSelectionChangedHandler);
 		ClearTasks = ReactiveCommand.Create(execute: ClearSelection);
@@ -52,8 +53,7 @@ public sealed class ReceivedMarksModel : MarksModel
 	{
 		SubjectSelectionModel.SelectedItem = null;
 		Estimations.Clear();
-		Average = null;
-		Final = null;
+		Grade = null;
 	}
 
 	private async Task SubjectSelectionChangedHandler()
@@ -61,11 +61,10 @@ public sealed class ReceivedMarksModel : MarksModel
 		if (SelectedPeriod is null || SubjectSelectionModel.SelectedItem is null)
 			return;
 
-		_grade = await SubjectSelectionModel.SelectedItem.GetGrade();
-		await _grade.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
-		Final = _grade.FinalAssessment;
-		Average = _grade.AverageAssessment;
-		Estimations.Load(items: await _grade.GetEstimations());
+		Grade<Estimation> grade = await SubjectSelectionModel.SelectedItem.GetGrade();
+		Grade = grade.ToObservable();
+		await Grade.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
+		Estimations.Load(items: await Grade.GetEstimations());
 	}
 
 	private async Task TaskCompletionStatusSelectionChangedHandler()
@@ -73,11 +72,10 @@ public sealed class ReceivedMarksModel : MarksModel
 		if (SelectedPeriod is null || SubjectSelectionModel.SelectedItem is null)
 			return;
 
-		_grade = await SubjectSelectionModel.SelectedItem.GetGrade();
-		await _grade.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
-		Final = _grade.FinalAssessment;
-		Average = _grade.AverageAssessment;
-		Estimations.Load(items: await _grade.GetEstimations());
+		Grade<Estimation> grade = await SubjectSelectionModel.SelectedItem.GetGrade();
+		Grade = grade.ToObservable();
+		await Grade.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
+		Estimations.Load(items: await Grade.GetEstimations());
 	}
 
 	public ReactiveCommand<Unit, Unit> OnTaskCompletionStatusSelectionChanged { get; }
@@ -91,8 +89,8 @@ public sealed class ReceivedMarksModel : MarksModel
 	public ObservableCollectionExtended<EducationPeriod> EducationPeriods { get; }
 		= new ObservableCollectionExtended<EducationPeriod>();
 
-	public ObservableCollectionExtended<Estimation> Estimations { get; }
-		= new ObservableCollectionExtended<Estimation>();
+	public ObservableCollectionExtended<ObservableEstimation> Estimations { get; }
+		= new ObservableCollectionExtended<ObservableEstimation>();
 
 	public EducationPeriod? SelectedPeriod
 	{
@@ -106,16 +104,10 @@ public sealed class ReceivedMarksModel : MarksModel
 		set => this.RaiseAndSetIfChanged(backingField: ref _filter, newValue: value);
 	}
 
-	public string? Average
+	public ObservableGrade? Grade
 	{
-		get => _average;
-		set => this.RaiseAndSetIfChanged(backingField: ref _average, newValue: value);
-	}
-
-	public string? Final
-	{
-		get => _final;
-		set => this.RaiseAndSetIfChanged(backingField: ref _final, newValue: value);
+		get => _grade;
+		private set => this.RaiseAndSetIfChanged(backingField: ref _grade, newValue: value);
 	}
 
 	public Func<StudentSubject, bool> FilterFunction(string? text)
@@ -138,17 +130,34 @@ public sealed class ReceivedMarksModel : MarksModel
 		EducationPeriods.Load(items: await _studentSubjectCollection.GetEducationPeriods());
 		SelectedPeriod = EducationPeriods[index: 0];
 
-		_studentSubjectCollection.CreatedAssessment += OnStudyingSubjectCreatedAssessment;
-		_studentSubjectCollection.CreatedFinalAssessment += OnStudyingSubjectCreatedFinalAssessment;
+		_studentSubjectCollection.CreatedAssessment += OnCreatedAssessment;
+		_studentSubjectCollection.CreatedFinalAssessment += OnCreatedFinalAssessment;
 	}
 
-	private void OnStudyingSubjectCreatedAssessment(CreatedAssessmentEventArgs e)
+	private async void OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
 	{
-		throw new NotImplementedException();
+		StudentSubject subject = await _studentSubjectCollection.FindById(id: e.SubjectId);
+		await _notificationService.Show(
+			title: "Новая отметка",
+			content: $"По предмету \"{subject.Name}\" выставлена итоговая отметка"
+		);
 	}
 
-	private void OnStudyingSubjectCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
+	private async void OnCreatedAssessment(CreatedAssessmentEventArgs e)
 	{
-		throw new NotImplementedException();
+		StudentSubject subject = await _studentSubjectCollection.FindById(id: e.SubjectId);
+		await _notificationService.Show(
+			title: "Новая отметка",
+			content: $"Получена новая оценка по предмету \"{subject.Name}\""
+		);
+
+		if (SubjectSelectionModel.SelectedItem?.Id != e.SubjectId)
+			return;
+
+		IEnumerable<ObservableEstimation> estimations = await Grade!.GetEstimations();
+		ObservableEstimation estimation = estimations.First(predicate: estimation => estimation.Id == e.AssessmentId);
+
+		int index = Math.Max(val1: estimations.IndexOf(item: estimation), val2: 0);
+		Estimations.Insert(item: estimation, index: index);
 	}
 }

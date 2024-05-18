@@ -125,6 +125,14 @@ public sealed class WardStudyingSubjectCollection : IAsyncEnumerable<WardSubject
 		);
 	}
 
+	public async Task<WardSubjectStudying> GetById(int id)
+	{
+		List<WardSubjectStudying> collection = await _subjects;
+		return collection.Find(match: s => s.Id == id) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с идентификатором {id} отсутствует.", paramName: nameof(id)
+		);
+	}
+
 	public async Task SetEducationPeriod(
 		EducationPeriod period,
 		CancellationToken cancellationToken = default(CancellationToken)

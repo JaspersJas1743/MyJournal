@@ -134,6 +134,7 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 			description: response.Assessment.Description,
 			gradeType: response.Assessment.GradeType
 		));
+		estimations.Sort(comparison: (first, second) => first.CreatedAt.CompareTo(value: second.CreatedAt));
 		InvokeCreatedAssessment(e: e);
 	}
 }

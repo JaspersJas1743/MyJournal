@@ -36,7 +36,6 @@ public sealed class ObservableCreatedTask : ReactiveObject, IValidatableViewMode
 	private readonly CreatedTask? _taskToObservable;
 	private List<ExtendedAttachment>? _attachments;
 	private bool? _showClassAndLesson;
-	private bool? _isExpired = false;
 	private readonly Timer _timer = new Timer(interval: TimeSpan.FromSeconds(value: 1));
 
 	public ObservableCreatedTask(
@@ -209,8 +208,8 @@ public sealed class ObservableCreatedTask : ReactiveObject, IValidatableViewMode
 
 	public string? Lesson => _taskToObservable?.LessonName;
 	public string? Class => _taskToObservable?.ClassName;
-	public bool SingleClass => _classes?.Count() == 1;
-	public bool SingleSubject => _subjects?.Count() == 1;
+	public bool SingleClass => _classes?.Count == 1;
+	public bool SingleSubject => _subjects?.Count == 1;
 	public int? CountOfCompletedTask => _taskToObservable?.CountOfCompletedTask;
 	public int? CountOfUncompletedTask => _taskToObservable?.CountOfUncompletedTask;
 	public bool? IsExpired => (ReleasedAt - DateTime.Now)?.TotalSeconds <= 1;
