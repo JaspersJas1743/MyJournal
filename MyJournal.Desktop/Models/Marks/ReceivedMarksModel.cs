@@ -130,8 +130,33 @@ public sealed class ReceivedMarksModel : MarksModel
 		EducationPeriods.Load(items: await _studentSubjectCollection.GetEducationPeriods());
 		SelectedPeriod = EducationPeriods[index: 0];
 
-		_studentSubjectCollection.CreatedAssessment += OnCreatedAssessment;
 		_studentSubjectCollection.CreatedFinalAssessment += OnCreatedFinalAssessment;
+		_studentSubjectCollection.CreatedAssessment += OnCreatedAssessment;
+		_studentSubjectCollection.DeletedAssessment += OnDeletedAssessment;
+		_studentSubjectCollection.ChangedAssessment += OnChangedAssessment;
+	}
+
+	private async void OnChangedAssessment(ChangedAssessmentEventArgs e)
+	{
+		StudentSubject subject = await _studentSubjectCollection.FindById(id: e.SubjectId);
+		await _notificationService.Show(
+			title: "Изменение отметки",
+			content: $"Изменена оценка по предмету \"{subject.Name}\""
+		);
+	}
+
+	private async void OnDeletedAssessment(DeletedAssessmentEventArgs e)
+	{
+		StudentSubject subject = await _studentSubjectCollection.FindById(id: e.SubjectId);
+		await _notificationService.Show(
+			title: "Удаление отметки",
+			content: $"Удалена оценка по предмету \"{subject.Name}\""
+		);
+
+		if (SubjectSelectionModel.SelectedItem?.Id != e.SubjectId)
+			return;
+
+		Estimations.Remove(item: Estimations.First(predicate: est => est.Id == e.AssessmentId));
 	}
 
 	private async void OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)

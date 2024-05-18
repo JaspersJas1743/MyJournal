@@ -14,19 +14,14 @@ public sealed class ObservableEstimation : ReactiveObject
 	public ObservableEstimation(Estimation estimation)
 	{
 		_estimation = estimation;
-		PropertyChanged += (_, e) => Debug.WriteLine($"{e.PropertyName} has been changed");
 
 		_estimation.ChangedAssessment += OnChangedAssessment;
 	}
 
 	private void OnChangedAssessment(ChangedAssessmentEventArgs _)
 	{
-		Debug.WriteLine($"OnChangedAssessment");
 		foreach (PropertyInfo propertyInfo in typeof(Estimation).GetProperties())
-		{
-			Debug.WriteLine($"propertyInfo.Name: {propertyInfo.Name}");
 			this.RaisePropertyChanged(propertyName: propertyInfo.Name);
-		}
 	}
 
 	public int Id => _estimation.Id;

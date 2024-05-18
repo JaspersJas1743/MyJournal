@@ -16,20 +16,26 @@ public sealed class StudentSubjectCollection
 	{
 		_studyingSubjectCollection = studyingSubjectCollection;
 
-		_studyingSubjectCollection.CreatedAssessment += e => CreatedAssessment?.Invoke(e: e);
 		_studyingSubjectCollection.CreatedFinalAssessment += e => CreatedFinalAssessment?.Invoke(e: e);
+		_studyingSubjectCollection.CreatedAssessment += e => CreatedAssessment?.Invoke(e: e);
+		_studyingSubjectCollection.DeletedAssessment += e => DeletedAssessment?.Invoke(e: e);
+		_studyingSubjectCollection.ChangedAssessment += e => ChangedAssessment?.Invoke(e: e);
 	}
 
 	public StudentSubjectCollection(WardStudyingSubjectCollection wardStudyingSubjectCollection)
 	{
 		_wardStudyingSubjectCollection = wardStudyingSubjectCollection;
 
-		_wardStudyingSubjectCollection.CreatedAssessment += e => CreatedAssessment?.Invoke(e: e);
 		_wardStudyingSubjectCollection.CreatedFinalAssessment += e => CreatedFinalAssessment?.Invoke(e: e);
+		_wardStudyingSubjectCollection.CreatedAssessment += e => CreatedAssessment?.Invoke(e: e);
+		_wardStudyingSubjectCollection.DeletedAssessment += e => DeletedAssessment?.Invoke(e: e);
+		_wardStudyingSubjectCollection.ChangedAssessment += e => ChangedAssessment?.Invoke(e: e);
 	}
 
 	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
 	public event CreatedAssessmentHandler CreatedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
 
 	public async Task<StudentSubject> FindById(int id)
 	{

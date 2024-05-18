@@ -581,7 +581,8 @@
 								Classes.Four="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsFour}}"
 								Classes.Three="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsThree}}"
 								Classes.Two="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsTwo}}"
-								Classes.Truancy="{Binding GradeType,Converter={x:Static converters:GradeConverters.IsTruancy}}">
+								Classes.Truancy="{Binding GradeType,Converter={x:Static converters:GradeConverters.IsTruancy}}"
+								Classes="TransitionBackground">
 							<Grid RowDefinitions="20*, 10*, 30*, 10*, 20*">
 								<TextBlock Grid.Row="0" Grid.RowSpan="2" Text="{Binding Comment}" VerticalAlignment="Center"
 											TextAlignment="Center" FontSize="16" x:Name="PART_Comment" Classes="OpacityTransition"
