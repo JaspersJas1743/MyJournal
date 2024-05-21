@@ -10,31 +10,51 @@ namespace MyJournal.Core.SubEntities;
 public sealed class StudyingSubjectInClass : Subject
 {
 	#region Fields
+	private readonly ApiClient _client;
+	private readonly int _studyingSubjectId;
 	private readonly AsyncLazy<TaskAssignedToClassCollection> _tasks;
 	private readonly AsyncLazy<List<StudentOfSubjectInClass>> _students;
 	#endregion
 
 	#region Constructors
 	private StudyingSubjectInClass(
+		ApiClient client,
+		int subjectId,
 		AsyncLazy<TaskAssignedToClassCollection> tasks,
 		AsyncLazy<List<StudentOfSubjectInClass>> students
 	)
 	{
+		_studyingSubjectId = subjectId;
+		_client = client;
 		_tasks = tasks;
 		_students = students;
 	}
 
 	private StudyingSubjectInClass(
+		ApiClient client,
 		string name,
+		int subjectId,
 		AsyncLazy<TaskAssignedToClassCollection> tasks,
         AsyncLazy<List<StudentOfSubjectInClass>> students
-	) : this(tasks: tasks, students: students) => Name = name;
+	) : this(
+		client: client,
+		tasks: tasks,
+		students: students,
+		subjectId: subjectId
+	) => Name = name;
 
 	private StudyingSubjectInClass(
+		int subjectId,
 		StudyingSubjectResponse response,
+		ApiClient client,
 		AsyncLazy<TaskAssignedToClassCollection> tasks,
         AsyncLazy<List<StudentOfSubjectInClass>> students
-	) : this(tasks: tasks, students: students)
+	) : this(
+		client: client,
+		tasks: tasks,
+		students: students,
+		subjectId: subjectId
+	)
 	{
 		Id = response.Id;
 		Name = response.Name;
@@ -45,6 +65,8 @@ public sealed class StudyingSubjectInClass : Subject
 	#region Records
 	private sealed record GetStudentsFromClassResponse(int Id, string Surname, string Name, string? Patronymic);
 	internal sealed record StudyingSubjectResponse(int Id, string Name, SubjectTeacher Teacher);
+	public sealed record Attendance(int StudentId, bool IsPresent, int? CommentId);
+	private sealed record SetAttendanceRequest(int SubjectId, DateTime Datetime, IEnumerable<Attendance> Attendances);
 	#endregion
 
 	#region Properties
@@ -68,12 +90,15 @@ public sealed class StudyingSubjectInClass : Subject
 		ApiClient client,
 		IFileService fileService,
 		int classId,
+		int subjectId,
 		StudyingSubjectResponse response,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		return new StudyingSubjectInClass(
 			response: response,
+			subjectId: subjectId,
+			client: client,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
 				await TaskAssignedToClassCollection.Create(
 					client: client,
@@ -114,6 +139,8 @@ public sealed class StudyingSubjectInClass : Subject
 	{
 		return new StudyingSubjectInClass(
 			name: name,
+			subjectId: -1,
+			client: client,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
 				await TaskAssignedToClassCollection.Create(
 					client: client,
@@ -137,6 +164,8 @@ public sealed class StudyingSubjectInClass : Subject
 	{
 		return new StudyingSubjectInClass(
 			response: response,
+			subjectId: response.Id,
+			client: client,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => TaskAssignedToClassCollection.Empty),
 			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () =>
 			{
@@ -165,7 +194,9 @@ public sealed class StudyingSubjectInClass : Subject
 	)
 	{
 		return new StudyingSubjectInClass(
+			client: ApiClient.Empty,
 			name: name,
+			subjectId: -1,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => TaskAssignedToClassCollection.Empty),
 			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => new List<StudentOfSubjectInClass>())
 		);
@@ -179,6 +210,19 @@ public sealed class StudyingSubjectInClass : Subject
 
 	public async Task<IEnumerable<StudentOfSubjectInClass>> GetStudents()
 		=> await _students;
+
+	public async Task SetAttendance(
+		DateTime date,
+		IEnumerable<Attendance> attendance,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		await _client.PostAsync<SetAttendanceRequest>(
+			apiMethod: AssessmentControllerMethods.SetAttendance,
+			arg: new SetAttendanceRequest(SubjectId: _studyingSubjectId, Datetime: date, Attendances: attendance),
+			cancellationToken: cancellationToken
+		);
+	}
 
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{

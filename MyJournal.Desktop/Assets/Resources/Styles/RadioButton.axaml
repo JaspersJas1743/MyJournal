@@ -1,0 +1,77 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<Style Selector="RadioButton">
+		<Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}" />
+		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		<Setter Property="CornerRadius" Value="10" />
+		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="FontFeatures" Value="+lnum"/>
+		<Setter Property="FontSize" Value="24"/>
+		<Setter Property="FocusAdorner" Value="{x:Null}" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="HorizontalAlignment" Value="Left" />
+		<Setter Property="VerticalAlignment" Value="Center" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border	BorderBrush="{DynamicResource StrokeColor}"
+						Classes="TransitionBackground TransitionBorderBrush"
+						x:Name="RootBorder" Background="{TemplateBinding Background}"
+						BorderThickness="5" CornerRadius="10">
+					<ContentPresenter
+	                    x:Name="PART_ContentPresenter"
+	                    Margin="{TemplateBinding Padding}"
+	                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+	                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+	                    Content="{TemplateBinding Content}"
+	                    ContentTemplate="{TemplateBinding ContentTemplate}"
+	                    Foreground="{TemplateBinding Foreground}"
+	                    RecognizesAccessKey="True" />
+	        </Border>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+	    </Style>
+
+	    <Style Selector="^:pointerover /template/ Border#RootBorder">
+			<Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}" />
+	    </Style>
+
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+	    </Style>
+
+	    <Style Selector="^:pressed /template/ Border#RootBorder">
+			<Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}" />
+		</Style>
+
+	    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Setter Property="Opacity" Value="0.6"/>
+	    </Style>
+
+	    <Style Selector="^:disabled /template/ Border#RootBorder">
+			<Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}" />
+			<Setter Property="Opacity" Value="0.6"/>
+	    </Style>
+
+		<Style Selector="^:checked">
+			<Style Selector="^ /template/ Border#RootBorder">
+				<Setter Property="BorderBrush" Value="{DynamicResource StrokeOnControlColor}"/>
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
+			</Style>
+			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			</Style>
+		</Style>
+	</Style>
+
+</Styles>

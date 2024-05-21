@@ -50,6 +50,13 @@
 				</ItemsPanelTemplate>
 			</Setter>
 		</Style>
+		<Style Selector="^.OpacityTransition">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+				</Transitions>
+			</Setter>
+		</Style>
 		<Style Selector="^.Chats">
 			<Setter Property="VerticalAlignment" Value="Top" />
 			<Setter Property="Margin" Value="0" />
@@ -623,6 +630,54 @@
 				<ItemsPanelTemplate>
 					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20"/>
 				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.StudentsAttendance">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20 0 20 20"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="marksUtilities:ObservableStudent">
+					<Border Width="1320" Height="90" x:Name="PART_Border" BorderBrush="{DynamicResource StrokeColor}"
+							BorderThickness="5" ClipToBounds="True" CornerRadius="15"
+							Background="{DynamicResource BackgroundColor}"
+							Classes="HeightTransition">
+						<Grid ColumnDefinitions="50*, 20*, 465*, 795*">
+							<Border Grid.Column="0" BorderBrush="{DynamicResource StrokeColor}"
+									BorderThickness="0 0 5 0">
+								<TextBlock Text="{Binding Position}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+							</Border>
+							<TextBlock	Grid.Column="2" Text="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+										TextTrimming="CharacterEllipsis" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+							<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Left" Spacing="10" Margin="10">
+								<TextBlock Text="на занятии" FontSize="20" VerticalAlignment="Center"/>
+								<Viewbox Height="50">
+									<RadioButton	GroupName="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+													Width="155" Height="50" Content="присутствует" FontSize="20" IsChecked="{Binding IsAttend}"/>
+								</Viewbox>
+								<Viewbox Height="50">
+									<RadioButton	GroupName="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+													Width="140" Height="50" Content="отсутствует" FontSize="20" IsChecked="{Binding !IsAttend}"/>
+								</Viewbox>
+								<TextBlock	Text="из-за" Opacity="{Binding !IsAttend,
+											Converter={StaticResource BoolToDoubleConverter}}"
+											FontSize="20" VerticalAlignment="Center" Classes="OpacityTransition"/>
+								<ListBox	ItemsSource="{Binding TruancyComments}"
+											Opacity="{Binding !IsAttend,
+											Converter={StaticResource BoolToDoubleConverter}}"
+											SelectedItem="{Binding SelectedAttendanceComment,Mode=TwoWay}"
+											Classes="CommentsForPossibleAssessments OpacityTransition"/>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
 			</Setter>
 		</Style>
 

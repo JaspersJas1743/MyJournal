@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using Avalonia.Controls.Selection;
@@ -31,7 +32,29 @@ public sealed class CreatedMarksVM(CreatedMarksModel model) : MarksVM(model: mod
 		set => model.SelectedPeriod = value;
 	}
 
+	public bool FinalGradesIsCreating
+	{
+		get => model.FinalGradesIsCreating;
+		set => model.FinalGradesIsCreating = value;
+	}
+
+	public bool AttendanceIsChecking
+	{
+		get => model.AttendanceIsChecking;
+		set => model.AttendanceIsChecking = value;
+	}
+
+	public DateTimeOffset SelectedDateForAttendance
+	{
+		get => model.SelectedDateForAttendance;
+		set => model.SelectedDateForAttendance = value;
+	}
+
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged => model.OnSubjectSelectionChanged;
-	public ReactiveCommand<Unit, Unit> OnTaskCompletionStatusSelectionChanged => model.OnTaskCompletionStatusSelectionChanged;
+	public ReactiveCommand<Unit, Unit> OnEducationPeriodSelectionChanged => model.OnEducationPeriodSelectionChanged;
 	public ReactiveCommand<Unit, Unit> ClearTasks => model.ClearTasks;
+	public ReactiveCommand<Unit, Unit> ToFinalGrades => model.ToFinalAssessments;
+	public ReactiveCommand<Unit, Unit> ToAttendance => model.ToAttendance;
+	public ReactiveCommand<Unit, Unit> SaveAttendance => model.SaveAttendance;
+	public ReactiveCommand<Unit, Unit> ToGrade => model.ToGrade;
 }

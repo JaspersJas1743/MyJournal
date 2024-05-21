@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ public sealed class TeacherSubject : TeacherSubjectBase
 	private readonly TaughtSubject? _taughtSubject;
 	private readonly StudyingSubjectInClass? _studyingSubjectInClass;
 	private readonly IEnumerable<PossibleAssessment> _possibleAssessments;
+	private TaughtClass? _taughtClass;
 
 	public TeacherSubject(
 		int classId,
@@ -64,7 +66,36 @@ public sealed class TeacherSubject : TeacherSubjectBase
 	}
 
 	public async Task LoadClass()
-		=> ClassName = (await _taughtSubject?.GetTaughtClass()!)?.Name ?? ClassName;
+	{
+		_taughtClass = await _taughtSubject?.GetTaughtClass()!;
+		ClassName = _taughtClass.Name;
+	}
+
+	public async Task SetAttendance(
+		DateTime date,
+		IEnumerable<Attendance> attendance
+	)
+	{
+		if (_taughtClass is not null)
+		{
+			await _taughtClass.SetAttendance(date: date, attendance: attendance.Select(
+				selector: a => new TaughtClass.Attendance(
+					 StudentId: a.StudentId,
+					 IsPresent: a.IsAttend,
+					 CommentId: a.CommentId
+				)
+			));
+			return;
+		}
+
+		await _studyingSubjectInClass!.SetAttendance(date: date, attendance: attendance.Select(
+			selector: a => new StudyingSubjectInClass.Attendance(
+				StudentId: a.StudentId,
+				IsPresent: a.IsAttend,
+				CommentId: a.CommentId
+			)
+		));
+	}
 
 	public async Task<IEnumerable<ObservableStudent>> GetClass()
 	{

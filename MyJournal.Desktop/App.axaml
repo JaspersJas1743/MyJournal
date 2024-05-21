@@ -63,6 +63,7 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/SelectableTextBlock.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/DatePicker.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/TimePicker.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Styles/RadioButton.axaml"/>
 
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/ApplicationLogo.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minimize.axaml"/>

@@ -8,4 +8,8 @@ public static class ObservableStudentConverters
 	public static readonly IValueConverter ShortFullName = new FuncValueConverter<ObservableStudent?, string>(
 		convert: s => $"{s?.Surname} {s?.Name[index: 0]}. {s?.Patronymic?[index: 0]}."
 	);
+
+	public static readonly IValueConverter FullName = new FuncValueConverter<ObservableStudent?, string>(
+		convert: s => $"{s?.Surname} {s?.Name} {s?.Patronymic}"
+	);
 }

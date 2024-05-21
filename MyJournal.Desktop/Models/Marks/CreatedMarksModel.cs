@@ -25,7 +25,11 @@ public sealed class CreatedMarksModel : MarksModel
 	private readonly ReadOnlyObservableCollection<TeacherSubject> _studyingSubjects;
 	private TeacherSubjectCollection _teacherSubjectCollection;
 	private string? _filter = String.Empty;
+	private DateTimeOffset _selectedDateForAttendance = DateTimeOffset.Now;
 	private EducationPeriod? _selectedPeriod = null;
+	private bool _attendanceIsChecking = false;
+	private bool _finalGradesIsCreating = false;
+	private DateTimeOffset? _attendanceLoadedAt = null;
 
 	public CreatedMarksModel(
 		INotificationService notificationService
@@ -34,8 +38,12 @@ public sealed class CreatedMarksModel : MarksModel
 		_notificationService = notificationService;
 
 		OnSubjectSelectionChanged = ReactiveCommand.CreateFromTask(execute: SubjectSelectionChangedHandler);
-		OnTaskCompletionStatusSelectionChanged = ReactiveCommand.CreateFromTask(execute: TaskCompletionStatusSelectionChangedHandler);
+		OnEducationPeriodSelectionChanged = ReactiveCommand.CreateFromTask(execute: EducationPeriodSelectionChangedHandler);
 		ClearTasks = ReactiveCommand.Create(execute: ClearSelection);
+		ToAttendance = ReactiveCommand.CreateFromTask(execute: ToAttendanceChecking);
+		SaveAttendance = ReactiveCommand.CreateFromTask(execute: SaveAttendanceChecking);
+		ToFinalAssessments = ReactiveCommand.CreateFromTask(execute: ToFinalAssessmentsCreating);
+		ToGrade = ReactiveCommand.CreateFromTask(execute: MoveToGrade);
 
 		IObservable<Func<TeacherSubject, bool>> filter = this.WhenAnyValue(property1: model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
@@ -48,6 +56,54 @@ public sealed class CreatedMarksModel : MarksModel
 
 		_ = _teacherSubjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
 			.Bind(readOnlyObservableCollection: out _studyingSubjects).DisposeMany().Subscribe();
+
+		this.WhenAnyValue(property1: model => model.SelectedDateForAttendance)
+			.WhereNotNull().Where(predicate: _ => _attendanceLoadedAt is not null)
+			.Subscribe(onNext: async _ => await LoadAttendanceForStudents());
+	}
+
+	private async Task MoveToGrade()
+	{
+		AttendanceIsChecking = false;
+		FinalGradesIsCreating = false;
+	}
+
+	private async Task SaveAttendanceChecking()
+	{
+		if (SubjectSelectionModel.SelectedItem is null)
+			return;
+
+		AttendanceIsChecking = false;
+		await SubjectSelectionModel.SelectedItem.SetAttendance(
+			date: SelectedDateForAttendance.Date,
+			attendance: Students.Select(selector: s => new Attendance(
+				StudentId: s.Id,
+				IsAttend: s.IsAttend,
+				CommentId: s.SelectedAttendanceComment!.Id
+			))
+		);
+	}
+
+	private async Task ToFinalAssessmentsCreating()
+	{
+		FinalGradesIsCreating = true;
+	}
+
+	private async Task ToAttendanceChecking()
+	{
+		AttendanceIsChecking = true;
+		await LoadAttendanceForStudents();
+	}
+
+	private async Task LoadAttendanceForStudents()
+	{
+		if (_attendanceLoadedAt != SelectedDateForAttendance)
+		{
+			foreach (ObservableStudent observableStudent in Students.AsEnumerable())
+				await observableStudent.LoadAttendance(dateTimeOffset: SelectedDateForAttendance);
+		}
+
+		_attendanceLoadedAt = SelectedDateForAttendance;
 	}
 
 	public SelectionModel<TeacherSubject> SubjectSelectionModel { get; } = new SelectionModel<TeacherSubject>();
@@ -72,9 +128,31 @@ public sealed class CreatedMarksModel : MarksModel
 		set => this.RaiseAndSetIfChanged(backingField: ref _filter, newValue: value);
 	}
 
+	public DateTimeOffset SelectedDateForAttendance
+	{
+		get => _selectedDateForAttendance;
+		set => this.RaiseAndSetIfChanged(backingField: ref _selectedDateForAttendance, newValue: value);
+	}
+
+	public bool AttendanceIsChecking
+	{
+		get => _attendanceIsChecking;
+		set => this.RaiseAndSetIfChanged(backingField: ref _attendanceIsChecking, newValue: value);
+	}
+
+	public bool FinalGradesIsCreating
+	{
+		get => _finalGradesIsCreating;
+		set => this.RaiseAndSetIfChanged(backingField: ref _finalGradesIsCreating, newValue: value);
+	}
+
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged { get; }
-	public ReactiveCommand<Unit, Unit> OnTaskCompletionStatusSelectionChanged { get; }
+	public ReactiveCommand<Unit, Unit> OnEducationPeriodSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> ClearTasks { get; }
+	public ReactiveCommand<Unit, Unit> ToAttendance { get; }
+	public ReactiveCommand<Unit, Unit> SaveAttendance { get; }
+	public ReactiveCommand<Unit, Unit> ToFinalAssessments { get; }
+	public ReactiveCommand<Unit, Unit> ToGrade { get; }
 
 	public Func<TeacherSubject, bool> FilterFunction(string? text)
 	{
@@ -96,7 +174,7 @@ public sealed class CreatedMarksModel : MarksModel
 		Students.Load(items: students);
 	}
 
-	private async Task TaskCompletionStatusSelectionChangedHandler()
+	private async Task EducationPeriodSelectionChangedHandler()
 	{
 		if (SelectedPeriod is null || SubjectSelectionModel.SelectedItem?.ClassId is null)
 			return;
@@ -114,6 +192,8 @@ public sealed class CreatedMarksModel : MarksModel
 		SubjectSelectionModel.SelectedItem = null;
 		EducationPeriods.Clear();
 		Students.Clear();
+		FinalGradesIsCreating = false;
+		AttendanceIsChecking = false;
 	}
 
 	public override async Task SetUser(User user)
