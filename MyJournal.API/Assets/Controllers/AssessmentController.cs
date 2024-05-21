@@ -45,7 +45,7 @@ public sealed class AssessmentController(
 
 	public sealed record GetAssessmentResponse(string AverageAssessment, Grade Assessment);
 
-	public sealed record GetPossibleAssessmentsResponse(int Id, string Assessment);
+	public sealed record GetPossibleAssessmentsResponse(int Id, string Assessment, GradeTypes GradeType);
 
 	public sealed record GetCommentsForAssessmentsResponse(int Id, string? Comment, string Description);
 
@@ -636,7 +636,16 @@ public sealed class AssessmentController(
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
 	public async Task<ActionResult<GetPossibleAssessmentsResponse>> GetPossibleAssessments(
 		CancellationToken cancellationToken = default(CancellationToken)
-	) => Ok(value: _context.Grades.AsNoTracking().Select(selector: g => new GetPossibleAssessmentsResponse(g.Id, g.Assessment)));
+	)
+	{
+		return Ok(value: _context.Grades.AsNoTracking().Select(
+			selector: g => new GetPossibleAssessmentsResponse(
+				g.Id,
+				g.Assessment,
+				g.GradeType.Type
+			)
+		));
+	}
 
 	/// <summary>
 	/// Получение списка возможных комментариев к оценке
