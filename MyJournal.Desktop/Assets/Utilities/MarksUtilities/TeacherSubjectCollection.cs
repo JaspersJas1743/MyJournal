@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 
 namespace MyJournal.Desktop.Assets.Utilities.MarksUtilities;
 
@@ -38,7 +39,7 @@ public sealed class TeacherSubjectCollection
 		return await studyingSubjects.GetEducationPeriods();
 	}
 
-	public async Task<List<TeacherSubject>> ToListAsync()
+	public async Task<List<TeacherSubject>> ToListAsync(INotificationService notificationService)
 	{
 		if (_classCollection is not null)
 		{
@@ -49,7 +50,8 @@ public sealed class TeacherSubjectCollection
 					studyingSubjectInClass: studyingSubjectInClass,
 					classId: @class.Id,
 					className: @class.Name,
-					possibleAssessments: _possibleAssessments
+					possibleAssessments: _possibleAssessments,
+					notificationService: notificationService
 				));
 			}).ToListAsync();
 		}
@@ -61,7 +63,8 @@ public sealed class TeacherSubjectCollection
 				taughtSubject: taughtSubject,
 				classId: @class.Id,
 				className: @class.Name,
-				possibleAssessments: _possibleAssessments
+				possibleAssessments: _possibleAssessments,
+				notificationService: notificationService
 			);
 			await subject.LoadClass();
 			return subject;

@@ -2,11 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MyJournal.Core.SubEntities;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 
 namespace MyJournal.Desktop.Assets.Utilities.MarksUtilities;
 
 public sealed class TeacherSubject : TeacherSubjectBase
 {
+	private readonly INotificationService _notificationService;
 	private readonly TaughtSubject? _taughtSubject;
 	private readonly StudyingSubjectInClass? _studyingSubjectInClass;
 	private readonly IEnumerable<PossibleAssessment> _possibleAssessments;
@@ -14,20 +16,28 @@ public sealed class TeacherSubject : TeacherSubjectBase
 	public TeacherSubject(
 		int classId,
 		string? className,
-		IEnumerable<PossibleAssessment> possibleAssessments
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
 	)
 	{
 		ClassName = className;
 		ClassId = classId;
 		_possibleAssessments = possibleAssessments;
+		_notificationService = notificationService;
 	}
 
 	public TeacherSubject(
 		TaughtSubject taughtSubject,
 		int classId,
 		string? className,
-		IEnumerable<PossibleAssessment> possibleAssessments
-	) : this(classId: classId, className: className, possibleAssessments: possibleAssessments)
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	) : this(
+		classId: classId,
+		className: className,
+		possibleAssessments: possibleAssessments,
+		notificationService: notificationService
+	)
 	{
 		_taughtSubject = taughtSubject;
 		Id = taughtSubject.Id;
@@ -38,8 +48,14 @@ public sealed class TeacherSubject : TeacherSubjectBase
 		StudyingSubjectInClass studyingSubjectInClass,
 		int classId,
 		string? className,
-		IEnumerable<PossibleAssessment> possibleAssessments
-	) : this(classId: classId, className: className, possibleAssessments: possibleAssessments)
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	) : this(
+		classId: classId,
+		className: className,
+		possibleAssessments: possibleAssessments,
+		notificationService: notificationService
+	)
 	{
 		_studyingSubjectInClass = studyingSubjectInClass;
 
@@ -58,7 +74,11 @@ public sealed class TeacherSubject : TeacherSubjectBase
 			IEnumerable<StudentInTaughtClass> studentsInTaughtClass = await taughtClass.GetStudents();
 			return await Task.WhenAll(tasks: studentsInTaughtClass.Select(selector: async (s, i) =>
 			{
-				ObservableStudent observable = s.ToObservable(position: i + 1, possibleAssessments: _possibleAssessments);
+				ObservableStudent observable = s.ToObservable(
+					position: i + 1,
+					possibleAssessments: _possibleAssessments,
+					notificationService: _notificationService
+				);
 				await observable.LoadGrade();
 				return observable;
 			}));
@@ -67,7 +87,11 @@ public sealed class TeacherSubject : TeacherSubjectBase
 		IEnumerable<StudentOfSubjectInClass> studentsOfSubjectInClass = await _studyingSubjectInClass!.GetStudents();
 		return await Task.WhenAll(tasks: studentsOfSubjectInClass.Select(selector: async (s, i) =>
 		{
-			ObservableStudent observable = s.ToObservable(position: i + 1, possibleAssessments: _possibleAssessments);
+			ObservableStudent observable = s.ToObservable(
+				position: i + 1,
+				possibleAssessments: _possibleAssessments,
+				notificationService: _notificationService
+			);
 			await observable.LoadGrade();
 			return observable;
 		}));

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MyJournal.Core.Builders.EstimationBuilder;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Utilities.MarksUtilities;
@@ -11,10 +12,16 @@ namespace MyJournal.Desktop.Assets.Utilities.MarksUtilities;
 public sealed class ObservableGradeOfStudent : ReactiveObject
 {
 	private readonly GradeOfStudent _gradeOfStudent;
+	private readonly INotificationService _notificationService;
 
-	public ObservableGradeOfStudent(GradeOfStudent gradeOfStudent, IEnumerable<PossibleAssessment> possibleAssessments)
+	public ObservableGradeOfStudent(
+		GradeOfStudent gradeOfStudent,
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	)
 	{
 		_gradeOfStudent = gradeOfStudent;
+		_notificationService = notificationService;
 
 		_gradeOfStudent.ChangedAssessment += OnChangedAssessment;
 		_gradeOfStudent.CreatedAssessment += OnCreatedAssessment;
@@ -64,12 +71,22 @@ public sealed class ObservableGradeOfStudent : ReactiveObject
 	public async Task LoadEstimations()
 	{
 		IEnumerable<EstimationOfStudent> estimations = await _gradeOfStudent.GetEstimations();
-		Estimations = estimations.Select(selector: e => e.ToObservable());
+		Estimations = estimations.Select(selector: e => e.ToObservable(notificationService: _notificationService));
 	}
 }
 
 public static class ObservableCreatedTaskExtensions
 {
-	public static ObservableGradeOfStudent ToObservable(this GradeOfStudent gradeOfStudent, IEnumerable<PossibleAssessment> possibleAssessments)
-		=> new ObservableGradeOfStudent(gradeOfStudent: gradeOfStudent, possibleAssessments: possibleAssessments);
+	public static ObservableGradeOfStudent ToObservable(
+		this GradeOfStudent gradeOfStudent,
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	)
+	{
+		return new ObservableGradeOfStudent(
+			gradeOfStudent: gradeOfStudent,
+			possibleAssessments: possibleAssessments,
+			notificationService: notificationService
+		);
+	}
 }

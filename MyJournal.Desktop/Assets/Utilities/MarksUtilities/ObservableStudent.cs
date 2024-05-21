@@ -5,16 +5,19 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using DynamicData.Binding;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Utilities.MarksUtilities;
 
 public sealed class ObservableStudent : ReactiveObject
 {
+	private readonly INotificationService _notificationService;
 	private readonly StudentInTaughtClass? _studentInTaughtClass;
 	private readonly StudentOfSubjectInClass? _studentOfSubjectInClass;
 	private DateTimeOffset _dateTime;
@@ -26,12 +29,14 @@ public sealed class ObservableStudent : ReactiveObject
 
 	private ObservableStudent(
 		int position,
-		IEnumerable<PossibleAssessment> possibleAssessments
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
 	)
 	{
 		PossibleAssessments.Load(items: possibleAssessments);
 		Position = position;
 		Date = DateTimeOffset.Now;
+		_notificationService = notificationService;
 
 		CreateEstimation = ReactiveCommand.CreateFromTask<ListBoxItem>(execute: AddNewGrade);
 		OnPossibleAssessmentSelectionChanged = ReactiveCommand.CreateFromTask(execute: PossibleAssessmentSelectionChangedHandler);
@@ -61,8 +66,13 @@ public sealed class ObservableStudent : ReactiveObject
 	public ObservableStudent(
 		StudentInTaughtClass studentInTaughtClass,
 		int position,
-		IEnumerable<PossibleAssessment> possibleAssessments
-	) : this(position: position, possibleAssessments: possibleAssessments)
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	) : this(
+		position: position,
+		possibleAssessments: possibleAssessments,
+		notificationService: notificationService
+	)
 	{
 		_studentInTaughtClass = studentInTaughtClass;
 
@@ -75,8 +85,13 @@ public sealed class ObservableStudent : ReactiveObject
 	public ObservableStudent(
 		StudentOfSubjectInClass studentOfSubjectInClass,
 		int position,
-		IEnumerable<PossibleAssessment> possibleAssessments
-	) : this(position: position, possibleAssessments: possibleAssessments)
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	) : this(
+		position: position,
+		possibleAssessments: possibleAssessments,
+		notificationService: notificationService
+	)
 	{
 		_studentOfSubjectInClass = studentOfSubjectInClass;
 
@@ -162,8 +177,8 @@ public sealed class ObservableStudent : ReactiveObject
 	public async Task LoadGrade()
 	{
 		Grade = _studentInTaughtClass is not null
-			? (await _studentInTaughtClass.GetGrade()).ToObservable(possibleAssessments: PossibleAssessments)
-			: (await _studentOfSubjectInClass!.GetGrade()).ToObservable(possibleAssessments: PossibleAssessments);
+			? (await _studentInTaughtClass.GetGrade()).ToObservable(possibleAssessments: PossibleAssessments, notificationService: _notificationService)
+			: (await _studentOfSubjectInClass!.GetGrade()).ToObservable(possibleAssessments: PossibleAssessments, notificationService: _notificationService);
 
 		await Grade.LoadEstimations();
 	}
@@ -183,6 +198,12 @@ public sealed class ObservableStudent : ReactiveObject
 			.WithComment(commentId: SelectedComment!.Id)
 			.WithCreationDate(creationDate: Date.DateTime)
 			.Save();
+
+		await _notificationService.Show(
+			title: "Успеваемость",
+			content: "Отметка успешно добавлена!",
+			type: NotificationType.Success
+		);
 	}
 
 	private async Task SaveEditableGradeHandler()
@@ -192,6 +213,12 @@ public sealed class ObservableStudent : ReactiveObject
 			.CommentTo(newCommentId: SelectedComment!.Id)
 			.DatetimeTo(newDateTime: Date.DateTime)
 			.Save();
+
+		await _notificationService.Show(
+			title: "Успеваемость",
+			content: "Отметка успешно изменена!",
+			type: NotificationType.Success
+		);
 	}
 
 	private async Task EstimationSelectionChangedHandler(ListBoxItem item)
@@ -206,7 +233,6 @@ public sealed class ObservableStudent : ReactiveObject
 		}
 		item.IsSelected = true;
 		IsEditing = true;
-		Debug.WriteLine("OnEstimationSelectionChanged");
 
 		Date = new DateTimeOffset(dateTime: SelectedEstimation!.CreatedAt);
 		SelectedAssessment = PossibleAssessments.First(predicate: a => a.Assessment == SelectedEstimation!.Assessment);
@@ -220,12 +246,30 @@ public static class ObservableStudentExtensions
 	public static ObservableStudent ToObservable(
 		this StudentInTaughtClass studentInTaughtClass,
 		int position,
-		IEnumerable<PossibleAssessment> possibleAssessments
-	) => new ObservableStudent(studentInTaughtClass: studentInTaughtClass, position: position, possibleAssessments: possibleAssessments);
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	)
+	{
+		return new ObservableStudent(
+			studentInTaughtClass: studentInTaughtClass,
+			position: position,
+			possibleAssessments: possibleAssessments,
+			notificationService: notificationService
+		);
+	}
 
 	public static ObservableStudent ToObservable(
 		this StudentOfSubjectInClass studentOfSubjectInClass,
 		int position,
-		IEnumerable<PossibleAssessment> possibleAssessments
-	) => new ObservableStudent(studentOfSubjectInClass: studentOfSubjectInClass, position: position, possibleAssessments: possibleAssessments);
+		IEnumerable<PossibleAssessment> possibleAssessments,
+		INotificationService notificationService
+	)
+	{
+		return new ObservableStudent(
+			studentOfSubjectInClass: studentOfSubjectInClass,
+			position: position,
+			possibleAssessments: possibleAssessments,
+			notificationService: notificationService
+		);
+	}
 }

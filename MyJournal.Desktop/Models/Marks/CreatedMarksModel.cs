@@ -130,7 +130,7 @@ public sealed class CreatedMarksModel : MarksModel
 			? new TeacherSubjectCollection(taughtSubjectCollection: taughtSubjectCollection, possibleAssessments: possibleAssessments)
             : new TeacherSubjectCollection(classCollection: classCollection!, possibleAssessments: possibleAssessments);
 
-		List<TeacherSubject> subjects = await _teacherSubjectCollection.ToListAsync();
+		List<TeacherSubject> subjects = await _teacherSubjectCollection.ToListAsync(notificationService: _notificationService);
 			_teacherSubjectsCache.Edit(updateAction: (a) => a.AddOrUpdate(items: subjects.Skip(count: 1)));
 	}
 }
