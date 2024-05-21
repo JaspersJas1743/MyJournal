@@ -981,14 +981,14 @@ public sealed class AssessmentController(
 		DatabaseModels.Grade miss = await _context.Grades.Where(predicate: g => g.GradeType.Type == GradeTypes.Truancy)
 			.SingleAsync(cancellationToken: cancellationToken);
 
-		IEnumerable<Assessment> assessments = request.Attendances.Where(predicate: a => !a.IsPresent).Select(selector: a => new Assessment()
+		List<Assessment> assessments = request.Attendances.Where(predicate: a => !a.IsPresent).Select(selector: a => new Assessment()
 		{
 			GradeId = miss.Id,
 			CommentId = a.CommentId,
 			Datetime = request.Datetime,
 			LessonId = request.SubjectId,
 			StudentId = a.StudentId,
-		});
+		}).ToList();
 		await _context.AddRangeAsync(entities: assessments, cancellationToken: cancellationToken);
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
