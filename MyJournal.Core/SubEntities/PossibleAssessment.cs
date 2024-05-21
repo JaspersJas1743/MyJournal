@@ -11,18 +11,21 @@ public sealed class PossibleAssessment : ISubEntity
 	private PossibleAssessment(
 		int id,
 		string assessment,
+		GradeTypes gradeType,
 		AsyncLazy<IEnumerable<CommentsForAssessment>> commentsForAssessments
 	)
 	{
 		Id = id;
 		Assessment = assessment;
+		GradeType = gradeType;
 		_commentsForAssessments = commentsForAssessments;
 	}
 
 	public int Id { get; init; }
 	public string Assessment { get; init; }
+	public GradeTypes GradeType { get; init; }
 
-	private sealed record GetPossibleAssessmentResponse(int Id, string Assessment);
+	private sealed record GetPossibleAssessmentResponse(int Id, string Assessment, GradeTypes GradeType);
 
 	public async Task<IEnumerable<CommentsForAssessment>> GetComments()
 		=> await _commentsForAssessments;
@@ -39,6 +42,7 @@ public sealed class PossibleAssessment : ISubEntity
 		return response.Select(selector: r => new PossibleAssessment(
 			id: r.Id,
 			assessment: r.Assessment,
+			gradeType: r.GradeType,
 			commentsForAssessments: new AsyncLazy<IEnumerable<CommentsForAssessment>>(
 				valueFactory: async () => await client.GetAsync<IEnumerable<CommentsForAssessment>>(
 					apiMethod: AssessmentControllerMethods.GetCommentsForAssessments(assessmentId: r.Id),

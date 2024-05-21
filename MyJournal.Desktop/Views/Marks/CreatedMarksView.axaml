@@ -12,13 +12,13 @@
 			x:DataType="vm:CreatedMarksVM" x:Class="MyJournal.Desktop.Views.Marks.CreatedMarksView">
 	<UserControl.Styles>
 		<Style Selector="Border">
-			<Style Selector="^.NotSelectedClass">
+			<Style Selector="^.WithoutButton">
 				<Setter Property="Grid.RowSpan" Value="5"/>
 			</Style>
-			<Style Selector="^.SelectedClassWithoutFinalGrades">
+			<Style Selector="^.WithOneButton">
 				<Setter Property="Grid.RowSpan" Value="3"/>
 			</Style>
-			<Style Selector="^.SelectedClassWithFinalGrades">
+			<Style Selector="^.WithTwoButton">
 				<Setter Property="Grid.RowSpan" Value="1"/>
 			</Style>
 		</Style>
@@ -46,9 +46,9 @@
 				</ComboBox>
 			</Viewbox>
 			<Border Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="5" Classes="TransitionBorderBrush ListBorder"
-					Classes.NotSelectedClass="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNull}}"
-					Classes.SelectedClassWithFinalGrades="{Binding SelectedPeriod,Converter={x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}}"
-					Classes.SelectedClassWithoutFinalGrades="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}">
+					Classes.WithoutButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNull}}"
+					Classes.WithTwoButton="{Binding SelectedPeriod,Converter={x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}}"
+					Classes.WithOneButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}">
 				<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
 													Classes="Subjects TeacherSubjects" ItemsSource="{Binding StudyingSubjects}"
 													x:Name="Subjects" Selection="{Binding SubjectSelectionModel}">
@@ -69,6 +69,16 @@
 				<Button Width="500" Height="70" Content="Проставить итоговые отметки"
 						FontSize="24" Classes="MainAccentColor Corner20"/>
 			</Viewbox>
+			<!-- <Viewbox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3"> -->
+				<!-- <Viewbox.IsVisible> -->
+				<!-- 	<MultiBinding Converter="{x:Static BoolConverters.And}"> -->
+				<!-- 		<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/> -->
+				<!-- 		<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/> -->
+				<!-- 	</MultiBinding> -->
+				<!-- </Viewbox.IsVisible> -->
+			<!-- 	<Button Width="500" Height="70" Content="К успеваемости" -->
+			<!-- 			FontSize="24" Classes="MainAccentColor Corner20"/> -->
+			<!-- </Viewbox> -->
 			<Viewbox	IsVisible="{Binding SubjectSelectionModel.SelectedItem,
 						Converter={x:Static ObjectConverters.IsNotNull}}"
 						Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
@@ -76,6 +86,12 @@
 				<Button Width="500" Height="70" Content="Отметить присутствуюших"
 						FontSize="24" Classes="MainAccentColor Corner20"/>
 			</Viewbox>
+			<!-- <Viewbox	IsVisible="{Binding SubjectSelectionModel.SelectedItem, -->
+			<!-- 			Converter={x:Static ObjectConverters.IsNotNull}}" -->
+			<!-- 			Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3"> -->
+			<!-- 	<Button Width="500" Height="70" Content="Сохранить отметки" -->
+			<!-- 			FontSize="24" Classes="MainAccentColor Corner20"/> -->
+			<!-- </Viewbox> -->
 			<Border Grid.Column="5" Grid.Row="1" Grid.RowSpan="9" Classes="TransitionBorderBrush ListBorder">
 				<ListBox ItemsSource="{Binding Students}" Classes="Students" SelectionMode="Multiple,Toggle"/>
 			</Border>

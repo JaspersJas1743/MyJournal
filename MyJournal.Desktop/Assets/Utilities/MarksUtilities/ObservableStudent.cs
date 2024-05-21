@@ -24,6 +24,7 @@ public sealed class ObservableStudent : ReactiveObject
 	private PossibleAssessment? _selectedAssessment;
 	private CommentsForAssessment? _selectedComment;
 	private ObservableEstimationOfStudent? _selectedEstimation;
+	private GradeTypes? _previousGradeType;
 	private bool _isCreating = false;
 	private bool _isEditing = false;
 
@@ -185,10 +186,11 @@ public sealed class ObservableStudent : ReactiveObject
 
 	private async Task PossibleAssessmentSelectionChangedHandler()
 	{
-		if (SelectedAssessment is null)
+		if (SelectedAssessment is null || _previousGradeType == SelectedAssessment.GradeType)
 			return;
 
 		Comments.Load(items: await SelectedAssessment.GetComments());
+		_previousGradeType = SelectedAssessment.GradeType;
 	}
 
 	private async Task SaveNewGradeHandler()
