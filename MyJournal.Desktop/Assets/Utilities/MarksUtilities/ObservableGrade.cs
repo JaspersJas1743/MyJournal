@@ -40,7 +40,11 @@ public sealed class ObservableGrade : ReactiveObject
 		=> this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
 
 	public async Task SetEducationPeriod(int educationPeriodId)
-		=> await _grade.SetEducationPeriod(educationPeriodId: educationPeriodId);
+	{
+		await _grade.SetEducationPeriod(educationPeriodId: educationPeriodId);
+		this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
+		this.RaisePropertyChanged(propertyName: nameof(FinalAssessment));
+	}
 
 	public async Task<IEnumerable<ObservableEstimation>> GetEstimations()
 	{

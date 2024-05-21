@@ -56,7 +56,7 @@ public sealed class TeacherSubjectCollection
 			}).ToListAsync();
 		}
 
-		return new List<TeacherSubject>(collection: await Task.WhenAll(tasks: await _taughtSubjectCollection!.Select(selector: async taughtSubject =>
+		return new List<TeacherSubject>(collection: await Task.WhenAll(tasks: await _taughtSubjectCollection!.Skip(count: 1).Select(selector: async taughtSubject =>
 		{
 			TaughtClass @class = await taughtSubject.GetTaughtClass();
 			TeacherSubject subject = new TeacherSubject(
