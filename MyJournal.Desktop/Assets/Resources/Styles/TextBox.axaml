@@ -307,9 +307,39 @@
 				</Style>
 			</Style>
 		</Style>
-		<Style Selector="^.Empty">
+		<Style Selector="^.WithoutMark">
 			<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource EmptyInputStrokeColor}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.EmptyForTeacher">
+			<Setter Property="Background" Value="{DynamicResource EmptyInputStrokeColor}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource EmptyInputStrokeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource EmptyInputStrokeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
 		</Style>
     </Style>
 </Styles>

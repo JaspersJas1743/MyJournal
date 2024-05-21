@@ -36,7 +36,7 @@ public sealed class TeacherSubjectCollection
 				StudyingSubjectInClassCollection a = await @class.GetStudyingSubjects();
 				return a.Select(selector: studyingSubjectInClass => new TeacherSubject(
 					studyingSubjectInClass: studyingSubjectInClass,
-					classId: studyingSubjectInClass.Id,
+					classId: @class.Id,
 					className: studyingSubjectInClass.Name?.Contains(value: "Все дисциплины") == true ? null : @class.Name
 				));
 			}).ToListAsync();

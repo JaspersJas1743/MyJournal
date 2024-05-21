@@ -22,6 +22,9 @@ public sealed class GradeConverters
 	public static readonly IValueConverter IsEmpty =
 		new FuncValueConverter<string?, bool>(convert: x => x == "-.--");
 
+	public static readonly IValueConverter IsAbsence =
+		new FuncValueConverter<string?, bool>(convert: x => x == "Н");
+
 	public static readonly IValueConverter IsTruancy =
 		new FuncValueConverter<GradeTypes?, bool>(convert: x => x == GradeTypes.Truancy);
 }

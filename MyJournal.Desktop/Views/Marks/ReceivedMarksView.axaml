@@ -58,7 +58,7 @@
 						<TextBox	Text="{Binding Grade.AverageAssessment}" Width="115" Height="90" IsReadOnly="True"
 									TextAlignment="Center" Padding="0" CornerRadius="20" CaretBrush="Transparent"
 									Classes.Three="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsThree}}"
-									Classes.Empty="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsEmpty}}"
+									Classes.WithoutMark="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsEmpty}}"
 									Classes.Five="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsFive}}"
 									Classes.Four="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsFour}}"
 									Classes.Two="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsThree}}"/>
@@ -72,7 +72,7 @@
 						<TextBox	Text="{Binding Grade.FinalAssessment}" Width="115" Height="90" IsReadOnly="True"
 									TextAlignment="Center" Padding="0" CornerRadius="20" CaretBrush="Transparent"
 									Classes.Three="{Binding Grade.FinalAssessment,Converter={x:Static converters:GradeConverters.IsThree}}"
-									Classes.Empty="{Binding Grade.FinalAssessment,Converter={x:Static converters:GradeConverters.IsEmpty}}"
+									Classes.WithoutMark="{Binding Grade.FinalAssessment,Converter={x:Static converters:GradeConverters.IsEmpty}}"
 									Classes.Five="{Binding Grade.FinalAssessment,Converter={x:Static converters:GradeConverters.IsFive}}"
 									Classes.Four="{Binding Grade.FinalAssessment,Converter={x:Static converters:GradeConverters.IsFour}}"
 									Classes.Two="{Binding Grade.FinalAssessment,Converter={x:Static converters:GradeConverters.IsThree}}"/>
@@ -82,8 +82,7 @@
 			<Border Grid.Column="5" Grid.Row="1" Grid.RowSpan="7" Classes="TransitionBorderBrush ListBorder" CornerRadius="30">
 				<Grid>
 					<Grid IsVisible="{Binding !!Estimations.Count}" >
-						<ListBox	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
-									ItemsSource="{Binding Estimations}" Classes="Estimation"/>
+						<ListBox ItemsSource="{Binding Estimations}" Classes="Estimation"/>
 					</Grid>
 					<Grid	VerticalAlignment="Center" Height="75" HorizontalAlignment="Center"
 							Width="320" ColumnDefinitions="75*, 10*, 235">

@@ -8,49 +8,48 @@
 		<Setter Property="Template">
 			<ControlTemplate>
 			    <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}">
-			          <Button   Name="PART_FlyoutButton"
-			                    Theme="{StaticResource DatePickerButton}"
-			                    Foreground="{TemplateBinding Foreground}"
-			                    Background="{TemplateBinding Background}"
-			                    BorderBrush="{TemplateBinding BorderBrush}"
-			                    BorderThickness="{TemplateBinding BorderThickness}"
-			                    CornerRadius="{TemplateBinding CornerRadius}"
-			                    IsEnabled="{TemplateBinding IsEnabled}"
-			                    MinWidth="{TemplateBinding MinWidth}"
-			                    MaxWidth="{TemplateBinding MaxWidth}"
-			                    HorizontalAlignment="Stretch"
-			                    VerticalAlignment="Stretch"
-								ClipToBounds="True"
-								TemplatedControl.IsTemplateFocusTarget="True">
-
-							<Grid Name="PART_ButtonContentGrid" ColumnDefinitions="30*,auto,120*,auto,100*">
-			                      <TextBlock Name="PART_DayTextBlock" Text="День" TextAlignment="Center"
-											FontSize="{TemplateBinding FontSize}" Foreground="{DynamicResource ForegroundColor}"
-											HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 5"/>
-			                      <TextBlock Name="PART_MonthTextBlock" Text="Месяц" TextAlignment="Center"
-											FontSize="{TemplateBinding FontSize}" Foreground="{DynamicResource ForegroundColor}"
-											HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10 5" />
-			                      <TextBlock Name="PART_YearTextBlock" Text="Год" TextAlignment="Center"
-											FontSize="{TemplateBinding FontSize}" Margin="10 5"
-											Foreground="{DynamicResource ForegroundColor}"
-											HorizontalAlignment="Center" VerticalAlignment="Center"
-											/>
-			                      <Rectangle x:Name="PART_FirstSpacer"
-			                            Fill="{TemplateBinding BorderBrush}"
-			                            HorizontalAlignment="Center"
-			                            Width="5"
-			                            Grid.Column="1" />
-			                      <Rectangle x:Name="PART_SecondSpacer"
-			                            Fill="{TemplateBinding BorderBrush}"
-			                            HorizontalAlignment="Center"
+					<Button Name="PART_FlyoutButton"
+					        Theme="{StaticResource DatePickerButton}"
+					        Foreground="{TemplateBinding Foreground}"
+					        Background="{TemplateBinding Background}"
+					        BorderBrush="{TemplateBinding BorderBrush}"
+					        BorderThickness="{TemplateBinding BorderThickness}"
+					        CornerRadius="{TemplateBinding CornerRadius}"
+					        IsEnabled="{TemplateBinding IsEnabled}"
+					        MinWidth="{TemplateBinding MinWidth}"
+					        MaxWidth="{TemplateBinding MaxWidth}"
+					        HorizontalAlignment="Stretch"
+					        VerticalAlignment="Stretch"
+							ClipToBounds="True"
+							TemplatedControl.IsTemplateFocusTarget="True">
+						<Grid Name="PART_ButtonContentGrid" ColumnDefinitions="30*,auto,120*,auto,100*">
+							<TextBlock Name="PART_DayTextBlock" Text="День" TextAlignment="Center"
+										FontSize="{TemplateBinding FontSize}" Foreground="{DynamicResource ForegroundColor}"
+										HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 5"/>
+							<TextBlock Name="PART_MonthTextBlock" Text="Месяц" TextAlignment="Center"
+										FontSize="{TemplateBinding FontSize}" Foreground="{DynamicResource ForegroundColor}"
+										HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10 5" />
+							<TextBlock Name="PART_YearTextBlock" Text="Год" TextAlignment="Center"
+										FontSize="{TemplateBinding FontSize}" Margin="10 5"
+										Foreground="{DynamicResource ForegroundColor}"
+										HorizontalAlignment="Center" VerticalAlignment="Center"
+										/>
+							<Rectangle	x:Name="PART_FirstSpacer"
+							            Fill="{TemplateBinding BorderBrush}"
+							            HorizontalAlignment="Center"
+							            Width="5"
+							            Grid.Column="1" />
+							<Rectangle	x:Name="PART_SecondSpacer"
+							            Fill="{TemplateBinding BorderBrush}"
+							            HorizontalAlignment="Center"
 										Width="5"
-			                            Grid.Column="3" />
-			                </Grid>
-			          </Button>
-			          <Popup Name="PART_Popup" WindowManagerAddShadowHint="False" Placement="Bottom"
-			                 IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}">
-							<DatePickerPresenter Name="PART_PickerPresenter" FontSize="{TemplateBinding FontSize}"/>
-			          </Popup>
+							            Grid.Column="3" />
+					    </Grid>
+					</Button>
+					<Popup Name="PART_Popup" WindowManagerAddShadowHint="False" Placement="Bottom"
+					       IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}">
+						<DatePickerPresenter Name="PART_PickerPresenter" FontSize="{TemplateBinding FontSize}"/>
+					</Popup>
 			    </Grid>
 			</ControlTemplate>
 		</Setter>
@@ -136,7 +135,7 @@
                                     VerticalAlignment="Stretch">
 								<Grid Background="Transparent">
 									<TextBlock	Text="Выбрать" FontSize="16"
-												Foreground="{DynamicResource ForegroundColor}"
+												Foreground="{DynamicResource ContentOnControlColor}"
 												VerticalAlignment="Center" HorizontalAlignment="Center"/>
 								</Grid>
                             </Button>
@@ -150,7 +149,7 @@
                                     VerticalAlignment="Stretch">
 								<Grid Background="Transparent">
 									<TextBlock	Text="Отменить" FontSize="16"
-												Foreground="{DynamicResource ForegroundColor}"
+												Foreground="{DynamicResource ContentOnControlColor}"
 												VerticalAlignment="Center" HorizontalAlignment="Center"/>
 								</Grid>
                             </Button>

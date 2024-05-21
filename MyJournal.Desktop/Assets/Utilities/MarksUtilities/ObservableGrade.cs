@@ -11,6 +11,7 @@ namespace MyJournal.Desktop.Assets.Utilities.MarksUtilities;
 public sealed class ObservableGrade : ReactiveObject
 {
 	private readonly Grade<Estimation> _grade;
+	private readonly GradeOfStudent _gradeOfStudent;
 
 	public ObservableGrade(Grade<Estimation> grade)
 	{
@@ -22,28 +23,21 @@ public sealed class ObservableGrade : ReactiveObject
 		_grade.CreatedFinalAssessment += OnCreatedFinalAssessment;
 	}
 
-	private void OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs _)
-	{
-		this.RaisePropertyChanged(propertyName: nameof(FinalAssessment));
-	}
-
-	private void OnDeletedAssessment(DeletedAssessmentEventArgs _)
-	{
-		this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
-	}
-
-	private void OnCreatedAssessment(CreatedAssessmentEventArgs _)
-	{
-		this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
-	}
-
-	private void OnChangedAssessment(ChangedAssessmentEventArgs _)
-	{
-		this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
-	}
-
+	public Grade<Estimation>? Observable => _grade;
 	public string? FinalAssessment => _grade.FinalAssessment;
 	public string AverageAssessment => _grade.AverageAssessment;
+
+	private void OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs _)
+		=> this.RaisePropertyChanged(propertyName: nameof(FinalAssessment));
+
+	private void OnDeletedAssessment(DeletedAssessmentEventArgs _)
+		=> this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
+
+	private void OnCreatedAssessment(CreatedAssessmentEventArgs _)
+		=> this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
+
+	private void OnChangedAssessment(ChangedAssessmentEventArgs _)
+		=> this.RaisePropertyChanged(propertyName: nameof(AverageAssessment));
 
 	public async Task SetEducationPeriod(int educationPeriodId)
 		=> await _grade.SetEducationPeriod(educationPeriodId: educationPeriodId);
@@ -53,15 +47,10 @@ public sealed class ObservableGrade : ReactiveObject
 		IEnumerable<Estimation> estimations = await _grade.GetEstimations();
 		return estimations.Select(selector: e => e.ToObservable());
 	}
-
-	public Grade<Estimation>? Observable => _grade;
 }
 
-public static class ObservableCreatedTaskExtensions
+public static class ObservableGradeExtensions
 {
 	public static ObservableGrade ToObservable(this Grade<Estimation> grade)
-	{
-		ObservableGrade observableGrade = new ObservableGrade(grade: grade);
-		return observableGrade;
-	}
+		=> new ObservableGrade(grade: grade);
 }

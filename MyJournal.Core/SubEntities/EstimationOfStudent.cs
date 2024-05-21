@@ -23,10 +23,7 @@ public sealed class EstimationOfStudent : Estimation
 		comment: comment,
 		description: description,
 		gradeType: gradeType
-	)
-	{
-		_client = client;
-	}
+	) => _client = client;
 
 	private sealed record DeleteAssessmentRequest(int AssessmentId);
 

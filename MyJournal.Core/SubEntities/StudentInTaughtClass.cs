@@ -15,15 +15,18 @@ public sealed class StudentInTaughtClass : BaseStudent
 		string name,
 		string? patronymic,
 		AsyncLazy<GradeOfStudent> grade
-	) : base(id: id, surname: surname, name: name, patronymic: patronymic)
-	{
-		_grade = grade;
-	}
+	) : base(
+		id: id,
+		surname: surname,
+		name: name,
+		patronymic: patronymic
+	) => _grade = grade;
 
 	#region Events
-	internal event CreatedAssessmentHandler CreatedAssessment;
-	internal event ChangedAssessmentHandler ChangedAssessment;
-	internal event DeletedAssessmentHandler DeletedAssessment;
+	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	public async Task<GradeOfStudent> GetGrade()
@@ -61,7 +64,7 @@ public sealed class StudentInTaughtClass : BaseStudent
 	{
 		GradeOfStudent grade = await _grade;
 		await grade.OnCreatedFinalAssessment(e: e);
-		CreatedAssessment?.Invoke(e: e);
+		CreatedFinalAssessment?.Invoke(e: e);
 	}
 
 	internal async Task OnCreatedAssessment(CreatedAssessmentEventArgs e)

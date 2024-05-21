@@ -115,7 +115,7 @@
 						</Grid.IsVisible>
 						<controls:XamlSvg	Grid.Column="0" Foreground="{DynamicResource MainAccentColor}"
 											Classes="NotSelectedSubjectImage"/>
-						<TextBlock Grid.Column="2" TextWrapping="Wrap" Text="Выберите дисциплину для просмотра"
+						<TextBlock Grid.Column="2" TextWrapping="Wrap" Text="Выберите учебную группу для просмотра"
 									FontSize="20" VerticalAlignment="Center"/>
 					</Grid>
 					<Grid	VerticalAlignment="Center" Height="175" HorizontalAlignment="Center"

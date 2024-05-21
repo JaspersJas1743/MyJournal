@@ -88,16 +88,22 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		return new Grade<Estimation>(
 			client: client,
 			apiMethod: apiMethod,
-			estimations: new AsyncLazy<List<Estimation>>(valueFactory: async () => new List<Estimation>(
-				collection: assessments.Assessments.Select(selector: e => Estimation.Create(
-					id: e.Id,
-					assessment: e.Assessment,
-					createdAt: e.CreatedAt,
-					comment: e.Comment,
-					description: e.Description,
-					gradeType: e.GradeType
-				)
-			))),
+			estimations: new AsyncLazy<List<Estimation>>(valueFactory: async () =>
+			{
+				List<Estimation> list = new List<Estimation>(collection: assessments.Assessments.Select(
+					selector: e => EstimationOfStudent.Create(
+						client: client,
+						id: e.Id,
+						assessment: e.Assessment,
+						createdAt: e.CreatedAt,
+						comment: e.Comment,
+						description: e.Description,
+						gradeType: e.GradeType
+					))
+				);
+				list.Sort(comparison: (first, second) => 0 - first.CreatedAt.CompareTo(value: second.CreatedAt));
+				return list;
+			}),
 			average: assessments.AverageAssessment,
 			periodId: periodId,
 			subjectId: subjectId,
@@ -107,7 +113,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	#endregion
 
 	#region Instance
-	public async Task<IEnumerable<Estimation>> GetEstimations()
+	public async Task<IEnumerable<T>> GetEstimations()
 		=> await _estimations;
 
 	public virtual async Task SetEducationPeriod(int educationPeriodId)
@@ -117,16 +123,19 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 			apiMethod: _apiMethod,
 			argQuery: new GetAssessmentsRequest(PeriodId: _periodId, SubjectId: _subjectId)
 		) ?? throw new InvalidOperationException();
-		_estimations = new AsyncLazy<List<T>>(valueFactory: async () => new List<T>(
-			collection: assessments.Assessments.Select(selector: e => (T)Estimation.Create(
+		_estimations = new AsyncLazy<List<T>>(valueFactory: async () =>
+		{
+			List<T> list = new List<T>(collection: assessments.Assessments.Select(selector: e => (T)Estimation.Create(
 				id: e.Id,
 				assessment: e.Assessment,
 				createdAt: e.CreatedAt,
 				comment: e.Comment,
 				description: e.Description,
 				gradeType: e.GradeType
-			))
-		));
+			)));
+			list.Sort(comparison: (first, second) => 0 - first.CreatedAt.CompareTo(value: second.CreatedAt));
+			return list;
+		});
 		_average = assessments.AverageAssessment;
 		_final = assessments.FinalAssessment;
 	}
@@ -184,7 +193,7 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		estimation.Description = response.Assessment.Description;
 		estimation.GradeType = response.Assessment.GradeType;
 		estimation.OnChangedAssessment(e: e);
-
+		estimations.Sort(comparison: (first, second) => 0 - first.CreatedAt.CompareTo(value: second.CreatedAt));
 		ChangedAssessment?.Invoke(e: e);
 	}
 
@@ -197,9 +206,8 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 			apiMethod: e.ApiMethod,
 			argQuery: new GetAverageAssessmentRequest(SubjectId: e.SubjectId, PeriodId: _periodId)
 		) ?? throw new InvalidOperationException();
-
 		_average = response.AverageAssessment;
-
+		estimations.Sort(comparison: (first, second) => 0 - first.CreatedAt.CompareTo(value: second.CreatedAt));
 		DeletedAssessment?.Invoke(e: e);
 	}
 	#endregion

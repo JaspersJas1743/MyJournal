@@ -32,10 +32,10 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 	{
 		_subjectId = subjectId;
 		_studentId = studentId;
-		Final = final;
+		FinalAssessment = final;
 	}
 
-	public int? Final { get; private set; }
+	public new int? FinalAssessment { get; private set; }
 
 	private sealed record CreateFinalAssessmentRequest(int GradeId, int SubjectId, int StudentId);
 
@@ -59,17 +59,22 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 			subjectId: subjectId,
 			studentId: studentId,
 			periodId: periodId,
-			estimations: new AsyncLazy<List<EstimationOfStudent>>(valueFactory: async () => new List<EstimationOfStudent>(
-				collection: assessments.Assessments.Select(selector: e => EstimationOfStudent.Create(
-					client: client,
-					id: e.Id,
-					assessment: e.Assessment,
-					createdAt: e.CreatedAt,
-					comment: e.Comment,
-					description: e.Description,
-					gradeType: e.GradeType
-				))
-			)),
+			estimations: new AsyncLazy<List<EstimationOfStudent>>(valueFactory: async () =>
+			{
+				List<EstimationOfStudent> list = new List<EstimationOfStudent>(collection: assessments.Assessments.Select(
+					selector: e => EstimationOfStudent.Create(
+						client: client,
+						id: e.Id,
+						assessment: e.Assessment,
+						createdAt: e.CreatedAt,
+						comment: e.Comment,
+						description: e.Description,
+						gradeType: e.GradeType
+					))
+				);
+				list.Sort(comparison: (first, second) => 0 - first.CreatedAt.CompareTo(value: second.CreatedAt));
+				return list;
+			}),
 			average: assessments.AverageAssessment,
 			final: assessments.FinalAssessment
 		);
@@ -82,19 +87,24 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 			apiMethod: _apiMethod,
 			argQuery: new GetAssessmentsRequest(PeriodId: _periodId, SubjectId: _subjectId)
 		) ?? throw new InvalidOperationException();
-		_estimations = new AsyncLazy<List<EstimationOfStudent>>(valueFactory: async () => new List<EstimationOfStudent>(
-			collection: assessments.Assessments.Select(selector: e => EstimationOfStudent.Create(
-				client: _client,
-				id: e.Id,
-				assessment: e.Assessment,
-				createdAt: e.CreatedAt,
-				comment: e.Comment,
-				description: e.Description,
-				gradeType: e.GradeType
-			))
-		));
+		_estimations = new AsyncLazy<List<EstimationOfStudent>>(valueFactory: async () =>
+		{
+			List<EstimationOfStudent> list = new List<EstimationOfStudent>(collection: new List<EstimationOfStudent>(
+				collection: assessments.Assessments.Select(selector: e => EstimationOfStudent.Create(
+					client: _client,
+					id: e.Id,
+					assessment: e.Assessment,
+					createdAt: e.CreatedAt,
+					comment: e.Comment,
+					description: e.Description,
+					gradeType: e.GradeType
+				))
+			));
+			list.Sort(comparison: (first, second) => 0 - first.CreatedAt.CompareTo(value: second.CreatedAt));
+			return list;
+		});
 		_average = assessments.AverageAssessment;
-		Final = assessments.FinalAssessment;
+		FinalAssessment = assessments.FinalAssessment;
 	}
 
 	public IEstimationBuilder Add()
@@ -114,7 +124,7 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 		GetFinalAssessmentByIdResponse response = await _client.GetAsync<GetFinalAssessmentByIdResponse>(
 			apiMethod: e.ApiMethodForFinalAT(arg: _studentId)
 		) ?? throw new InvalidOperationException();
-		Final = response.FinalAssessment;
+		FinalAssessment = response.FinalAssessment;
 		InvokeCreatedFinalAssessment(e: e);
 	}
 
@@ -134,7 +144,7 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 			description: response.Assessment.Description,
 			gradeType: response.Assessment.GradeType
 		));
-		estimations.Sort(comparison: (first, second) => first.CreatedAt.CompareTo(value: second.CreatedAt));
+		estimations.Sort(comparison: (first, second) => 0 - second.CreatedAt.CompareTo(value: first.CreatedAt));
 		InvokeCreatedAssessment(e: e);
 	}
 }

@@ -51,14 +51,6 @@ public sealed class StudentSubjectCollection
 			: await _wardStudyingSubjectCollection!.GetEducationPeriods();
 	}
 
-	public async Task SetEducationPeriods(EducationPeriod educationPeriod)
-	{
-		if (_studyingSubjectCollection is not null)
-			await _studyingSubjectCollection.SetEducationPeriod(period: educationPeriod);
-		if (_wardStudyingSubjectCollection is not null)
-			await _wardStudyingSubjectCollection.SetEducationPeriod(period: educationPeriod);
-	}
-
 	public async Task<List<StudentSubject>> ToListAsync()
 	{
 		if (_studyingSubjectCollection is not null)

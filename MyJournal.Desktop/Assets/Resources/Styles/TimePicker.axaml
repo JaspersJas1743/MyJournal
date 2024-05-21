@@ -132,7 +132,7 @@
                                     Theme="{StaticResource TimePickerButton}" VerticalAlignment="Stretch"
 									Background="{DynamicResource ConfirmedDataColor}">
                                 <Path	VerticalAlignment="Center" StrokeThickness="3" HorizontalAlignment="Center"
-										Stroke="{Binding $parent[Button].Foreground}" StrokeLineCap="Round"
+										Stroke="{DynamicResource ContentOnControlColor}" StrokeLineCap="Round"
                                         Data="M0.5,8.5 5,13.5 15.5,3" />
                             </Button>
                             <Button Name="PART_DismissButton" Grid.Column="2" CornerRadius="10" HorizontalAlignment="Stretch"
@@ -140,7 +140,7 @@
 									Theme="{StaticResource TimePickerButton}" VerticalAlignment="Stretch"
 									Background="{DynamicResource UnconfirmedDataColor}">
                                 <Path	VerticalAlignment="Center" StrokeThickness="3" HorizontalAlignment="Center"
-										Stroke="{Binding $parent[Button].Foreground}" StrokeLineCap="Round"
+										Stroke="{DynamicResource ContentOnControlColor}" StrokeLineCap="Round"
 										Data="M2,2 14,14 M2,14 14 2" />
                             </Button>
                         </Grid>

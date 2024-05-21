@@ -173,5 +173,22 @@
 		<Style Selector="^.ClassAndSubjectSelection.Single ComboBoxItem /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Margin" Value="10 10 0 10"/>
 		</Style>
+		<Style Selector="^.EducationPeriodSelection">
+			<Style Selector="^:disabled">
+				<Style Selector="^ /template/ Border#Background">
+					<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+					<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+				</Style>
+				<Style Selector="^ /template/ ContentControl#ContentPresenter">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+				</Style>
+				<Style Selector="^ /template/ TextBlock#PlaceholderTextBlock">
+					<Setter Property="Foreground" Value="{DynamicResource WatermarkOnTextControlColor}" />
+				</Style>
+				<Style Selector="^ /template/ PathIcon#DropDownGlyph">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+				</Style>
+			</Style>
+		</Style>
 	</Style>
 </Styles>

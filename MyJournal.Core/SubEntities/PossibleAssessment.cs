@@ -39,10 +39,12 @@ public sealed class PossibleAssessment : ISubEntity
 		return response.Select(selector: r => new PossibleAssessment(
 			id: r.Id,
 			assessment: r.Assessment,
-			commentsForAssessments: new AsyncLazy<IEnumerable<CommentsForAssessment>>(valueFactory: async () => await client.GetAsync<IEnumerable<CommentsForAssessment>>(
-				apiMethod: AssessmentControllerMethods.GetCommentsForAssessments(assessmentId: r.Id),
-				cancellationToken: cancellationToken
-			) ?? throw new InvalidOperationException()
-		)));
+			commentsForAssessments: new AsyncLazy<IEnumerable<CommentsForAssessment>>(
+				valueFactory: async () => await client.GetAsync<IEnumerable<CommentsForAssessment>>(
+					apiMethod: AssessmentControllerMethods.GetCommentsForAssessments(assessmentId: r.Id),
+					cancellationToken: cancellationToken
+				) ?? throw new InvalidOperationException()
+			)
+		));
 	}
 }

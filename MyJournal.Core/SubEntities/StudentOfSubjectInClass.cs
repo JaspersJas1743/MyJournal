@@ -16,16 +16,18 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 		string name,
 		string? patronymic,
 		AsyncLazy<GradeOfStudent> grade
-	) : base(id: id, surname: surname, name: name, patronymic: patronymic)
-	{
-		_grade = grade;
-	}
+	) : base(
+		id: id,
+		surname: surname,
+		name: name,
+		patronymic: patronymic
+	) => _grade = grade;
 
 	#region Events
-	internal event CreatedFinalAssessmentHandler CreatedFinalAssessment;
-	internal event CreatedAssessmentHandler CreatedAssessment;
-	internal event ChangedAssessmentHandler ChangedAssessment;
-	internal event DeletedAssessmentHandler DeletedAssessment;
+	public event CreatedFinalAssessmentHandler CreatedFinalAssessment;
+	public event CreatedAssessmentHandler CreatedAssessment;
+	public event ChangedAssessmentHandler ChangedAssessment;
+	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
 	internal static async Task<StudentOfSubjectInClass> Create(

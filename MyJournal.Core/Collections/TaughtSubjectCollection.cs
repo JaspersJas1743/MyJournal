@@ -76,10 +76,14 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 			apiMethod: TeacherControllerMethods.GetEducationPeriods,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		EducationPeriod educationPeriod = educationPeriods.First(predicate: p => p.StartDate <= now && p.EndDate >= now);
 		EducationPeriod currentPeriod = new EducationPeriod()
 		{
 			Id = 0,
-			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть"
+			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть",
+			StartDate = educationPeriod.StartDate,
+			EndDate = educationPeriod.EndDate
 		};
 		return new TaughtSubjectCollection(
 			client: client,

@@ -345,7 +345,7 @@
 
 		<Style Selector="^.TeacherSubjects">
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="tasksUtilities:TeacherSubject">
+				<DataTemplate DataType="utilities:TeacherSubjectBase">
 					<Grid Margin="20 10" Width="450" Height="50">
 						<StackPanel Orientation="Vertical" VerticalAlignment="Center">
 							<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
@@ -586,16 +586,65 @@
 							<Grid RowDefinitions="20*, 10*, 30*, 10*, 20*">
 								<TextBlock Grid.Row="0" Grid.RowSpan="2" Text="{Binding Comment}" VerticalAlignment="Center"
 											TextAlignment="Center" FontSize="16" x:Name="PART_Comment" Classes="OpacityTransition"
+											Foreground="{DynamicResource TextOnSelectedControlColor}"
 											Opacity="{Binding $parent[ListBoxItem].IsPointerOver}"/>
 								<TextBlock Grid.Row="1" Grid.RowSpan="3" Text="{Binding Assessment}" VerticalAlignment="Center"
+											Foreground="{DynamicResource TextOnSelectedControlColor}"
 											TextAlignment="Center" FontSize="32" x:Name="PART_Assessment"/>
 								<TextBlock	Grid.Row="3" Grid.RowSpan="2" Text="{Binding CreatedAt,StringFormat='dd.MM'}"
+											Foreground="{DynamicResource TextOnSelectedControlColor}"
 											VerticalAlignment="Center" TextAlignment="Center" FontSize="16" x:Name="PART_CreatedAt"
 											Opacity="{Binding $parent[ListBoxItem].IsPointerOver}" Classes="OpacityTransition"/>
 							</Grid>
 						</Border>
 					</Viewbox>
 				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.TeacherEstimation">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<ReversibleStackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5" ReverseOrder="True"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.Students">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.PossibleAssessments">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.CommentsForPossibleAssessments">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="10"/>
+				</ItemsPanelTemplate>
 			</Setter>
 		</Style>
 	</Style>

@@ -94,5 +94,7 @@
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/BackArrow.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Camera.axaml"/>
         <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/NotSelectedSubjectImage.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Minus.axaml"/>
+        <StyleInclude Source="avares://MyJournal.Desktop/Assets/Resources/Images/Vectors/Ban.axaml"/>
     </Application.Styles>
 </Application>
