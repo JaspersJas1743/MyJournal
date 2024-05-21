@@ -629,7 +629,7 @@ public sealed class AssessmentController(
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
 	[HttpGet(template: "possible/get")]
-	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetPossibleAssessmentsResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
