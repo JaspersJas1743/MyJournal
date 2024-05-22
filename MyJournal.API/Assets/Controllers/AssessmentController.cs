@@ -1140,7 +1140,7 @@ public sealed class AssessmentController(
 		return Ok(value: new ChangeAssessmentResponse(Message: "Оценка успешно изменена!"));
 	}
 
-		/// <summary>
+	/// <summary>
 	/// [Преподаватель] Установка посещаемости учеников
 	/// </summary>
 	/// <remarks>
@@ -1193,7 +1193,7 @@ public sealed class AssessmentController(
 		IEnumerable<Attendance> attendances = request.Attendances;
 		List<Assessment> list = await _context.Assessments
 			.Where(predicate: a =>
-				a.Grade.GradeType.Type == GradeTypes.Truancy &&
+				a.Grade.GradeType.Type == GradeTypes.Truancy && !a.IsDeleted &&
 				EF.Functions.DateDiffDay(a.Datetime.Date, dateTime.Date) == 0
 			).ToListAsync(cancellationToken: cancellationToken);
 		var existing = list.Select(selector: a => new
@@ -1201,7 +1201,6 @@ public sealed class AssessmentController(
 			New = attendances.FirstOrDefault(ra => ra.StudentId == a.StudentId),
 			Old = a
 		}).Where(predicate: o => o.New != null);
-
 
 		List<Assessment> edition = new List<Assessment>();
 		List<Assessment> deletion = new List<Assessment>();
