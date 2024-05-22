@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using DynamicData.Binding;
 using MyJournal.Core.SubEntities;
-using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
@@ -172,10 +170,10 @@ public sealed class ObservableStudent : ReactiveObject
 
 	public async Task LoadGrade()
 	{
-		Grade = _studentInTaughtClass is not null
-			? (await _studentInTaughtClass.GetGrade()).ToObservable(possibleAssessments: PossibleAssessments, notificationService: _notificationService)
-			: (await _studentOfSubjectInClass!.GetGrade()).ToObservable(possibleAssessments: PossibleAssessments, notificationService: _notificationService);
-
+		GradeOfStudent gradeOfStudents = _studentInTaughtClass is not null
+			? _studentInTaughtClass.Grade
+			: await _studentOfSubjectInClass!.GetGrade();
+		Grade = gradeOfStudents.ToObservable(notificationService: _notificationService);
 		await Grade.LoadEstimations();
 	}
 
@@ -269,7 +267,6 @@ public sealed class ObservableStudent : ReactiveObject
 		SelectedAssessment = null;
 		_previousGradeType = null;
 	}
-
 
 	private void AttendanceCommentChangedHandler(string obj)
 	{

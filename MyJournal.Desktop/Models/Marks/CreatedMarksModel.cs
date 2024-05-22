@@ -10,7 +10,6 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Selection;
 using DynamicData;
 using DynamicData.Binding;
-using Humanizer;
 using MyJournal.Core;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
@@ -33,6 +32,7 @@ public sealed class CreatedMarksModel : MarksModel
 	private bool _attendanceIsChecking = false;
 	private bool _finalGradesIsCreating = false;
 	private DateTimeOffset? _attendanceLoadedAt = null;
+	private bool _loaded = false;
 
 	public CreatedMarksModel(
 		INotificationService notificationService
@@ -63,56 +63,6 @@ public sealed class CreatedMarksModel : MarksModel
 		this.WhenAnyValue(property1: model => model.SelectedDateForAttendance)
 			.WhereNotNull().Where(predicate: _ => _attendanceLoadedAt is not null)
 			.Subscribe(onNext: async _ => await LoadAttendanceForStudents());
-	}
-
-	private async Task MoveToGrade()
-	{
-		AttendanceIsChecking = false;
-		FinalGradesIsCreating = false;
-	}
-
-	private async Task SaveAttendanceChecking()
-	{
-		if (SubjectSelectionModel.SelectedItem is null)
-			return;
-
-		await SubjectSelectionModel.SelectedItem.SetAttendance(
-			date: SelectedDateForAttendance.Date,
-			attendance: Students.Select(selector: s => new Attendance(
-				StudentId: s.Id,
-				IsAttend: s.IsAttend,
-				CommentId: s.IsAttend ? null : s.SelectedAttendanceComment?.Id
-			))
-		);
-		AttendanceIsChecking = false;
-
-		await _notificationService.Show(
-			title: "Посещаемость",
-			content: $"Посещаемость на {SelectedDateForAttendance.Date.ToString(format: "d MMMM", provider: CultureInfo.CurrentUICulture)} сохранена!",
-			type: NotificationType.Success
-		);
-	}
-
-	private async Task ToFinalAssessmentsCreating()
-	{
-		FinalGradesIsCreating = true;
-	}
-
-	private async Task ToAttendanceChecking()
-	{
-		AttendanceIsChecking = true;
-		await LoadAttendanceForStudents();
-	}
-
-	private async Task LoadAttendanceForStudents()
-	{
-		if (_attendanceLoadedAt != SelectedDateForAttendance)
-		{
-			foreach (ObservableStudent observableStudent in Students.AsEnumerable())
-				await observableStudent.LoadAttendance(dateTimeOffset: SelectedDateForAttendance);
-		}
-
-		_attendanceLoadedAt = SelectedDateForAttendance;
 	}
 
 	public SelectionModel<TeacherSubject> SubjectSelectionModel { get; } = new SelectionModel<TeacherSubject>();
@@ -174,13 +124,19 @@ public sealed class CreatedMarksModel : MarksModel
 		if (SubjectSelectionModel.SelectedItem?.ClassId is null)
 			return;
 
+		if (_loaded)
+			return;
+		_loaded = true;
+
 		int classId = SubjectSelectionModel.SelectedItem.ClassId.Value;
 		IEnumerable<EducationPeriod> periods = await _teacherSubjectCollection.GetEducationPeriods(classId: classId);
 		EducationPeriods.Load(items: periods);
 		SelectedPeriod = EducationPeriods[index: 0];
 
+		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
 		IEnumerable<ObservableStudent> students = await SubjectSelectionModel.SelectedItem.GetClass();
 		Students.Load(items: students);
+		_loaded = false;
 	}
 
 	private async Task EducationPeriodSelectionChangedHandler()
@@ -188,12 +144,14 @@ public sealed class CreatedMarksModel : MarksModel
 		if (SelectedPeriod is null || SubjectSelectionModel.SelectedItem?.ClassId is null)
 			return;
 
+		if (_loaded)
+			return;
+		_loaded = true;
+
+		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
 		IEnumerable<ObservableStudent> students = await SubjectSelectionModel.SelectedItem.GetClass();
-		Students.Load(items: await Task.WhenAll(tasks: students.Select(selector: async s =>
-		{
-			await s.Grade?.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id)!;
-			return s;
-		})));
+		Students.Load(items: students);
+		_loaded = false;
 	}
 
 	private void ClearSelection()
@@ -222,5 +180,55 @@ public sealed class CreatedMarksModel : MarksModel
 
 		List<TeacherSubject> subjects = await _teacherSubjectCollection.ToListAsync(notificationService: _notificationService);
 		_teacherSubjectsCache.Edit(updateAction: (a) => a.AddOrUpdate(items: subjects));
+	}
+
+	private async Task MoveToGrade()
+	{
+		AttendanceIsChecking = false;
+		FinalGradesIsCreating = false;
+	}
+
+	private async Task SaveAttendanceChecking()
+	{
+		if (SubjectSelectionModel.SelectedItem is null)
+			return;
+
+		await SubjectSelectionModel.SelectedItem.SetAttendance(
+			date: SelectedDateForAttendance.Date,
+			attendance: Students.Select(selector: s => new Attendance(
+				StudentId: s.Id,
+				IsAttend: s.IsAttend,
+				CommentId: s.IsAttend ? null : s.SelectedAttendanceComment?.Id
+			))
+		);
+		AttendanceIsChecking = false;
+
+		await _notificationService.Show(
+			title: "Посещаемость",
+			content: $"Посещаемость на {SelectedDateForAttendance.Date.ToString(format: "d MMMM", provider: CultureInfo.CurrentUICulture)} сохранена!",
+			type: NotificationType.Success
+		);
+	}
+
+	private async Task ToFinalAssessmentsCreating()
+	{
+		FinalGradesIsCreating = true;
+	}
+
+	private async Task ToAttendanceChecking()
+	{
+		AttendanceIsChecking = true;
+		await LoadAttendanceForStudents();
+	}
+
+	private async Task LoadAttendanceForStudents()
+	{
+		if (_attendanceLoadedAt != SelectedDateForAttendance)
+		{
+			foreach (ObservableStudent observableStudent in Students.AsEnumerable())
+				await observableStudent.LoadAttendance(dateTimeOffset: SelectedDateForAttendance);
+		}
+
+		_attendanceLoadedAt = SelectedDateForAttendance;
 	}
 }

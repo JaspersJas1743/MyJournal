@@ -16,7 +16,6 @@ public sealed class ObservableGradeOfStudent : ReactiveObject
 
 	public ObservableGradeOfStudent(
 		GradeOfStudent gradeOfStudent,
-		IEnumerable<PossibleAssessment> possibleAssessments,
 		INotificationService notificationService
 	)
 	{
@@ -29,7 +28,7 @@ public sealed class ObservableGradeOfStudent : ReactiveObject
 		_gradeOfStudent.CreatedFinalAssessment += OnCreatedFinalAssessment;
 	}
 
-	public GradeOfStudent? Observable => _gradeOfStudent;
+	public GradeOfStudent Observable => _gradeOfStudent;
 	public int? FinalAssessment => _gradeOfStudent.FinalAssessment;
 	public string AverageAssessment => _gradeOfStudent.AverageAssessment;
 	public IEnumerable<ObservableEstimationOfStudent> Estimations { get; private set; }
@@ -79,13 +78,11 @@ public static class ObservableCreatedTaskExtensions
 {
 	public static ObservableGradeOfStudent ToObservable(
 		this GradeOfStudent gradeOfStudent,
-		IEnumerable<PossibleAssessment> possibleAssessments,
 		INotificationService notificationService
 	)
 	{
 		return new ObservableGradeOfStudent(
 			gradeOfStudent: gradeOfStudent,
-			possibleAssessments: possibleAssessments,
 			notificationService: notificationService
 		);
 	}

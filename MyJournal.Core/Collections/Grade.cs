@@ -5,6 +5,9 @@ using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.Collections;
 
+public sealed record EstimationResponse(int Id, string Assessment, DateTime CreatedAt, string? Comment, string? Description, GradeTypes GradeType);
+internal sealed record GetAssessmentsByIdResponse(string AverageAssessment, int? FinalAssessment, IEnumerable<EstimationResponse> Assessments);
+
 public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 {
 	#region Fields
@@ -64,10 +67,8 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	protected sealed record GetFinalAssessmentResponse(string FinalAssessment);
 	protected sealed record GetFinalAssessmentByIdResponse(int? FinalAssessment);
 	protected sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
-	protected sealed record EstimationResponse(int Id, string Assessment, DateTime CreatedAt, string? Comment, string? Description, GradeTypes GradeType);
 	protected sealed record GetAssessmentsResponse(string AverageAssessment, string? FinalAssessment, IEnumerable<EstimationResponse> Assessments);
-	protected sealed record GetAssessmentsByIdResponse(string AverageAssessment, int? FinalAssessment, IEnumerable<EstimationResponse> Assessments);
-	protected sealed record GetAssessmentResponse(string AverageAssessment, EstimationResponse Assessment);
+	protected sealed record GetAssessmentResponse(string AverageAssessment, EstimationResponse Assessment, int PeriodId);
 	#endregion
 
 	#region Methods
@@ -158,6 +159,9 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 			argQuery: new GetFinalAssessmentRequest(SubjectId: _subjectId, PeriodId: _periodId)
 		) ?? throw new InvalidOperationException();
 
+		if (response.PeriodId == _periodId)
+			return;
+
 		_average = response.AverageAssessment;
 		List<T> estimations = await _estimations;
 		estimations.Add(item: (T)Estimation.Create(
@@ -185,7 +189,11 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 		) ?? throw new InvalidOperationException();
 		_average = response.AverageAssessment;
 		List<T> estimations = await _estimations;
-		Estimation estimation = estimations.Single(predicate: estimation => estimation.Id == e.AssessmentId);
+		Estimation? estimation = estimations.SingleOrDefault(predicate: estimation => estimation.Id == e.AssessmentId);
+
+		if (estimation is null)
+			return;
+
 		estimation.Id = response.Assessment.Id;
 		estimation.Assessment = response.Assessment.Assessment;
 		estimation.CreatedAt = response.Assessment.CreatedAt;

@@ -45,17 +45,26 @@
 				</ComboBox>
 			</Viewbox>
 			<Border Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="5" Classes="TransitionBorderBrush ListBorder"
-					Classes.WithoutButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNull}}">
+					Classes.WithoutButton="{Binding !Students.Count}">
 				<Classes.WithTwoButton>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!!Students.Count"/>
-						<Binding Path="AttendanceIsChecking"/>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							<Binding Path="AttendanceIsChecking"/>
+						</MultiBinding>
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanSetFinalGrade}"/>
+							<Binding Path="!FinalGradesIsCreating"/>
+						</MultiBinding>
 					</MultiBinding>
 				</Classes.WithTwoButton>
 				<Classes.WithOneButton>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!!Students.Count"/>
-						<Binding Path="FinalGradesIsCreating"/>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							<Binding Path="FinalGradesIsCreating"/>
+						</MultiBinding>
+						<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanNotSetFinalGrade}"/>
 					</MultiBinding>
 				</Classes.WithOneButton>
 				<ListBox	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
@@ -71,8 +80,8 @@
 			<Viewbox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!!Students.Count"/>
-						<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanSetFinalGrade}"/>
 						<Binding Path="!AttendanceIsChecking"/>
 						<Binding Path="!FinalGradesIsCreating"/>
 					</MultiBinding>
@@ -84,7 +93,7 @@
 			<Viewbox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!!Students.Count"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
 						<Binding Path="AttendanceIsChecking"/>
 					</MultiBinding>
 				</Viewbox.IsVisible>
@@ -94,7 +103,7 @@
 			<Viewbox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!!Students.Count"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
 						<Binding Path="!AttendanceIsChecking"/>
 						<Binding Path="!FinalGradesIsCreating"/>
 					</MultiBinding>
@@ -106,7 +115,7 @@
 			<Viewbox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!!Students.Count"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
 						<MultiBinding Converter="{x:Static BoolConverters.Or}">
 							<Binding Path="AttendanceIsChecking"/>
 							<Binding Path="FinalGradesIsCreating"/>

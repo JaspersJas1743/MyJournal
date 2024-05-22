@@ -1,3 +1,5 @@
+using System.Collections;
+using MyJournal.Core.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -5,11 +7,10 @@ using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Core.SubEntities;
 
-public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtClass>
+public sealed class TaughtClass : ISubEntity, IEnumerable<StudentInTaughtClass>
 {
-	private readonly ApiClient _client;
-	private readonly AsyncLazy<IEnumerable<StudentInTaughtClass>> _students;
 	private readonly AsyncLazy<IEnumerable<CommentsForAssessment>> _commentsForTruancy;
+	private readonly ApiClient _client;
 
 	public static readonly TaughtClass Empty = new TaughtClass();
 
@@ -20,12 +21,12 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 		int subjectId,
 		int id,
 		string name,
-		AsyncLazy<IEnumerable<StudentInTaughtClass>> students,
+		IEnumerable<StudentInTaughtClass> students,
 		AsyncLazy<IEnumerable<CommentsForAssessment>> commentsForTruancy
 	)
 	{
 		_client = client;
-		_students = students;
+		Students = students;
 		Id = id;
 		Name = name;
 		SubjectId = subjectId;
@@ -35,7 +36,6 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 	public int Id { get; init; }
 	public string Name { get; init; }
 	private int SubjectId { get; }
-	internal bool StudentsAreCreated => _students.IsValueCreated;
 
 	private sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
 	private sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, string Description, GradeTypes GradeType);
@@ -52,8 +52,7 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 	internal event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
-	public async Task<IEnumerable<StudentInTaughtClass>> GetStudents()
-		=> await _students;
+	public IEnumerable<StudentInTaughtClass> Students { get; private set; }
 
 	internal static async Task<TaughtClass> Create(
 		ApiClient client,
@@ -74,16 +73,27 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 			id: classId,
 			name: name,
 			subjectId: subjectId,
-			students: new AsyncLazy<IEnumerable<StudentInTaughtClass>>(valueFactory: async () => await Task.WhenAll(tasks: students.Select(
-				selector: async s => await StudentInTaughtClass.Create(
-					client: client,
-					subjectId: subjectId,
-					id: s.Student.StudentId,
-					surname: s.Student.Surname,
-					name: s.Student.Name,
-					patronymic: s.Student.Patronymic,
-					educationPeriodId: educationPeriodId,
-					cancellationToken: cancellationToken
+			students: await Task.WhenAll(tasks: students.Select(selector: s => StudentInTaughtClass.Create(
+				client: client,
+				subjectId: subjectId,
+				id: s.Student.StudentId,
+				surname: s.Student.Surname,
+				name: s.Student.Name,
+				patronymic: s.Student.Patronymic,
+				educationPeriodId: educationPeriodId,
+				response: new GetAssessmentsByIdResponse(
+					AverageAssessment: s.AverageAssessment,
+					FinalAssessment: s.FinalAssessment,
+					Assessments: s.Assessments.Select(
+						selector: e => new EstimationResponse(
+							Id: e.Id,
+							Assessment: e.Assessment,
+							CreatedAt: e.CreatedAt,
+							Comment: e.Comment,
+							Description: e.Description,
+							GradeType: e.GradeType
+						)
+					)
 				)
 			))),
 			commentsForTruancy: new AsyncLazy<IEnumerable<CommentsForAssessment>>(valueFactory: async () =>
@@ -95,6 +105,41 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 				return response;
 			})
 		);
+	}
+
+	public async Task SetEducationPeriod(
+		int educationPeriodId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		IEnumerable<GetAssessmentsByClassResponse> students = await _client.GetAsync<IEnumerable<GetAssessmentsByClassResponse>, GetAssessmentsRequest>(
+			apiMethod: AssessmentControllerMethods.GetAssessmentsByClass(classId: Id),
+			argQuery: new GetAssessmentsRequest(PeriodId: educationPeriodId, SubjectId: SubjectId),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+		Students = await Task.WhenAll(tasks: students.Select(selector: s => StudentInTaughtClass.Create(
+			client: _client,
+			subjectId: SubjectId,
+			id: s.Student.StudentId,
+			surname: s.Student.Surname,
+			name: s.Student.Name,
+			patronymic: s.Student.Patronymic,
+			educationPeriodId: educationPeriodId,
+			response: new GetAssessmentsByIdResponse(
+				AverageAssessment: s.AverageAssessment,
+				FinalAssessment: s.FinalAssessment,
+				Assessments: s.Assessments.Select(
+					selector: e => new EstimationResponse(
+						Id: e.Id,
+						Assessment: e.Assessment,
+						CreatedAt: e.CreatedAt,
+						Comment: e.Comment,
+						Description: e.Description,
+						GradeType: e.GradeType
+					)
+				)
+			)
+		)));
 	}
 
 	public async Task<IEnumerable<CommentsForAssessment>> GetCommentsForTruancy()
@@ -111,19 +156,6 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 			arg: new SetAttendanceRequest(SubjectId: SubjectId, Datetime: date, Attendances: attendance),
 			cancellationToken: cancellationToken
 		);
-	}
-
-	public async IAsyncEnumerator<StudentInTaughtClass> GetAsyncEnumerator(
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		foreach (StudentInTaughtClass student in await _students)
-		{
-			if (cancellationToken.IsCancellationRequested)
-				yield break;
-
-			yield return student;
-		}
 	}
 
 	internal async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
@@ -152,8 +184,14 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 
 	private async Task InvokeIfStudentIsCreated(Func<StudentInTaughtClass, Task> invocation, int studentId)
 	{
-		StudentInTaughtClass? student = await this.SingleOrDefaultAsync(predicate: s => s.Id == studentId);
-		if (student is not null && student.GradeIsCreated)
+		StudentInTaughtClass? student = this.SingleOrDefault(predicate: s => s.Id == studentId);
+		if (student is not null)
 			await invocation(arg: student);
 	}
+
+	public IEnumerator<StudentInTaughtClass> GetEnumerator()
+		=> Students.GetEnumerator();
+
+	IEnumerator IEnumerable.GetEnumerator() =>
+		GetEnumerator();
 }

@@ -213,8 +213,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			TaughtClass taughtClass = await subject.GetTaughtClass();
-			if (taughtClass.StudentsAreCreated)
-				await taughtClass.OnCreatedFinalAssessment(e: e);
+			await taughtClass.OnCreatedFinalAssessment(e: e);
 		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
 
 		CreatedFinalAssessment?.Invoke(e: e);
@@ -225,8 +224,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			TaughtClass taughtClass = await subject.GetTaughtClass();
-			if (taughtClass.StudentsAreCreated)
-				await taughtClass.OnCreatedAssessment(e: e);
+			await taughtClass.OnCreatedAssessment(e: e);
 		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
 
 		CreatedAssessment?.Invoke(e: e);
@@ -237,8 +235,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			TaughtClass taughtClass = await subject.GetTaughtClass();
-			if (taughtClass.StudentsAreCreated)
-				await taughtClass.OnChangedAssessment(e: e);
+			await taughtClass.OnChangedAssessment(e: e);
 		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
 
 		ChangedAssessment?.Invoke(e: e);
@@ -249,8 +246,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		await InvokeIfSubjectsAreCreated(invocation: async subject =>
 		{
 			TaughtClass taughtClass = await subject.GetTaughtClass();
-			if (taughtClass.StudentsAreCreated)
-				await taughtClass.OnDeletedAssessment(e: e);
+			await taughtClass.OnDeletedAssessment(e: e);
 		}, filter: subject => subject.Id == e.SubjectId && subject.TaughtClassIsCreated);
 
 		DeletedAssessment?.Invoke(e: e);

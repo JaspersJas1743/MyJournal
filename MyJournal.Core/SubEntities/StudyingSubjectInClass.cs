@@ -63,6 +63,10 @@ public sealed class StudyingSubjectInClass : Subject
 	#endregion
 
 	#region Records
+	private sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
+	private sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, string Description, GradeTypes GradeType);
+	private sealed record Student(int StudentId, string Surname, string Name, string? Patronymic);
+	private sealed record GetAssessmentsByClassResponse(Student Student, string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
 	private sealed record GetStudentsFromClassResponse(int Id, string Surname, string Name, string? Patronymic);
 	internal sealed record StudyingSubjectResponse(int Id, string Name, SubjectTeacher Teacher);
 	public sealed record Attendance(int StudentId, bool IsPresent, int? CommentId);
@@ -92,6 +96,7 @@ public sealed class StudyingSubjectInClass : Subject
 		int classId,
 		int subjectId,
 		StudyingSubjectResponse response,
+		int educationPeriodId = 0,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
@@ -110,21 +115,33 @@ public sealed class StudyingSubjectInClass : Subject
 			),
 			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () =>
 			{
-				IEnumerable<GetStudentsFromClassResponse> students = await client.GetAsync<IEnumerable<GetStudentsFromClassResponse>>(
-					apiMethod: ClassControllerMethods.GetStudentsFromClass(classId: classId),
+				IEnumerable<GetAssessmentsByClassResponse> students = await client.GetAsync<IEnumerable<GetAssessmentsByClassResponse>, GetAssessmentsRequest>(
+					apiMethod: AssessmentControllerMethods.GetAssessmentsByClass(classId: classId),
+					argQuery: new GetAssessmentsRequest(PeriodId: educationPeriodId, SubjectId: subjectId),
 					cancellationToken: cancellationToken
 				) ?? throw new InvalidOperationException();
-				return new List<StudentOfSubjectInClass>(collection: await Task.WhenAll(tasks: students.Select(
-					selector: async s => await StudentOfSubjectInClass.Create(
+				return new List<StudentOfSubjectInClass>(collection: students.Select(
+					selector: s => StudentOfSubjectInClass.Create(
 						client: client,
-						id: s.Id,
-						surname: s.Surname,
-						name: s.Name,
-						patronymic: s.Patronymic,
+						id: s.Student.StudentId,
+						surname: s.Student.Surname,
+						name: s.Student.Name,
+						patronymic: s.Student.Patronymic,
 						subjectId: response.Id,
-						cancellationToken: cancellationToken
+						response: new GetAssessmentsByIdResponse(
+							AverageAssessment: s.AverageAssessment,
+							FinalAssessment: s.FinalAssessment,
+							Assessments: s.Assessments.Select(selector: a => new EstimationResponse(
+								Id: a.Id,
+								Assessment: a.Assessment,
+								CreatedAt: a.CreatedAt,
+								Comment: a.Comment,
+								Description: a.Description,
+								GradeType: a.GradeType
+							))
+						)
 					)
-				)));
+				));
 			})
 		);
 	}
@@ -169,22 +186,33 @@ public sealed class StudyingSubjectInClass : Subject
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => TaskAssignedToClassCollection.Empty),
 			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () =>
 			{
-				IEnumerable<GetStudentsFromClassResponse> students = await client.GetAsync<IEnumerable<GetStudentsFromClassResponse>>(
-					apiMethod: ClassControllerMethods.GetStudentsFromClass(classId: classId),
+				IEnumerable<GetAssessmentsByClassResponse> students = await client.GetAsync<IEnumerable<GetAssessmentsByClassResponse>, GetAssessmentsRequest>(
+					apiMethod: AssessmentControllerMethods.GetAssessmentsByClass(classId: classId),
+					argQuery: new GetAssessmentsRequest(PeriodId: educationPeriodId, SubjectId: response.Id),
 					cancellationToken: cancellationToken
 				) ?? throw new InvalidOperationException();
-				return new List<StudentOfSubjectInClass>(collection: await Task.WhenAll(tasks: students.Select(
-					selector: async s => await StudentOfSubjectInClass.Create(
+				return new List<StudentOfSubjectInClass>(collection: students.Select(
+					selector: s => StudentOfSubjectInClass.Create(
 						client: client,
-						id: s.Id,
-						surname: s.Surname,
-						name: s.Name,
-						patronymic: s.Patronymic,
+						id: s.Student.StudentId,
+						surname: s.Student.Surname,
+						name: s.Student.Name,
+						patronymic: s.Student.Patronymic,
 						subjectId: response.Id,
-						educationPeriodId: educationPeriodId,
-						cancellationToken: cancellationToken
+						response: new GetAssessmentsByIdResponse(
+							AverageAssessment: s.AverageAssessment,
+							FinalAssessment: s.FinalAssessment,
+							Assessments: s.Assessments.Select(selector: a => new EstimationResponse(
+								Id: a.Id,
+								Assessment: a.Assessment,
+								CreatedAt: a.CreatedAt,
+								Comment: a.Comment,
+								Description: a.Description,
+								GradeType: a.GradeType
+							))
+						)
 					)
-				)));
+				));
 			})
 		);
 	}

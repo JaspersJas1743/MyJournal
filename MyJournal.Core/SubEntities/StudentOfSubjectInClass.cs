@@ -30,15 +30,15 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 	public event DeletedAssessmentHandler DeletedAssessment;
 	#endregion
 
-	internal static async Task<StudentOfSubjectInClass> Create(
+	internal static StudentOfSubjectInClass Create(
 		ApiClient client,
 		int id,
 		string surname,
 		string name,
 		string? patronymic,
 		int subjectId,
-		int educationPeriodId = 0,
-		CancellationToken cancellationToken = default(CancellationToken)
+		GetAssessmentsByIdResponse response,
+		int educationPeriodId = 0
 	)
 	{
 		return new StudentOfSubjectInClass(
@@ -46,12 +46,12 @@ public sealed class StudentOfSubjectInClass : BaseStudent
 			surname: surname,
 			name: name,
 			patronymic: patronymic,
-			grade: new AsyncLazy<GradeOfStudent>(valueFactory: async () => await GradeOfStudent.Create(
+			grade: new AsyncLazy<GradeOfStudent>(valueFactory: () => GradeOfStudent.Create(
 				client: client,
 				studentId: id,
 				subjectId: subjectId,
 				periodId: educationPeriodId,
-				cancellationToken: cancellationToken
+				response: response
 			))
 		);
 	}

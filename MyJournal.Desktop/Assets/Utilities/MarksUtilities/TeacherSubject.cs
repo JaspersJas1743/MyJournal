@@ -71,6 +71,14 @@ public sealed class TeacherSubject : TeacherSubjectBase
 		ClassName = _taughtClass.Name;
 	}
 
+	public async Task SetEducationPeriod(int educationPeriodId)
+	{
+		if (_taughtClass is null)
+			return;
+
+		await _taughtClass.SetEducationPeriod(educationPeriodId: educationPeriodId);
+	}
+
 	public async Task SetAttendance(
 		DateTime date,
 		IEnumerable<Attendance> attendance
@@ -102,7 +110,7 @@ public sealed class TeacherSubject : TeacherSubjectBase
 		if (_taughtSubject is not null)
 		{
 			TaughtClass taughtClass = await _taughtSubject.GetTaughtClass();
-			IEnumerable<StudentInTaughtClass> studentsInTaughtClass = await taughtClass.GetStudents();
+			IEnumerable<StudentInTaughtClass> studentsInTaughtClass = taughtClass.Students;
 			return await Task.WhenAll(tasks: studentsInTaughtClass.Select(selector: async (s, i) =>
 			{
 				ObservableStudent observable = s.ToObservable(

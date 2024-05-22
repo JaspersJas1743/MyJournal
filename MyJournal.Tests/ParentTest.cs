@@ -330,10 +330,10 @@ public class ParentTest
 		TaughtClass @class = await subject.GetTaughtClass();
 		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
 		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
-		IEnumerable<StudentInTaughtClass> students = await @class.GetStudents();
+		IEnumerable<StudentInTaughtClass> students = @class.Students;
 		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
 		StudentInTaughtClass lastStudent = students.Last();
-		return await lastStudent.GetGrade();
+		return lastStudent.Grade;
 	}
 
 	[Test]
