@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,7 @@ using MyJournal.API.Assets.Hubs;
 using MyJournal.API.Assets.Utilities;
 using MyJournal.API.Assets.Validation;
 using MyJournal.API.Assets.Validation.Validators;
+using Task = System.Threading.Tasks.Task;
 
 namespace MyJournal.API.Assets.Controllers;
 
@@ -932,98 +934,6 @@ public sealed class AssessmentController(
 		);
 		return Ok();
 	}
-
-	/// <summary>
-	/// [Преподаватель] Установка посещаемости учеников
-	/// </summary>
-	/// <remarks>
-	/// <![CDATA[
-	/// Пример запроса к API:
-	///
-	///	POST api/assessments/attendance/set
-	///	{
-	///		"SubjectId": 0,
-	///		"Datetime": "2024-03-29T17:40:07.894Z",
-	///		"Attendances": [
-	///			{
-	///				"StudentId": 0,
-	///				"IsPresent": true,
-	///				"CommentId": 0,
-	///			}
-	///		]
-	///	}
-	///
-	/// Параметры:
-	///
-	///	SubjectId - идентификатор дисциплины, по которой устанавливается посещаемость
-	///	Datetime - дата, за которую необходимо установить оценку
-	///	Attendances - информация о посещаемости ученика
-	///	Attendances.StudentId - идентификатор присутствовавшего/отсутствовавшего ученика
-	///	Attendances.IsPresent - присутствие на занятии: true - присутствовал, false - отсутствовал
-	///	Attendances.CommentId - идентификатор комментария к пропуску (если ученик отсутствовал)
-	///
-	/// ]]>
-	/// </remarks>
-	/// <response code="200">Посещаемость успешно проставлена</response>
-	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
-	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
-	[HttpPost(template: "attendance/set")]
-	[Authorize(Policy = nameof(UserRoles.Teacher))]
-	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
-	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
-	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult> SetAttendance(
-		[FromBody] SetAttendanceRequest request,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		DatabaseModels.Grade miss = await _context.Grades.Where(predicate: g => g.GradeType.Type == GradeTypes.Truancy)
-			.SingleAsync(cancellationToken: cancellationToken);
-
-		List<Assessment> assessments = request.Attendances.Where(predicate: a => !a.IsPresent).Select(selector: a => new Assessment()
-		{
-			GradeId = miss.Id,
-			CommentId = a.CommentId,
-			Datetime = request.Datetime,
-			LessonId = request.SubjectId,
-			StudentId = a.StudentId,
-		}).ToList();
-		await _context.AddRangeAsync(entities: assessments, cancellationToken: cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
-
-		int userId = GetAuthorizedUserId();
-		foreach (Assessment assessment in assessments)
-		{
-			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
-				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
-
-			IQueryable<string> adminIds = _context.Administrators.Select(selector: a => a.UserId.ToString());
-
-			await teacherHubContext.Clients.User(userId: userId.ToString()).CreatedAssessment(
-                assessmentId: assessment.Id,
-				studentId: assessment.StudentId,
-				subjectId: assessment.LessonId
-			);
-			await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherCreatedAssessment(
-				assessmentId: assessment.Id,
-				studentId: assessment.StudentId,
-				subjectId: assessment.LessonId
-			);
-			await parentHubContext.Clients.Users(userIds: parentIds).CreatedAssessmentToWard(
-				assessmentId: assessment.Id,
-				studentId: assessment.StudentId,
-				subjectId: assessment.LessonId
-			);
-			await administratorHubContext.Clients.Users(userIds: adminIds).CreatedAssessmentToStudent(
-				assessmentId: assessment.Id,
-				studentId: assessment.StudentId,
-				subjectId: assessment.LessonId
-			);
-		}
-
-		return Ok();
-	}
 	#endregion
 
 	#region PUT
@@ -1109,6 +1019,118 @@ public sealed class AssessmentController(
 		);
 
 		return Ok(value: new ChangeAssessmentResponse(Message: "Оценка успешно изменена!"));
+	}
+
+		/// <summary>
+	/// [Преподаватель] Установка посещаемости учеников
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	PUT api/assessments/attendance/set
+	///	{
+	///		"SubjectId": 0,
+	///		"Datetime": "2024-03-29T17:40:07.894Z",
+	///		"Attendances": [
+	///			{
+	///				"StudentId": 0,
+	///				"IsPresent": true,
+	///				"CommentId": 0,
+	///			}
+	///		]
+	///	}
+	///
+	/// Параметры:
+	///
+	///	SubjectId - идентификатор дисциплины, по которой устанавливается посещаемость
+	///	Datetime - дата, за которую необходимо установить оценку
+	///	Attendances - информация о посещаемости ученика
+	///	Attendances.StudentId - идентификатор присутствовавшего/отсутствовавшего ученика
+	///	Attendances.IsPresent - присутствие на занятии: true - присутствовал, false - отсутствовал
+	///	Attendances.CommentId - идентификатор комментария к пропуску (если ученик отсутствовал)
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Посещаемость успешно проставлена</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	[HttpPut(template: "attendance/set")]
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(void))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult> SetAttendance(
+		[FromBody] SetAttendanceRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		DatabaseModels.Grade miss = await _context.Grades.AsNoTracking()
+			.Where(predicate: g => g.GradeType.Type == GradeTypes.Truancy)
+			.SingleAsync(cancellationToken: cancellationToken);
+
+		DateTime dateTime = request.Datetime;
+		IEnumerable<Attendance> attendances = request.Attendances;
+		var existing = _context.Assessments
+			.Where(predicate: a =>
+				a.Grade.GradeType.Type == GradeTypes.Truancy &&
+				EF.Functions.DateDiffDay(a.Datetime.Date, dateTime.Date) == 0
+			).AsEnumerable().Select(selector: a => new
+			{
+				New = attendances.FirstOrDefault(ra => ra.StudentId == a.StudentId),
+				Old = a
+			}).Where(predicate: o => o.New != null);
+
+		_context.RemoveRange(entities: existing.Where(predicate: e => e.New!.IsPresent).Select(selector: o => o.Old));
+
+		foreach (var o in existing.Where(predicate: e => !e.New!.IsPresent))
+			o.Old.CommentId = o.New!.CommentId;
+
+		List<Assessment> assessments = attendances.Where(
+			predicate: a => !a.IsPresent && existing.All(e => e.New!.StudentId != a.StudentId)
+		).Select(selector: a => new Assessment()
+		{
+			GradeId = miss.Id,
+			CommentId = a.CommentId,
+			Datetime = request.Datetime,
+			LessonId = request.SubjectId,
+			StudentId = a.StudentId,
+		}).ToList();
+		await _context.AddRangeAsync(entities: assessments, cancellationToken: cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken: cancellationToken);
+
+		int userId = GetAuthorizedUserId();
+		foreach (Assessment assessment in assessments)
+		{
+			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
+				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
+
+			IQueryable<string> adminIds = _context.Administrators.Select(selector: a => a.UserId.ToString());
+
+			await teacherHubContext.Clients.User(userId: userId.ToString()).CreatedAssessment(
+                assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherCreatedAssessment(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await parentHubContext.Clients.Users(userIds: parentIds).CreatedAssessmentToWard(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await administratorHubContext.Clients.Users(userIds: adminIds).CreatedAssessmentToStudent(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+		}
+
+		return Ok();
 	}
 	#endregion
 
