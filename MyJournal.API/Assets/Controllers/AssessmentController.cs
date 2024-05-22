@@ -1082,9 +1082,11 @@ public sealed class AssessmentController(
 				Old = a
 			}).Where(predicate: o => o.New != null);
 
-		_context.RemoveRange(entities: existing.Where(predicate: e => e.New!.IsPresent).Select(selector: o => o.Old));
+		IEnumerable<Assessment> forDeleting = existing.Where(predicate: e => e.New!.IsPresent).Select(selector: o => o.Old);
+		_context.RemoveRange(entities: forDeleting);
 
-		foreach (var o in existing.Where(predicate: e => !e.New!.IsPresent))
+		var forEditing = existing.Where(predicate: e => !e.New!.IsPresent);
+		foreach (var o in forEditing)
 			o.Old.CommentId = o.New!.CommentId;
 
 		List<Assessment> assessments = attendances.Where(
@@ -1124,6 +1126,64 @@ public sealed class AssessmentController(
 				subjectId: assessment.LessonId
 			);
 			await administratorHubContext.Clients.Users(userIds: adminIds).CreatedAssessmentToStudent(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+		}
+
+		foreach (Assessment assessment in forDeleting)
+		{
+			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
+				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
+
+			IQueryable<string> adminIds = _context.Administrators.Select(selector: a => a.UserId.ToString());
+
+			await teacherHubContext.Clients.User(userId: userId.ToString()).DeletedAssessment(
+                assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherDeletedAssessment(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await parentHubContext.Clients.Users(userIds: parentIds).DeletedAssessmentToWard(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await administratorHubContext.Clients.Users(userIds: adminIds).DeletedAssessmentToStudent(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+		}
+
+		foreach (Assessment assessment in forEditing.Select(selector: o => o.Old))
+		{
+			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
+				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
+
+			IQueryable<string> adminIds = _context.Administrators.Select(selector: a => a.UserId.ToString());
+
+			await teacherHubContext.Clients.User(userId: userId.ToString()).DeletedAssessment(
+                assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherDeletedAssessment(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await parentHubContext.Clients.Users(userIds: parentIds).DeletedAssessmentToWard(
+				assessmentId: assessment.Id,
+				studentId: assessment.StudentId,
+				subjectId: assessment.LessonId
+			);
+			await administratorHubContext.Clients.Users(userIds: adminIds).DeletedAssessmentToStudent(
 				assessmentId: assessment.Id,
 				studentId: assessment.StudentId,
 				subjectId: assessment.LessonId
