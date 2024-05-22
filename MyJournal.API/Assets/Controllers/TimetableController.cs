@@ -15,7 +15,6 @@ namespace MyJournal.API.Assets.Controllers;
 [Route(template: "api/timetable")]
 public sealed class TimetableController(
 	MyJournalContext context,
-	ILogger<TimetableController> logger,
 	IHubContext<TeacherHub, ITeacherHub> teacherHubContext,
 	IHubContext<StudentHub, IStudentHub> studentHubContext,
 	IHubContext<ParentHub, IParentHub> parentHubContext,
@@ -98,7 +97,6 @@ public sealed class TimetableController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		logger.LogCritical($"request={request.Day}");
 		int userId = GetAuthorizedUserId();
 		GetTimetableWithAssessmentsResponse[] timings = await _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
