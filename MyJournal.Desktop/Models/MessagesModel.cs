@@ -214,8 +214,8 @@ public sealed class MessagesModel : ModelBase
 		if (dateDifference?.Days < 1)
 			return "был(-а) в сети " + userOnlineAt.Humanize(culture: CultureInfo.InstalledUICulture);
 
-		if (dateDifference?.Days > 1 || dateDifference?.Hours >= 12)
-			return $"был(-а) в сети {userOnlineAt:d MMMM} в {userOnlineAt:HH:mm}";
+		if (dateDifference?.TotalDays > 1 || dateDifference?.Hours >= 12)
+			return $"был(-а) в сети {userOnlineAt.ToString(format: "d MMMM", provider: CultureInfo.CurrentUICulture)} в {userOnlineAt:HH:mm}";
 
 		return $"был(-а) в сети {userOnlineAt.Humanize(culture: CultureInfo.InstalledUICulture)} в {userOnlineAt:HH:mm}";
 	}

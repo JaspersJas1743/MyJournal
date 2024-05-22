@@ -271,8 +271,12 @@
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="chatUtilities:ExtendedInterlocutor">
 					<Grid ColumnDefinitions="10*, 50*, 10*, 400*" Width="470" Height="50" Margin="10 10 0 10">
-						<Border Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
-							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"/>
+						<Border Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left"
+								Classes.DefaultChatPhoto="{Binding Photo,
+								Converter={StaticResource PhotoLinkIsDefaultConverter}}">
+							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"
+															Classes.SmallChatPhoto="{Binding Photo,
+															Converter={StaticResource PhotoLinkIsDefaultConverter}}"/>
 						</Border>
 						<TextBlock Grid.Column="3" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left"
 									FontSize="20" Text="{Binding FullName}" TextAlignment="Left"/>
@@ -295,8 +299,12 @@
 				<DataTemplate DataType="chatUtilities:ExtendedInterlocutor">
 					<Grid	ColumnDefinitions="10*, 50*, 10*, 350*, 10*, 30*, 10*, 10*" RowDefinitions="10*, 30*, 10*"
 							Width="480" Height="50" Margin="10 10 0 10">
-						<Border Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
-							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"/>
+						<Border Grid.Row="0" Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left"
+								Grid.RowSpan="3" Classes.DefaultChatPhoto="{Binding Photo,
+								Converter={StaticResource PhotoLinkIsDefaultConverter}}">
+							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"
+															Classes.SmallChatPhoto="{Binding Photo,
+															Converter={StaticResource PhotoLinkIsDefaultConverter}}"/>
 						</Border>
 						<TextBlock	Grid.Row="0" Grid.RowSpan="3" Grid.Column="3" TextTrimming="CharacterEllipsis"
 									Text="{Binding FullName}" TextAlignment="Left"
