@@ -32,7 +32,8 @@ public sealed class AssessmentController(
 	public sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, string Description, GradeTypes GradeType);
 
 	public sealed record GetAssessmentsByIdResponse(string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
-	public sealed record GetAssessmentsByClassResponse(int StudentId, string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
+	public sealed record Student(int StudentId, string Surname, string Name, string? Patronymic);
+	public sealed record GetAssessmentsByClassResponse(Student Student, string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
 
 	[Validator<GetAverageAssessmentRequestValidator>]
 	public sealed record GetAverageAssessmentRequest(int SubjectId, int PeriodId);
@@ -303,9 +304,12 @@ public sealed class AssessmentController(
 		IQueryable<GetAssessmentsByClassResponse> result = _context.Classes.AsNoTracking()
 			.Where(predicate: c => c.Id == classId)
 			.SelectMany(selector: s => s.Students)
+			.OrderBy(keySelector: s => s.User.Surname)
+			.ThenBy(keySelector: s => s.User.Surname)
+			.ThenBy(keySelector: s => s.User.Patronymic)
 			.Select(selector: s => new
 			{
-				StudentId = s.Id,
+				Student = s,
 				Average = s.Assessments.Where(a => EF.Functions.IsNumeric(a.Grade.Assessment))
 				 .Select(a => a.Grade.Assessment).DefaultIfEmpty().Select(g => g ?? "0")
 				 .Average(a => Convert.ToDouble(a)),
@@ -328,45 +332,18 @@ public sealed class AssessmentController(
 					a.Grade.GradeType.Type
 				))
 			}).Select(selector: o => new GetAssessmentsByClassResponse(
-				o.StudentId,
+				new Student(
+					o.Student.Id,
+					o.Student.User.Surname,
+					o.Student.User.Name,
+					o.Student.User.Patronymic
+				),
 				o.Average == 0 ? "-.--" : o.Average.ToString("F2", CultureInfo.InvariantCulture),
 				o.Final,
 				o.Estimations
 			));
 
 		return Ok(value: result);
-		// .SelectMany(selector: s => s.Assessments)
-		// .Where(predicate: a =>
-		// 	a.LessonId == request.SubjectId &&
-		// 	EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
-		// 	EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
-		// ).OrderByDescending(keySelector: a => a.Datetime);
-
-		// double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
-		// 	.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
-		// 	.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
-		//
-		// int? final = await _context.FinalGradesForEducationPeriods
-		// 	.Where(predicate: fgfep =>
-		// 		fgfep.EducationPeriodId == period.Id &&
-		// 		fgfep.Student.Id == studentId &&
-		// 		fgfep.LessonId == request.SubjectId
-		// 	).Select(selector: fgfep => fgfep.Grade.Id)
-		// 	.SingleOrDefaultAsync(cancellationToken: cancellationToken);
-		//
-		//
-		// return Ok(value: new GetAssessmentsByIdResponse(
-		// 	AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
-		// 	FinalAssessment: final,
-		// 	Assessments: assessments.Select(selector: a => new Grade(
-		// 		a.Id,
-		// 		a.Grade.Assessment,
-		// 		a.Datetime,
-		// 		a.Comment.Comment,
-		// 		a.Comment.Description,
-		// 		a.Grade.GradeType.Type
-		// 	))
-		// ));
 	}
 
 	/// <summary>
@@ -1204,13 +1181,20 @@ public sealed class AssessmentController(
 			Old = a
 		}).Where(predicate: o => o.New != null);
 
-		IEnumerable<Assessment> forDeletion = existing.Where(predicate: e => e.New!.IsPresent).Select(selector: o => o.Old);
-		_context.RemoveRange(entities: forDeletion);
 
-		var forEdition = existing.Where(predicate: e => !e.New!.IsPresent && e.Old.CommentId != e.New.CommentId);
 		List<Assessment> edition = new List<Assessment>();
-		foreach (var o in forEdition)
+		List<Assessment> deletion = new List<Assessment>();
+		foreach (var o in existing)
 		{
+			o.Old.IsDeleted = o.New!.IsPresent;
+			if (o.New!.IsPresent)
+			{
+				deletion.Add(item: o.Old);
+				continue;
+			}
+
+			if (o.Old.CommentId == o.New!.CommentId)
+				continue;
 			o.Old.CommentId = o.New!.CommentId;
 			edition.Add(item: o.Old);
 		}
@@ -1258,7 +1242,7 @@ public sealed class AssessmentController(
 			);
 		}
 
-		foreach (Assessment assessment in forDeletion)
+		foreach (Assessment assessment in deletion)
 		{
 			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
 				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
