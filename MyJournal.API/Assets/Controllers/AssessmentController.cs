@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Net.Mime;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -1072,24 +1073,29 @@ public sealed class AssessmentController(
 
 		DateTime dateTime = request.Datetime;
 		IEnumerable<Attendance> attendances = request.Attendances;
-		var existing = _context.Assessments
+		List<Assessment> list = await _context.Assessments
 			.Where(predicate: a =>
 				a.Grade.GradeType.Type == GradeTypes.Truancy &&
 				EF.Functions.DateDiffDay(a.Datetime.Date, dateTime.Date) == 0
-			).AsEnumerable().Select(selector: a => new
-			{
-				New = attendances.FirstOrDefault(ra => ra.StudentId == a.StudentId),
-				Old = a
-			}).Where(predicate: o => o.New != null);
+			).ToListAsync(cancellationToken: cancellationToken);
+		var existing = list.Select(selector: a => new
+		{
+			New = attendances.FirstOrDefault(ra => ra.StudentId == a.StudentId),
+			Old = a
+		}).Where(predicate: o => o.New != null);
 
-		IEnumerable<Assessment> forDeleting = existing.Where(predicate: e => e.New!.IsPresent).Select(selector: o => o.Old);
-		_context.RemoveRange(entities: forDeleting);
+		IEnumerable<Assessment> forDeletion = existing.Where(predicate: e => e.New!.IsPresent).Select(selector: o => o.Old);
+		_context.RemoveRange(entities: forDeletion);
 
-		var forEditing = existing.Where(predicate: e => !e.New!.IsPresent);
-		foreach (var o in forEditing)
+		var forEdition = existing.Where(predicate: e => !e.New!.IsPresent && e.Old.CommentId != e.New.CommentId);
+		List<Assessment> edition = new List<Assessment>();
+		foreach (var o in forEdition)
+		{
 			o.Old.CommentId = o.New!.CommentId;
+			edition.Add(item: o.Old);
+		}
 
-		List<Assessment> assessments = attendances.Where(
+		List<Assessment> forAddition = attendances.Where(
 			predicate: a => !a.IsPresent && existing.All(e => e.New!.StudentId != a.StudentId)
 		).Select(selector: a => new Assessment()
 		{
@@ -1099,11 +1105,11 @@ public sealed class AssessmentController(
 			LessonId = request.SubjectId,
 			StudentId = a.StudentId,
 		}).ToList();
-		await _context.AddRangeAsync(entities: assessments, cancellationToken: cancellationToken);
+		await _context.AddRangeAsync(entities: forAddition, cancellationToken: cancellationToken);
         await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		int userId = GetAuthorizedUserId();
-		foreach (Assessment assessment in assessments)
+		foreach (Assessment assessment in forAddition)
 		{
 			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
 				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
@@ -1132,7 +1138,7 @@ public sealed class AssessmentController(
 			);
 		}
 
-		foreach (Assessment assessment in forDeleting)
+		foreach (Assessment assessment in forDeletion)
 		{
 			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
 				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
@@ -1161,29 +1167,29 @@ public sealed class AssessmentController(
 			);
 		}
 
-		foreach (Assessment assessment in forEditing.Select(selector: o => o.Old))
+		foreach (Assessment assessment in edition)
 		{
 			IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
 				.SelectMany(selector: s => s.Parents).Select(selector: p => p.UserId.ToString());
 
 			IQueryable<string> adminIds = _context.Administrators.Select(selector: a => a.UserId.ToString());
 
-			await teacherHubContext.Clients.User(userId: userId.ToString()).DeletedAssessment(
+			await teacherHubContext.Clients.User(userId: userId.ToString()).ChangedAssessment(
                 assessmentId: assessment.Id,
 				studentId: assessment.StudentId,
 				subjectId: assessment.LessonId
 			);
-			await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherDeletedAssessment(
+			await studentHubContext.Clients.User(userId: assessment.StudentId.ToString()).TeacherChangedAssessment(
 				assessmentId: assessment.Id,
 				studentId: assessment.StudentId,
 				subjectId: assessment.LessonId
 			);
-			await parentHubContext.Clients.Users(userIds: parentIds).DeletedAssessmentToWard(
+			await parentHubContext.Clients.Users(userIds: parentIds).ChangedAssessmentToWard(
 				assessmentId: assessment.Id,
 				studentId: assessment.StudentId,
 				subjectId: assessment.LessonId
 			);
-			await administratorHubContext.Clients.Users(userIds: adminIds).DeletedAssessmentToStudent(
+			await administratorHubContext.Clients.Users(userIds: adminIds).ChangedAssessmentToStudent(
 				assessmentId: assessment.Id,
 				studentId: assessment.StudentId,
 				subjectId: assessment.LessonId
