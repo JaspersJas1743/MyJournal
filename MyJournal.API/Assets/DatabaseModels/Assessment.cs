@@ -17,6 +17,8 @@ public partial class Assessment
 
     public int? CommentId { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     public virtual CommentsOnGrade? Comment { get; set; }
 
     public virtual Grade Grade { get; set; } = null!;
