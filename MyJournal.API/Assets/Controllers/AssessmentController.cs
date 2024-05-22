@@ -122,7 +122,7 @@ public sealed class AssessmentController(
 			.Where(predicate: s => s.UserId == userId)
 			.SelectMany(selector: s => s.Assessments)
 			.Where(predicate: a =>
-				a.LessonId == request.SubjectId &&
+				a.LessonId == request.SubjectId && !a.IsDeleted &&
 				EF.Functions.DateDiffDay(a.Datetime, start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, end) >= 0
 			).OrderByDescending(keySelector: a => a.Datetime);
@@ -195,7 +195,7 @@ public sealed class AssessmentController(
 			);
 
 		double avg = await _context.Students.AsNoTracking().Where(predicate: s => s.UserId == userId)
-			.SelectMany(selector: s => s.Assessments).Where(predicate: a =>
+			.SelectMany(selector: s => s.Assessments).Where(predicate: a => !a.IsDeleted &&
 				a.LessonId == request.SubjectId && EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0 && EF.Functions.IsNumeric(a.Grade.Assessment)
 			).Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
@@ -311,7 +311,7 @@ public sealed class AssessmentController(
 			{
 				Student = s,
 				Average = s.Assessments.Where(a =>
-						EF.Functions.IsNumeric(a.Grade.Assessment) &&
+						EF.Functions.IsNumeric(a.Grade.Assessment) && !a.IsDeleted &&
 						EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 						EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
 					).Select(a => a.Grade.Assessment).DefaultIfEmpty().Select(g => g ?? "0")
@@ -322,7 +322,7 @@ public sealed class AssessmentController(
 					fgfep.LessonId == request.SubjectId
 				).Select(fgfep => fgfep.Grade.Id).SingleOrDefault(),
 				Estimations = s.Assessments.Where(a =>
-					a.LessonId == request.SubjectId &&
+					a.LessonId == request.SubjectId && !a.IsDeleted &&
 					EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 					EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
 				).OrderByDescending(a => a.Datetime)
@@ -403,7 +403,7 @@ public sealed class AssessmentController(
 			.Where(predicate: s => s.Id == studentId)
 			.SelectMany(selector: s => s.Assessments)
 			.Where(predicate: a =>
-				a.LessonId == request.SubjectId &&
+				a.LessonId == request.SubjectId && !a.IsDeleted &&
 				EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
 			).OrderByDescending(keySelector: a => a.Datetime);
@@ -524,7 +524,7 @@ public sealed class AssessmentController(
 			);
 
 		double avg = await _context.Students.AsNoTracking().Where(predicate: s => s.Id == studentId)
-			.SelectMany(selector: s => s.Assessments).Where(predicate: a =>
+			.SelectMany(selector: s => s.Assessments).Where(predicate: a => !a.IsDeleted &&
 				a.LessonId == request.SubjectId && EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0 && EF.Functions.IsNumeric(a.Grade.Assessment)
 			).Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
@@ -583,7 +583,7 @@ public sealed class AssessmentController(
 			.Where(predicate: s => s.UserId == userId)
 			.SelectMany(selector: s => s.Children.Assessments)
 			.Where(predicate: a =>
-				a.LessonId == request.SubjectId &&
+				a.LessonId == request.SubjectId && !a.IsDeleted &&
 				EF.Functions.DateDiffDay(a.Datetime, start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, end) >= 0
 			).OrderByDescending(keySelector: a => a.Datetime);
@@ -639,7 +639,7 @@ public sealed class AssessmentController(
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetAverageAssessmentResponse>> GetAverageAssessmentsForWard(
+	public async Task<ActionResult<GetAverageAssessmentResponse>> GetFinalAssessmentForWard(
 		[FromQuery] GetFinalAssessmentRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -706,7 +706,7 @@ public sealed class AssessmentController(
 			);
 
 		double avg = await _context.Parents.AsNoTracking().Where(predicate: s => s.UserId == userId)
-			.SelectMany(selector: s => s.Children.Assessments).Where(predicate: a =>
+			.SelectMany(selector: s => s.Children.Assessments).Where(predicate: a => !a.IsDeleted &&
 				a.LessonId == request.SubjectId && EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 				EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0 && EF.Functions.IsNumeric(a.Grade.Assessment)
 			).Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
@@ -843,7 +843,7 @@ public sealed class AssessmentController(
 	)
 	{
 		var result = await _context.Assessments.AsNoTracking()
-			.Where(predicate: a => a.Id == assessmentId)
+			.Where(predicate: a => a.Id == assessmentId && !a.IsDeleted)
 			.Select(selector: a => new
 			{
 				Average = a.Student.Assessments.Where(asses => EF.Functions.IsNumeric(asses.Grade.Assessment) && asses.LessonId == a.LessonId)
@@ -1359,11 +1359,14 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		Assessment assessment = await _context.Assessments.Include(navigationPropertyPath: assessment => assessment.Student)
-			.SingleOrDefaultAsync(predicate: a => a.Id == request.AssessmentId, cancellationToken: cancellationToken)
-			?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена.");
+		Assessment assessment = await _context.Assessments
+			.Include(navigationPropertyPath: assessment => assessment.Student)
+			.FirstOrDefaultAsync(
+				predicate: a => a.Id == request.AssessmentId,
+				cancellationToken: cancellationToken
+			) ?? throw new HttpResponseException(statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена.");
 
-		_context.Assessments.Remove(entity: assessment);
+		assessment.IsDeleted = true;
 		await _context.SaveChangesAsync(cancellationToken: cancellationToken);
 
 		IQueryable<string> parentIds = _context.Students.Where(predicate: s => s.Id == assessment.StudentId)
