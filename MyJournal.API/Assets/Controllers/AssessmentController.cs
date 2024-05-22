@@ -32,6 +32,7 @@ public sealed class AssessmentController(
 	public sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, string Description, GradeTypes GradeType);
 
 	public sealed record GetAssessmentsByIdResponse(string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
+	public sealed record GetAssessmentsByClassResponse(int StudentId, string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
 
 	[Validator<GetAverageAssessmentRequestValidator>]
 	public sealed record GetAverageAssessmentRequest(int SubjectId, int PeriodId);
@@ -247,6 +248,125 @@ public sealed class AssessmentController(
 			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
 		return Ok(value: new GetFinalAssessmentResponse(FinalAssessment: final is null ? "-.--" : final + ".00"));
+	}
+
+	/// <summary>
+	/// [Преподаватель/Администратор] Получение информации об оценках учеников по идентификатору класса за указанный период
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/assessments/student/{classId:int}/get?PeriodId=0&SubjectId=0
+	///
+	/// Параметры:
+	///
+	///	classId - идентификатор ученик, информацию об оценках которого необходимо получить
+	///	PeriodId - идентификатор учебного периода, за который необходимо получить информацию об оценках (0, если за текущий период)
+	///	SubjectId - идентификатор дисциплины, по которой необходимо получить информацию об оценках
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Информация об оценках класса</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher или Administrator</response>
+	/// <response code="404">Указанный учебный период не найден</response>
+	[HttpGet(template: "class/{classId:int}/get")]
+	[Authorize(Policy = nameof(UserRoles.Teacher) + nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetAssessmentsByIdResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status404NotFound, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<IEnumerable<GetAssessmentsByClassResponse>>> GetAssessmentsByClass(
+		[FromRoute] int classId,
+		[FromQuery] GetAssessmentsRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		var period = await _context.Classes.AsNoTracking()
+			.Where(predicate: c => c.Id == classId)
+			.SelectMany(selector: c => c.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep => ep.Id == request.PeriodId ||
+				(request.PeriodId == 0 && EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 && EF.Functions.DateDiffDay(ep.EndDate, now) <= 0)
+			).Select(selector: ep => new
+			{
+				Id = ep.Id,
+				Start = ep.StartDate.ToDateTime(TimeOnly.MinValue),
+				End = ep.EndDate.ToDateTime(TimeOnly.MaxValue)
+			}).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
+				statusCode: StatusCodes.Status404NotFound, message: "Указанный учебный период не найден."
+			);
+
+		IQueryable<GetAssessmentsByClassResponse> result = _context.Classes.AsNoTracking()
+			.Where(predicate: c => c.Id == classId)
+			.SelectMany(selector: s => s.Students)
+			.Select(selector: s => new
+			{
+				StudentId = s.Id,
+				Average = s.Assessments.Where(a => EF.Functions.IsNumeric(a.Grade.Assessment))
+				 .Select(a => a.Grade.Assessment).DefaultIfEmpty().Select(g => g ?? "0")
+				 .Average(a => Convert.ToDouble(a)),
+				Final = s.FinalGradesForEducationPeriods.Where(fgfep =>
+					fgfep.EducationPeriodId == period.Id &&
+					fgfep.Student.Id == s.Id &&
+					fgfep.LessonId == request.SubjectId
+				).Select(fgfep => fgfep.Grade.Id).Single(),
+				Estimations = s.Assessments.Where(a =>
+					a.LessonId == request.SubjectId &&
+					EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
+					EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
+				).OrderByDescending(a => a.Datetime)
+				.Select(a => new Grade(
+					a.Id,
+					a.Grade.Assessment,
+					a.Datetime,
+					a.Comment.Comment,
+					a.Comment.Description,
+					a.Grade.GradeType.Type
+				))
+			}).Select(selector: o => new GetAssessmentsByClassResponse(
+				o.StudentId,
+				o.Average == 0 ? "-.--" : o.Average.ToString("F2", CultureInfo.InvariantCulture),
+				o.Final,
+				o.Estimations
+			));
+
+		return Ok(value: result);
+		// .SelectMany(selector: s => s.Assessments)
+		// .Where(predicate: a =>
+		// 	a.LessonId == request.SubjectId &&
+		// 	EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
+		// 	EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
+		// ).OrderByDescending(keySelector: a => a.Datetime);
+
+		// double avg = await assessments.Where(predicate: a => EF.Functions.IsNumeric(a.Grade.Assessment))
+		// 	.Select(selector: a => a.Grade.Assessment).DefaultIfEmpty().Select(selector: g => g ?? "0")
+		// 	.AverageAsync(selector: a => Convert.ToDouble(a), cancellationToken: cancellationToken);
+		//
+		// int? final = await _context.FinalGradesForEducationPeriods
+		// 	.Where(predicate: fgfep =>
+		// 		fgfep.EducationPeriodId == period.Id &&
+		// 		fgfep.Student.Id == studentId &&
+		// 		fgfep.LessonId == request.SubjectId
+		// 	).Select(selector: fgfep => fgfep.Grade.Id)
+		// 	.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+		//
+		//
+		// return Ok(value: new GetAssessmentsByIdResponse(
+		// 	AverageAssessment: avg == 0 ? "-.--" : avg.ToString(format: "F2", CultureInfo.InvariantCulture),
+		// 	FinalAssessment: final,
+		// 	Assessments: assessments.Select(selector: a => new Grade(
+		// 		a.Id,
+		// 		a.Grade.Assessment,
+		// 		a.Datetime,
+		// 		a.Comment.Comment,
+		// 		a.Comment.Description,
+		// 		a.Grade.GradeType.Type
+		// 	))
+		// ));
 	}
 
 	/// <summary>
