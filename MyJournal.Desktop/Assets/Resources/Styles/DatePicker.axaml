@@ -32,8 +32,7 @@
 							<TextBlock Name="PART_YearTextBlock" Text="Год" TextAlignment="Center"
 										FontSize="{TemplateBinding FontSize}" Margin="10 5"
 										Foreground="{DynamicResource ForegroundColor}"
-										HorizontalAlignment="Center" VerticalAlignment="Center"
-										/>
+										HorizontalAlignment="Center" VerticalAlignment="Center"/>
 							<Rectangle	x:Name="PART_FirstSpacer"
 							            Fill="{TemplateBinding BorderBrush}"
 							            HorizontalAlignment="Center"

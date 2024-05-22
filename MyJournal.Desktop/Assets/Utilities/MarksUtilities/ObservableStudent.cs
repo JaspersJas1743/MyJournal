@@ -22,9 +22,10 @@ public sealed class ObservableStudent : ReactiveObject
 	private DateTimeOffset _dateTime;
 	private PossibleAssessment? _selectedAssessment;
 	private CommentsForAssessment? _selectedComment;
-	private CommentsForAssessment _selectedAttendanceComment;
+	private CommentsForAssessment? _selectedAttendanceComment;
 	private ObservableEstimationOfStudent? _selectedEstimation;
 	private GradeTypes? _previousGradeType = null;
+	private string? _attendanceComment = null;
 	private bool _isCreating = false;
 	private bool _isEditing = false;
 	private bool _isAttend = false;
@@ -54,16 +55,8 @@ public sealed class ObservableStudent : ReactiveObject
 		SaveNewEstimation = ReactiveCommand.CreateFromTask(execute: SaveNewGradeHandler, canExecute: canSaveGrade);
 		SaveEditableEstimation = ReactiveCommand.CreateFromTask(execute: SaveEditableGradeHandler, canExecute: canSaveGrade);
 
-		this.WhenAnyValue(property1: s => s.IsAttend).WhereNotNull().Subscribe(onNext: async isAttend =>
-		{
-			if (TruancyComments.Count != 0)
-				return;
-
-			PossibleAssessment truancy = PossibleAssessments.First(predicate: a => a.GradeType == GradeTypes.Truancy);
-			TruancyComments.Load(items: await truancy.GetComments());
-			if (!isAttend)
-				SelectedAttendanceComment = TruancyComments[index: 0];
-		});
+		this.WhenAnyValue(property1: s => s.IsAttend).WhereNotNull().Subscribe(onNext: AttendanceChangedHandler);
+		this.WhenAnyValue(property1: s => s.AttendanceComment).WhereNotNull().Subscribe(onNext: AttendanceCommentChangedHandler);
 	}
 
 	public ObservableStudent(
@@ -104,6 +97,12 @@ public sealed class ObservableStudent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(backingField: ref _isAttend, newValue: value);
 	}
 
+	private string? AttendanceComment
+	{
+		get => _attendanceComment;
+		set => this.RaiseAndSetIfChanged(backingField: ref _attendanceComment, newValue: value);
+	}
+
     public ObservableGradeOfStudent? Grade { get; private set; }
 
 	public ObservableCollectionExtended<PossibleAssessment> PossibleAssessments { get; }
@@ -127,7 +126,7 @@ public sealed class ObservableStudent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(backingField: ref _selectedAssessment, newValue: value);
 	}
 
-	public CommentsForAssessment SelectedAttendanceComment
+	public CommentsForAssessment? SelectedAttendanceComment
 	{
 		get => _selectedAttendanceComment;
 		set => this.RaiseAndSetIfChanged(backingField: ref _selectedAttendanceComment, newValue: value);
@@ -186,12 +185,12 @@ public sealed class ObservableStudent : ReactiveObject
 			return;
 
 		DateOnly date = DateOnly.FromDateTime(dateTime: dateTimeOffset.Date);
-		Debug.WriteLine($"date: {date}");
-		IsAttend = Grade.Estimations.FirstOrDefault(predicate: e =>
+		ObservableEstimationOfStudent? attend = Grade.Estimations.FirstOrDefault(predicate: e =>
 			DateOnly.FromDateTime(dateTime: e.CreatedAt) == date &&
 			e.GradeType == GradeTypes.Truancy
-		) is null;
-		Debug.WriteLine($"{date}: {Surname} {Name} {Patronymic} {(IsAttend ? "присутствует" : "отсутствует")}");
+		);
+		IsAttend = attend is null;
+		AttendanceComment = attend?.Comment;
 	}
 
 	private async Task PossibleAssessmentSelectionChangedHandler()
@@ -269,6 +268,23 @@ public sealed class ObservableStudent : ReactiveObject
 		Comments.Clear();
 		SelectedAssessment = null;
 		_previousGradeType = null;
+	}
+
+
+	private void AttendanceCommentChangedHandler(string obj)
+	{
+		SelectedAttendanceComment = AttendanceComment is null
+			? TruancyComments[index: 0]
+			: TruancyComments.First(predicate: c => c.Comment == _attendanceComment);
+	}
+
+	private async void AttendanceChangedHandler(bool isAttend)
+	{
+		if (TruancyComments.Count != 0)
+			return;
+
+		PossibleAssessment truancy = PossibleAssessments.First(predicate: a => a.GradeType == GradeTypes.Truancy);
+		TruancyComments.Load(items: await truancy.GetComments());
 	}
 }
 

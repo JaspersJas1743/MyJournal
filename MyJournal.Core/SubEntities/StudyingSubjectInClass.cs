@@ -217,7 +217,7 @@ public sealed class StudyingSubjectInClass : Subject
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await _client.PostAsync<SetAttendanceRequest>(
+		await _client.PutAsync<SetAttendanceRequest>(
 			apiMethod: AssessmentControllerMethods.SetAttendance,
 			arg: new SetAttendanceRequest(SubjectId: _studyingSubjectId, Datetime: date, Attendances: attendance),
 			cancellationToken: cancellationToken

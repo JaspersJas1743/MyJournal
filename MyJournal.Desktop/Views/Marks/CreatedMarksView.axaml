@@ -36,8 +36,7 @@
 							PlaceholderText="Дисциплина не выбрана" Classes="EducationPeriodSelection"
 							SelectedItem="{Binding SelectedPeriod,Mode=TwoWay}"
 							ItemsSource="{Binding EducationPeriods}"
-							DisplayMemberBinding="{Binding Name}"
-							>
+							DisplayMemberBinding="{Binding Name}">
 					<interactivity:Interaction.Behaviors>
 						<interaction:EventTriggerBehavior EventName="SelectionChanged">
 							<interaction:InvokeCommandAction Command="{Binding OnEducationPeriodSelectionChanged}"/>
@@ -49,30 +48,30 @@
 					Classes.WithoutButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNull}}">
 				<Classes.WithTwoButton>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
+						<Binding Path="!!Students.Count"/>
 						<Binding Path="AttendanceIsChecking"/>
 					</MultiBinding>
 				</Classes.WithTwoButton>
 				<Classes.WithOneButton>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding Path="!!Students.Count"/>
 						<Binding Path="FinalGradesIsCreating"/>
 					</MultiBinding>
 				</Classes.WithOneButton>
-				<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
-													Classes="Subjects TeacherSubjects" ItemsSource="{Binding StudyingSubjects}"
-													x:Name="Subjects" Selection="{Binding SubjectSelectionModel}">
+				<ListBox	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+							Classes="Subjects TeacherSubjects" ItemsSource="{Binding StudyingSubjects}"
+							x:Name="Subjects" Selection="{Binding SubjectSelectionModel}">
 					<interactivity:Interaction.Behaviors>
 						<interaction:EventTriggerBehavior EventName="SelectionChanged">
 							<interaction:InvokeCommandAction Command="{Binding OnSubjectSelectionChanged}"/>
 						</interaction:EventTriggerBehavior>
 					</interactivity:Interaction.Behaviors>
-				</controls:ListBoxWithLoadOnScroll>
+				</ListBox>
 			</Border>
 			<Viewbox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding Path="!!Students.Count"/>
 						<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
 						<Binding Path="!AttendanceIsChecking"/>
 						<Binding Path="!FinalGradesIsCreating"/>
@@ -85,17 +84,17 @@
 			<Viewbox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding Path="!!Students.Count"/>
 						<Binding Path="AttendanceIsChecking"/>
 					</MultiBinding>
 				</Viewbox.IsVisible>
-				<Button Width="500" Height="70" Content="Сохранить отметки" FontSize="24" Classes="MainAccentColor Corner20"
-						Command="{Binding SaveAttendance}"/>
+				<controls:ButtonWithAnimatedCommand Width="500" Height="70" Content="Сохранить отметки" FontSize="24" Classes="MainAccentColor"
+													Command="{Binding SaveAttendance}" CornerRadius="20"/>
 			</Viewbox>
 			<Viewbox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding Path="!!Students.Count"/>
 						<Binding Path="!AttendanceIsChecking"/>
 						<Binding Path="!FinalGradesIsCreating"/>
 					</MultiBinding>
@@ -107,7 +106,7 @@
 			<Viewbox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
 				<Viewbox.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding Path="!!Students.Count"/>
 						<MultiBinding Converter="{x:Static BoolConverters.Or}">
 							<Binding Path="AttendanceIsChecking"/>
 							<Binding Path="FinalGradesIsCreating"/>

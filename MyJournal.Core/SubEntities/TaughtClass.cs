@@ -102,7 +102,7 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		await _client.PostAsync<SetAttendanceRequest>(
+		await _client.PutAsync<SetAttendanceRequest>(
 			apiMethod: AssessmentControllerMethods.SetAttendance,
 			arg: new SetAttendanceRequest(SubjectId: SubjectId, Datetime: date, Attendances: attendance),
 			cancellationToken: cancellationToken

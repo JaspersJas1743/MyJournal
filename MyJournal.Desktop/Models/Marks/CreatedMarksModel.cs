@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Selection;
 using DynamicData;
 using DynamicData.Binding;
+using Humanizer;
 using MyJournal.Core;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
@@ -73,14 +76,20 @@ public sealed class CreatedMarksModel : MarksModel
 		if (SubjectSelectionModel.SelectedItem is null)
 			return;
 
-		AttendanceIsChecking = false;
 		await SubjectSelectionModel.SelectedItem.SetAttendance(
 			date: SelectedDateForAttendance.Date,
 			attendance: Students.Select(selector: s => new Attendance(
 				StudentId: s.Id,
 				IsAttend: s.IsAttend,
-				CommentId: s.SelectedAttendanceComment!.Id
+				CommentId: s.IsAttend ? null : s.SelectedAttendanceComment?.Id
 			))
+		);
+		AttendanceIsChecking = false;
+
+		await _notificationService.Show(
+			title: "Посещаемость",
+			content: $"Посещаемость на {SelectedDateForAttendance.Date.ToString(format: "d MMMM", provider: CultureInfo.CurrentUICulture)} сохранена!",
+			type: NotificationType.Success
 		);
 	}
 
