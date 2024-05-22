@@ -62,7 +62,7 @@ public sealed class CreatedMarksModel : MarksModel
 
 		this.WhenAnyValue(property1: model => model.SelectedDateForAttendance)
 			.WhereNotNull().Where(predicate: _ => _attendanceLoadedAt is not null)
-			.Subscribe(onNext: async _ => await LoadAttendanceForStudents());
+			.Subscribe(onNext: SelectedDateForAttendanceHandler);
 	}
 
 	public SelectionModel<TeacherSubject> SubjectSelectionModel { get; } = new SelectionModel<TeacherSubject>();
@@ -112,6 +112,14 @@ public sealed class CreatedMarksModel : MarksModel
 	public ReactiveCommand<Unit, Unit> SaveAttendance { get; }
 	public ReactiveCommand<Unit, Unit> ToFinalAssessments { get; }
 	public ReactiveCommand<Unit, Unit> ToGrade { get; }
+
+	private async void SelectedDateForAttendanceHandler(DateTimeOffset _)
+	{
+		if (_attendanceLoadedAt != SelectedDateForAttendance)
+			await LoadAttendanceForStudents();
+
+		_attendanceLoadedAt = SelectedDateForAttendance;
+	}
 
 	public Func<TeacherSubject, bool> FilterFunction(string? text)
 	{
@@ -223,12 +231,7 @@ public sealed class CreatedMarksModel : MarksModel
 
 	private async Task LoadAttendanceForStudents()
 	{
-		if (_attendanceLoadedAt != SelectedDateForAttendance)
-		{
-			foreach (ObservableStudent observableStudent in Students.AsEnumerable())
-				await observableStudent.LoadAttendance(dateTimeOffset: SelectedDateForAttendance);
-		}
-
-		_attendanceLoadedAt = SelectedDateForAttendance;
+		foreach (ObservableStudent observableStudent in Students.AsEnumerable())
+			await observableStudent.LoadAttendance(dateTimeOffset: SelectedDateForAttendance);
 	}
 }

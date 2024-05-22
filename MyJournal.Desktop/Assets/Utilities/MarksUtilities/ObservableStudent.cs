@@ -189,6 +189,8 @@ public sealed class ObservableStudent : ReactiveObject
 		);
 		IsAttend = attend is null;
 		AttendanceComment = attend?.Comment;
+		if (AttendanceComment is null)
+			SelectedAttendanceComment = TruancyComments[index: 0];
 	}
 
 	private async Task PossibleAssessmentSelectionChangedHandler()
@@ -268,12 +270,8 @@ public sealed class ObservableStudent : ReactiveObject
 		_previousGradeType = null;
 	}
 
-	private void AttendanceCommentChangedHandler(string obj)
-	{
-		SelectedAttendanceComment = AttendanceComment is null
-			? TruancyComments[index: 0]
-			: TruancyComments.First(predicate: c => c.Comment == _attendanceComment);
-	}
+	private void AttendanceCommentChangedHandler(string _)
+		=> SelectedAttendanceComment = TruancyComments.First(predicate: c => c.Comment == AttendanceComment);
 
 	private async void AttendanceChangedHandler(bool isAttend)
 	{
