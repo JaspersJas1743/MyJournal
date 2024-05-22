@@ -48,7 +48,7 @@ public sealed class AssessmentController(
 	public sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
 	public sealed record GetAssessmentsResponse(string AverageAssessment, string? FinalAssessment, IEnumerable<Grade> Assessments);
 
-	public sealed record GetAssessmentResponse(string AverageAssessment, Grade Assessment);
+	public sealed record GetAssessmentResponse(string AverageAssessment, Grade Assessment, int PeriodId);
 
 	public sealed record GetPossibleAssessmentsResponse(int Id, string Assessment, GradeTypes GradeType);
 
@@ -310,14 +310,17 @@ public sealed class AssessmentController(
 			.Select(selector: s => new
 			{
 				Student = s,
-				Average = s.Assessments.Where(a => EF.Functions.IsNumeric(a.Grade.Assessment))
-				 .Select(a => a.Grade.Assessment).DefaultIfEmpty().Select(g => g ?? "0")
-				 .Average(a => Convert.ToDouble(a)),
+				Average = s.Assessments.Where(a =>
+						EF.Functions.IsNumeric(a.Grade.Assessment) &&
+						EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
+						EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
+					).Select(a => a.Grade.Assessment).DefaultIfEmpty().Select(g => g ?? "0")
+				    .Average(a => Convert.ToDouble(a)),
 				Final = s.FinalGradesForEducationPeriods.Where(fgfep =>
 					fgfep.EducationPeriodId == period.Id &&
 					fgfep.Student.Id == s.Id &&
 					fgfep.LessonId == request.SubjectId
-				).Select(fgfep => fgfep.Grade.Id).Single(),
+				).Select(fgfep => fgfep.Grade.Id).SingleOrDefault(),
 				Estimations = s.Assessments.Where(a =>
 					a.LessonId == request.SubjectId &&
 					EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
@@ -839,16 +842,34 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return Ok(value: await _context.Assessments.AsNoTracking().Where(predicate: a => a.Id == assessmentId)
-			.Select(selector: a => new GetAssessmentResponse(
-				a.Student.Assessments.Where(asses => EF.Functions.IsNumeric(asses.Grade.Assessment) && asses.LessonId == a.LessonId)
+		var result = await _context.Assessments.AsNoTracking()
+			.Where(predicate: a => a.Id == assessmentId)
+			.Select(selector: a => new
+			{
+				Average = a.Student.Assessments.Where(asses => EF.Functions.IsNumeric(asses.Grade.Assessment) && asses.LessonId == a.LessonId)
 					.Select(asses => asses.Grade.Assessment).DefaultIfEmpty().Select(assess => assess ?? "0")
 					.Average(asses => Convert.ToDouble(asses)).ToString("F2", CultureInfo.InvariantCulture).Replace("0.00", "-.--"),
-				new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Comment.Description, a.Grade.GradeType.Type)
-			)).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
+				Grade = new Grade(a.Id, a.Grade.Assessment, a.Datetime, a.Comment.Comment, a.Comment.Description, a.Grade.GradeType.Type),
+				Receiver = a.StudentId
+			}).SingleOrDefaultAsync(cancellationToken: cancellationToken) ?? throw new HttpResponseException(
 				statusCode: StatusCodes.Status404NotFound, message: "Оценка с указанным идентификатором не найдена."
-			)
-		);
+			);
+
+		int period = await _context.Students.AsNoTracking()
+			.Where(predicate: s => s.Id == result.Receiver)
+			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep =>
+				EF.Functions.DateDiffDay(ep.StartDate, DateOnly.FromDateTime(result.Grade.CreatedAt)) >= 0 &&
+				EF.Functions.DateDiffDay(ep.EndDate, DateOnly.FromDateTime(result.Grade.CreatedAt)) <= 0)
+			.Select(selector: ep => ep.Id)
+			.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+
+		return Ok(value: new GetAssessmentResponse(
+			AverageAssessment: result.Average,
+			Assessment: result.Grade,
+			PeriodId: period
+		));
 	}
 	#endregion
 
