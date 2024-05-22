@@ -44,6 +44,12 @@ public sealed class CreatedMarksVM(CreatedMarksModel model) : MarksVM(model: mod
 		set => model.AttendanceIsChecking = value;
 	}
 
+	public bool IsAdmin
+	{
+		get => model.IsAdmin;
+		set => model.IsAdmin = value;
+	}
+
 	public DateTimeOffset SelectedDateForAttendance
 	{
 		get => model.SelectedDateForAttendance;

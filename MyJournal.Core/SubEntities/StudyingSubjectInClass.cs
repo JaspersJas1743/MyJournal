@@ -12,19 +12,22 @@ public sealed class StudyingSubjectInClass : Subject
 	#region Fields
 	private readonly ApiClient _client;
 	private readonly int _studyingSubjectId;
+	private readonly int _classId;
 	private readonly AsyncLazy<TaskAssignedToClassCollection> _tasks;
-	private readonly AsyncLazy<List<StudentOfSubjectInClass>> _students;
+	private AsyncLazy<List<StudentOfSubjectInClass>> _students;
 	#endregion
 
 	#region Constructors
 	private StudyingSubjectInClass(
 		ApiClient client,
 		int subjectId,
+		int classId,
 		AsyncLazy<TaskAssignedToClassCollection> tasks,
 		AsyncLazy<List<StudentOfSubjectInClass>> students
 	)
 	{
 		_studyingSubjectId = subjectId;
+		_classId = classId;
 		_client = client;
 		_tasks = tasks;
 		_students = students;
@@ -34,11 +37,13 @@ public sealed class StudyingSubjectInClass : Subject
 		ApiClient client,
 		string name,
 		int subjectId,
+		int classId,
 		AsyncLazy<TaskAssignedToClassCollection> tasks,
         AsyncLazy<List<StudentOfSubjectInClass>> students
 	) : this(
 		client: client,
 		tasks: tasks,
+		classId: classId,
 		students: students,
 		subjectId: subjectId
 	) => Name = name;
@@ -47,11 +52,13 @@ public sealed class StudyingSubjectInClass : Subject
 		int subjectId,
 		StudyingSubjectResponse response,
 		ApiClient client,
+		int classId,
 		AsyncLazy<TaskAssignedToClassCollection> tasks,
         AsyncLazy<List<StudentOfSubjectInClass>> students
 	) : this(
 		client: client,
 		tasks: tasks,
+		classId: classId,
 		students: students,
 		subjectId: subjectId
 	)
@@ -75,7 +82,6 @@ public sealed class StudyingSubjectInClass : Subject
 
 	#region Properties
 	internal bool TasksAreCreated => _tasks.IsValueCreated;
-	internal bool StudentsAreCreated => _students.IsValueCreated;
 	#endregion
 
 	#region Events
@@ -104,6 +110,7 @@ public sealed class StudyingSubjectInClass : Subject
 			response: response,
 			subjectId: subjectId,
 			client: client,
+			classId: classId,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
 				await TaskAssignedToClassCollection.Create(
 					client: client,
@@ -157,6 +164,7 @@ public sealed class StudyingSubjectInClass : Subject
 		return new StudyingSubjectInClass(
 			name: name,
 			subjectId: -1,
+			classId: classId,
 			client: client,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () =>
 				await TaskAssignedToClassCollection.Create(
@@ -183,6 +191,7 @@ public sealed class StudyingSubjectInClass : Subject
 			response: response,
 			subjectId: response.Id,
 			client: client,
+			classId: classId,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => TaskAssignedToClassCollection.Empty),
 			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () =>
 			{
@@ -224,6 +233,7 @@ public sealed class StudyingSubjectInClass : Subject
 		return new StudyingSubjectInClass(
 			client: ApiClient.Empty,
 			name: name,
+			classId: -1,
 			subjectId: -1,
 			tasks: new AsyncLazy<TaskAssignedToClassCollection>(valueFactory: async () => TaskAssignedToClassCollection.Empty),
 			students: new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => new List<StudentOfSubjectInClass>())
@@ -238,6 +248,40 @@ public sealed class StudyingSubjectInClass : Subject
 
 	public async Task<IEnumerable<StudentOfSubjectInClass>> GetStudents()
 		=> await _students;
+
+	public async Task SetEducationPeriod(
+		int educationPeriodId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		IEnumerable<GetAssessmentsByClassResponse> students = await _client.GetAsync<IEnumerable<GetAssessmentsByClassResponse>, GetAssessmentsRequest>(
+			apiMethod: AssessmentControllerMethods.GetAssessmentsByClass(classId: _classId),
+			argQuery: new GetAssessmentsRequest(PeriodId: educationPeriodId, SubjectId: _studyingSubjectId),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+		_students = new AsyncLazy<List<StudentOfSubjectInClass>>(valueFactory: async () => new List<StudentOfSubjectInClass>(collection: students.Select(
+			selector: s => StudentOfSubjectInClass.Create(
+				client: _client,
+				id: s.Student.StudentId,
+				surname: s.Student.Surname,
+				name: s.Student.Name,
+				patronymic: s.Student.Patronymic,
+				subjectId: _studyingSubjectId,
+				response: new GetAssessmentsByIdResponse(
+					AverageAssessment: s.AverageAssessment,
+					FinalAssessment: s.FinalAssessment,
+					Assessments: s.Assessments.Select(selector: a => new EstimationResponse(
+						Id: a.Id,
+						Assessment: a.Assessment,
+						CreatedAt: a.CreatedAt,
+						Comment: a.Comment,
+						Description: a.Description,
+						GradeType: a.GradeType
+					))
+				)
+			)
+		)));
+	}
 
 	public async Task SetAttendance(
 		DateTime date,

@@ -73,10 +73,13 @@ public sealed class TeacherSubject : TeacherSubjectBase
 
 	public async Task SetEducationPeriod(int educationPeriodId)
 	{
-		if (_taughtClass is null)
+		if (_taughtClass is not null)
+		{
+			await _taughtClass.SetEducationPeriod(educationPeriodId: educationPeriodId);
 			return;
+		}
 
-		await _taughtClass.SetEducationPeriod(educationPeriodId: educationPeriodId);
+		await _studyingSubjectInClass!.SetEducationPeriod(educationPeriodId: educationPeriodId);
 	}
 
 	public async Task SetAttendance(

@@ -33,6 +33,7 @@ public sealed class CreatedMarksModel : MarksModel
 	private bool _finalGradesIsCreating = false;
 	private DateTimeOffset? _attendanceLoadedAt = null;
 	private bool _loaded = false;
+	private bool _isAdmin = false;
 
 	public CreatedMarksModel(
 		INotificationService notificationService
@@ -105,6 +106,12 @@ public sealed class CreatedMarksModel : MarksModel
 		set => this.RaiseAndSetIfChanged(backingField: ref _finalGradesIsCreating, newValue: value);
 	}
 
+	public bool IsAdmin
+	{
+		get => _isAdmin;
+		set => this.RaiseAndSetIfChanged(backingField: ref _isAdmin, newValue: value);
+	}
+
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> OnEducationPeriodSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> ClearTasks { get; }
@@ -175,6 +182,8 @@ public sealed class CreatedMarksModel : MarksModel
 	{
 		Administrator? administrator = user as Administrator;
 		Teacher? teacher = user as Teacher;
+
+		IsAdmin = administrator is not null;
 
 		TaughtSubjectCollection? taughtSubjectCollection = teacher is not null ? await teacher.GetTaughtSubjects() : null;
 		ClassCollection? classCollection = administrator is not null ? await administrator.GetClasses() : null;

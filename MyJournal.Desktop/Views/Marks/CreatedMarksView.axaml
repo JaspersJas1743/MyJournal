@@ -44,29 +44,40 @@
 					</interactivity:Interaction.Behaviors>
 				</ComboBox>
 			</Viewbox>
-			<Border Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="5" Classes="TransitionBorderBrush ListBorder"
-					Classes.WithoutButton="{Binding !Students.Count}">
+			<Border Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="5" Classes="TransitionBorderBrush ListBorder">
 				<Classes.WithTwoButton>
-					<MultiBinding Converter="{x:Static BoolConverters.Or}">
-						<MultiBinding Converter="{x:Static BoolConverters.And}">
-							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
-							<Binding Path="AttendanceIsChecking"/>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<MultiBinding Converter="{x:Static BoolConverters.Or}">
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+								<Binding Path="AttendanceIsChecking"/>
+							</MultiBinding>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanSetFinalGrade}"/>
+								<Binding Path="!FinalGradesIsCreating"/>
+							</MultiBinding>
 						</MultiBinding>
-						<MultiBinding Converter="{x:Static BoolConverters.And}">
-							<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanSetFinalGrade}"/>
-							<Binding Path="!FinalGradesIsCreating"/>
-						</MultiBinding>
+						<Binding Path="!IsAdmin"/>
 					</MultiBinding>
 				</Classes.WithTwoButton>
 				<Classes.WithOneButton>
-					<MultiBinding Converter="{x:Static BoolConverters.Or}">
-						<MultiBinding Converter="{x:Static BoolConverters.And}">
-							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
-							<Binding Path="FinalGradesIsCreating"/>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<MultiBinding Converter="{x:Static BoolConverters.Or}">
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+								<Binding Path="FinalGradesIsCreating"/>
+							</MultiBinding>
+							<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanNotSetFinalGrade}"/>
 						</MultiBinding>
-						<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanNotSetFinalGrade}"/>
+						<Binding Path="!IsAdmin"/>
 					</MultiBinding>
 				</Classes.WithOneButton>
+				<Classes.WithoutButton>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<Binding Path="IsAdmin"/>
+						<Binding Path="!Students.Count"/>
+					</MultiBinding>
+				</Classes.WithoutButton>
 				<ListBox	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
 							Classes="Subjects TeacherSubjects" ItemsSource="{Binding StudyingSubjects}"
 							x:Name="Subjects" Selection="{Binding SubjectSelectionModel}">
@@ -77,54 +88,57 @@
 					</interactivity:Interaction.Behaviors>
 				</ListBox>
 			</Border>
-			<Viewbox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">
-				<Viewbox.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
-						<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanSetFinalGrade}"/>
-						<Binding Path="!AttendanceIsChecking"/>
-						<Binding Path="!FinalGradesIsCreating"/>
-					</MultiBinding>
-				</Viewbox.IsVisible>
-				<Button Width="500" Height="70" Content="Проставить итоговые отметки"
-						Command="{Binding ToFinalGrades}"
-						FontSize="24" Classes="MainAccentColor Corner20"/>
-			</Viewbox>
-			<Viewbox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">
-				<Viewbox.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
-						<Binding Path="AttendanceIsChecking"/>
-					</MultiBinding>
-				</Viewbox.IsVisible>
-				<controls:ButtonWithAnimatedCommand Width="500" Height="70" Content="Сохранить отметки" FontSize="24" Classes="MainAccentColor"
-													Command="{Binding SaveAttendance}" CornerRadius="20"/>
-			</Viewbox>
-			<Viewbox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
-				<Viewbox.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
-						<Binding Path="!AttendanceIsChecking"/>
-						<Binding Path="!FinalGradesIsCreating"/>
-					</MultiBinding>
-				</Viewbox.IsVisible>
-				<Button Width="500" Height="70" Content="Отметить присутствуюших"
-						Command="{Binding ToAttendance}"
-						FontSize="24" Classes="MainAccentColor Corner20"/>
-			</Viewbox>
-			<Viewbox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
-				<Viewbox.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
-						<MultiBinding Converter="{x:Static BoolConverters.Or}">
-							<Binding Path="AttendanceIsChecking"/>
-							<Binding Path="FinalGradesIsCreating"/>
+			<StackPanel Grid.RowSpan="3" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Bottom" Spacing="15"
+						Grid.ColumnSpan="3" Grid.Row="7" IsVisible="{Binding !IsAdmin}">
+				<Viewbox>
+					<Viewbox.IsVisible>
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							<Binding Path="SelectedPeriod" Converter="{x:Static converters:DateTimeConverters.CanSetFinalGrade}"/>
+							<Binding Path="!AttendanceIsChecking"/>
+							<Binding Path="!FinalGradesIsCreating"/>
 						</MultiBinding>
-					</MultiBinding>
-				</Viewbox.IsVisible>
-				<Button Width="500" Height="70" Content="К успеваемости" FontSize="24" Classes="MainAccentColor Corner20"
-						Command="{Binding ToGrade}"/>
-			</Viewbox>
+					</Viewbox.IsVisible>
+					<Button Width="500" Height="70" Content="Проставить итоговые отметки"
+							Command="{Binding ToFinalGrades}"
+							FontSize="24" Classes="MainAccentColor Corner20"/>
+				</Viewbox>
+				<Viewbox>
+					<Viewbox.IsVisible>
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							<Binding Path="AttendanceIsChecking"/>
+						</MultiBinding>
+					</Viewbox.IsVisible>
+					<controls:ButtonWithAnimatedCommand Width="500" Height="70" Content="Сохранить отметки" FontSize="24" Classes="MainAccentColor"
+														Command="{Binding SaveAttendance}" CornerRadius="20"/>
+				</Viewbox>
+				<Viewbox>
+					<Viewbox.IsVisible>
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							<Binding Path="!AttendanceIsChecking"/>
+							<Binding Path="!FinalGradesIsCreating"/>
+						</MultiBinding>
+					</Viewbox.IsVisible>
+					<Button Width="500" Height="70" Content="Отметить присутствуюших"
+							Command="{Binding ToAttendance}"
+							FontSize="24" Classes="MainAccentColor Corner20"/>
+				</Viewbox>
+				<Viewbox>
+					<Viewbox.IsVisible>
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							<MultiBinding Converter="{x:Static BoolConverters.Or}">
+								<Binding Path="AttendanceIsChecking"/>
+								<Binding Path="FinalGradesIsCreating"/>
+							</MultiBinding>
+						</MultiBinding>
+					</Viewbox.IsVisible>
+					<Button Width="500" Height="70" Content="К успеваемости" FontSize="24" Classes="MainAccentColor Corner20"
+							Command="{Binding ToGrade}"/>
+				</Viewbox>
+			</StackPanel>
 			<Border Grid.Column="5" Grid.Row="1" Grid.RowSpan="9" Classes="TransitionBorderBrush ListBorder">
 				<Grid>
 					<ListBox ItemsSource="{Binding Students}" Classes="Students" SelectionMode="Multiple,Toggle">
