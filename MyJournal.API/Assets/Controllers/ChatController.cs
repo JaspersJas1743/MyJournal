@@ -226,7 +226,7 @@ public sealed class ChatController(
 			u.Surname,
 			u.Name,
 			u.Patronymic,
-			u.LinkToPhoto,
+			u.LinkToPhoto ?? UserDefault,
 			u.UserActivityStatus.ActivityStatus,
 			u.OnlineAt
 		)));
@@ -294,7 +294,7 @@ public sealed class ChatController(
 				u.Surname,
 				u.Name,
 				u.Patronymic,
-				u.LinkToPhoto,
+				u.LinkToPhoto ?? UserDefault,
 				u.UserActivityStatus.ActivityStatus,
 				u.OnlineAt
 			)
