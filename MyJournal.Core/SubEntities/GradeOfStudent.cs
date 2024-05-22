@@ -101,7 +101,7 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 			apiMethod: e.ApiMethod
 		) ?? throw new InvalidOperationException();
 
-		if (response.PeriodId != _periodId)
+		if (response.PeriodId != _periodId && _periodId != 0)
 			return;
 
 		_average = response.AverageAssessment;
