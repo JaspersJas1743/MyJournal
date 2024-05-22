@@ -73,6 +73,9 @@ public class ClassController(
 	{
 		return Ok(value: _context.Classes.Where(predicate: c => c.Id == classId).SelectMany(c => c.Students)
 			.Select(selector: s => new GetStudentsFromClassResponse(s.Id, s.User.Surname, s.User.Name, s.User.Patronymic))
+			.OrderBy(keySelector: r => r.Surname)
+			.ThenBy(keySelector: r => r.Name)
+			.ThenBy(keySelector: r => r.Patronymic)
 		);
 	}
 }
