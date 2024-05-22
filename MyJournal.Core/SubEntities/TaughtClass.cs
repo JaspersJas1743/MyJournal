@@ -1,4 +1,3 @@
-using System.Collections;
 using MyJournal.Core.Utilities.Api;
 using MyJournal.Core.Utilities.AsyncLazy;
 using MyJournal.Core.Utilities.Constants.Controllers;
@@ -38,6 +37,10 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 	private int SubjectId { get; }
 	internal bool StudentsAreCreated => _students.IsValueCreated;
 
+	private sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
+	private sealed record Grade(int Id, string Assessment, DateTime CreatedAt, string? Comment, string Description, GradeTypes GradeType);
+	private sealed record Student(int StudentId, string Surname, string Name, string? Patronymic);
+	private sealed record GetAssessmentsByClassResponse(Student Student, string AverageAssessment, int? FinalAssessment, IEnumerable<Grade> Assessments);
 	private sealed record GetStudentsFromClassResponse(int Id, string Surname, string Name, string? Patronymic);
 	public sealed record Attendance(int StudentId, bool IsPresent, int? CommentId);
 	private sealed record SetAttendanceRequest(int SubjectId, DateTime Datetime, IEnumerable<Attendance> Attendances);
@@ -61,8 +64,9 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		IEnumerable<GetStudentsFromClassResponse> students = await client.GetAsync<IEnumerable<GetStudentsFromClassResponse>>(
-			apiMethod: ClassControllerMethods.GetStudentsFromClass(classId: classId),
+		IEnumerable<GetAssessmentsByClassResponse> students = await client.GetAsync<IEnumerable<GetAssessmentsByClassResponse>, GetAssessmentsRequest>(
+			apiMethod: AssessmentControllerMethods.GetAssessmentsByClass(classId: classId),
+			argQuery: new GetAssessmentsRequest(PeriodId: educationPeriodId, SubjectId: subjectId),
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		return new TaughtClass(
@@ -74,10 +78,10 @@ public sealed class TaughtClass : ISubEntity, IAsyncEnumerable<StudentInTaughtCl
 				selector: async s => await StudentInTaughtClass.Create(
 					client: client,
 					subjectId: subjectId,
-					id: s.Id,
-					surname: s.Surname,
-					name: s.Name,
-					patronymic: s.Patronymic,
+					id: s.Student.StudentId,
+					surname: s.Student.Surname,
+					name: s.Student.Name,
+					patronymic: s.Student.Patronymic,
 					educationPeriodId: educationPeriodId,
 					cancellationToken: cancellationToken
 				)
