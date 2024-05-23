@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
@@ -10,22 +9,11 @@ using MyJournal.Desktop.Views;
 
 namespace MyJournal.Desktop.Assets.Utilities.FileService;
 
-public sealed class FileStorageService : IFileStorageService
+public sealed class FileStorageService(Window target) : IFileStorageService
 {
-	private readonly Window _target;
-	private readonly IFileService _fileService;
-	private readonly IConfigurationService _configurationService;
-
-	public FileStorageService(Window target, IFileService fileService, IConfigurationService configurationService)
-	{
-		_target = target;
-		_fileService = fileService;
-		_configurationService = configurationService;
-	}
-
 	public async Task<IStorageFile?> OpenFile(IReadOnlyList<FilePickerFileType> fileTypes)
 	{
-		IReadOnlyList<IStorageFile> files = await _target.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+		IReadOnlyList<IStorageFile> files = await target.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 		{
 			Title = "Открыть...",
 			AllowMultiple = false,
@@ -37,7 +25,7 @@ public sealed class FileStorageService : IFileStorageService
 
 	public async Task<IStorageFolder?> OpenFolder()
 	{
-		IReadOnlyList<IStorageFolder> folders = await _target.StorageProvider.OpenFolderPickerAsync(options: new FolderPickerOpenOptions()
+		IReadOnlyList<IStorageFolder> folders = await target.StorageProvider.OpenFolderPickerAsync(options: new FolderPickerOpenOptions()
 		{
 			Title = "Открыть...",
 			AllowMultiple = false
@@ -53,9 +41,7 @@ public static class FilesServiceExtensions
 	{
 		return serviceCollection.AddTransient<IFileStorageService, FileStorageService>(
 			implementationFactory: provider => new FileStorageService(
-				target: provider.GetService<MainWindowView>()!,
-				fileService: provider.GetService<IFileService>()!,
-				configurationService: provider.GetService<IConfigurationService>()!
+				target: provider.GetService<MainWindowView>()!
 			)
 		);
 	}
@@ -64,9 +50,7 @@ public static class FilesServiceExtensions
 	{
 		return serviceCollection.AddKeyedTransient<IFileStorageService, FileStorageService>(serviceKey: key,
 			implementationFactory: (provider, o) => new FileStorageService(
-				target: provider.GetService<MainWindowView>()!,
-				fileService: provider.GetService<IFileService>()!,
-				configurationService: provider.GetService<IConfigurationService>()!
+				target: provider.GetService<MainWindowView>()!
 			)
 		);
 	}

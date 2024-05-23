@@ -16,14 +16,6 @@ public sealed class AuthorizationWithCredentialsService(
 {
 	private record Response(int SessionId, string Token, UserRoles Role);
 
-	private enum UserRoles
-	{
-		Student,
-		Teacher,
-		Administrator,
-		Parent
-	}
-
 	public async Task<Authorized<User>> SignIn(Credentials<User> credentials, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		Response response = await client.PostAsync<Response, Credentials<User>>(
@@ -43,7 +35,12 @@ public sealed class AuthorizationWithCredentialsService(
 		};
 		Activity activity = await user.GetActivity();
 		await activity.SetOnline(cancellationToken: cancellationToken);
-		return new Authorized<User>(instance: user, typeOfInstance: user.GetType(), token: response.Token);
+		return new Authorized<User>(
+			instance: user,
+			typeOfInstance: user.GetType(),
+			token: response.Token,
+			role: response.Role
+		);
 	}
 }
 

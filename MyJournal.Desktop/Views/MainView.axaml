@@ -7,15 +7,7 @@
 			mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1025"
 			x:DataType="viewModels:MainVM" x:Class="MyJournal.Desktop.Views.MainView">
 	<Grid ColumnDefinitions="685*, 550*, 685*">
-		<TransitioningContentControl Grid.Column="0" Grid.ColumnSpan="3">
-			<TransitioningContentControl.Content>
-				<Binding ElementName="MenuPanel" Path="((controls:MenuItem)SelectedItem).ItemContent">
-					<Binding.FallbackValue>
-						<TextBlock Text="Произошла непредвиденная ошибка :(" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-					</Binding.FallbackValue>
-				</Binding>
-			</TransitioningContentControl.Content>
-		</TransitioningContentControl>
+		<TransitioningContentControl Grid.Column="0" Grid.ColumnSpan="3" Content="{Binding SelectedItem.ItemContent}"/>
 		<Viewbox Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 			<Border Classes="MenuBorder">
 				<Border Classes="Menu TransitionBackground TransitionBorderBrush">

@@ -1,14 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Reactive;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using AsyncImageLoader;
 using AsyncImageLoader.Loaders;
@@ -65,7 +61,6 @@ using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
 using MyJournal.Desktop.Views.Timetable;
-using ReactiveUI;
 
 namespace MyJournal.Desktop;
 
@@ -101,9 +96,9 @@ public partial class App : Application
 			.AddTransient<MultiChatCreationView>()
 			#endregion
 			#region Welcome
-			.AddSingleton<WelcomeView>()
-			.AddSingleton<WelcomeVM>()
-			.AddSingleton<WelcomeModel>()
+			.AddTransient<WelcomeView>()
+			.AddTransient<WelcomeVM>()
+			.AddTransient<WelcomeModel>()
 			#endregion
 			#region Utilities
 			.AddApiClient(timeout: TimeSpan.FromMinutes(value: 5))
@@ -126,188 +121,188 @@ public partial class App : Application
 			.AddNotificationService()
 			#endregion
 			#region Authorization
-			.AddSingleton<AuthorizationView>()
-			.AddSingleton<AuthorizationVM>()
-			.AddSingleton<AuthorizationModel>()
+			.AddTransient<AuthorizationView>()
+			.AddTransient<AuthorizationVM>()
+			.AddTransient<AuthorizationModel>()
 			#endregion
 			#region Registration
 			#region First step
-			.AddSingleton<FirstStepOfRegistrationView>()
-			.AddSingleton<FirstStepOfRegistrationVM>()
-			.AddSingleton<FirstStepOfRegistrationModel>()
+			.AddTransient<FirstStepOfRegistrationView>()
+			.AddTransient<FirstStepOfRegistrationVM>()
+			.AddTransient<FirstStepOfRegistrationModel>()
 			#endregion
 			#region Second step
-			.AddSingleton<SecondStepOfRegistrationView>()
-			.AddSingleton<SecondStepOfRegistrationVM>()
-			.AddSingleton<SecondStepOfRegistrationModel>()
+			.AddTransient<SecondStepOfRegistrationView>()
+			.AddTransient<SecondStepOfRegistrationVM>()
+			.AddTransient<SecondStepOfRegistrationModel>()
 			#endregion
 			#region Third step
-			.AddSingleton<ThirdStepOfRegistrationView>()
-			.AddSingleton<ThirdStepOfRegistrationVM>()
-			.AddSingleton<ThirdStepOfRegistrationModel>()
+			.AddTransient<ThirdStepOfRegistrationView>()
+			.AddTransient<ThirdStepOfRegistrationVM>()
+			.AddTransient<ThirdStepOfRegistrationModel>()
 			#endregion
 			#region Fourth step
-			.AddSingleton<FourthStepOfRegistrationView>()
-			.AddSingleton<FourthStepOfRegistrationVM>()
-			.AddSingleton<FourthStepOfRegistrationModel>()
+			.AddTransient<FourthStepOfRegistrationView>()
+			.AddTransient<FourthStepOfRegistrationVM>()
+			.AddTransient<FourthStepOfRegistrationModel>()
 			#endregion
 			#region Fifth step
-			.AddSingleton<FifthStepOfRegistrationView>()
-			.AddSingleton<FifthStepOfRegistrationVM>()
-			.AddSingleton<FifthStepOfRegistrationModel>()
+			.AddTransient<FifthStepOfRegistrationView>()
+			.AddTransient<FifthStepOfRegistrationVM>()
+			.AddTransient<FifthStepOfRegistrationModel>()
 			#endregion
 			#region Sixth step
-			.AddSingleton<SixthStepOfRegistrationView>()
-			.AddSingleton<SixthStepOfRegistrationVM>()
-			.AddSingleton<SixthStepOfRegistrationModel>()
+			.AddTransient<SixthStepOfRegistrationView>()
+			.AddTransient<SixthStepOfRegistrationVM>()
+			.AddTransient<SixthStepOfRegistrationModel>()
 			#endregion
 			#region Seventh step via phone
-			.AddSingleton<SeventhStepOfRegistrationViaPhoneView>()
-			.AddSingleton<SeventhStepOfRegistrationViaPhoneVM>()
-			.AddSingleton<SeventhStepOfRegistrationViaPhoneModel>()
+			.AddTransient<SeventhStepOfRegistrationViaPhoneView>()
+			.AddTransient<SeventhStepOfRegistrationViaPhoneVM>()
+			.AddTransient<SeventhStepOfRegistrationViaPhoneModel>()
 			#endregion
 			#region Seventh step via email
-			.AddSingleton<SeventhStepOfRegistrationViaEmailView>()
-			.AddSingleton<SeventhStepOfRegistrationViaEmailVM>()
-			.AddSingleton<SeventhStepOfRegistrationViaEmailModel>()
+			.AddTransient<SeventhStepOfRegistrationViaEmailView>()
+			.AddTransient<SeventhStepOfRegistrationViaEmailVM>()
+			.AddTransient<SeventhStepOfRegistrationViaEmailModel>()
 			#endregion
 			#region End of registration
-			.AddSingleton<EndOfRegistrationView>()
-			.AddSingleton<EndOfRegistrationVM>()
-			.AddSingleton<EndOfRegistrationModel>()
+			.AddTransient<EndOfRegistrationView>()
+			.AddTransient<EndOfRegistrationVM>()
+			.AddTransient<EndOfRegistrationModel>()
 			#endregion
 			#endregion
 			#region Restoring Access
 			#region Through email
-			.AddSingleton<RestoringAccessThroughEmailView>()
-			.AddSingleton<RestoringAccessThroughEmailVM>()
-			.AddSingleton<RestoringAccessThroughEmailModel>()
+			.AddTransient<RestoringAccessThroughEmailView>()
+			.AddTransient<RestoringAccessThroughEmailVM>()
+			.AddTransient<RestoringAccessThroughEmailModel>()
 			#endregion
 			#region Through phone
-			.AddSingleton<RestoringAccessThroughPhoneView>()
-			.AddSingleton<RestoringAccessThroughPhoneVM>()
-			.AddSingleton<RestoringAccessThroughPhoneModel>()
+			.AddTransient<RestoringAccessThroughPhoneView>()
+			.AddTransient<RestoringAccessThroughPhoneVM>()
+			.AddTransient<RestoringAccessThroughPhoneModel>()
 			#endregion
 			#region Confirmation code
-			.AddSingleton<ConfirmationOfRestoringAccessView>()
-			.AddSingleton<ConfirmationOfRestoringAccessVM>()
-			.AddSingleton<ConfirmationOfRestoringAccessModel>()
+			.AddTransient<ConfirmationOfRestoringAccessView>()
+			.AddTransient<ConfirmationOfRestoringAccessVM>()
+			.AddTransient<ConfirmationOfRestoringAccessModel>()
 			#endregion
 			#region Changing password
-			.AddSingleton<ChangingPasswordWhenRestoringAccessView>()
-			.AddSingleton<ChangingPasswordWhenRestoringAccessVM>()
-			.AddSingleton<ChangingPasswordWhenRestoringAccessModel>()
+			.AddTransient<ChangingPasswordWhenRestoringAccessView>()
+			.AddTransient<ChangingPasswordWhenRestoringAccessVM>()
+			.AddTransient<ChangingPasswordWhenRestoringAccessModel>()
 			#endregion
 			#region Last step
-			.AddSingleton<EndOfRestoringAccessView>()
-			.AddSingleton<EndOfRestoringAccessVM>()
-			.AddSingleton<EndOfRestoringAccessModel>()
+			.AddTransient<EndOfRestoringAccessView>()
+			.AddTransient<EndOfRestoringAccessVM>()
+			.AddTransient<EndOfRestoringAccessModel>()
 			#endregion
 			#endregion
 			#region Main
-			.AddSingleton<MainView>()
-			.AddSingleton<MainVM>()
-			.AddSingleton<MainModel>()
+			.AddTransient<MainView>()
+			.AddTransient<MainVM>()
+			.AddTransient<MainModel>()
 			#endregion
-			#region Initial loadin
-			.AddSingleton<InitialLoadingView>()
-			.AddSingleton<InitialLoadingVM>()
-			.AddSingleton<InitialLoadingModel>()
+			#region Initial loading
+			.AddTransient<InitialLoadingView>()
+			.AddTransient<InitialLoadingVM>()
+			.AddTransient<InitialLoadingModel>()
 			#endregion
 			#region Profile
-			.AddSingleton<ProfileView>()
-			.AddSingleton<ProfileVM>()
-			.AddSingleton<ProfileModel>()
+			.AddTransient<ProfileView>()
+			.AddTransient<ProfileVM>()
+			.AddTransient<ProfileModel>()
 			#region Profile photo
-			.AddSingleton<ProfilePhotoView>()
-			.AddSingleton<ProfilePhotoVM>()
-			.AddSingleton<ProfilePhotoModel>()
+			.AddTransient<ProfilePhotoView>()
+			.AddTransient<ProfilePhotoVM>()
+			.AddTransient<ProfilePhotoModel>()
 			#endregion
 			#region Profile email
-			.AddSingleton<ProfileEmailView>()
-			.AddSingleton<ProfileEmailVM>()
-			.AddSingleton<ProfileEmailModel>()
+			.AddTransient<ProfileEmailView>()
+			.AddTransient<ProfileEmailVM>()
+			.AddTransient<ProfileEmailModel>()
 			#endregion
 			#region Profile phone
-			.AddSingleton<ProfilePhoneView>()
-			.AddSingleton<ProfilePhoneVM>()
-			.AddSingleton<ProfilePhoneModel>()
+			.AddTransient<ProfilePhoneView>()
+			.AddTransient<ProfilePhoneVM>()
+			.AddTransient<ProfilePhoneModel>()
 			#endregion
 			#region Profile sessions
-			.AddSingleton<ProfileSessionsView>()
-			.AddSingleton<ProfileSessionsVM>()
-			.AddSingleton<ProfileSessionsModel>()
+			.AddTransient<ProfileSessionsView>()
+			.AddTransient<ProfileSessionsVM>()
+			.AddTransient<ProfileSessionsModel>()
 			#endregion
 			#region Profile change menu type
-			.AddSingleton<ProfileChangeMenuItemTypeView>()
-			.AddSingleton<ProfileChangeMenuItemTypeVM>()
-			.AddSingleton<ProfileChangeMenuItemTypeModel>()
+			.AddTransient<ProfileChangeMenuItemTypeView>()
+			.AddTransient<ProfileChangeMenuItemTypeVM>()
+			.AddTransient<ProfileChangeMenuItemTypeModel>()
 			#endregion
 			#region Profile change theme
-			.AddSingleton<ProfileChangeThemeView>()
-			.AddSingleton<ProfileChangeThemeVM>()
-			.AddSingleton<ProfileChangeThemeModel>()
+			.AddTransient<ProfileChangeThemeView>()
+			.AddTransient<ProfileChangeThemeVM>()
+			.AddTransient<ProfileChangeThemeModel>()
 			#endregion
 			#region Profile file storage
-			.AddSingleton<ProfileFileStorageView>()
-			.AddSingleton<ProfileFileStorageVM>()
-			.AddSingleton<ProfileFileStorageModel>()
+			.AddTransient<ProfileFileStorageView>()
+			.AddTransient<ProfileFileStorageVM>()
+			.AddTransient<ProfileFileStorageModel>()
 			#endregion
 			#region Profile security
-			.AddSingleton<ProfileSecurityView>()
-			.AddSingleton<ProfileSecurityVM>()
-			.AddSingleton<ProfileSecurityModel>()
+			.AddTransient<ProfileSecurityView>()
+			.AddTransient<ProfileSecurityVM>()
+			.AddTransient<ProfileSecurityModel>()
 			#endregion
 			#region Profile started page
-			.AddSingleton<ProfileChangeStartedPageView>()
-			.AddSingleton<ProfileChangeStartedPageVM>()
-			.AddSingleton<ProfileChangeStartedPageModel>()
+			.AddTransient<ProfileChangeStartedPageView>()
+			.AddTransient<ProfileChangeStartedPageVM>()
+			.AddTransient<ProfileChangeStartedPageModel>()
 			#endregion
 			#endregion
 			#region Messages
-			.AddSingleton<MessagesView>()
-			.AddSingleton<MessagesVM>()
-			.AddSingleton<MessagesModel>()
+			.AddTransient<MessagesView>()
+			.AddTransient<MessagesVM>()
+			.AddTransient<MessagesModel>()
 			#endregion
 			#region Marks
 			#region Created marks
-			.AddSingleton<CreatedMarksView>()
-			.AddSingleton<CreatedMarksVM>()
-			.AddSingleton<CreatedMarksModel>()
+			.AddTransient<CreatedMarksView>()
+			.AddTransient<CreatedMarksVM>()
+			.AddTransient<CreatedMarksModel>()
 			#endregion
 			#region Received marks
-			.AddSingleton<ReceivedMarksView>()
-			.AddSingleton<ReceivedMarksVM>()
-			.AddSingleton<ReceivedMarksModel>()
+			.AddTransient<ReceivedMarksView>()
+			.AddTransient<ReceivedMarksVM>()
+			.AddTransient<ReceivedMarksModel>()
 			#endregion
 			#endregion
 			#region Tasks
 			#region Created tasks
-			.AddSingleton<CreatedTasksView>()
-			.AddSingleton<CreatedTasksVM>()
-			.AddSingleton<CreatedTasksModel>()
+			.AddTransient<CreatedTasksView>()
+			.AddTransient<CreatedTasksVM>()
+			.AddTransient<CreatedTasksModel>()
 			#endregion
 			#region Received tasks
-			.AddSingleton<ReceivedTasksView>()
-			.AddSingleton<ReceivedTasksVM>()
-			.AddSingleton<ReceivedTasksModel>()
+			.AddTransient<ReceivedTasksView>()
+			.AddTransient<ReceivedTasksVM>()
+			.AddTransient<ReceivedTasksModel>()
 			#endregion
 			#endregion
 			#region Timetable
 			#region Creating timetable
-			.AddSingleton<CreatingTimetableView>()
-			.AddSingleton<CreatingTimetableVM>()
-			.AddSingleton<CreatingTimetableModel>()
+			.AddTransient<CreatingTimetableView>()
+			.AddTransient<CreatingTimetableVM>()
+			.AddTransient<CreatingTimetableModel>()
 			#endregion
 			#region Study timetable
-			.AddSingleton<StudyTimetableView>()
-			.AddSingleton<StudyTimetableVM>()
-			.AddSingleton<StudyTimetableModel>()
+			.AddTransient<StudyTimetableView>()
+			.AddTransient<StudyTimetableVM>()
+			.AddTransient<StudyTimetableModel>()
 			#endregion
 			#region Work timetable
-			.AddSingleton<WorkTimetableView>()
-			.AddSingleton<WorkTimetableVM>()
-			.AddSingleton<WorkTimetableModel>();
+			.AddTransient<WorkTimetableView>()
+			.AddTransient<WorkTimetableVM>()
+			.AddTransient<WorkTimetableModel>();
 			#endregion
 			#endregion
 		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddWindowsCredentialStorageService());
@@ -395,7 +390,7 @@ public partial class App : Application
 			{
 				credential = credentialStorageService.Get();
 			}
-			catch (GException ex)
+			catch (GException _)
 			{
 				credential = UserCredential.Empty;
 			}
@@ -409,7 +404,7 @@ public partial class App : Application
 					Authorized<User> authorizedUser = await authorizationService.SignIn(
 						credentials: new UserTokenCredentials(token: credential.AccessToken)
 					);
-					await mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+					await mainVM.SetAuthorizedUser(user: authorizedUser);
 					mainWindowVM.SetUser(user: authorizedUser.Instance);
 					mainWindowVM.Content = mainVM;
 				}

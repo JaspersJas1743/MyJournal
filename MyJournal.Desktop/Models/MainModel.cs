@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using MyJournal.Core;
+using MyJournal.Core.Authorization;
 using MyJournal.Desktop.Assets.Controls;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
@@ -52,7 +53,7 @@ public sealed class MainModel : ModelBase
 		set => this.RaiseAndSetIfChanged(backingField: ref _selectedIndex, newValue: value);
 	}
 
-	public async Task SetAuthorizedUser(User user)
+	public async Task SetAuthorizedUser(Authorized<User> user)
 	{
 		Menu = new ObservableCollection<MenuItem>(collection: await RoleHelper.GetMenu(user: user));
 		SelectedIndex = Int32.Parse(s: _configurationService.Get(key: ConfigurationKeys.StartedPage)!);

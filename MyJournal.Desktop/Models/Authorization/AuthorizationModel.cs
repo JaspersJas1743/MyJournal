@@ -100,7 +100,7 @@ public class AuthorizationModel : ModelWithErrorMessage
 				await SaveCorrectCredential(accessToken: authorizedUser.Token);
 
 			MainVM mainVM = (Application.Current as App)!.GetService<MainVM>();
-			await mainVM.SetAuthorizedUser(user: authorizedUser.Instance);
+			await mainVM.SetAuthorizedUser(user: authorizedUser);
 
 			MessageBus.Current.SendMessage(message: new ChangeMainWindowVMEventArgs(
 				newVM: mainVM, animationType: AnimationType.DirectionToRight

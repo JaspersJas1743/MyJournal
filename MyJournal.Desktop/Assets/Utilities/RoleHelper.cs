@@ -5,8 +5,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia;
 using MyJournal.Core;
+using MyJournal.Core.Authorization;
 using MyJournal.Desktop.Assets.Controls;
-using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.MenuConfigurationService;
 using MyJournal.Desktop.ViewModels;
 using MyJournal.Desktop.ViewModels.Marks;
@@ -24,44 +24,23 @@ public static class RoleHelper
 	private const string Parent = "Родитель";
 	private const string Administrator = "Администратор";
 
-	private static readonly IConfigurationService _configurationService;
+	private static readonly App App;
 	private static readonly string[] Images = new string[] { "Login", "Messages", "Tasks", "Marks", "Schedule" };
 	private static readonly string[] Names = new string[] { "Профиль", "Диалоги", "Задания", "Оценки", "Занятия" };
-	private static readonly MenuItemVM[] ContentsForTeacher;
-    private static readonly MenuItemVM[] ContentsForStudent;
-    private static readonly MenuItemVM[] ContentsForParent;
-    private static readonly MenuItemVM[] ContentsForAdministrator;
 
 	static RoleHelper()
-	{
-		App app = (Application.Current as App)!;
-		_configurationService = app.GetService<IConfigurationService>();
-		ProfileVM profile = app.GetService<ProfileVM>();
-		MessagesVM messages = app.GetService<MessagesVM>();
-		TasksVM receivedTasks = app.GetService<ReceivedTasksVM>();
-		TasksVM createdTasks = app.GetService<CreatedTasksVM>();
-		MarksVM receivedMarks = app.GetService<ReceivedMarksVM>();
-		MarksVM createdMarks = app.GetService<CreatedMarksVM>();
-		TimetableVM teacherTimetable = app.GetService<WorkTimetableVM>();
-		TimetableVM studentTimetable = app.GetService<StudyTimetableVM>();
-		TimetableVM administratorTimetable = app.GetService<CreatingTimetableVM>();
+		=> App = (Application.Current as App)!;
 
-		ContentsForTeacher          = new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	teacherTimetable };
-		ContentsForStudent          = new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable };
-		ContentsForParent			= new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable };
-		ContentsForAdministrator	= new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	administratorTimetable };
-	}
-
-	public static async Task<IEnumerable<MenuItem>> GetMenu(User user)
+	public static async Task<IEnumerable<MenuItem>> GetMenu(Authorized<User> user)
 	{
-		MenuItemVM[]? contents = GetContent(userType: user.GetType());
+		MenuItemVM[] contents = GetContent(userRole: user.Role);
 		if (contents is null)
 			throw new NullReferenceException(message: $"Метод {nameof(GetContent)} вернул пустой список.");
 
 		return await Task.WhenAll(tasks: Enumerable.Range(start: 0, count: Images.Length).Select(selector: async index =>
 		{
 			MenuItemVM content = contents[index];
-			await content.SetUser(user: user);
+			await content.SetUser(user: user.Instance);
 			return new MenuItem(image: Images[index], header: Names[index], itemContent: content, itemType: IMenuConfigurationService.CurrentType);
 		}));
 	}
@@ -77,11 +56,24 @@ public static class RoleHelper
 		)?.GetValue(obj: null)?.ToString();
 	}
 
-	private static MenuItemVM[]? GetContent(Type userType)
+	private static MenuItemVM[] GetContent(UserRoles userRole)
 	{
-		return typeof(RoleHelper).GetField(
-			name: $"ContentsFor{userType.Name}",
-			bindingAttr: BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.IgnoreCase
-		)?.GetValue(obj: null) as MenuItemVM[];
+		ProfileVM profile = App.GetService<ProfileVM>();
+		MessagesVM messages = App.GetService<MessagesVM>();
+		TasksVM receivedTasks = App.GetService<ReceivedTasksVM>();
+		TasksVM createdTasks = App.GetService<CreatedTasksVM>();
+		MarksVM receivedMarks = App.GetService<ReceivedMarksVM>();
+		MarksVM createdMarks = App.GetService<CreatedMarksVM>();
+		TimetableVM teacherTimetable = App.GetService<WorkTimetableVM>();
+		TimetableVM studentTimetable = App.GetService<StudyTimetableVM>();
+		TimetableVM administratorTimetable = App.GetService<CreatingTimetableVM>();
+
+		return userRole switch
+		{
+			UserRoles.Teacher       => new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	teacherTimetable },
+			UserRoles.Student       => new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable },
+			UserRoles.Parent		=> new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable },
+			UserRoles.Administrator => new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	administratorTimetable },
+		};
 	}
 }
