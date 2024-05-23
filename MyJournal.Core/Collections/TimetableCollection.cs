@@ -3,11 +3,11 @@ using MyJournal.Core.Utilities.AsyncLazy;
 
 namespace MyJournal.Core.Collections;
 
-public abstract class TimetableCollection<T>(ApiClient client, AsyncLazy<Dictionary<DateOnly, T[]>> timetableOnDate) : IAsyncEnumerable<KeyValuePair<DateOnly, T[]>>
+public abstract class TimetableCollection<T>(
+	ApiClient client,
+	AsyncLazy<Dictionary<DateOnly, T[]>> timetableOnDate
+) : IAsyncEnumerable<KeyValuePair<DateOnly, T[]>>
 {
-	private readonly ApiClient _client = client;
-	private readonly AsyncLazy<Dictionary<DateOnly, T[]>> _timetableOnDate = timetableOnDate;
-
 	#region Interfaces
 	protected interface ITResponse
 	{
@@ -28,14 +28,14 @@ public abstract class TimetableCollection<T>(ApiClient client, AsyncLazy<Diction
 		CancellationToken cancellationToken = default(CancellationToken)
 	) where TResponse : ITResponse
 	{
-		Dictionary<DateOnly, T[]> timetables = await _timetableOnDate;
+		Dictionary<DateOnly, T[]> timetables = await timetableOnDate;
 
 		foreach (DateOnly d in Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays))
 		{
 			if (timetables.ContainsKey(key: d))
 				continue;
 
-			IEnumerable<TResponse> response = await _client.GetAsync<IEnumerable<TResponse>, GetTimetableByDateRequest>(
+			IEnumerable<TResponse> response = await client.GetAsync<IEnumerable<TResponse>, GetTimetableByDateRequest>(
 				apiMethod: apiMethod,
 				argQuery: new GetTimetableByDateRequest(Day: d),
 				cancellationToken: cancellationToken
@@ -51,7 +51,7 @@ public abstract class TimetableCollection<T>(ApiClient client, AsyncLazy<Diction
 		CancellationToken cancellationToken = new CancellationToken()
 	)
 	{
-		foreach (KeyValuePair<DateOnly, T[]> pair in await _timetableOnDate)
+		foreach (KeyValuePair<DateOnly, T[]> pair in await timetableOnDate)
 		{
 			if (cancellationToken.IsCancellationRequested)
 				yield break;

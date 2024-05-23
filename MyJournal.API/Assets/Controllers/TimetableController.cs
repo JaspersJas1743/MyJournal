@@ -27,6 +27,9 @@ public sealed class TimetableController(
 	[Validator<GetTimetableByDateRequestValidator>]
 	public sealed record GetTimetableByDateRequest(DateOnly Day);
 
+	[Validator<GetTimetableByDatesRequestValidator>]
+	public sealed record GetTimetableByDatesRequest(IEnumerable<DateOnly> Days);
+
 	[Validator<GetTimetableBySubjectRequestValidator>]
 	public sealed record GetTimetableBySubjectRequest(int SubjectId);
 
@@ -40,10 +43,13 @@ public sealed class TimetableController(
 	{
 		public Break? Break { get; set; } = Break;
 	}
+
+	public sealed record GetTimetableWithAssessmentsByDateResponse(DateOnly Date, IEnumerable<GetTimetableWithAssessmentsResponse> Timetable);
 	public sealed record GetTimetableWithoutAssessmentsResponse(GetTimetableResponseSubject Subject, Break? Break)
 	{
 		public Break? Break { get; set; } = Break;
 	}
+	public sealed record GetTimetableWithoutAssessmentsByDateResponse(DateOnly Date, IEnumerable<GetTimetableWithoutAssessmentsResponse> Timetable);
 
 	[Validator<GetTimetableByClassRequestValidator>]
 	public sealed record GetTimetableByClassRequest(int ClassId);
@@ -89,10 +95,10 @@ public sealed class TimetableController(
 	[HttpGet(template: "date/student/get")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableByDateForStudent(
+	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableByDateForStudent(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -129,6 +135,71 @@ public sealed class TimetableController(
 	}
 
 	/// <summary>
+	/// [Ученик] Получение расписания ученика с группировкой по дате
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/dates/student/get?Days=2024-05-23&Days=2024-05-24
+	///
+	/// Параметры:
+	///
+	///	Days - даты, за которые необходимо получить расписание
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание ученика</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Student</response>
+	[HttpGet(template: "dates/student/get")]
+	[Authorize(Policy = nameof(UserRoles.Student))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsByDateResponse>>> GetTimetableByDatesForStudent(
+		[FromQuery] GetTimetableByDatesRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		List<GetTimetableWithAssessmentsByDateResponse> result = new List<GetTimetableWithAssessmentsByDateResponse>(capacity: request.Days.Count());
+		foreach (DateOnly day in request.Days)
+		{
+			GetTimetableWithAssessmentsResponse[] timings = await _context.Students.AsNoTracking()
+				.Where(predicate: s => s.UserId == userId)
+				.Where(predicate: s => !s.Class.EducationPeriodForClasses.Any(
+					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < day && h.EndDate > day)
+				))
+				.SelectMany(selector: s => s.Class.LessonTimings)
+				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == day.DayOfWeek)
+				.OrderBy(keySelector: t => t.Number)
+				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime),
+					t.Lesson.Assessments.Where(a =>
+						DateOnly.FromDateTime(a.Datetime) == day &&
+						t.StartTime <= a.Datetime.TimeOfDay &&
+						t.EndTime >= a.Datetime.TimeOfDay &&
+						a.Student.UserId == userId
+					).Select(a => new Estimation(a.Grade.Assessment)),
+					null
+				)).ToArrayAsync(cancellationToken: cancellationToken);
+
+			IEnumerable<GetTimetableWithAssessmentsResponse> timetable = timings.Select(selector: (timing, index) =>
+			{
+				GetTimetableWithAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: index + 1);
+				if (nextTiming is not null)
+					timing.Break = new Break(CountMinutes: (nextTiming.Subject.Start - timing.Subject.End).TotalMinutes);
+				return timing;
+			});
+			result.Add(item: new GetTimetableWithAssessmentsByDateResponse(Date: day, Timetable: timetable));
+		}
+
+		return Ok(value: result);
+	}
+
+	/// <summary>
 	/// [Ученик] Получение расписания ученика с группировкой по дисциплине
 	/// </summary>
 	/// <remarks>
@@ -149,10 +220,10 @@ public sealed class TimetableController(
 	[HttpGet(template: "subject/student/get")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableBySubjectForStudent(
+	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableBySubjectForStudent(
 		[FromQuery] GetTimetableBySubjectRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -204,10 +275,10 @@ public sealed class TimetableController(
 	[HttpGet(template: "date/parent/get")]
 	[Authorize(Policy = nameof(UserRoles.Parent))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableByDateForParent(
+	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableByDateForParent(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -244,6 +315,71 @@ public sealed class TimetableController(
 	}
 
 	/// <summary>
+	/// [Родитель] Получение расписания подопечного с группировкой по дате
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/dates/parent/get?Days=2024-05-23&Days=2024-05-24
+	///
+	/// Параметры:
+	///
+	///	Day - дата, на которую надо получить расписание
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание подопечного</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Parent</response>
+	[HttpGet(template: "dates/parent/get")]
+	[Authorize(Policy = nameof(UserRoles.Parent))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsByDateResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsByDateResponse>>> GetTimetableByDatesForParent(
+		[FromQuery] GetTimetableByDatesRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		List<GetTimetableWithAssessmentsByDateResponse> result = new List<GetTimetableWithAssessmentsByDateResponse>(capacity: request.Days.Count());
+		foreach (DateOnly day in request.Days)
+		{
+			GetTimetableWithAssessmentsResponse[] timings = await _context.Parents.AsNoTracking()
+				.Where(predicate: p => p.UserId == userId)
+				.Where(predicate: p => !p.Children.Class.EducationPeriodForClasses.Any(
+					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < day && h.EndDate > day)
+				))
+				.SelectMany(selector: p => p.Children.Class.LessonTimings)
+				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == day.DayOfWeek)
+				.OrderBy(keySelector: t => t.Number)
+				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime),
+					t.Lesson.Assessments.Where(a =>
+						DateOnly.FromDateTime(a.Datetime) == day &&
+						t.StartTime <= a.Datetime.TimeOfDay &&
+						t.EndTime >= a.Datetime.TimeOfDay &&
+						a.Student.Parents.Any(p => p.UserId == userId)
+					).Select(a => new Estimation(a.Grade.Assessment)),
+					null
+				)).ToArrayAsync(cancellationToken: cancellationToken);
+
+			IEnumerable<GetTimetableWithAssessmentsResponse> timetable = timings.Select(selector: (t, i) =>
+			{
+				GetTimetableWithAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: i + 1);
+				if (nextTiming is not null)
+					t.Break = new Break(CountMinutes: (nextTiming.Subject.Start - t.Subject.End).TotalMinutes);
+				return t;
+			});
+			result.Add(item: new GetTimetableWithAssessmentsByDateResponse(Date: day, Timetable: timetable));
+		}
+
+		return Ok(value: result);
+	}
+
+	/// <summary>
 	/// [Родитель] Получение расписания подопечного с группировкой по дисциплине
 	/// </summary>
 	/// <remarks>
@@ -264,10 +400,10 @@ public sealed class TimetableController(
 	[HttpGet(template: "subject/parent/get")]
 	[Authorize(Policy = nameof(UserRoles.Parent))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableWithAssessmentsResponse>> GetTimetableBySubjectForParent(
+	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableBySubjectForParent(
 		[FromQuery] GetTimetableBySubjectRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -319,10 +455,10 @@ public sealed class TimetableController(
 	[HttpGet(template: "date/teacher/get")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithoutAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithoutAssessmentsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableWithoutAssessmentsResponse>> GetTimetableByDateForTeacher(
+	public async Task<ActionResult<IEnumerable<GetTimetableWithoutAssessmentsResponse>>> GetTimetableByDateForTeacher(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -354,6 +490,66 @@ public sealed class TimetableController(
 	}
 
 	/// <summary>
+	/// [Преподаватель] Получение расписания преподавателя с группировкой по дате
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/timetable/dates/teacher/get?Days=2024-05-23&Days=2024-05-24
+	///
+	/// Параметры:
+	///
+	///	Day - дата, на которую надо получить расписание
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Расписание преподавателя</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Teacher</response>
+	[HttpGet(template: "dates/teacher/get")]
+	[Authorize(Policy = nameof(UserRoles.Teacher))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithoutAssessmentsByDateResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<IEnumerable<GetTimetableWithoutAssessmentsByDateResponse>>> GetTimetableByDatesForTeacher(
+		[FromQuery] GetTimetableByDatesRequest request,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		int userId = GetAuthorizedUserId();
+		List<GetTimetableWithoutAssessmentsByDateResponse> result = new List<GetTimetableWithoutAssessmentsByDateResponse>(capacity: request.Days.Count());
+		foreach (DateOnly day in request.Days)
+		{
+			GetTimetableWithoutAssessmentsResponse[] timings = await _context.Teachers.AsNoTracking()
+				.Where(predicate: t => t.UserId == userId)
+				.SelectMany(selector: t => t.TeachersLessons)
+				.SelectMany(selector: l => l.Lesson.LessonTimings.Intersect(l.Classes.SelectMany(c => c.LessonTimings)))
+				.Where(predicate: t => !t.Class.EducationPeriodForClasses.Any(
+					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < day && h.EndDate > day)
+				))
+				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == day.DayOfWeek)
+				.OrderBy(keySelector: t => t.Number)
+				.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime),
+					null
+				)).ToArrayAsync(cancellationToken: cancellationToken);
+
+			IEnumerable<GetTimetableWithoutAssessmentsResponse> timetable = timings.Select(selector: (timing, index) =>
+			{
+				GetTimetableWithoutAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: index + 1);
+				if (nextTiming is not null)
+					timing.Break = new Break(CountMinutes: (nextTiming.Subject.Start - timing.Subject.End).TotalMinutes);
+				return timing;
+			});
+			result.Add(item: new GetTimetableWithoutAssessmentsByDateResponse(Date: day, Timetable: timetable));
+		}
+
+		return Ok(value: result);
+	}
+
+	/// <summary>
 	/// [Преподаватель] Получение расписания преподавателя с группировкой по дисциплине
 	/// </summary>
 	/// <remarks>
@@ -374,10 +570,10 @@ public sealed class TimetableController(
 	[HttpGet(template: "subject/teacher/get")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableWithoutAssessmentsResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithoutAssessmentsResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableWithoutAssessmentsResponse>> GetTimetableBySubjectForTeacher(
+	public async Task<ActionResult<IEnumerable<GetTimetableWithoutAssessmentsResponse>>> GetTimetableBySubjectForTeacher(
 		[FromQuery] GetTimetableBySubjectAndClassRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
@@ -425,10 +621,10 @@ public sealed class TimetableController(
 	[HttpGet(template: "get")]
 	[Authorize(Policy = nameof(UserRoles.Administrator))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(GetTimetableByClassResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableByClassResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<GetTimetableByClassResponse>> GetTimetableForClass(
+	public async Task<ActionResult<IEnumerable<GetTimetableByClassResponse>>> GetTimetableForClass(
 		[FromQuery] GetTimetableByClassRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
