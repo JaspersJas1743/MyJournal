@@ -1008,6 +1008,14 @@ public sealed class AssessmentController(
 				message: "Устанавливать итоговую оценку можно только в пределах 10 дней до окончания учебного периода"
 			);
 
+		if (_context.FinalGradesForEducationPeriods.AsNoTracking().Any(predicate: fgfep =>
+			fgfep.EducationPeriodId == period.Id &&
+			fgfep.StudentId == request.StudentId
+		)) throw new HttpResponseException(
+			statusCode: StatusCodes.Status400BadRequest,
+			message: "Итоговая отметка за данный учебный период уже установлена."
+		);
+
 		FinalGradesForEducationPeriod assessment = new FinalGradesForEducationPeriod()
 		{
 			GradeId = request.GradeId,
