@@ -311,7 +311,8 @@ public sealed class AssessmentController(
 			{
 				Student = s,
 				Average = s.Assessments.Where(a =>
-						EF.Functions.IsNumeric(a.Grade.Assessment) && !a.IsDeleted &&
+						EF.Functions.IsNumeric(a.Grade.Assessment) &&
+						a.LessonId == request.SubjectId && !a.IsDeleted &&
 						EF.Functions.DateDiffDay(a.Datetime, period.Start) <= 0 &&
 						EF.Functions.DateDiffDay(a.Datetime, period.End) >= 0
 					).Select(a => a.Grade.Assessment).DefaultIfEmpty().Select(g => g ?? "0")

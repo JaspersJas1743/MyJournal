@@ -17,21 +17,21 @@ public static class DateTimeConverters
 
 	public static readonly IValueConverter CanSetFinalGrade = new FuncValueConverter<EducationPeriod, bool>(convert: period =>
 	{
-		if (period is null)
+		if (period?.EndDate is null)
 			return false;
 
 		DateTime now = DateTime.Now;
-		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MinValue);
+		DateTime end = period.EndDate.Value.ToDateTime(time: TimeOnly.MinValue);
 		return (end - now).TotalDays > 0;
 	});
 
 	public static readonly IValueConverter CanNotSetFinalGrade = new FuncValueConverter<EducationPeriod, bool>(convert: period =>
 	{
-		if (period is null)
+		if (period?.EndDate is null)
 			return false;
 
 		DateTime now = DateTime.Now;
-		DateTime end = period.EndDate.ToDateTime(time: TimeOnly.MinValue);
+		DateTime end = period.EndDate.Value.ToDateTime(time: TimeOnly.MinValue);
 		return (end - now).TotalDays <= 0;
 	});
 }
