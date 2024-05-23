@@ -151,5 +151,25 @@
 			<Setter Property="BorderThickness" Value="5 0 0 5"/>
 			<Setter Property="CornerRadius" Value="0 0 0 20"/>
 		</Style>
+		<Style Selector="^.Five">
+			<Setter Property="Background" Value="{DynamicResource ExcellentGradeColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ExcellentGradeColor}"/>
+		</Style>
+		<Style Selector="^.Four">
+			<Setter Property="Background" Value="{DynamicResource GoodGradeColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource GoodGradeColor}"/>
+		</Style>
+		<Style Selector="^.Three">
+			<Setter Property="Background" Value="{DynamicResource SatisfactoryGradeColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource SatisfactoryGradeColor}"/>
+		</Style>
+		<Style Selector="^.Two">
+			<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+		</Style>
+		<Style Selector="^.Truancy">
+			<Setter Property="Background" Value="{DynamicResource TruancyColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource EmptyInputStrokeColor}"/>
+		</Style>
 	</Style>
 </Styles>

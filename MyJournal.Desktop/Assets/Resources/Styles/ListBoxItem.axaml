@@ -4,7 +4,10 @@
 		xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 		xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities"
-		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters">
+		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
+		xmlns:marksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.MarksUtilities"
+		xmlns:entities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
+		xmlns:behaviors="clr-namespace:MyJournal.Desktop.Assets.Resources.Behaviors">
 
 	<Style Selector="ListBoxItem">
 		<Setter Property="Padding" Value="0"/>
@@ -259,5 +262,255 @@
 		<Setter Property="Padding" Value="0"/>
 		<Setter Property="Margin" Value="0"/>
 		<Setter Property="HorizontalContentAlignment" Value="Center" />
+	</Style>
+
+	<Style Selector="ListBox.Estimation ListBoxItem:nth-child(12n)">
+		<Setter Property="Margin" Value="0 0 10 0"/>
+	</Style>
+
+	<Style Selector="ListBox.Estimation ListBoxItem:nth-child(12n+1)">
+		<Setter Property="Margin" Value="10 0 0 0"/>
+	</Style>
+
+	<Style Selector="ListBox.Students > ListBoxItem">
+		<Setter Property="Template">
+			<ControlTemplate x:DataType="marksUtilities:ObservableStudent">
+				<Viewbox>
+					<interactivity:Interaction.Behaviors>
+						<interaction:EventTriggerBehavior EventName="PointerPressed">
+							<interaction:InvokeCommandAction Command="{Binding OnPointerPressed}"/>
+						</interaction:EventTriggerBehavior>
+					</interactivity:Interaction.Behaviors>
+					<Border Width="1310" x:Name="PART_Border" BorderBrush="{DynamicResource StrokeColor}"
+							BorderThickness="5" ClipToBounds="True" CornerRadius="15"
+							Background="{DynamicResource BackgroundColor}"
+							Classes="HeightTransition" >
+						<Grid RowDefinitions="80*, auto">
+							<Border Grid.Row="0" x:Name="PART_FirstBorder" BorderBrush="{DynamicResource StrokeColor}"
+									Classes="TransitionBorderThickness">
+								<Grid ColumnDefinitions="40*, 255*, 10*, 840*, 10*, 50*, 10*, 80*, 10*">
+									<TextBlock	Grid.Column="0" Text="{Binding Position}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+									<Border Grid.Column="1" BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0"
+											Padding="20 0">
+										<TextBlock	Text="{Binding Converter={x:Static converters:ObservableStudentConverters.ShortFullName}}"
+													TextTrimming="CharacterEllipsis" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+									</Border>
+
+									<ListBox	Grid.Column="3" ItemsSource="{Binding Grade.Estimations}" SelectionMode="Toggle"
+												SelectedItem="{Binding SelectedEstimation,Mode=TwoWay}"
+												Classes="TeacherEstimation" Margin="0 10" HorizontalAlignment="Left">
+										<interactivity:Interaction.Behaviors>
+											<interaction:EventTriggerBehavior EventName="SelectionChanged">
+												<interaction:InvokeCommandAction	Command="{Binding OnEstimationSelectionChanged}"
+																					CommandParameter="{Binding $parent[ListBoxItem]}"/>
+											</interaction:EventTriggerBehavior>
+											<behaviors:ListBoxRightClickBehavior/>
+										</interactivity:Interaction.Behaviors>
+									</ListBox>
+
+									<Viewbox Grid.Column="5">
+										<Button Classes="MainAccentColor Corner10" Width="50" Height="50" Padding="12.5"
+												Command="{Binding CreateEstimation}" CommandParameter="{Binding $parent[ListBoxItem]}">
+											<Grid>
+												<controls:XamlSvg HorizontalAlignment="Center" VerticalAlignment="Center" Classes="Minus"/>
+												<controls:XamlSvg	Classes.Horizontal="{TemplateBinding IsSelected,Converter={x:Static BoolConverters.Not}}"
+																	HorizontalAlignment="Center" VerticalAlignment="Center" Classes="Minus RenderTransformTransitions"/>
+											</Grid>
+										</Button>
+									</Viewbox>
+
+									<Viewbox Grid.Column="7" Margin="0 10">
+										<TextBox	Classes.Four="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsFour}}" FontSize="28"
+													Classes.Three="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsThree}}" Width="80"
+													Classes.Two="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsTwo}}" Margin="0"
+													Classes.EmptyForTeacher="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsEmpty}}"
+													Classes.Five="{Binding Grade.AverageAssessment,Converter={x:Static converters:GradeConverters.IsFive}}" Height="50"
+													Text="{Binding Grade.AverageAssessment}" CornerRadius="10" Padding="0" TextAlignment="Center"/>
+									</Viewbox>
+								</Grid>
+							</Border>
+							<Border Grid.Row="1" x:Name="PART_SecondBorder" Classes="HeightTransition" Background="{DynamicResource BackgroundColor}">
+								<Grid>
+									<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left" Margin="15 10 0 10">
+										<ListBox	ItemsSource="{Binding PossibleAssessments}" Classes="PossibleAssessments"
+													SelectedItem="{Binding SelectedAssessment,Mode=TwoWay}">
+											<interactivity:Interaction.Behaviors>
+												<interaction:EventTriggerBehavior EventName="SelectionChanged">
+													<interaction:InvokeCommandAction Command="{Binding OnPossibleAssessmentSelectionChanged}"/>
+												</interaction:EventTriggerBehavior>
+												<interaction:EventTriggerBehavior EventName="DetachedFromVisualTree">
+													<interaction:InvokeCommandAction Command="{Binding OnDetachedFromVisualTree}"/>
+												</interaction:EventTriggerBehavior>
+											</interactivity:Interaction.Behaviors>
+										</ListBox>
+										<TextBlock Text="от" FontSize="20" VerticalAlignment="Center"/>
+										<Viewbox Width="250">
+											<DatePicker Width="250" Height="50" CornerRadius="10" SelectedDate="{Binding Date,Mode=TwoWay}"/>
+										</Viewbox>
+										<TextBlock Text="за" FontSize="20" VerticalAlignment="Center" IsVisible="{Binding !!Comments.Count}"/>
+										<ListBox	SelectedItem="{Binding SelectedComment,Mode=TwoWay}"
+													Classes="CommentsForPossibleAssessments" SelectionMode="Single"
+													IsVisible="{Binding !!Comments.Count}"
+													ItemsSource="{Binding Comments}"/>
+									</StackPanel>
+									<Viewbox HorizontalAlignment="Right" Margin="0 15 15 15">
+										<Viewbox.IsVisible>
+											<MultiBinding Converter="{x:Static BoolConverters.And}">
+												<Binding Path="IsCreating"/>
+												<Binding Path="!IsEditing"/>
+											</MultiBinding>
+										</Viewbox.IsVisible>
+										<controls:ButtonWithAnimatedCommand Width="125" Height="50" FontSize="20" CornerRadius="10" Content="Сохранить"
+																			Classes="MainAccentColor" Command="{Binding SaveNewEstimation}"/>
+									</Viewbox>
+									<Viewbox HorizontalAlignment="Right" Margin="0 15 15 15">
+										<Viewbox.IsVisible>
+											<MultiBinding Converter="{x:Static BoolConverters.And}">
+												<Binding Path="IsEditing"/>
+											</MultiBinding>
+										</Viewbox.IsVisible>
+										<controls:ButtonWithAnimatedCommand Width="125" Height="50" FontSize="20" CornerRadius="10" Content="Изменить"
+																			Classes="MainAccentColor" Command="{Binding SaveEditableEstimation}"/>
+									</Viewbox>
+								</Grid>
+							</Border>
+						</Grid>
+					</Border>
+				</Viewbox>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:selected">
+			<Style Selector="^ /template/ Border#PART_Border">
+				<Setter Property="Height" Value="165"/>
+			</Style>
+			<Style Selector="^ /template/ Border#PART_FirstBorder">
+				<Setter Property="BorderThickness" Value="0 0 0 5"/>
+			</Style>
+			<Style Selector="^ /template/ Border#PART_SecondBorder">
+				<Setter Property="Height" Value="80"/>
+			</Style>
+		</Style>
+		<Style Selector="^:not(:selected)">
+			<Style Selector="^ /template/ Border#PART_Border">
+				<Setter Property="Height" Value="85"/>
+			</Style>
+			<Style Selector="^ /template/ Border#PART_FirstBorder">
+				<Setter Property="BorderThickness" Value="0"/>
+			</Style>
+			<Style Selector="^ /template/ Border#PART_SecondBorder">
+				<Setter Property="Height" Value="0"/>
+			</Style>
+		</Style>
+	</Style>
+
+	<Style Selector="ListBox.PossibleAssessments > ListBoxItem">
+		<Setter Property="Template">
+			<ControlTemplate x:DataType="entities:PossibleAssessment">
+				<Border	Height="60" Width="60" CornerRadius="10" Classes="TransitionBackground TransitionBorderBrush"
+						BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5" x:Name="Border"
+						Background="{DynamicResource BackgroundColor}">
+						<Classes.Two>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="Assessment" Converter="{x:Static converters:GradeConverters.IsTwo}"/>
+								<Binding Path="$parent[ListBoxItem].IsSelected"/>
+							</MultiBinding>
+						</Classes.Two>
+						<Classes.Four>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="Assessment" Converter="{x:Static converters:GradeConverters.IsFour}"/>
+								<Binding Path="$parent[ListBoxItem].IsSelected"/>
+							</MultiBinding>
+						</Classes.Four>
+						<Classes.Five>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="Assessment" Converter="{x:Static converters:GradeConverters.IsFive}"/>
+								<Binding Path="$parent[ListBoxItem].IsSelected"/>
+							</MultiBinding>
+						</Classes.Five>
+						<Classes.Three>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="Assessment" Converter="{x:Static converters:GradeConverters.IsThree}"/>
+								<Binding Path="$parent[ListBoxItem].IsSelected"/>
+							</MultiBinding>
+						</Classes.Three>
+						<Classes.Truancy>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="Assessment" Converter="{x:Static converters:GradeConverters.IsAbsence}"/>
+								<Binding Path="$parent[ListBoxItem].IsSelected"/>
+							</MultiBinding>
+						</Classes.Truancy>
+						<TextBlock	Text="{Binding Assessment}" VerticalAlignment="Center" HorizontalAlignment="Center"
+									TextAlignment="Center" FontSize="32" x:Name="PART_Assessment"/>
+					</Border>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:selected">
+			<Style Selector="^ /template/ TextBlock">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			</Style>
+		</Style>
+	</Style>
+
+	<Style Selector="ListBox.CommentsForPossibleAssessments > ListBoxItem">
+		<Setter Property="Template">
+			<ControlTemplate x:DataType="entities:CommentsForAssessment">
+				<Border	Height="60" Width="60" CornerRadius="10" Classes="TransitionBackground TransitionBorderBrush"
+						BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5" x:Name="Border"
+						Background="{DynamicResource BackgroundColor}" ToolTip.ShowDelay="150"
+						ToolTip.Tip="{Binding Description}">
+					<Grid>
+						<TextBlock	TextAlignment="Center" FontSize="20" x:Name="PART_Assessment" IsVisible="{Binding Comment,
+									Converter={StaticResource StringIsNotNullOrWhiteSpaceConverter}}" VerticalAlignment="Center"
+									Text="{Binding Comment}" HorizontalAlignment="Center"/>
+						<controls:XamlSvg	Classes="Ban" Margin="5" IsVisible="{Binding Comment,
+											Converter={StaticResource StringIsNullOrWhiteSpaceConverter}}"/>
+					</Grid>
+					</Border>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:selected">
+			<Style Selector="^ /template/ TextBlock">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			</Style>
+			<Style Selector="^ /template/ controls|XamlSvg">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			</Style>
+			<Style Selector="^ /template/ Border">
+				<Setter Property="Background" Value="{DynamicResource SelectionControlColor}"/>
+				<Setter Property="BorderBrush" Value="{DynamicResource StrokeOnControlColor}"/>
+			</Style>
+		</Style>
+	</Style>
+
+	<Style Selector="ListBox.TeacherEstimation > ListBoxItem">
+		<Setter Property="Template">
+			<ControlTemplate x:DataType="marksUtilities:ObservableEstimationOfStudent">
+				<Viewbox Height="50" Width="50">
+					<Viewbox.ContextMenu>
+						<ContextMenu>
+							<MenuItem	Header="Удалить оценку" Foreground="{DynamicResource ErrorColor}"
+										Command="{Binding DeleteEstimation}"/>
+						</ContextMenu>
+					</Viewbox.ContextMenu>
+					<Border Height="50" Width="50" CornerRadius="10" ToolTip.Tip="{Binding Description}" ToolTip.ShowDelay="150"
+							Classes.Five="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsFive}}"
+							Classes.Four="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsFour}}"
+							Classes.Three="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsThree}}"
+							Classes.Two="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsTwo}}"
+							Classes.Truancy="{Binding GradeType,Converter={x:Static converters:GradeConverters.IsTruancy}}"
+							Classes="TransitionBackground">
+						<TextBlock	Text="{Binding Assessment}" VerticalAlignment="Center" HorizontalAlignment="Center"
+									Foreground="{DynamicResource TextOnSelectedControlColor}"
+									TextAlignment="Center" FontSize="32" x:Name="PART_Assessment"/>
+					</Border>
+				</Viewbox>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:selected">
+			<Style Selector="^ /template/ Border">
+				<Setter Property="BorderBrush" Value="{DynamicResource ForegroundColor}"/>
+				<Setter Property="BorderThickness" Value="3"/>
+			</Style>
+		</Style>
 	</Style>
 </Styles>

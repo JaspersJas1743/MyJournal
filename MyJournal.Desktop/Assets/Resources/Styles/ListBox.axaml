@@ -8,7 +8,9 @@
 		xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 		xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
-		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities">
+		xmlns:tasksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TasksUtilities"
+		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities"
+		xmlns:marksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.MarksUtilities">
 
 	<Style Selector="ListBox">
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -46,6 +48,13 @@
 				<ItemsPanelTemplate>
 					<StackPanel Orientation="Horizontal" Spacing="15"/>
 				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="^.OpacityTransition">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+				</Transitions>
 			</Setter>
 		</Style>
 		<Style Selector="^.Chats">
@@ -262,8 +271,12 @@
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="chatUtilities:ExtendedInterlocutor">
 					<Grid ColumnDefinitions="10*, 50*, 10*, 400*" Width="470" Height="50" Margin="10 10 0 10">
-						<Border Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
-							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"/>
+						<Border Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left"
+								Classes.DefaultChatPhoto="{Binding Photo,
+								Converter={StaticResource PhotoLinkIsDefaultConverter}}">
+							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"
+															Classes.SmallChatPhoto="{Binding Photo,
+															Converter={StaticResource PhotoLinkIsDefaultConverter}}"/>
 						</Border>
 						<TextBlock Grid.Column="3" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left"
 									FontSize="20" Text="{Binding FullName}" TextAlignment="Left"/>
@@ -286,8 +299,12 @@
 				<DataTemplate DataType="chatUtilities:ExtendedInterlocutor">
 					<Grid	ColumnDefinitions="10*, 50*, 10*, 350*, 10*, 30*, 10*, 10*" RowDefinitions="10*, 30*, 10*"
 							Width="480" Height="50" Margin="10 10 0 10">
-						<Border Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left">
-							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"/>
+						<Border Grid.Row="0" Grid.Column="1" CornerRadius="10" HorizontalAlignment="Left"
+								Grid.RowSpan="3" Classes.DefaultChatPhoto="{Binding Photo,
+								Converter={StaticResource PhotoLinkIsDefaultConverter}}">
+							<asyncImageLoader:AdvancedImage Source="{Binding Photo}" Stretch="Fill"
+															Classes.SmallChatPhoto="{Binding Photo,
+															Converter={StaticResource PhotoLinkIsDefaultConverter}}"/>
 						</Border>
 						<TextBlock	Grid.Row="0" Grid.RowSpan="3" Grid.Column="3" TextTrimming="CharacterEllipsis"
 									Text="{Binding FullName}" TextAlignment="Left"
@@ -327,7 +344,7 @@
 
 		<Style Selector="^.StudyingSubjects">
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="tasksUtilities:StudentSubject">
+				<DataTemplate DataType="utilities:StudentSubjectBase">
 					<Grid Margin="20 10" Width="450" Height="50">
 						<StackPanel Orientation="Vertical" VerticalAlignment="Center">
 							<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
@@ -343,7 +360,7 @@
 
 		<Style Selector="^.TeacherSubjects">
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="tasksUtilities:TeacherSubject">
+				<DataTemplate DataType="utilities:TeacherSubjectBase">
 					<Grid Margin="20 10" Width="450" Height="50">
 						<StackPanel Orientation="Vertical" VerticalAlignment="Center">
 							<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
@@ -558,6 +575,191 @@
 						</Border>
 					</Viewbox>
 				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.Estimation">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<WrapPanel Orientation="Horizontal" Width="1350" HorizontalAlignment="Center" Margin="0 10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="marksUtilities:ObservableEstimation">
+					<Viewbox Height="90" Width="90" Margin="10">
+						<Border Height="90" Width="90" CornerRadius="15" ToolTip.Tip="{Binding Description}" ToolTip.ShowDelay="150"
+								Classes.Five="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsFive}}"
+								Classes.Four="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsFour}}"
+								Classes.Three="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsThree}}"
+								Classes.Two="{Binding Assessment,Converter={x:Static converters:GradeConverters.IsTwo}}"
+								Classes.Truancy="{Binding GradeType,Converter={x:Static converters:GradeConverters.IsTruancy}}"
+								Classes="TransitionBackground">
+							<Grid RowDefinitions="20*, 10*, 30*, 10*, 20*">
+								<TextBlock Grid.Row="0" Grid.RowSpan="2" Text="{Binding Comment}" VerticalAlignment="Center"
+											TextAlignment="Center" FontSize="16" x:Name="PART_Comment" Classes="OpacityTransition"
+											Foreground="{DynamicResource TextOnSelectedControlColor}"
+											Opacity="{Binding $parent[ListBoxItem].IsPointerOver}"/>
+								<TextBlock Grid.Row="1" Grid.RowSpan="3" Text="{Binding Assessment}" VerticalAlignment="Center"
+											Foreground="{DynamicResource TextOnSelectedControlColor}"
+											TextAlignment="Center" FontSize="32" x:Name="PART_Assessment"/>
+								<TextBlock	Grid.Row="3" Grid.RowSpan="2" Text="{Binding CreatedAt,StringFormat='dd.MM'}"
+											Foreground="{DynamicResource TextOnSelectedControlColor}"
+											VerticalAlignment="Center" TextAlignment="Center" FontSize="16" x:Name="PART_CreatedAt"
+											Opacity="{Binding $parent[ListBoxItem].IsPointerOver}" Classes="OpacityTransition"/>
+							</Grid>
+						</Border>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.TeacherEstimation">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<ReversibleStackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5" ReverseOrder="True"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.Students">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.StudentsAttendance">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20 0 20 20"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="marksUtilities:ObservableStudent">
+					<Border Width="1320" Height="90" x:Name="PART_Border" BorderBrush="{DynamicResource StrokeColor}"
+							BorderThickness="5" ClipToBounds="True" CornerRadius="15"
+							Background="{DynamicResource BackgroundColor}"
+							Classes="HeightTransition">
+						<Grid ColumnDefinitions="50*, 20*, 465*, 795*">
+							<Border Grid.Column="0" BorderBrush="{DynamicResource StrokeColor}"
+									BorderThickness="0 0 5 0">
+								<TextBlock Text="{Binding Position}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+							</Border>
+							<TextBlock	Grid.Column="2" Text="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+										TextTrimming="CharacterEllipsis" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+							<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Left" Spacing="10" Margin="10">
+								<TextBlock Text="на занятии" FontSize="20" VerticalAlignment="Center"/>
+								<Viewbox Height="50">
+									<RadioButton	GroupName="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+													Width="155" Height="50" Content="присутствует" FontSize="20" IsChecked="{Binding IsAttend}"/>
+								</Viewbox>
+								<Viewbox Height="50">
+									<RadioButton	GroupName="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+													Width="140" Height="50" Content="отсутствует" FontSize="20" IsChecked="{Binding !IsAttend}"/>
+								</Viewbox>
+								<TextBlock	Text="из-за" Opacity="{Binding !IsAttend,
+											Converter={StaticResource BoolToDoubleConverter}}"
+											FontSize="20" VerticalAlignment="Center" Classes="OpacityTransition"/>
+								<ListBox	ItemsSource="{Binding TruancyComments}"
+											Opacity="{Binding !IsAttend,
+											Converter={StaticResource BoolToDoubleConverter}}"
+											SelectedItem="{Binding SelectedAttendanceComment,Mode=TwoWay}"
+											Classes="CommentsForPossibleAssessments OpacityTransition"/>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.StudentsFinalGrades">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20 0 20 20"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="marksUtilities:ObservableStudent">
+					<Border Width="1320" Height="90" x:Name="PART_Border" BorderBrush="{DynamicResource StrokeColor}"
+							BorderThickness="5" ClipToBounds="True" CornerRadius="15"
+							Background="{DynamicResource BackgroundColor}"
+							Classes="HeightTransition">
+						<interactivity:Interaction.Behaviors>
+							<interaction:EventTriggerBehavior EventName="AttachedToVisualTree">
+								<interaction:InvokeCommandAction Command="{Binding OnAttachedToVisualTree}"/>
+							</interaction:EventTriggerBehavior>
+						</interactivity:Interaction.Behaviors>
+						<Grid ColumnDefinitions="50*, 20*, 680*, 550*, 20*">
+							<Border Grid.Column="0" BorderBrush="{DynamicResource StrokeColor}"
+									BorderThickness="0 0 5 0">
+								<TextBlock Text="{Binding Position}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+							</Border>
+							<TextBlock	Grid.Column="2" Text="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+										TextTrimming="CharacterEllipsis" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+							<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Left" Spacing="20" Margin="0 10">
+								<ListBox	Classes="PossibleAssessments" ItemsSource="{Binding PossibleAssessments,
+											Converter={x:Static converters:AssessmentsConverters.OnlyAssessments}}"
+											SelectedItem="{Binding SelectedFinalAssessment,Mode=TwoWay}"
+											IsEnabled="{Binding Grade.FinalAssessment,
+											Converter={x:Static converters:IntegerConverters.IsNull}}"/>
+								<Viewbox Width="260" Height="50">
+									<controls:ButtonWithAnimatedCommand Width="260" Height="50" Classes="MainAccentColor Corner10" FontSize="20"
+																		Classes.HaveFinalGrade="{Binding Grade.FinalAssessment,
+																		Converter={x:Static converters:IntegerConverters.IsNotNull}}"
+																		Classes.NotHaveFinalGrade="{Binding Grade.FinalAssessment,
+																		Converter={x:Static converters:IntegerConverters.IsNull}}"
+																		Classes.NotSelectedFinalGrade="{Binding SelectedFinalAssessment,
+																		Converter={x:Static ObjectConverters.IsNull}}"
+																		Command="{Binding SaveFinalEstimation}"
+																		/>
+								</Viewbox>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.PossibleAssessments">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.CommentsForPossibleAssessments">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="10"/>
+				</ItemsPanelTemplate>
 			</Setter>
 		</Style>
 	</Style>

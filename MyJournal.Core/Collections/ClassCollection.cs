@@ -67,6 +67,14 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 		);
 	}
 
+	public async Task<Class> GetById(int id)
+	{
+		List<Class> collection = await _classes;
+		return collection.Find(match: c => c.Id == id) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с идентификатором {id} отсутствует.", paramName: nameof(id)
+		);
+	}
+
 	internal async Task OnCompletedTask(CompletedTaskEventArgs e)
 	{
 		await InvokeIfSubjectsAreCreated(

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -43,7 +42,7 @@ public sealed class ReceivedTasksModel : TasksModel
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
 			.Select(selector: FilterFunction);
 
-		IObservable<SortExpressionComparer<StudentSubject>> sort = this.WhenAnyValue(model => model.Filter).WhereNotNull()
+		IObservable<SortExpressionComparer<StudentSubject>> sort = this.WhenAnyValue(property1: model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
 			.Select(selector: _ => SortExpressionComparer<StudentSubject>.Ascending(expression: s => s.Teacher != null ? 1 : 0)
 				.ThenByAscending(expression: s => s.Name!).ThenByAscending(expression: s => s.Teacher?.FullName ?? String.Empty));

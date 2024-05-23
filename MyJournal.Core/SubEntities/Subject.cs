@@ -1,5 +1,3 @@
-using MyJournal.Core.Utilities.Api;
-
 namespace MyJournal.Core.SubEntities;
 
 public sealed class SubjectTeacher : ISubEntity

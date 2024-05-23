@@ -18,6 +18,7 @@ public static class AssessmentControllerMethods
 
 	public static string Get(int assessmentId) => $"assessments/{assessmentId}/get";
 	public static string GetAssessmentsById(int studentId) => $"assessments/student/{studentId}/get";
+	public static string GetAssessmentsByClass(int classId) => $"assessments/class/{classId}/get";
 	public static string GetAverageAssessmentById(int studentId) => $"assessments/average/student/{studentId}/get";
 	public static string GetFinalAssessmentById(int studentId) => $"assessments/final/student/{studentId}/get";
 	public static string GetCommentsForAssessments(int assessmentId) => $"assessments/{assessmentId}/comments/get";

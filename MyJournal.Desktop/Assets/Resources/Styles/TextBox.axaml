@@ -20,6 +20,8 @@
 		<Setter Property="Transitions">
 			<Transitions>
 				<BrushTransition Property="Background" Duration="0:0:0.2"/>
+				<BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+				<ThicknessTransition Property="BorderThickness" Duration="0:0:0.2"/>
 			</Transitions>
 		</Setter>
 		<Setter Property="Template">
@@ -236,6 +238,108 @@
 		</Style>
 		<Style Selector="^.TaskWatermark">
 			<Setter Property="Cursor" Value="IBeam"/>
+		</Style>
+		<Style Selector="^.Five">
+			<Setter Property="Background" Value="{DynamicResource ExcellentGradeColor}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource ExcellentGradeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource ExcellentGradeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.Four">
+			<Setter Property="Background" Value="{DynamicResource GoodGradeColor}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource GoodGradeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource GoodGradeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.Three">
+			<Setter Property="Background" Value="{DynamicResource SatisfactoryGradeColor}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource SatisfactoryGradeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource SatisfactoryGradeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.Two">
+			<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.WithoutMark">
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource EmptyInputStrokeColor}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.EmptyForTeacher">
+			<Setter Property="Background" Value="{DynamicResource EmptyInputStrokeColor}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+			<Style Selector="^:pointerover">
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource EmptyInputStrokeColor}"/>
+				</Style>
+			</Style>
+			<Style Selector="^:focus">
+				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
+				<Style Selector="^ /template/ Border#PART_BorderElement">
+					<Setter Property="Background" Value="{DynamicResource EmptyInputStrokeColor}"/>
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
+			</Style>
 		</Style>
     </Style>
 </Styles>

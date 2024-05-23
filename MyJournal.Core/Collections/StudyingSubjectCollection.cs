@@ -116,6 +116,14 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 	public async Task<IEnumerable<EducationPeriod>> GetEducationPeriods()
 		=> await _educationPeriods;
 
+	public async Task<StudyingSubject> GetById(int id)
+	{
+		List<StudyingSubject> collection = await _subjects;
+		return collection.Find(match: s => s.Id == id) ?? throw new ArgumentOutOfRangeException(
+			message: $"Элемент с идентификатором {id} отсутствует.", paramName: nameof(id)
+		);
+	}
+
 	public async Task<StudyingSubject> GetByIndex(int index)
 	{
 		List<StudyingSubject> collection = await _subjects;

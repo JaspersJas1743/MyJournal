@@ -4,7 +4,7 @@ using MyJournal.Core.Utilities.EventArgs;
 
 namespace MyJournal.Desktop.Assets.Utilities.TasksUtilities;
 
-public sealed class StudentSubject
+public sealed class StudentSubject : StudentSubjectBase
 {
 	private readonly StudyingSubject? _studyingSubject;
 	private readonly WardSubjectStudying? _wardSubjectStudying;
@@ -31,10 +31,6 @@ public sealed class StudentSubject
 		wardSubjectStudying.CompletedTask += e => CompletedTask?.Invoke(e: e);
 		wardSubjectStudying.UncompletedTask += e => UncompletedTask?.Invoke(e: e);
 	}
-
-	public int Id { get; init; }
-	public string? Name { get; init; }
-	public SubjectTeacher? Teacher { get; init; }
 
 	public event CompletedTaskHandler CompletedTask;
 	public event UncompletedTaskHandler UncompletedTask;

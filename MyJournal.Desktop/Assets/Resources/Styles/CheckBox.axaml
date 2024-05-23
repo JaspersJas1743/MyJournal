@@ -7,7 +7,7 @@
 		<Setter Property="FontFeatures" Value="+lnum"/>
 		<Setter Property="FontSize" Value="24"/>
 		<Setter Property="FocusAdorner" Value="{x:Null}" />
-		<Setter Property="CornerRadius" Value="10"></Setter>
+		<Setter Property="CornerRadius" Value="10"/>
 		<Setter Property="Template">
 			<ControlTemplate>
 				<Grid x:Name="RootGrid" ColumnDefinitions="30,*">
