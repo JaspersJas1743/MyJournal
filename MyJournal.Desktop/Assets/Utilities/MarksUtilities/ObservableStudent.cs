@@ -19,6 +19,7 @@ public sealed class ObservableStudent : ReactiveObject
 	private readonly StudentOfSubjectInClass? _studentOfSubjectInClass;
 	private DateTimeOffset _dateTime;
 	private PossibleAssessment? _selectedAssessment;
+	private PossibleAssessment? _selectedFinalAssessment;
 	private CommentsForAssessment? _selectedComment;
 	private CommentsForAssessment? _selectedAttendanceComment;
 	private ObservableEstimationOfStudent? _selectedEstimation;
@@ -39,11 +40,13 @@ public sealed class ObservableStudent : ReactiveObject
 		Date = DateTimeOffset.Now;
 		_notificationService = notificationService;
 
+		OnAttachedToVisualTree = ReactiveCommand.Create(execute: AttachedToVisualTreeHandler);
 		CreateEstimation = ReactiveCommand.CreateFromTask<ListBoxItem>(execute: AddNewGrade);
 		OnPossibleAssessmentSelectionChanged = ReactiveCommand.CreateFromTask(execute: PossibleAssessmentSelectionChangedHandler);
 		OnDetachedFromVisualTree = ReactiveCommand.Create(execute: DetachedFromVisualTreeHandler);
 		OnEstimationSelectionChanged = ReactiveCommand.CreateFromTask<ListBoxItem>(execute: EstimationSelectionChangedHandler);
 		OnPointerPressed = ReactiveCommand.Create(execute: PointerPressedHandler);
+		SaveFinalEstimation = ReactiveCommand.CreateFromTask(execute: SaveFinalEstimationHandler);
 		IObservable<bool> canSaveGrade = this.WhenAnyValue(
 			property1: model => model.SelectedAssessment,
 			property2: model => model.SelectedComment,
@@ -55,6 +58,26 @@ public sealed class ObservableStudent : ReactiveObject
 
 		this.WhenAnyValue(property1: s => s.IsAttend).WhereNotNull().Subscribe(onNext: AttendanceChangedHandler);
 		this.WhenAnyValue(property1: s => s.AttendanceComment).WhereNotNull().Subscribe(onNext: AttendanceCommentChangedHandler);
+	}
+
+	private async Task SaveFinalEstimationHandler()
+	{
+		if (Grade is null || SelectedFinalAssessment is null)
+			return;
+
+		await Grade.AddFinal(gradeId: SelectedFinalAssessment.Id);
+
+		await _notificationService.Show(
+			title: "Итоговая отметка",
+			content: "Итоговая отметка успешно сохранена!",
+			type: NotificationType.Success
+		);
+	}
+
+	private void AttachedToVisualTreeHandler()
+	{
+		if (Grade is not null && Grade.FinalAssessment != 0)
+			SelectedFinalAssessment = PossibleAssessments.First(predicate: a => a.Id == Grade.FinalAssessment);
 	}
 
 	public ObservableStudent(
@@ -124,6 +147,12 @@ public sealed class ObservableStudent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(backingField: ref _selectedAssessment, newValue: value);
 	}
 
+	public PossibleAssessment? SelectedFinalAssessment
+	{
+		get => _selectedFinalAssessment;
+		set => this.RaiseAndSetIfChanged(backingField: ref _selectedFinalAssessment, newValue: value);
+	}
+
 	public CommentsForAssessment? SelectedAttendanceComment
 	{
 		get => _selectedAttendanceComment;
@@ -156,11 +185,13 @@ public sealed class ObservableStudent : ReactiveObject
 
 	public ReactiveCommand<ListBoxItem, Unit> CreateEstimation { get; }
 	public ReactiveCommand<ListBoxItem, Unit> OnEstimationSelectionChanged { get; }
+	public ReactiveCommand<Unit, Unit> OnAttachedToVisualTree { get; }
 	public ReactiveCommand<Unit, Unit> OnPointerPressed { get; }
 	public ReactiveCommand<Unit, Unit> OnPossibleAssessmentSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> OnDetachedFromVisualTree { get; }
 	public ReactiveCommand<Unit, Unit> SaveNewEstimation { get; }
 	public ReactiveCommand<Unit, Unit> SaveEditableEstimation { get; }
+	public ReactiveCommand<Unit, Unit> SaveFinalEstimation { get; }
 
 	private async Task AddNewGrade(ListBoxItem item)
 	{

@@ -65,7 +65,6 @@ public class Grade<T> : IAsyncEnumerable<T> where T: Estimation
 	protected sealed record GetAverageAssessmentResponse(string AverageAssessment);
 	protected sealed record GetFinalAssessmentRequest(int SubjectId, int PeriodId);
 	protected sealed record GetFinalAssessmentResponse(string FinalAssessment);
-	protected sealed record GetFinalAssessmentByIdResponse(int? FinalAssessment);
 	protected sealed record GetAssessmentsRequest(int PeriodId, int SubjectId);
 	protected sealed record GetAssessmentsResponse(string AverageAssessment, string? FinalAssessment, IEnumerable<EstimationResponse> Assessments);
 	protected sealed record GetAssessmentResponse(string AverageAssessment, EstimationResponse Assessment, int PeriodId);

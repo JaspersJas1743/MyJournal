@@ -118,5 +118,22 @@
                 <Setter Property="Opacity" Value="1"/>
             </Style>
         </Style>
+        <Style Selector="^.HaveFinalGrade">
+            <Setter Property="IsEnabled" Value="False"/>
+            <Style Selector="^ /template/ ContentPresenter">
+                <Setter Property="Content" Value="Отметка сохранена" />
+            </Style>
+        </Style>
+        <Style Selector="^.NotHaveFinalGrade">
+            <Style Selector="^ /template/ ContentPresenter">
+                <Setter Property="Content" Value="Сохранить отметку" />
+            </Style>
+        </Style>
+        <Style Selector="^.NotSelectedFinalGrade">
+            <Setter Property="IsEnabled" Value="False"/>
+            <Style Selector="^ /template/ ContentPresenter">
+                <Setter Property="Content" Value="Отметка не выбрана" />
+            </Style>
+        </Style>
     </Style>
 </Styles>

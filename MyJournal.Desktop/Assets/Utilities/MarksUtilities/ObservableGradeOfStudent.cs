@@ -36,6 +36,9 @@ public sealed class ObservableGradeOfStudent : ReactiveObject
 	public IEstimationBuilder Add()
 		=> _gradeOfStudent.Add();
 
+	public async Task AddFinal(int gradeId)
+		=> await _gradeOfStudent.AddFinal(gradeId: gradeId);
+
 	private void OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs _)
 		=> this.RaisePropertyChanged(propertyName: nameof(FinalAssessment));
 

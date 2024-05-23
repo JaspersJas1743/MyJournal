@@ -38,6 +38,8 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 	public new int? FinalAssessment { get; private set; }
 
 	private sealed record CreateFinalAssessmentRequest(int GradeId, int SubjectId, int StudentId);
+	private sealed record GetFinalAssessmentByIdResponse(int? FinalAssessment);
+	private sealed record GetFinalAssessmentByIdRequest(int SubjectId, int PeriodId);
 
 	internal static GradeOfStudent Create(
 		ApiClient client,
@@ -88,8 +90,9 @@ public sealed class GradeOfStudent : Grade<EstimationOfStudent>
 
 	internal new async Task OnCreatedFinalAssessment(CreatedFinalAssessmentEventArgs e)
 	{
-		GetFinalAssessmentByIdResponse response = await _client.GetAsync<GetFinalAssessmentByIdResponse>(
-			apiMethod: e.ApiMethodForFinalAT(arg: _studentId)
+		GetFinalAssessmentByIdResponse response = await _client.GetAsync<GetFinalAssessmentByIdResponse, GetFinalAssessmentRequest>(
+			apiMethod: e.ApiMethodForFinalAT(arg: _studentId),
+			argQuery: new GetFinalAssessmentRequest(SubjectId: _subjectId, PeriodId: _periodId)
 		) ?? throw new InvalidOperationException();
 		FinalAssessment = response.FinalAssessment;
 		InvokeCreatedFinalAssessment(e: e);

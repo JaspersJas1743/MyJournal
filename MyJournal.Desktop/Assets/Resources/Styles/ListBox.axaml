@@ -689,6 +689,58 @@
 			</Setter>
 		</Style>
 
+		<Style Selector="^.StudentsFinalGrades">
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20 0 20 20"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="marksUtilities:ObservableStudent">
+					<Border Width="1320" Height="90" x:Name="PART_Border" BorderBrush="{DynamicResource StrokeColor}"
+							BorderThickness="5" ClipToBounds="True" CornerRadius="15"
+							Background="{DynamicResource BackgroundColor}"
+							Classes="HeightTransition">
+						<interactivity:Interaction.Behaviors>
+							<interaction:EventTriggerBehavior EventName="AttachedToVisualTree">
+								<interaction:InvokeCommandAction Command="{Binding OnAttachedToVisualTree}"/>
+							</interaction:EventTriggerBehavior>
+						</interactivity:Interaction.Behaviors>
+						<Grid ColumnDefinitions="50*, 20*, 680*, 550*, 20*">
+							<Border Grid.Column="0" BorderBrush="{DynamicResource StrokeColor}"
+									BorderThickness="0 0 5 0">
+								<TextBlock Text="{Binding Position}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+							</Border>
+							<TextBlock	Grid.Column="2" Text="{Binding Converter={x:Static converters:ObservableStudentConverters.FullName}}"
+										TextTrimming="CharacterEllipsis" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+							<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Left" Spacing="20" Margin="0 10">
+								<ListBox	Classes="PossibleAssessments" ItemsSource="{Binding PossibleAssessments,
+											Converter={x:Static converters:AssessmentsConverters.OnlyAssessments}}"
+											SelectedItem="{Binding SelectedFinalAssessment,Mode=TwoWay}"
+											IsEnabled="{Binding Grade.FinalAssessment,
+											Converter={x:Static converters:IntegerConverters.IsNull}}"/>
+								<Viewbox Width="260" Height="50">
+									<controls:ButtonWithAnimatedCommand Width="260" Height="50" Classes="MainAccentColor Corner10" FontSize="20"
+																		Classes.HaveFinalGrade="{Binding Grade.FinalAssessment,
+																		Converter={x:Static converters:IntegerConverters.IsNotNull}}"
+																		Classes.NotHaveFinalGrade="{Binding Grade.FinalAssessment,
+																		Converter={x:Static converters:IntegerConverters.IsNull}}"
+																		Classes.NotSelectedFinalGrade="{Binding SelectedFinalAssessment,
+																		Converter={x:Static ObjectConverters.IsNull}}"
+																		Command="{Binding SaveFinalEstimation}"
+																		/>
+								</Viewbox>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
 		<Style Selector="^.PossibleAssessments">
 			<Setter Property="VerticalAlignment" Value="Top"/>
 			<Setter Property="Margin" Value="0" />

@@ -31,12 +31,17 @@
 			<TextBox Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
 			<Viewbox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3">
 				<ComboBox	Width="500" Height="90" PlaceholderForeground="{DynamicResource WatermarkOnTextControlColor}"
-							IsEnabled="{Binding SubjectSelectionModel.SelectedItem,
-							Converter={x:Static ObjectConverters.IsNotNull}}" CornerRadius="20"
-							PlaceholderText="Дисциплина не выбрана" Classes="EducationPeriodSelection"
+							CornerRadius="20" PlaceholderText="Дисциплина не выбрана" Classes="EducationPeriodSelection"
 							SelectedItem="{Binding SelectedPeriod,Mode=TwoWay}"
 							ItemsSource="{Binding EducationPeriods}"
 							DisplayMemberBinding="{Binding Name}">
+					<ComboBox.IsEnabled>
+						<MultiBinding Converter="{x:Static BoolConverters.And}">
+							<Binding	Path="SubjectSelectionModel.SelectedItem"
+										Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							<Binding	Path="!FinalGradesIsCreating"/>
+						</MultiBinding>
+					</ComboBox.IsEnabled>
 					<interactivity:Interaction.Behaviors>
 						<interaction:EventTriggerBehavior EventName="SelectionChanged">
 							<interaction:InvokeCommandAction Command="{Binding OnEducationPeriodSelectionChanged}"/>
@@ -141,6 +146,13 @@
 			</StackPanel>
 			<Border Grid.Column="5" Grid.Row="1" Grid.RowSpan="9" Classes="TransitionBorderBrush ListBorder">
 				<Grid>
+					<Grid	Width="305" Height="75" VerticalAlignment="Center" HorizontalAlignment="Center"
+							IsVisible="{Binding !Students.Count}">
+						<controls:XamlSvg	Classes="NotSelectedSubjectImage" Foreground="{DynamicResource MainAccentColor}"
+											HorizontalAlignment="Left" VerticalAlignment="Center" Width="75"/>
+						<TextBlock	Text="Выберите учебную группу для просмотра" Width="220" HorizontalAlignment="Right"
+									VerticalAlignment="Center" TextWrapping="Wrap" FontSize="20"/>
+					</Grid>
 					<ListBox ItemsSource="{Binding Students}" Classes="Students" SelectionMode="Multiple,Toggle">
 						<ListBox.IsVisible>
 							<MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -161,8 +173,12 @@
 						<ListBox	Grid.Row="3" ItemsSource="{Binding Students}"
 									Classes="StudentsAttendance"/>
 					</Grid>
-					<Grid IsVisible="{Binding FinalGradesIsCreating}">
-						<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30">Итоговые отметки</TextBlock>
+					<Grid RowDefinitions="20*, 50*, 20*, 870*, 20*" IsVisible="{Binding FinalGradesIsCreating}">
+						<TextBlock	Text="{Binding SubjectSelectionModel.SelectedItem.ClassName,
+									StringFormat='Итоговые отметки учеников {0}а за текущий учебный период'}"
+									VerticalAlignment="Center" FontSize="20" Grid.Row="1" HorizontalAlignment="Center"/>
+						<ListBox	Grid.Row="3" ItemsSource="{Binding Students}"
+									Classes="StudentsFinalGrades"/>
 					</Grid>
 				</Grid>
 			</Border>

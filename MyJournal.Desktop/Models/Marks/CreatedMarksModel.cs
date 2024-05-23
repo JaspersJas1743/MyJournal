@@ -156,7 +156,7 @@ public sealed class CreatedMarksModel : MarksModel
 
 	private async Task EducationPeriodSelectionChangedHandler()
 	{
-		if (SelectedPeriod is null || SubjectSelectionModel.SelectedItem?.ClassId is null)
+		if (SelectedPeriod is null || SubjectSelectionModel.SelectedItem?.ClassId is null || FinalGradesIsCreating || AttendanceIsChecking)
 			return;
 
 		if (_loaded)
@@ -230,6 +230,7 @@ public sealed class CreatedMarksModel : MarksModel
 	private async Task ToFinalAssessmentsCreating()
 	{
 		FinalGradesIsCreating = true;
+		SelectedPeriod = EducationPeriods[index: 0];
 	}
 
 	private async Task ToAttendanceChecking()
