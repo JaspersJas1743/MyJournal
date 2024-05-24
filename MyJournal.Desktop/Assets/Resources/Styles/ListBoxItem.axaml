@@ -272,6 +272,10 @@
 		<Setter Property="Margin" Value="10 0 0 0"/>
 	</Style>
 
+	<Style Selector="ListBox.NotCurrentPeriod">
+		<Setter Property="Grid.ColumnSpan" Value="3"/>
+	</Style>
+
 	<Style Selector="ListBox.Students > ListBoxItem">
 		<Setter Property="Template">
 			<ControlTemplate x:DataType="marksUtilities:ObservableStudent">
@@ -284,10 +288,22 @@
 					<Border Width="1310" x:Name="PART_Border" BorderBrush="{DynamicResource StrokeColor}"
 							BorderThickness="5" ClipToBounds="True" CornerRadius="15"
 							Background="{DynamicResource BackgroundColor}"
-							Classes="HeightTransition" >
+							Classes="HeightTransition">
+						<Border.Tag>
+							<MultiBinding Converter="{x:Static BoolConverters.Or}">
+								<Binding Path="EducationPeriod" Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
+								<Binding Path="SelectedEstimation" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							</MultiBinding>
+						</Border.Tag>
 						<Grid RowDefinitions="80*, auto">
-							<Border Grid.Row="0" x:Name="PART_FirstBorder" BorderBrush="{DynamicResource StrokeColor}"
-									Classes="TransitionBorderThickness">
+							<Border Grid.Row="0" BorderBrush="{DynamicResource StrokeColor}"
+									x:Name="PART_FirstBorder" Classes="TransitionBorderThickness">
+								<Border.Tag>
+									<MultiBinding Converter="{x:Static BoolConverters.Or}">
+										<Binding Path="EducationPeriod" Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
+										<Binding Path="SelectedEstimation" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+									</MultiBinding>
+								</Border.Tag>
 								<Grid ColumnDefinitions="40*, 255*, 10*, 840*, 10*, 50*, 10*, 80*, 10*">
 									<TextBlock	Grid.Column="0" Text="{Binding Position}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
 									<Border Grid.Column="1" BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0"
@@ -297,8 +313,10 @@
 									</Border>
 
 									<ListBox	Grid.Column="3" ItemsSource="{Binding Grade.Estimations}" SelectionMode="Toggle"
-												SelectedItem="{Binding SelectedEstimation,Mode=TwoWay}"
-												Classes="TeacherEstimation" Margin="0 10" HorizontalAlignment="Left">
+												Classes="TeacherEstimation" Margin="0 10" HorizontalAlignment="Left"
+												Classes.NotCurrentPeriod="{Binding EducationPeriod,
+												Converter={x:Static converters:DateTimeConverters.IsNotCurrentEducationPeriod}}"
+												SelectedItem="{Binding SelectedEstimation,Mode=TwoWay}" >
 										<interactivity:Interaction.Behaviors>
 											<interaction:EventTriggerBehavior EventName="SelectionChanged">
 												<interaction:InvokeCommandAction	Command="{Binding OnEstimationSelectionChanged}"
@@ -309,8 +327,10 @@
 									</ListBox>
 
 									<Viewbox Grid.Column="5">
-										<Button Classes="MainAccentColor Corner10" Width="50" Height="50" Padding="12.5"
-												Command="{Binding CreateEstimation}" CommandParameter="{Binding $parent[ListBoxItem]}">
+										<Button Classes="MainAccentColor Corner10" CommandParameter="{Binding $parent[ListBoxItem]}"
+												Width="50" Height="50" Command="{Binding CreateEstimation}"
+												Padding="12.5" IsVisible="{Binding EducationPeriod,
+												Converter={x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}}">
 											<Grid>
 												<controls:XamlSvg HorizontalAlignment="Center" VerticalAlignment="Center" Classes="Minus"/>
 												<controls:XamlSvg	Classes.Horizontal="{TemplateBinding IsSelected,Converter={x:Static BoolConverters.Not}}"
@@ -329,11 +349,20 @@
 									</Viewbox>
 								</Grid>
 							</Border>
-							<Border Grid.Row="1" x:Name="PART_SecondBorder" Classes="HeightTransition" Background="{DynamicResource BackgroundColor}">
+							<Border x:Name="PART_SecondBorder" Classes="HeightTransition" CornerRadius="0 0 15 15"
+									Grid.Row="1" Background="{DynamicResource BackgroundColor}">
+								<Border.Tag>
+									<MultiBinding Converter="{x:Static BoolConverters.Or}">
+										<Binding Path="EducationPeriod" Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
+										<Binding Path="SelectedEstimation" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+									</MultiBinding>
+								</Border.Tag>
 								<Grid>
 									<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left" Margin="15 10 0 10">
 										<ListBox	ItemsSource="{Binding PossibleAssessments}" Classes="PossibleAssessments"
-													SelectedItem="{Binding SelectedAssessment,Mode=TwoWay}">
+													SelectedItem="{Binding SelectedAssessment,Mode=TwoWay}"
+													IsEnabled="{Binding EducationPeriod,
+													Converter={x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}}">
 											<interactivity:Interaction.Behaviors>
 												<interaction:EventTriggerBehavior EventName="SelectionChanged">
 													<interaction:InvokeCommandAction Command="{Binding OnPossibleAssessmentSelectionChanged}"/>
@@ -345,19 +374,25 @@
 										</ListBox>
 										<TextBlock Text="от" FontSize="20" VerticalAlignment="Center"/>
 										<Viewbox Width="250">
-											<DatePicker Width="250" Height="50" CornerRadius="10" SelectedDate="{Binding Date,Mode=TwoWay}"/>
+											<DatePicker Width="250" Height="50" CornerRadius="10" IsEnabled="{Binding EducationPeriod,
+														Converter={x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}}"
+														SelectedDate="{Binding Date,Mode=TwoWay}"/>
 										</Viewbox>
 										<TextBlock Text="за" FontSize="20" VerticalAlignment="Center" IsVisible="{Binding !!Comments.Count}"/>
 										<ListBox	SelectedItem="{Binding SelectedComment,Mode=TwoWay}"
 													Classes="CommentsForPossibleAssessments" SelectionMode="Single"
 													IsVisible="{Binding !!Comments.Count}"
-													ItemsSource="{Binding Comments}"/>
+													ItemsSource="{Binding Comments}"
+													IsEnabled="{Binding EducationPeriod,
+													Converter={x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}}"/>
 									</StackPanel>
 									<Viewbox HorizontalAlignment="Right" Margin="0 15 15 15">
 										<Viewbox.IsVisible>
 											<MultiBinding Converter="{x:Static BoolConverters.And}">
-												<Binding Path="IsCreating"/>
-												<Binding Path="!IsEditing"/>
+												<Binding    Path="IsCreating"/>
+												<Binding    Path="!IsEditing"/>
+												<Binding	Path="EducationPeriod"
+															Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
 											</MultiBinding>
 										</Viewbox.IsVisible>
 										<controls:ButtonWithAnimatedCommand Width="125" Height="50" FontSize="20" CornerRadius="10" Content="Сохранить"
@@ -366,7 +401,9 @@
 									<Viewbox HorizontalAlignment="Right" Margin="0 15 15 15">
 										<Viewbox.IsVisible>
 											<MultiBinding Converter="{x:Static BoolConverters.And}">
-												<Binding Path="IsEditing"/>
+												<Binding    Path="IsEditing"/>
+												<Binding    Path="EducationPeriod"
+															Converter="{x:Static converters:DateTimeConverters.IsCurrentEducationPeriod}"/>
 											</MultiBinding>
 										</Viewbox.IsVisible>
 										<controls:ButtonWithAnimatedCommand Width="125" Height="50" FontSize="20" CornerRadius="10" Content="Изменить"
@@ -381,13 +418,28 @@
 		</Setter>
 		<Style Selector="^:selected">
 			<Style Selector="^ /template/ Border#PART_Border">
-				<Setter Property="Height" Value="165"/>
+				<Style Selector="^[Tag=True]">
+					<Setter Property="Height" Value="165"/>
+				</Style>
+				<Style Selector="^[Tag=False]">
+					<Setter Property="Height" Value="85"/>
+				</Style>
 			</Style>
 			<Style Selector="^ /template/ Border#PART_FirstBorder">
-				<Setter Property="BorderThickness" Value="0 0 0 5"/>
+				<Style Selector="^[Tag=True]">
+					<Setter Property="BorderThickness" Value="0 0 0 5"/>
+				</Style>
+				<Style Selector="^[Tag=False]">
+					<Setter Property="BorderThickness" Value="0"/>
+				</Style>
 			</Style>
 			<Style Selector="^ /template/ Border#PART_SecondBorder">
-				<Setter Property="Height" Value="80"/>
+				<Style Selector="^[Tag=True]">
+					<Setter Property="Height" Value="80"/>
+				</Style>
+				<Style Selector="^[Tag=False]">
+					<Setter Property="Height" Value="0"/>
+				</Style>
 			</Style>
 		</Style>
 		<Style Selector="^:not(:selected)">

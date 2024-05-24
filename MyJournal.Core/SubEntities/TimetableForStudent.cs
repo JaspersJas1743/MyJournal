@@ -17,7 +17,7 @@ public class TimetableForStudent
 	public IEnumerable<EstimationOnTimetable> Estimations { get; set; }
 	public BreakAfterSubject? Break { get; set; }
 
-	internal static async Task<TimetableForStudent> Create(
+	internal static TimetableForStudent Create(
 		SubjectOnTimetable subject,
 		IEnumerable<EstimationOnTimetable> estimations,
 		BreakAfterSubject? @break

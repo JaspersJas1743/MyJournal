@@ -731,8 +731,7 @@
 																		Converter={x:Static converters:IntegerConverters.IsNull}}"
 																		Classes.NotSelectedFinalGrade="{Binding SelectedFinalAssessment,
 																		Converter={x:Static ObjectConverters.IsNull}}"
-																		Command="{Binding SaveFinalEstimation}"
-																		/>
+																		Command="{Binding SaveFinalEstimation}"/>
 								</Viewbox>
 							</StackPanel>
 						</Grid>

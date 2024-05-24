@@ -15,6 +15,15 @@ public static class DateTimeConverters
 		return now >= period.StartDate && now <= period.EndDate;
 	});
 
+	public static readonly IValueConverter IsNotCurrentEducationPeriod = new FuncValueConverter<EducationPeriod, bool>(convert: period =>
+	{
+		if (period is null)
+			return false;
+
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		return !(now >= period.StartDate && now <= period.EndDate);
+	});
+
 	public static readonly IValueConverter CanSetFinalGrade = new FuncValueConverter<EducationPeriod, bool>(convert: period =>
 	{
 		if (period?.EndDate is null)

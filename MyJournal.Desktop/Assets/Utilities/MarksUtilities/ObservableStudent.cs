@@ -30,12 +30,14 @@ public sealed class ObservableStudent : ReactiveObject
 	private bool _isAttend = false;
 
 	private ObservableStudent(
+		EducationPeriod period,
 		int position,
 		IEnumerable<PossibleAssessment> possibleAssessments,
 		INotificationService notificationService
 	)
 	{
 		PossibleAssessments.Load(items: possibleAssessments);
+		EducationPeriod = period;
 		Position = position;
 		Date = DateTimeOffset.Now;
 		_notificationService = notificationService;
@@ -60,33 +62,15 @@ public sealed class ObservableStudent : ReactiveObject
 		this.WhenAnyValue(property1: s => s.AttendanceComment).WhereNotNull().Subscribe(onNext: AttendanceCommentChangedHandler);
 	}
 
-	private async Task SaveFinalEstimationHandler()
-	{
-		if (Grade is null || SelectedFinalAssessment is null)
-			return;
-
-		await Grade.AddFinal(gradeId: SelectedFinalAssessment.Id);
-
-		await _notificationService.Show(
-			title: "Итоговая отметка",
-			content: "Итоговая отметка успешно сохранена!",
-			type: NotificationType.Success
-		);
-	}
-
-	private void AttachedToVisualTreeHandler()
-	{
-		if (Grade is not null && Grade.FinalAssessment != 0)
-			SelectedFinalAssessment = PossibleAssessments.First(predicate: a => a.Id == Grade.FinalAssessment);
-	}
-
 	public ObservableStudent(
 		StudentInTaughtClass studentInTaughtClass,
 		int position,
+		EducationPeriod period,
 		IEnumerable<PossibleAssessment> possibleAssessments,
 		INotificationService notificationService
 	) : this(
 		position: position,
+		period: period,
 		possibleAssessments: possibleAssessments,
 		notificationService: notificationService
 	) => _studentInTaughtClass = studentInTaughtClass;
@@ -94,10 +78,12 @@ public sealed class ObservableStudent : ReactiveObject
 	public ObservableStudent(
 		StudentOfSubjectInClass studentOfSubjectInClass,
 		int position,
+		EducationPeriod period,
 		IEnumerable<PossibleAssessment> possibleAssessments,
 		INotificationService notificationService
 	) : this(
 		position: position,
+		period: period,
 		possibleAssessments: possibleAssessments,
 		notificationService: notificationService
 	) => _studentOfSubjectInClass = studentOfSubjectInClass;
@@ -123,6 +109,8 @@ public sealed class ObservableStudent : ReactiveObject
 		get => _attendanceComment;
 		set => this.RaiseAndSetIfChanged(backingField: ref _attendanceComment, newValue: value);
 	}
+
+	public EducationPeriod EducationPeriod { get; }
 
     public ObservableGradeOfStudent? Grade { get; private set; }
 
@@ -287,10 +275,10 @@ public sealed class ObservableStudent : ReactiveObject
 
 	private void PointerPressedHandler()
 	{
-		Date = DateTimeOffset.Now;
 		if (IsEditing)
 			return;
 
+		Date = DateTimeOffset.Now;
 		IsCreating = true;
 	}
 
@@ -312,6 +300,26 @@ public sealed class ObservableStudent : ReactiveObject
 		PossibleAssessment truancy = PossibleAssessments.First(predicate: a => a.GradeType == GradeTypes.Truancy);
 		TruancyComments.Load(items: await truancy.GetComments());
 	}
+
+	private async Task SaveFinalEstimationHandler()
+	{
+		if (Grade is null || SelectedFinalAssessment is null)
+			return;
+
+		await Grade.AddFinal(gradeId: SelectedFinalAssessment.Id);
+
+		await _notificationService.Show(
+			title: "Итоговая отметка",
+			content: "Итоговая отметка успешно сохранена!",
+			type: NotificationType.Success
+		);
+	}
+
+	private void AttachedToVisualTreeHandler()
+	{
+		if (Grade is not null && Grade.FinalAssessment != 0)
+			SelectedFinalAssessment = PossibleAssessments.First(predicate: a => a.Id == Grade.FinalAssessment);
+	}
 }
 
 public static class ObservableStudentExtensions
@@ -319,6 +327,7 @@ public static class ObservableStudentExtensions
 	public static ObservableStudent ToObservable(
 		this StudentInTaughtClass studentInTaughtClass,
 		int position,
+		EducationPeriod period,
 		IEnumerable<PossibleAssessment> possibleAssessments,
 		INotificationService notificationService
 	)
@@ -326,6 +335,7 @@ public static class ObservableStudentExtensions
 		return new ObservableStudent(
 			studentInTaughtClass: studentInTaughtClass,
 			position: position,
+			period: period,
 			possibleAssessments: possibleAssessments,
 			notificationService: notificationService
 		);
@@ -334,6 +344,7 @@ public static class ObservableStudentExtensions
 	public static ObservableStudent ToObservable(
 		this StudentOfSubjectInClass studentOfSubjectInClass,
 		int position,
+		EducationPeriod period,
 		IEnumerable<PossibleAssessment> possibleAssessments,
 		INotificationService notificationService
 	)
@@ -341,6 +352,7 @@ public static class ObservableStudentExtensions
 		return new ObservableStudent(
 			studentOfSubjectInClass: studentOfSubjectInClass,
 			position: position,
+			period: period,
 			possibleAssessments: possibleAssessments,
 			notificationService: notificationService
 		);

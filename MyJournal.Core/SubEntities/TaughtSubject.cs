@@ -94,10 +94,10 @@ public sealed class TaughtSubject : ISubEntity
 				argQuery: request,
 				cancellationToken: cancellationToken
 			);
-			return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForTeacher.Create(
+			return timetable?.Select(selector: t => TimetableForTeacher.Create(
 				subject: t.Subject,
 				@break: t.Break
-			)) ?? Enumerable.Empty<Task<TimetableForTeacher>>());
+			)) ?? Enumerable.Empty<TimetableForTeacher>();
 		});
 	}
 

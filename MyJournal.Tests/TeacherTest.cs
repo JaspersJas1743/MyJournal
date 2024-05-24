@@ -548,7 +548,7 @@ public class TeacherTest
 
 	private async Task PrintTimetable(TimetableForTeacherCollection timetable)
 	{
-		await foreach (KeyValuePair<DateOnly, TimetableForTeacher[]> t in timetable)
+		await foreach (KeyValuePair<DateOnly, IEnumerable<TimetableForTeacher>> t in timetable)
 		{
 			Debug.WriteLine($"date=[{t.Key}]");
 			foreach (TimetableForTeacher tt in t.Value)

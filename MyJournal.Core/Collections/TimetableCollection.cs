@@ -5,53 +5,54 @@ namespace MyJournal.Core.Collections;
 
 public abstract class TimetableCollection<T>(
 	ApiClient client,
-	AsyncLazy<Dictionary<DateOnly, T[]>> timetableOnDate
-) : IAsyncEnumerable<KeyValuePair<DateOnly, T[]>>
+	AsyncLazy<Dictionary<DateOnly, IEnumerable<T>>> timetableOnDate
+) : IAsyncEnumerable<KeyValuePair<DateOnly, IEnumerable<T>>>
 {
 	#region Interfaces
 	protected interface ITResponse
 	{
-		Task<T> ConvertToT();
+		KeyValuePair<DateOnly, IEnumerable<T>> ConvertToT();
 	}
 	#endregion
 
 	#region Records
 	protected sealed record GetTimetableByDateRequest(DateOnly Day);
+	protected sealed record GetTimetableByDatesRequest(IEnumerable<DateOnly> Days);
 	#endregion
 
 	#region Methods
-	public abstract Task<T[]> GetByDate(DateOnly date, CancellationToken cancellationToken = default(CancellationToken));
+	public abstract Task<IEnumerable<T>> GetByDate(DateOnly date, CancellationToken cancellationToken = default(CancellationToken));
 
-	protected async Task<T[]> BaseGetByDate<TResponse>(
+	protected async Task<IEnumerable<T>> BaseGetByDate<TResponse>(
 		DateOnly date,
 		string apiMethod,
 		CancellationToken cancellationToken = default(CancellationToken)
 	) where TResponse : ITResponse
 	{
-		Dictionary<DateOnly, T[]> timetables = await timetableOnDate;
+		Dictionary<DateOnly, IEnumerable<T>> timetables = await timetableOnDate;
 
-		foreach (DateOnly d in Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays))
+		IEnumerable<DateOnly> dates = Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays).Except(second: timetables.Keys);
+		IEnumerable<TResponse> response = await client.GetAsync<IEnumerable<TResponse>, GetTimetableByDatesRequest>(
+			apiMethod: apiMethod,
+			argQuery: new GetTimetableByDatesRequest(Days: dates),
+			cancellationToken: cancellationToken
+		) ?? throw new InvalidOperationException();
+
+		foreach (TResponse r in response)
 		{
-			if (timetables.ContainsKey(key: d))
-				continue;
-
-			IEnumerable<TResponse> response = await client.GetAsync<IEnumerable<TResponse>, GetTimetableByDateRequest>(
-				apiMethod: apiMethod,
-				argQuery: new GetTimetableByDateRequest(Day: d),
-				cancellationToken: cancellationToken
-			) ?? throw new InvalidOperationException();
-			timetables.Add(key: d, value: await Task.WhenAll(tasks: response.Select(async r => await r.ConvertToT())));
+			KeyValuePair<DateOnly, IEnumerable<T>> pair = r.ConvertToT();
+			timetables.Add(key: pair.Key, value: pair.Value);
 		}
 
 		return timetables[key: date];
 	}
 	#endregion
 
-	public async IAsyncEnumerator<KeyValuePair<DateOnly, T[]>> GetAsyncEnumerator(
+	public async IAsyncEnumerator<KeyValuePair<DateOnly, IEnumerable<T>>> GetAsyncEnumerator(
 		CancellationToken cancellationToken = new CancellationToken()
 	)
 	{
-		foreach (KeyValuePair<DateOnly, T[]> pair in await timetableOnDate)
+		foreach (KeyValuePair<DateOnly, IEnumerable<T>> pair in await timetableOnDate)
 		{
 			if (cancellationToken.IsCancellationRequested)
 				yield break;

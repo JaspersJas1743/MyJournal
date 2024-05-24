@@ -321,10 +321,22 @@ public sealed class ApiClient : IDisposable
 		StringBuilder uri = new StringBuilder(value: ServerAddress + apiMethod + '?');
 		foreach (PropertyInfo pair in typeof(T).GetProperties())
 		{
-			if (pair.PropertyType.IsEquivalentTo(other: typeof(DateOnly)))
-				uri.Append(value: $"{pair.Name}={pair.GetValue(obj: arg):yyyy.MM.dd}&");
+			if (pair.PropertyType.IsEquivalentTo(other: typeof(IEnumerable<DateOnly>)))
+			{
+				uri.Append(value: String.Join(
+					separator: '&',
+					values: (pair.GetValue(obj: arg) as IEnumerable<DateOnly>)!.Select(
+						selector: date => $"{pair.Name}={date:yyyy.MM.dd}"
+					)
+				));
+			}
 			else
-				uri.Append(value: $"{pair.Name}={pair.GetValue(obj: arg)}&");
+			{
+				uri.Append(value: pair.PropertyType.IsEquivalentTo(other: typeof(DateOnly))
+					? $"{pair.Name}={pair.GetValue(obj: arg):yyyy.MM.dd}&"
+					: $"{pair.Name}={pair.GetValue(obj: arg)}&"
+				);
+			}
 		}
 
 		uri.Remove(startIndex: uri.Length - 1, length: 1);

@@ -9,25 +9,41 @@ public sealed class TimetableForTeacherCollection : TimetableCollection<Timetabl
 {
 	private TimetableForTeacherCollection(
 		ApiClient client,
-		AsyncLazy<Dictionary<DateOnly, TimetableForTeacher[]>> timetableOnDate
-	) : base(client: client, timetableOnDate: timetableOnDate)
+		AsyncLazy<Dictionary<DateOnly, IEnumerable<TimetableForTeacher>>> timetableOnDate
+	) : base(
+		client: client,
+		timetableOnDate: timetableOnDate
+	)
 	{ }
 
-	private sealed record GetTimetableResponse(
+	public sealed record GetTimetableWithoutAssessmentsResponse(
 		SubjectOnTimetable Subject,
 		BreakAfterSubject? Break
+	);
+
+	public sealed record GetTimetableWithoutAssessmentsByDateResponse(
+		DateOnly Date,
+		IEnumerable<GetTimetableWithoutAssessmentsResponse> Timetable
 	) : ITResponse
 	{
-		public async Task<TimetableForTeacher> ConvertToT()
-			=> await TimetableForTeacher.Create(subject: Subject, @break: Break);
+		public KeyValuePair<DateOnly, IEnumerable<TimetableForTeacher>> ConvertToT()
+		{
+			return new KeyValuePair<DateOnly, IEnumerable<TimetableForTeacher>>(
+				key: Date,
+				value: Timetable.Select(selector: r => TimetableForTeacher.Create(
+					subject: r.Subject,
+					@break: r.Break
+				))
+			);
+		}
 	}
 
-	public override async Task<TimetableForTeacher[]> GetByDate(
+	public override async Task<IEnumerable<TimetableForTeacher>> GetByDate(
 		DateOnly date,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await BaseGetByDate<GetTimetableResponse>(
+		return await BaseGetByDate<GetTimetableWithoutAssessmentsByDateResponse>(
 			date: date,
 			apiMethod: TimetableControllerMethods.GetTimetableByDateForTeacher,
 			cancellationToken: cancellationToken
@@ -41,20 +57,24 @@ public sealed class TimetableForTeacherCollection : TimetableCollection<Timetabl
 	{
 		return new TimetableForTeacherCollection(
 			client: client,
-			timetableOnDate: new AsyncLazy<Dictionary<DateOnly, TimetableForTeacher[]>>(valueFactory: async () =>
+			timetableOnDate: new AsyncLazy<Dictionary<DateOnly, IEnumerable<TimetableForTeacher>>>(valueFactory: async () =>
 			{
-				Dictionary<DateOnly, TimetableForTeacher[]> timetable = new Dictionary<DateOnly, TimetableForTeacher[]>();
 				DateOnly date = DateOnly.FromDateTime(dateTime: DateTime.Now);
-				foreach (DateOnly d in Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays))
-				{
-					IEnumerable<GetTimetableResponse> response = await client.GetAsync<IEnumerable<GetTimetableResponse>, GetTimetableByDateRequest>(
-						apiMethod: TimetableControllerMethods.GetTimetableByDateForTeacher,
-						argQuery: new GetTimetableByDateRequest(Day: d),
-						cancellationToken: cancellationToken
-					) ?? throw new InvalidOperationException();
-					timetable.Add(key: d, value: await Task.WhenAll(tasks: response.Select(async r => await r.ConvertToT())));
-				}
-				return timetable;
+				IEnumerable<DateOnly> dates = Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays);
+				IEnumerable<GetTimetableWithoutAssessmentsByDateResponse> response = await client.GetAsync<IEnumerable<GetTimetableWithoutAssessmentsByDateResponse>, GetTimetableByDatesRequest>(
+					apiMethod: TimetableControllerMethods.GetTimetableByDatesForTeacher,
+					argQuery: new GetTimetableByDatesRequest(Days: dates),
+					cancellationToken: cancellationToken
+				) ?? throw new InvalidOperationException();
+				return response.ToDictionary(
+					keySelector: r => r.Date,
+					elementSelector: r => r.Timetable.Select(
+						selector: t => TimetableForTeacher.Create(
+							subject: t.Subject,
+							@break: t.Break
+						)
+					)
+				);
 			})
 		);
 	}

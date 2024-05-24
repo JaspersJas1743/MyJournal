@@ -13,6 +13,7 @@ public sealed class TeacherSubject : TeacherSubjectBase
 	private readonly TaughtSubject? _taughtSubject;
 	private readonly StudyingSubjectInClass? _studyingSubjectInClass;
 	private readonly IEnumerable<PossibleAssessment> _possibleAssessments;
+	private EducationPeriod _educationPeriod;
 	private TaughtClass? _taughtClass;
 
 	public TeacherSubject(
@@ -71,15 +72,16 @@ public sealed class TeacherSubject : TeacherSubjectBase
 		ClassName = _taughtClass.Name;
 	}
 
-	public async Task SetEducationPeriod(int educationPeriodId)
+	public async Task SetEducationPeriod(EducationPeriod educationPeriod)
 	{
+		_educationPeriod = educationPeriod;
 		if (_taughtClass is not null)
 		{
-			await _taughtClass.SetEducationPeriod(educationPeriodId: educationPeriodId);
+			await _taughtClass.SetEducationPeriod(educationPeriodId: educationPeriod.Id);
 			return;
 		}
 
-		await _studyingSubjectInClass!.SetEducationPeriod(educationPeriodId: educationPeriodId);
+		await _studyingSubjectInClass!.SetEducationPeriod(educationPeriodId: educationPeriod.Id);
 	}
 
 	public async Task SetAttendance(
@@ -118,6 +120,7 @@ public sealed class TeacherSubject : TeacherSubjectBase
 			{
 				ObservableStudent observable = s.ToObservable(
 					position: i + 1,
+					period: _educationPeriod,
 					possibleAssessments: _possibleAssessments,
 					notificationService: _notificationService
 				);
@@ -131,6 +134,7 @@ public sealed class TeacherSubject : TeacherSubjectBase
 		{
 			ObservableStudent observable = s.ToObservable(
 				position: i + 1,
+				period: _educationPeriod,
 				possibleAssessments: _possibleAssessments,
 				notificationService: _notificationService
 			);

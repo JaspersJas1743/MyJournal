@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using MyJournal.Core;
@@ -478,7 +479,7 @@ public class ParentTest
 
 	private async Task PrintTimetable(TimetableForWardCollection timetable)
 	{
-		await foreach (KeyValuePair<DateOnly, TimetableForStudent[]> t in timetable)
+		await foreach (KeyValuePair<DateOnly, IEnumerable<TimetableForStudent>> t in timetable)
 		{
 			Debug.WriteLine($"date=[{t.Key}]");
 			foreach (TimetableForStudent tt in t.Value)

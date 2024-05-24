@@ -14,7 +14,7 @@ public sealed class TimetableForTeacher
 	public SubjectOnTimetable Subject { get; set; }
 	public BreakAfterSubject? Break { get; set; }
 
-	internal static async Task<TimetableForTeacher> Create(
+	internal static TimetableForTeacher Create(
 		SubjectOnTimetable subject,
 		BreakAfterSubject? @break
 	) => new TimetableForTeacher(subject: subject, @break: @break);

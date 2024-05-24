@@ -14,7 +14,6 @@ public sealed class Student : User
 {
 	private readonly AsyncLazy<StudyingSubjectCollection> _studyingSubjects;
 	private readonly HubConnection _studentHubConnection;
-
 	private AsyncLazy<TimetableForStudentCollection> _timetable;
 
 	private Student(

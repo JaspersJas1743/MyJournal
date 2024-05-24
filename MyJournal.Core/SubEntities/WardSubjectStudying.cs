@@ -94,11 +94,11 @@ public sealed class WardSubjectStudying : Subject
 				argQuery: new GetTimetableBySubjectRequest(SubjectId: subjectId),
 				cancellationToken: cancellationToken
 			);
-			return await Task.WhenAll(tasks: timetable?.Select(selector: async t => await TimetableForStudent.Create(
+			return timetable?.Select(selector: t => TimetableForStudent.Create(
 				subject: t.Subject,
 				estimations: t.Estimations,
 				@break: t.Break
-			)) ?? Enumerable.Empty<Task<TimetableForStudent>>());
+			)) ?? Enumerable.Empty<TimetableForStudent>();
 		});
 	}
 

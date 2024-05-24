@@ -915,6 +915,21 @@ public sealed class AssessmentController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		if (
+			await _context.Assessments.AsNoTracking().Where(predicate: a =>
+			EF.Functions.DateDiffDay(a.Datetime, request.Datetime) == 0 &&
+			!a.IsDeleted && a.Grade.GradeType.Type == GradeTypes.Truancy &&
+			a.LessonId == request.SubjectId && a.GradeId == request.GradeId &&
+			request.StudentId == a.StudentId).AnyAsync(cancellationToken: cancellationToken)
+		)
+		{
+			string now = request.Datetime.ToString(format: "d MMMM", provider: CultureInfo.GetCultureInfo(name: "RU-ru"));
+			throw new HttpResponseException(
+				statusCode: StatusCodes.Status400BadRequest,
+				message: $"Посещаемость за {now} для данного студента уже установлена."
+			);
+		}
+
 		Assessment assessment = new Assessment()
 		{
 			GradeId = request.GradeId,
@@ -1011,7 +1026,8 @@ public sealed class AssessmentController(
 
 		if (_context.FinalGradesForEducationPeriods.AsNoTracking().Any(predicate: fgfep =>
 			fgfep.EducationPeriodId == period.Id &&
-			fgfep.StudentId == request.StudentId
+			fgfep.StudentId == request.StudentId &&
+			fgfep.LessonId == request.SubjectId
 		)) throw new HttpResponseException(
 			statusCode: StatusCodes.Status400BadRequest,
 			message: "Итоговая отметка за данный учебный период уже установлена."

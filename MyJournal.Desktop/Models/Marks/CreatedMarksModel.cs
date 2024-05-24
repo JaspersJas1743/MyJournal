@@ -148,7 +148,7 @@ public sealed class CreatedMarksModel : MarksModel
 		EducationPeriods.Load(items: periods);
 		SelectedPeriod = EducationPeriods[index: 0];
 
-		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
+		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriod: SelectedPeriod);
 		IEnumerable<ObservableStudent> students = await SubjectSelectionModel.SelectedItem.GetClass();
 		Students.Load(items: students);
 		_loaded = false;
@@ -163,7 +163,7 @@ public sealed class CreatedMarksModel : MarksModel
 			return;
 		_loaded = true;
 
-		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriodId: SelectedPeriod.Id);
+		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriod: SelectedPeriod);
 		IEnumerable<ObservableStudent> students = await SubjectSelectionModel.SelectedItem.GetClass();
 		Students.Load(items: students);
 		_loaded = false;
