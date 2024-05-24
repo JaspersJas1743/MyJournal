@@ -8,22 +8,22 @@ using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
 
-public sealed class ObservableTimetableByDateCollection : ReactiveObject
+public sealed class TimetableByDateCollection : ReactiveObject
 {
 	private readonly TimetableForStudentCollection? _timetableForStudentCollection = null;
 	private readonly TimetableForTeacherCollection? _timetableForTeacherCollection = null;
 	private readonly TimetableForWardCollection? _timetableForWardCollection = null;
 
-	public ObservableTimetableByDateCollection(TimetableForStudentCollection timetableForStudentCollection)
+	public TimetableByDateCollection(TimetableForStudentCollection timetableForStudentCollection)
 		=> _timetableForStudentCollection = timetableForStudentCollection;
 
-	public ObservableTimetableByDateCollection(TimetableForTeacherCollection timetableForTeacherCollection)
+	public TimetableByDateCollection(TimetableForTeacherCollection timetableForTeacherCollection)
 		=> _timetableForTeacherCollection = timetableForTeacherCollection;
 
-	public ObservableTimetableByDateCollection(TimetableForWardCollection timetableForWardCollection)
+	public TimetableByDateCollection(TimetableForWardCollection timetableForWardCollection)
 		=> _timetableForWardCollection = timetableForWardCollection;
 
-	public async Task<IEnumerable<ObservableTimetableByDate>> GetTimetable(DateOnly date)
+	public async Task<IEnumerable<TimetableByDate>> GetTimetable(DateOnly date)
 	{
 		if (_timetableForTeacherCollection is not null)
 		{
@@ -40,12 +40,12 @@ public sealed class ObservableTimetableByDateCollection : ReactiveObject
 
 public static class ObservableTimetableByDateCollectionExtensions
 {
-	public static ObservableTimetableByDateCollection ToObservable(this TimetableForStudentCollection timetableForStudentCollection)
-		=> new ObservableTimetableByDateCollection(timetableForStudentCollection: timetableForStudentCollection);
+	public static TimetableByDateCollection ToObservable(this TimetableForStudentCollection timetableForStudentCollection)
+		=> new TimetableByDateCollection(timetableForStudentCollection: timetableForStudentCollection);
 
-	public static ObservableTimetableByDateCollection ToObservable(this TimetableForTeacherCollection timetableForTeacherCollection)
-		=> new ObservableTimetableByDateCollection(timetableForTeacherCollection: timetableForTeacherCollection);
+	public static TimetableByDateCollection ToObservable(this TimetableForTeacherCollection timetableForTeacherCollection)
+		=> new TimetableByDateCollection(timetableForTeacherCollection: timetableForTeacherCollection);
 
-	public static ObservableTimetableByDateCollection ToObservable(this TimetableForWardCollection timetableForWardCollection)
-		=> new ObservableTimetableByDateCollection(timetableForWardCollection: timetableForWardCollection);
+	public static TimetableByDateCollection ToObservable(this TimetableForWardCollection timetableForWardCollection)
+		=> new TimetableByDateCollection(timetableForWardCollection: timetableForWardCollection);
 }

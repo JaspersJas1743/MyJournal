@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Controls.Notifications;
+using Avalonia.Threading;
 using DynamicData.Binding;
 using MyJournal.Core;
+using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
 using ReactiveUI;
 
@@ -12,12 +16,15 @@ namespace MyJournal.Desktop.Models.Timetable;
 
 public sealed class StudyTimetableModel : TimetableModel
 {
-	private ObservableTimetableByDateCollection _timetableCollection;
-	private IEnumerable<ObservableTimetableByDate> _timetable;
+	private readonly INotificationService _notificationService;
+	private User? _user;
+	private TimetableByDateCollection _timetableCollection;
+	private IEnumerable<TimetableByDate> _timetable;
 	private DateOnly? _selectedDate = null;
 
-	public StudyTimetableModel()
+	public StudyTimetableModel(INotificationService notificationService)
 	{
+		_notificationService = notificationService;
 		OnDaysSelectionChanged = ReactiveCommand.CreateFromTask(execute: DaysSelectionChangedHandler);
 		IObservable<bool> canSetNowDate = this.WhenAnyValue(
 			property1: model => model.SelectedDate,
@@ -31,8 +38,8 @@ public sealed class StudyTimetableModel : TimetableModel
 
 	public ObservableCollectionExtended<DateOnly> Dates { get; } = new ObservableCollectionExtended<DateOnly>();
 
-	public ObservableCollectionExtended<ObservableTimetableByDate> Timetable { get; } =
-		new ObservableCollectionExtended<ObservableTimetableByDate>();
+	public ObservableCollectionExtended<TimetableByDate> Timetable { get; } =
+		new ObservableCollectionExtended<TimetableByDate>();
 
 	public DateOnly CurrentDate { get; } = DateOnly.FromDateTime(dateTime: DateTime.Now);
 
@@ -42,11 +49,9 @@ public sealed class StudyTimetableModel : TimetableModel
 		set => this.RaiseAndSetIfChanged(backingField: ref _selectedDate, newValue: value);
 	}
 
-	private async Task SetTimetableForNow()
+	private async Task SetTimetableFor(DateOnly date)
 	{
-		Dates.Load(items: Enumerable.Range(start: -3, count: 7).Select(
-					   selector: offset => DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(value: offset))
-				   ));
+		Dates.Load(items: Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays));
 		SelectedDate = CurrentDate;
 		Timetable.Load(items: await _timetableCollection.GetTimetable(date: SelectedDate.Value));
 	}
@@ -85,13 +90,41 @@ public sealed class StudyTimetableModel : TimetableModel
 
 	public override async Task SetUser(User user)
 	{
-		_timetableCollection = user switch
+		_user = user;
+		user.ChangedTimetable += OnChangedTimetable;
+		await UpdateTimetable();
+		await SetTimetableForNow();
+	}
+
+	private async Task UpdateTimetable()
+	{
+		_timetableCollection = _user switch
 		{
 			Student student => (await student.GetTimetable()).ToObservable(),
 			Parent parent => (await parent.GetTimetable()).ToObservable(),
 			Teacher teacher => (await teacher.GetTimetable()).ToObservable(),
 			_ => throw new ArgumentException(message: "Пользователь имеет неподдержимваемую роль.")
 		};
-		await SetTimetableForNow();
 	}
+
+	private async void OnChangedTimetable(ChangedTimetableEventArgs e)
+	{
+		if (SelectedDate is null)
+			return;
+
+		await Dispatcher.UIThread.Invoke(callback: async () =>
+		{
+			await UpdateTimetable();
+			await SetTimetableForNow();
+		});
+
+		await _notificationService.Show(
+			title: "Расписание",
+			content: "В расписание были внесены изменения!",
+			type: NotificationType.Information
+		);
+	}
+
+	private async Task SetTimetableForNow() =>
+		await SetTimetableFor(date: DateOnly.FromDateTime(dateTime: DateTime.Now));
 }

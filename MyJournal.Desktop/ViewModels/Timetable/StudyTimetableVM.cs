@@ -23,7 +23,7 @@ public sealed class StudyTimetableVM(StudyTimetableModel model) : TimetableVM(mo
 		set => model.SelectedDate = value;
 	}
 
-	public ObservableCollectionExtended<ObservableTimetableByDate> Timetable => model.Timetable;
+	public ObservableCollectionExtended<TimetableByDate> Timetable => model.Timetable;
 
 	public override async Task SetUser(User user)
 		=> await model.SetUser(user: user);

@@ -775,6 +775,7 @@
 		</Style>
 
 		<Style Selector="^.TimetableByDate">
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
 			<Setter Property="VerticalAlignment" Value="Top"/>
 			<Setter Property="Margin" Value="0" />
 			<Setter Property="Padding" Value="0" />
@@ -784,7 +785,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="timetableUtilities:ObservableTimetableByDate">
+				<DataTemplate DataType="timetableUtilities:TimetableByDate">
 					<Viewbox Width="1640" Height="130">
 						<Grid RowDefinitions="55*, 20*, 55*" Width="1650" Height="130">
 							<Border Grid.Row="0" BorderBrush="{DynamicResource StrokeColor}"
@@ -812,7 +813,7 @@
 							</Border>
 							<Grid Grid.Row="2" ColumnDefinitions="10*, 25*, 10*, 1605*" Classes="TestClass">
 								<lottie:Lottie Grid.Column="1" Path="/Assets/Resources/Animations/Break.json" Margin="-20 -20 -20 0"/>
-								<TextBlock	Grid.Column="3" Text="{Binding Break.CountMinutes,StringFormat='Перерыв {0} минут'}"
+								<TextBlock	Grid.Column="3" Text="{Binding Break.CountMinutes,StringFormat='Перерыв {0} минут',FallbackValue=''}"
 											FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"/>
 							</Grid>
 						</Grid>
@@ -820,14 +821,5 @@
 				</DataTemplate>
 			</Setter>
 		</Style>
-	</Style>
-
-	<Style Selector="Border.Teacher">
-		<Setter Property="Grid.Column" Value="2"/>
-	</Style>
-
-	<Style Selector="Border.NotTeacher">
-		<Setter Property="Grid.Column" Value="1"/>
-		<Setter Property="Grid.ColumnSpan" Value="2"/>
 	</Style>
 </Styles>
