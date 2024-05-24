@@ -37,19 +37,13 @@ public sealed class TimetableController(
 	public sealed record GetTimetableBySubjectAndClassRequest(int SubjectId, int ClassId);
 
 	public sealed record GetTimetableResponseSubject(int Id, int Number, string ClassName, string Name, DateOnly Date, TimeSpan Start, TimeSpan End);
-	public sealed record Estimation(string Grade);
 	public sealed record Break(double CountMinutes);
-	public sealed record GetTimetableWithAssessmentsResponse(GetTimetableResponseSubject Subject, IEnumerable<Estimation> Estimations, Break? Break)
+	public sealed record GetTimetableResponse(GetTimetableResponseSubject Subject, Break? Break)
 	{
 		public Break? Break { get; set; } = Break;
 	}
 
-	public sealed record GetTimetableWithAssessmentsByDateResponse(DateOnly Date, IEnumerable<GetTimetableWithAssessmentsResponse> Timetable);
-	public sealed record GetTimetableWithoutAssessmentsResponse(GetTimetableResponseSubject Subject, Break? Break)
-	{
-		public Break? Break { get; set; } = Break;
-	}
-	public sealed record GetTimetableWithoutAssessmentsByDateResponse(DateOnly Date, IEnumerable<GetTimetableWithoutAssessmentsResponse> Timetable);
+	public sealed record GetTimetableByDateResponse(DateOnly Date, IEnumerable<GetTimetableResponse> Timetable);
 
 	[Validator<GetTimetableByClassRequestValidator>]
 	public sealed record GetTimetableByClassRequest(int ClassId);
@@ -95,16 +89,16 @@ public sealed class TimetableController(
 	[HttpGet(template: "date/student/get")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableByDateForStudent(
+	public async Task<ActionResult<IEnumerable<GetTimetableResponse>>> GetTimetableByDateForStudent(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		GetTimetableWithAssessmentsResponse[] timings = await _context.Students.AsNoTracking()
+		GetTimetableResponseSubject[] subjects = await _context.Students.AsNoTracking()
 			.Where(predicate: s => s.UserId == userId)
 			.Where(predicate: s => !s.Class.EducationPeriodForClasses.Any(
 				epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < request.Day && h.EndDate > request.Day)
@@ -112,23 +106,17 @@ public sealed class TimetableController(
 			.SelectMany(selector: s => s.Class.LessonTimings)
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
-			.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
-				t.Lesson.Assessments.Where(a =>
-					DateOnly.FromDateTime(a.Datetime) == request.Day &&
-					t.StartTime <= a.Datetime.TimeOfDay &&
-					t.EndTime >= a.Datetime.TimeOfDay &&
-					a.Student.UserId == userId
-				).Select(a => new Estimation(a.Grade.Assessment)),
-				null
-			)).ToArrayAsync(cancellationToken: cancellationToken);
+			.Select(selector: t =>
+				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime)
+			).ToArrayAsync(cancellationToken: cancellationToken);
 
-		IEnumerable<GetTimetableWithAssessmentsResponse> timetable = timings.Select(selector: (timing, index) =>
+		IEnumerable<GetTimetableResponse> timetable = subjects.Select(selector: (timing, index) =>
 		{
-			GetTimetableWithAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: index + 1);
-			if (nextTiming is not null)
-				timing.Break = new Break(CountMinutes: (nextTiming.Subject.Start - timing.Subject.End).TotalMinutes);
-			return timing;
+			GetTimetableResponseSubject? nextTiming = subjects.ElementAtOrDefault(index: index + 1);
+			return new GetTimetableResponse(
+				Subject: timing,
+				Break: nextTiming is not null ? new Break(CountMinutes: (nextTiming.Start - timing.End).TotalMinutes) : null
+			);
 		});
 
 		return Ok(value: timetable);
@@ -155,19 +143,19 @@ public sealed class TimetableController(
 	[HttpGet(template: "dates/student/get")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsByDateResponse>>> GetTimetableByDatesForStudent(
+	public async Task<ActionResult<IEnumerable<GetTimetableByDateResponse>>> GetTimetableByDatesForStudent(
 		[FromQuery] GetTimetableByDatesRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		List<GetTimetableWithAssessmentsByDateResponse> result = new List<GetTimetableWithAssessmentsByDateResponse>(capacity: request.Days.Count());
+		List<GetTimetableByDateResponse> result = new List<GetTimetableByDateResponse>(capacity: request.Days.Count());
 		foreach (DateOnly day in request.Days)
 		{
-			GetTimetableWithAssessmentsResponse[] timings = await _context.Students.AsNoTracking()
+			GetTimetableResponseSubject[] subjects = await _context.Students.AsNoTracking()
 				.Where(predicate: s => s.UserId == userId)
 				.Where(predicate: s => !s.Class.EducationPeriodForClasses.Any(
 					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < day && h.EndDate > day)
@@ -175,25 +163,19 @@ public sealed class TimetableController(
 				.SelectMany(selector: s => s.Class.LessonTimings)
 				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == day.DayOfWeek)
 				.OrderBy(keySelector: t => t.Number)
-				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime),
-					t.Lesson.Assessments.Where(a =>
-						DateOnly.FromDateTime(a.Datetime) == day &&
-						t.StartTime <= a.Datetime.TimeOfDay &&
-						t.EndTime >= a.Datetime.TimeOfDay &&
-						a.Student.UserId == userId
-					).Select(a => new Estimation(a.Grade.Assessment)),
-					null
-				)).ToArrayAsync(cancellationToken: cancellationToken);
+				.Select(selector: t =>
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime)
+				).ToArrayAsync(cancellationToken: cancellationToken);
 
-			IEnumerable<GetTimetableWithAssessmentsResponse> timetable = timings.Select(selector: (timing, index) =>
+			IEnumerable<GetTimetableResponse> timetable = subjects.Select(selector: (timing, index) =>
 			{
-				GetTimetableWithAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: index + 1);
-				if (nextTiming is not null)
-					timing.Break = new Break(CountMinutes: (nextTiming.Subject.Start - timing.Subject.End).TotalMinutes);
-				return timing;
+				GetTimetableResponseSubject? nextTiming = subjects.ElementAtOrDefault(index: index + 1);
+				return new GetTimetableResponse(
+					Subject: timing,
+					Break: nextTiming is not null ? new Break(CountMinutes: (nextTiming.Start - timing.End).TotalMinutes) : null
+				);
 			});
-			result.Add(item: new GetTimetableWithAssessmentsByDateResponse(Date: day, Timetable: timetable));
+			result.Add(item: new GetTimetableByDateResponse(Date: day, Timetable: timetable));
 		}
 
 		return Ok(value: result);
@@ -220,16 +202,16 @@ public sealed class TimetableController(
 	[HttpGet(template: "subject/student/get")]
 	[Authorize(Policy = nameof(UserRoles.Student))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableBySubjectForStudent(
+	public async Task<ActionResult<IEnumerable<GetTimetableResponse>>> GetTimetableBySubjectForStudent(
 		[FromQuery] GetTimetableBySubjectRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IEnumerable<GetTimetableWithAssessmentsResponse> timetable = Enumerable.Range(start: -3, count: 10)
+		IEnumerable<GetTimetableResponse> timetable = Enumerable.Range(start: -3, count: 10)
 			.Select(selector: offset => DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(value: offset)))
 			.SelectMany(selector: d => _context.Students.AsNoTracking()
 				.Where(predicate: s => s.UserId == userId)
@@ -240,14 +222,8 @@ public sealed class TimetableController(
 				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == d.DayOfWeek && t.LessonId == request.SubjectId)
 				.OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
-				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
+				.Select(selector: t => new GetTimetableResponse(
 					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
-					t.Lesson.Assessments.Where(a =>
-						DateOnly.FromDateTime(a.Datetime) == d &&
-						t.StartTime <= a.Datetime.TimeOfDay &&
-						t.EndTime >= a.Datetime.TimeOfDay &&
-						a.Student.UserId == userId
-					).Select(a => new Estimation(a.Grade.Assessment)),
 					null
 				))
 			);
@@ -275,16 +251,16 @@ public sealed class TimetableController(
 	[HttpGet(template: "date/parent/get")]
 	[Authorize(Policy = nameof(UserRoles.Parent))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableByDateForParent(
+	public async Task<ActionResult<IEnumerable<GetTimetableResponse>>> GetTimetableByDateForParent(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		GetTimetableWithAssessmentsResponse[] timings = await _context.Parents.AsNoTracking()
+		GetTimetableResponseSubject[] subjects = await _context.Parents.AsNoTracking()
 			.Where(predicate: p => p.UserId == userId)
 			.Where(predicate: p => !p.Children.Class.EducationPeriodForClasses.Any(
 				epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < request.Day && h.EndDate > request.Day)
@@ -292,23 +268,17 @@ public sealed class TimetableController(
 			.SelectMany(selector: p => p.Children.Class.LessonTimings)
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
-			.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
-				t.Lesson.Assessments.Where(a =>
-					DateOnly.FromDateTime(a.Datetime) == request.Day &&
-					t.StartTime <= a.Datetime.TimeOfDay &&
-					t.EndTime >= a.Datetime.TimeOfDay &&
-					a.Student.Parents.Any(p => p.UserId == userId)
-				).Select(a => new Estimation(a.Grade.Assessment)),
-				null
-			)).ToArrayAsync(cancellationToken: cancellationToken);
+			.Select(selector: t =>
+				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime)
+			).ToArrayAsync(cancellationToken: cancellationToken);
 
-		IEnumerable<GetTimetableWithAssessmentsResponse> timetable = timings.Select(selector: (t, i) =>
+		IEnumerable<GetTimetableResponse> timetable = subjects.Select(selector: (timing, index) =>
 		{
-			GetTimetableWithAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: i + 1);
-			if (nextTiming is not null)
-				t.Break = new Break(CountMinutes: (nextTiming.Subject.Start - t.Subject.End).TotalMinutes);
-			return t;
+			GetTimetableResponseSubject? nextTiming = subjects.ElementAtOrDefault(index: index + 1);
+			return new GetTimetableResponse(
+				Subject: timing,
+				Break: nextTiming is not null ? new Break(CountMinutes: (nextTiming.Start - timing.End).TotalMinutes) : null
+			);
 		});
 
 		return Ok(value: timetable);
@@ -335,19 +305,19 @@ public sealed class TimetableController(
 	[HttpGet(template: "dates/parent/get")]
 	[Authorize(Policy = nameof(UserRoles.Parent))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsByDateResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableByDateResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsByDateResponse>>> GetTimetableByDatesForParent(
+	public async Task<ActionResult<IEnumerable<GetTimetableByDateResponse>>> GetTimetableByDatesForParent(
 		[FromQuery] GetTimetableByDatesRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		List<GetTimetableWithAssessmentsByDateResponse> result = new List<GetTimetableWithAssessmentsByDateResponse>(capacity: request.Days.Count());
+		List<GetTimetableByDateResponse> result = new List<GetTimetableByDateResponse>(capacity: request.Days.Count());
 		foreach (DateOnly day in request.Days)
 		{
-			GetTimetableWithAssessmentsResponse[] timings = await _context.Parents.AsNoTracking()
+			GetTimetableResponseSubject[] subjects = await _context.Parents.AsNoTracking()
 				.Where(predicate: p => p.UserId == userId)
 				.Where(predicate: p => !p.Children.Class.EducationPeriodForClasses.Any(
 					epfc => epfc.EducationPeriod.Holidays.Any(h => h.StartDate < day && h.EndDate > day)
@@ -355,25 +325,19 @@ public sealed class TimetableController(
 				.SelectMany(selector: p => p.Children.Class.LessonTimings)
 				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == day.DayOfWeek)
 				.OrderBy(keySelector: t => t.Number)
-				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
-					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime),
-					t.Lesson.Assessments.Where(a =>
-						DateOnly.FromDateTime(a.Datetime) == day &&
-						t.StartTime <= a.Datetime.TimeOfDay &&
-						t.EndTime >= a.Datetime.TimeOfDay &&
-						a.Student.Parents.Any(p => p.UserId == userId)
-					).Select(a => new Estimation(a.Grade.Assessment)),
-					null
-				)).ToArrayAsync(cancellationToken: cancellationToken);
+				.Select(selector: t =>
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime)
+				).ToArrayAsync(cancellationToken: cancellationToken);
 
-			IEnumerable<GetTimetableWithAssessmentsResponse> timetable = timings.Select(selector: (t, i) =>
+			IEnumerable<GetTimetableResponse> timetable = subjects.Select(selector: (timing, index) =>
 			{
-				GetTimetableWithAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: i + 1);
-				if (nextTiming is not null)
-					t.Break = new Break(CountMinutes: (nextTiming.Subject.Start - t.Subject.End).TotalMinutes);
-				return t;
+				GetTimetableResponseSubject? nextTiming = subjects.ElementAtOrDefault(index: index + 1);
+				return new GetTimetableResponse(
+					Subject: timing,
+					Break: nextTiming is not null ? new Break(CountMinutes: (nextTiming.Start - timing.End).TotalMinutes) : null
+				);
 			});
-			result.Add(item: new GetTimetableWithAssessmentsByDateResponse(Date: day, Timetable: timetable));
+			result.Add(item: new GetTimetableByDateResponse(Date: day, Timetable: timetable));
 		}
 
 		return Ok(value: result);
@@ -400,16 +364,16 @@ public sealed class TimetableController(
 	[HttpGet(template: "subject/parent/get")]
 	[Authorize(Policy = nameof(UserRoles.Parent))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithAssessmentsResponse>>> GetTimetableBySubjectForParent(
+	public async Task<ActionResult<IEnumerable<GetTimetableResponse>>> GetTimetableBySubjectForParent(
 		[FromQuery] GetTimetableBySubjectRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IEnumerable<GetTimetableWithAssessmentsResponse> timetable = Enumerable.Range(start: -3, count: 10)
+		IEnumerable<GetTimetableResponse> timetable = Enumerable.Range(start: -3, count: 10)
 			.Select(selector: offset => DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(value: offset)))
 			.SelectMany(selector: d => _context.Parents.AsNoTracking()
 				.Where(predicate: p => p.UserId == userId)
@@ -420,14 +384,8 @@ public sealed class TimetableController(
 				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == d.DayOfWeek && t.LessonId == request.SubjectId)
 				.OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
-				.Select(selector: t => new GetTimetableWithAssessmentsResponse(
+				.Select(selector: t => new GetTimetableResponse(
 					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
-					t.Lesson.Assessments.Where(a =>
-						DateOnly.FromDateTime(a.Datetime) == d &&
-						t.StartTime <= a.Datetime.TimeOfDay &&
-						t.EndTime >= a.Datetime.TimeOfDay &&
-						a.Student.Parents.Any(p => p.UserId == userId)
-					).Select(a => new Estimation(a.Grade.Assessment)),
 					null
 				))
 			);
@@ -455,16 +413,16 @@ public sealed class TimetableController(
 	[HttpGet(template: "date/teacher/get")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithoutAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithoutAssessmentsResponse>>> GetTimetableByDateForTeacher(
+	public async Task<ActionResult<IEnumerable<GetTimetableResponse>>> GetTimetableByDateForTeacher(
 		[FromQuery] GetTimetableByDateRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		GetTimetableWithoutAssessmentsResponse[] timings = await _context.Teachers.AsNoTracking()
+		GetTimetableResponseSubject[] subjects = await _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
 			.SelectMany(selector: l => l.Lesson.LessonTimings.Intersect(l.Classes.SelectMany(c => c.LessonTimings)))
@@ -473,17 +431,17 @@ public sealed class TimetableController(
 			))
 			.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == request.Day.DayOfWeek)
 			.OrderBy(keySelector: t => t.Number)
-			.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
-				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime),
-				null
-			)).ToArrayAsync(cancellationToken: cancellationToken);
+			.Select(selector: t =>
+				new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, request.Day, t.StartTime, t.EndTime)
+			).ToArrayAsync(cancellationToken: cancellationToken);
 
-		IEnumerable<GetTimetableWithoutAssessmentsResponse> timetable = timings.Select(selector: (timing, index) =>
+		IEnumerable<GetTimetableResponse> timetable = subjects.Select(selector: (timing, index) =>
 		{
-			GetTimetableWithoutAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: index + 1);
-			if (nextTiming is not null)
-				timing.Break = new Break(CountMinutes: (nextTiming.Subject.Start - timing.Subject.End).TotalMinutes);
-			return timing;
+			GetTimetableResponseSubject? nextTiming = subjects.ElementAtOrDefault(index: index + 1);
+			return new GetTimetableResponse(
+				Subject: timing,
+				Break: nextTiming is not null ? new Break(CountMinutes: (nextTiming.Start - timing.End).TotalMinutes) : null
+			);
 		});
 
 		return Ok(value: timetable);
@@ -510,19 +468,19 @@ public sealed class TimetableController(
 	[HttpGet(template: "dates/teacher/get")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithoutAssessmentsByDateResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableByDateResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithoutAssessmentsByDateResponse>>> GetTimetableByDatesForTeacher(
+	public async Task<ActionResult<IEnumerable<GetTimetableByDateResponse>>> GetTimetableByDatesForTeacher(
 		[FromQuery] GetTimetableByDatesRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		List<GetTimetableWithoutAssessmentsByDateResponse> result = new List<GetTimetableWithoutAssessmentsByDateResponse>(capacity: request.Days.Count());
+		List<GetTimetableByDateResponse> result = new List<GetTimetableByDateResponse>(capacity: request.Days.Count());
 		foreach (DateOnly day in request.Days)
 		{
-			GetTimetableWithoutAssessmentsResponse[] timings = await _context.Teachers.AsNoTracking()
+			GetTimetableResponseSubject[] subjects = await _context.Teachers.AsNoTracking()
 				.Where(predicate: t => t.UserId == userId)
 				.SelectMany(selector: t => t.TeachersLessons)
 				.SelectMany(selector: l => l.Lesson.LessonTimings.Intersect(l.Classes.SelectMany(c => c.LessonTimings)))
@@ -531,19 +489,19 @@ public sealed class TimetableController(
 				))
 				.Where(predicate: t => (DayOfWeek)t.DayOfWeekId == day.DayOfWeek)
 				.OrderBy(keySelector: t => t.Number)
-				.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
-					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime),
-					null
-				)).ToArrayAsync(cancellationToken: cancellationToken);
+				.Select(selector: t =>
+					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, day, t.StartTime, t.EndTime)
+				).ToArrayAsync(cancellationToken: cancellationToken);
 
-			IEnumerable<GetTimetableWithoutAssessmentsResponse> timetable = timings.Select(selector: (timing, index) =>
+			IEnumerable<GetTimetableResponse> timetable = subjects.Select(selector: (timing, index) =>
 			{
-				GetTimetableWithoutAssessmentsResponse? nextTiming = timings.ElementAtOrDefault(index: index + 1);
-				if (nextTiming is not null)
-					timing.Break = new Break(CountMinutes: (nextTiming.Subject.Start - timing.Subject.End).TotalMinutes);
-				return timing;
+				GetTimetableResponseSubject? nextTiming = subjects.ElementAtOrDefault(index: index + 1);
+				return new GetTimetableResponse(
+					Subject: timing,
+					Break: nextTiming is not null ? new Break(CountMinutes: (nextTiming.Start - timing.End).TotalMinutes) : null
+				);
 			});
-			result.Add(item: new GetTimetableWithoutAssessmentsByDateResponse(Date: day, Timetable: timetable));
+			result.Add(item: new GetTimetableByDateResponse(Date: day, Timetable: timetable));
 		}
 
 		return Ok(value: result);
@@ -570,16 +528,16 @@ public sealed class TimetableController(
 	[HttpGet(template: "subject/teacher/get")]
 	[Authorize(Policy = nameof(UserRoles.Teacher))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
-	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableWithoutAssessmentsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetTimetableResponse>))]
 	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
 	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
-	public async Task<ActionResult<IEnumerable<GetTimetableWithoutAssessmentsResponse>>> GetTimetableBySubjectForTeacher(
+	public async Task<ActionResult<IEnumerable<GetTimetableResponse>>> GetTimetableBySubjectForTeacher(
 		[FromQuery] GetTimetableBySubjectAndClassRequest request,
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IEnumerable<GetTimetableWithoutAssessmentsResponse> timetable = Enumerable.Range(start: -3, count: 10)
+		IEnumerable<GetTimetableResponse> timetable = Enumerable.Range(start: -3, count: 10)
 			.Select(selector: offset => DateOnly.FromDateTime(dateTime: DateTime.Now.AddDays(value: offset)))
 			.SelectMany(selector: d => _context.Teachers.AsNoTracking()
 				.Where(predicate: t => t.UserId == userId)
@@ -592,7 +550,7 @@ public sealed class TimetableController(
 					t.LessonId == request.SubjectId && t.ClassId == request.ClassId
 				).OrderBy(keySelector: t => t.DayOfWeekId == 0 ? 7 : t.DayOfWeekId)
 				.ThenBy(keySelector: t => t.Number)
-				.Select(selector: t => new GetTimetableWithoutAssessmentsResponse(
+				.Select(selector: t => new GetTimetableResponse(
 					new GetTimetableResponseSubject(t.LessonId, t.Number, t.Class.Name, t.Lesson.Name, d, t.StartTime, t.EndTime),
 					null
 				))
