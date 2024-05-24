@@ -96,7 +96,6 @@ public sealed class WardSubjectStudying : Subject
 			);
 			return timetable?.Select(selector: t => TimetableForStudent.Create(
 				subject: t.Subject,
-				estimations: t.Estimations,
 				@break: t.Break
 			)) ?? Enumerable.Empty<TimetableForStudent>();
 		});

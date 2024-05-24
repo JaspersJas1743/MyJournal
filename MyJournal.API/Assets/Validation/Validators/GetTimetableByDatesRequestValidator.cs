@@ -11,6 +11,6 @@ public sealed class GetTimetableByDatesRequestValidator : AbstractValidator<Time
 		int currentYear = DateTime.Now.Year;
 		RuleFor(expression: request => request.Days)
 			.AllElementsInCollection(predicate: d => currentYear - 1 <= d.Year && currentYear + 1 >= d.Year)
-			.WithMessage(errorMessage: "Указанная дата является некорректной.");
+			.WithMessage(errorMessage: "Одна из указанных дат является некорректной.");
 	}
 }

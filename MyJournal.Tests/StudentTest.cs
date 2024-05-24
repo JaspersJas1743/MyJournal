@@ -469,10 +469,6 @@ public class StudentTest
 				new TimeSpan(hours: 9, minutes: 45, seconds: 0),
 				new TimeSpan(hours: 10, minutes: 45, seconds: 0)
 			));
-			Assert.That(
-				actual: timetable.Estimations.Select(selector: e => e.Grade),
-				expression: Is.EquivalentTo(expected: Enumerable.Empty<string>())
-			);
 			Assert.That(actual: timetable.Break, expression: Is.AnyOf(null, new BreakAfterSubject(countMinutes: 15)));
 		});
 	}

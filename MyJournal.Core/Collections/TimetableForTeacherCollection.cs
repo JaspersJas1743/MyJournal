@@ -45,7 +45,7 @@ public sealed class TimetableForTeacherCollection : TimetableCollection<Timetabl
 	{
 		return await BaseGetByDate<GetTimetableWithoutAssessmentsByDateResponse>(
 			date: date,
-			apiMethod: TimetableControllerMethods.GetTimetableByDateForTeacher,
+			apiMethod: TimetableControllerMethods.GetTimetableByDatesForTeacher,
 			cancellationToken: cancellationToken
 		);
 	}

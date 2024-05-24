@@ -15,15 +15,14 @@ public sealed class TimetableForStudentCollection : TimetableCollection<Timetabl
 		timetableOnDate: timetableOnDate
 	) { }
 
-	public sealed record GetTimetableWithAssessmentsResponse(
+	public sealed record GetTimetableResponse(
 		SubjectOnTimetable Subject,
-		IEnumerable<EstimationOnTimetable> Estimations,
 		BreakAfterSubject? Break
 	);
 
-	public sealed record GetTimetableWithAssessmentsByDateResponse(
+	public sealed record GetTimetableByDateResponse(
 		DateOnly Date,
-		IEnumerable<GetTimetableWithAssessmentsResponse> Timetable
+		IEnumerable<GetTimetableResponse> Timetable
 	) : ITResponse
 	{
 		public KeyValuePair<DateOnly, IEnumerable<TimetableForStudent>> ConvertToT()
@@ -32,7 +31,6 @@ public sealed class TimetableForStudentCollection : TimetableCollection<Timetabl
 				key: Date,
 				value: Timetable.Select(selector: r => TimetableForStudent.Create(
 				   subject: r.Subject,
-				   estimations: r.Estimations,
 				   @break: r.Break
 				))
 			);
@@ -44,7 +42,7 @@ public sealed class TimetableForStudentCollection : TimetableCollection<Timetabl
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		return await BaseGetByDate<GetTimetableWithAssessmentsByDateResponse>(
+		return await BaseGetByDate<GetTimetableByDateResponse>(
 			date: date,
 			apiMethod: TimetableControllerMethods.GetTimetableByDatesForStudent,
 			cancellationToken: cancellationToken
@@ -62,7 +60,7 @@ public sealed class TimetableForStudentCollection : TimetableCollection<Timetabl
 			{
 				DateOnly date = DateOnly.FromDateTime(dateTime: DateTime.Now);
 				IEnumerable<DateOnly> dates = Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays);
-				IEnumerable<GetTimetableWithAssessmentsByDateResponse> response = await client.GetAsync<IEnumerable<GetTimetableWithAssessmentsByDateResponse>, GetTimetableByDatesRequest>(
+				IEnumerable<GetTimetableByDateResponse> response = await client.GetAsync<IEnumerable<GetTimetableByDateResponse>, GetTimetableByDatesRequest>(
 					apiMethod: TimetableControllerMethods.GetTimetableByDatesForStudent,
 					argQuery: new GetTimetableByDatesRequest(Days: dates),
 					cancellationToken: cancellationToken
@@ -72,7 +70,6 @@ public sealed class TimetableForStudentCollection : TimetableCollection<Timetabl
 					elementSelector: r => r.Timetable.Select(
 						selector: t => TimetableForStudent.Create(
 							subject: t.Subject,
-							estimations: t.Estimations,
 							@break: t.Break
 						)
 					)

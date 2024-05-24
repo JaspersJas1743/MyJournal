@@ -64,16 +64,15 @@ public static class RoleHelper
 		TasksVM createdTasks = App.GetService<CreatedTasksVM>();
 		MarksVM receivedMarks = App.GetService<ReceivedMarksVM>();
 		MarksVM createdMarks = App.GetService<CreatedMarksVM>();
-		TimetableVM teacherTimetable = App.GetService<WorkTimetableVM>();
-		TimetableVM studentTimetable = App.GetService<StudyTimetableVM>();
-		TimetableVM administratorTimetable = App.GetService<CreatingTimetableVM>();
+		TimetableVM timetable = App.GetService<StudyTimetableVM>();
+		TimetableVM creatingTimetable = App.GetService<CreatingTimetableVM>();
 
 		return userRole switch
 		{
-			UserRoles.Teacher       => new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	teacherTimetable },
-			UserRoles.Student       => new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable },
-			UserRoles.Parent		=> new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	studentTimetable },
-			UserRoles.Administrator => new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	administratorTimetable },
+			UserRoles.Teacher       => new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	timetable },
+			UserRoles.Student       => new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	timetable },
+			UserRoles.Parent		=> new MenuItemVM[] { profile, messages, receivedTasks,	receivedMarks,	timetable },
+			UserRoles.Administrator => new MenuItemVM[] { profile, messages, createdTasks,	createdMarks,	creatingTimetable },
 		};
 	}
 }

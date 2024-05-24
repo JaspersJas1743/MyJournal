@@ -18,7 +18,6 @@ public sealed class TimetableForWardCollection : TimetableCollection<TimetableFo
 
 	public sealed record GetTimetableWithAssessmentsResponse(
 		SubjectOnTimetable Subject,
-		IEnumerable<EstimationOnTimetable> Estimations,
 		BreakAfterSubject? Break
 	);
 
@@ -33,7 +32,6 @@ public sealed class TimetableForWardCollection : TimetableCollection<TimetableFo
 				key: Date,
 				value: Timetable.Select(selector: r => TimetableForStudent.Create(
 				   subject: r.Subject,
-				   estimations: r.Estimations,
 				   @break: r.Break
 				))
 			);
@@ -47,7 +45,7 @@ public sealed class TimetableForWardCollection : TimetableCollection<TimetableFo
 	{
 		return await BaseGetByDate<GetTimetableWithAssessmentsByDateResponse>(
 			date: date,
-			apiMethod: TimetableControllerMethods.GetTimetableByDateForParent,
+			apiMethod: TimetableControllerMethods.GetTimetableByDatesForParent,
 			cancellationToken: cancellationToken
 		);
 	}
@@ -73,7 +71,6 @@ public sealed class TimetableForWardCollection : TimetableCollection<TimetableFo
 					elementSelector: r => r.Timetable.Select(
 						selector: t => TimetableForStudent.Create(
 							subject: t.Subject,
-							estimations: t.Estimations,
 							@break: t.Break
 						)
 					)
