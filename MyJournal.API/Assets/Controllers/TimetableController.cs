@@ -695,11 +695,9 @@ public sealed class TimetableController(
 
 		IQueryable<string> administratorIds = _context.Administrators.AsNoTracking().Select(selector: a => a.UserId.ToString());
 
-		IEnumerable<int> subjectIds = request.Timetable.SelectMany(selector: s => s.Subjects).Select(selector: s => s.Id).Distinct();
-
-		await studentHubContext.Clients.Users(userIds: studentIds).ChangedTimetable(subjectIds: subjectIds);
-		await parentHubContext.Clients.Users(userIds: parentIds).ChangedTimetable(subjectIds: subjectIds);
-		await teacherHubContext.Clients.Users(userIds: teacherIds).ChangedTimetable(classId: request.ClassId, subjectIds: subjectIds);
+		await studentHubContext.Clients.Users(userIds: studentIds).ChangedTimetable();
+		await parentHubContext.Clients.Users(userIds: parentIds).ChangedTimetable();
+		await teacherHubContext.Clients.Users(userIds: teacherIds).ChangedTimetable(classId: request.ClassId);
 		await administratorHubContext.Clients.Users(userIds: administratorIds).ChangedTimetable(classId: request.ClassId);
 
 		return Ok();

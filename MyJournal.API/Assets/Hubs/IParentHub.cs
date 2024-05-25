@@ -9,5 +9,5 @@ public interface IParentHub
 	Task CreatedAssessmentToWard(int assessmentId, int studentId, int subjectId);
 	Task ChangedAssessmentToWard(int assessmentId, int studentId, int subjectId);
 	Task DeletedAssessmentToWard(int assessmentId, int studentId, int subjectId);
-	Task ChangedTimetable(IEnumerable<int> subjectIds);
+	Task ChangedTimetable();
 }
