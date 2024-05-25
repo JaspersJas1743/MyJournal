@@ -8,24 +8,29 @@ using Avalonia.Threading;
 using DynamicData.Binding;
 using MyJournal.Core;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
+using MyJournal.Desktop.ViewModels.Timetable;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.Timetable;
 
-public sealed class StudyTimetableModel : TimetableModel
+public sealed class TimetableByDateModel : BaseTimetableModel
 {
 	private readonly INotificationService _notificationService;
 	private User? _user;
-	private TimetableByDateCollection _timetableCollection;
-	private IEnumerable<TimetableByDate> _timetable;
+	private TimetableCollection _timetableCollection;
+	private IEnumerable<Assets.Utilities.TimetableUtilities.Timetable> _timetable;
 	private DateOnly? _selectedDate = null;
 
-	public StudyTimetableModel(INotificationService notificationService)
+	public TimetableByDateModel(INotificationService notificationService)
 	{
 		_notificationService = notificationService;
 		OnDaysSelectionChanged = ReactiveCommand.CreateFromTask(execute: DaysSelectionChangedHandler);
+		ChangeVisualizerToSubjects = ReactiveCommand.Create(execute: () => MessageBus.Current.SendMessage(
+			message: new ChangeTimetableVisualizerEventArgs(timetableVM: typeof(TimetableBySubjectVM))
+		));
 		IObservable<bool> canSetNowDate = this.WhenAnyValue(
 			property1: model => model.SelectedDate,
 			selector: date => date != DateOnly.FromDateTime(dateTime: DateTime.Now)
@@ -35,11 +40,12 @@ public sealed class StudyTimetableModel : TimetableModel
 
 	public ReactiveCommand<Unit, Unit> OnDaysSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> SetNowDate { get; }
+	public ReactiveCommand<Unit, Unit> ChangeVisualizerToSubjects { get; }
 
 	public ObservableCollectionExtended<DateOnly> Dates { get; } = new ObservableCollectionExtended<DateOnly>();
 
-	public ObservableCollectionExtended<TimetableByDate> Timetable { get; } =
-		new ObservableCollectionExtended<TimetableByDate>();
+	public ObservableCollectionExtended<Assets.Utilities.TimetableUtilities.Timetable> Timetable { get; } =
+		new ObservableCollectionExtended<Assets.Utilities.TimetableUtilities.Timetable>();
 
 	public DateOnly CurrentDate { get; } = DateOnly.FromDateTime(dateTime: DateTime.Now);
 

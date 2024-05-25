@@ -3,7 +3,7 @@ using MyJournal.Core;
 
 namespace MyJournal.Desktop.Models.Timetable;
 
-public sealed class CreatingTimetableModel : TimetableModel
+public sealed class CreatingTimetableModel : BaseTimetableModel
 {
 	public override async Task SetUser(User user)
 	{

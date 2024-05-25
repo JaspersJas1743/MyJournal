@@ -295,9 +295,19 @@ public partial class App : Application
 			.AddTransient<CreatingTimetableModel>()
 			#endregion
 			#region Study timetable
-			.AddTransient<StudyTimetableView>()
-			.AddTransient<StudyTimetableVM>()
-			.AddTransient<StudyTimetableModel>();
+			.AddTransient<TimetableView>()
+			.AddTransient<TimetableVM>()
+			.AddTransient<TimetableModel>()
+			#endregion
+			#region Study timetable by date
+			.AddTransient<TimetableByDateView>()
+			.AddTransient<TimetableByDateVM>()
+			.AddTransient<TimetableByDateModel>()
+			#endregion
+			#region Study timetable by subject
+			.AddTransient<TimetableBySubjectView>()
+			.AddTransient<TimetableBySubjectVM>()
+			.AddTransient<TimetableBySubjectModel>();
 			#endregion
 			#endregion
 		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddWindowsCredentialStorageService());

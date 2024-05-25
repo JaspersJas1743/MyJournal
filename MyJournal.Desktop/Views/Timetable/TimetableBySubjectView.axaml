@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Timetable"
+			xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
+			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
+			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			x:DataType="vm:TimetableBySubjectVM"
+			x:Class="MyJournal.Desktop.Views.Timetable.TimetableBySubjectView">
+		<Viewbox>
+		<Grid	Height="1025" RowDefinitions="10*, 90*, 15*, 790*, 15*, 70*, 40*"
+				Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
+			<!-- <Button Command="{Binding ClearSelection}" IsVisible="False" HotKey="Escape"/> -->
+			<TextBox Grid.Column="1" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
+			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush ListBorder">
+				<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+													Classes="Subjects TimetableSubjects" ItemsSource="{Binding Subjects}"
+													x:Name="Subjects" Selection="{Binding SubjectSelectionModel}">
+					<interactivity:Interaction.Behaviors>
+						<interaction:EventTriggerBehavior EventName="SelectionChanged">
+							<interaction:InvokeCommandAction Command="{Binding OnSubjectSelectionChanged}"/>
+						</interaction:EventTriggerBehavior>
+					</interactivity:Interaction.Behaviors>
+				</controls:ListBoxWithLoadOnScroll>
+			</Border>
+			<Viewbox Grid.Row="5" Grid.Column="1">
+				<Button Width="500" Height="70" Classes="MainAccentColor Corner20" FontSize="24" Content="День"
+						Command="{Binding ChangeVisualizerToDate}">
+				</Button>
+			</Viewbox>
+			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder">
+				<Grid>
+					<Grid IsVisible="{Binding !!Timetable.Count}">
+						<ListBox ItemsSource="{Binding Timetable}" Classes="TimetableBySubject"/>
+					</Grid>
+					<Grid	VerticalAlignment="Center" Height="75" HorizontalAlignment="Center"
+							Width="320" ColumnDefinitions="75*, 10*, 235">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Timetable.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNull}"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<controls:XamlSvg	Grid.Column="0" Foreground="{DynamicResource MainAccentColor}"
+											Classes="NotSelectedSubjectImage"/>
+						<TextBlock Grid.Column="2" TextWrapping="Wrap" Text="Выберите дисциплину для просмотра"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+
+					<Grid	VerticalAlignment="Center" Height="150" HorizontalAlignment="Center"
+							Width="250" RowDefinitions="115*, 10*, 25*">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Timetable.Count"/>
+								<Binding Path="#Subjects.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<lottie:Lottie Grid.Row="0" Path="/Assets/Resources/Animations/WithoutTimetable.json" Margin="-50"/>
+						<TextBlock	TextWrapping="Wrap" Text="Занятия отсутствуют!"
+									HorizontalAlignment="Center" Grid.Row="2"
+									FontSize="20" VerticalAlignment="Center"/>
+					</Grid>
+				</Grid>
+			</Border>
+		</Grid>
+	</Viewbox>
+</UserControl>

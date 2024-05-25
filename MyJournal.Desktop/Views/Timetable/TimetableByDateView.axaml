@@ -7,8 +7,8 @@
 			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
 			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-			x:DataType="vm:StudyTimetableVM"
-			x:Class="MyJournal.Desktop.Views.Timetable.StudyTimetableView">
+			x:DataType="vm:TimetableByDateVM"
+			x:Class="MyJournal.Desktop.Views.Timetable.TimetableByDateView">
 	<Viewbox>
 		<Grid	Height="1025" RowDefinitions="10*, 70*, 15*, 475*, 350*, 70*, 40*"
 				Width="1920" ColumnDefinitions="15*, 180*, 15*, 1690*, 20*" >
@@ -32,7 +32,8 @@
 				</Viewbox>
 			</Border>
 			<Viewbox Grid.Column="1" Grid.Row="5">
-				<Button Width="180" Height="70" Content="Дисциплина" Classes="MainAccentColor Corner20" FontSize="22"/>
+				<Button Width="180" Height="70" Content="Дисциплина" Classes="MainAccentColor Corner20" FontSize="22"
+						Command="{Binding  ChangeVisualizerToSubjects}"/>
 			</Viewbox>
 			<Border Grid.Row="1" Grid.RowSpan="5" Grid.Column="3" Classes="ListBorder"
 					Padding="20">

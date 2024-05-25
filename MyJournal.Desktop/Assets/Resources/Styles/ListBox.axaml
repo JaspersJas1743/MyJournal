@@ -359,6 +359,25 @@
 			</Setter>
 		</Style>
 
+		<Style Selector="^.TimetableSubjects">
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="timetableUtilities:Subject">
+					<Grid Margin="20 10" Width="450" Height="50">
+						<StackPanel Orientation="Vertical" VerticalAlignment="Center">
+							<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
+										VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="SubjectName"/>
+							<TextBlock	Text="{Binding Teacher.FullName}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SubheaderColor}"
+										VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="SubjectTeacher"
+										IsVisible="{Binding Teacher,Converter={x:Static ObjectConverters.IsNotNull}}"/>
+							<TextBlock	Text="{Binding ClassName}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SubheaderColor}"
+										VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="SubjectTeacher"
+										IsVisible="{Binding ClassName,Converter={x:Static ObjectConverters.IsNotNull}}"/>
+						</StackPanel>
+					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
 		<Style Selector="^.TeacherSubjects">
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="utilities:TeacherSubjectBase">
@@ -785,7 +804,7 @@
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
-				<DataTemplate DataType="timetableUtilities:TimetableByDate">
+				<DataTemplate DataType="timetableUtilities:Timetable">
 					<Viewbox Width="1640" Height="130">
 						<Grid RowDefinitions="55*, 20*, 55*" Width="1650" Height="130">
 							<Border Grid.Row="0" BorderBrush="{DynamicResource StrokeColor}"
@@ -817,6 +836,39 @@
 											FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"/>
 							</Grid>
 						</Grid>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="^.TimetableBySubject">
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Spacing="20" Width="1320" Margin="0 20"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="timetableUtilities:Timetable">
+					<Viewbox Width="1320" Height="55">
+							<Border BorderThickness="5" CornerRadius="10" Width="1320" Height="55"
+									BorderBrush="{DynamicResource StrokeColor}">
+								<Grid ColumnDefinitions="45*, 1105, 170*">
+									<TextBlock	Grid.Column="0" Text="{Binding Subject.Number}"
+												FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+									<Border Grid.Column="1" BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0">
+										<TextBlock	TextTrimming="CharacterEllipsis" Margin="20 0" FontSize="20"
+													VerticalAlignment="Center" HorizontalAlignment="Left"
+													Text="{Binding Subject.Date,StringFormat='d MMMM'}"/>
+									</Border>
+									<TextBlock	Grid.Column="2" Text="{Binding Subject,
+												Converter={x:Static converters:DateTimeConverters.During}}"
+												FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+								</Grid>
+							</Border>
 					</Viewbox>
 				</DataTemplate>
 			</Setter>

@@ -1,17 +1,16 @@
 using MyJournal.Core.SubEntities;
-using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
 
-public sealed class TimetableByDate : ReactiveObject
+public sealed class Timetable
 {
 	private readonly TimetableForStudent? _timetableForStudent;
 	private readonly TimetableForTeacher? _timetableForTeacher;
 
-	public TimetableByDate(TimetableForStudent timetableForStudent)
+	public Timetable(TimetableForStudent timetableForStudent)
 		=> _timetableForStudent = timetableForStudent;
 
-	public TimetableByDate(TimetableForTeacher timetableForTeacher)
+	public Timetable(TimetableForTeacher timetableForTeacher)
 		=> _timetableForTeacher = timetableForTeacher;
 
 	public SubjectOnTimetable Subject => _timetableForStudent?.Subject ?? _timetableForTeacher!.Subject;
@@ -22,9 +21,9 @@ public sealed class TimetableByDate : ReactiveObject
 
 public static class ObservableTimetableByDateExtensions
 {
-	public static TimetableByDate ToObservable(this TimetableForStudent timetableForStudent)
-		=> new TimetableByDate(timetableForStudent: timetableForStudent);
+	public static Timetable ToObservable(this TimetableForStudent timetableForStudent)
+		=> new Timetable(timetableForStudent: timetableForStudent);
 
-	public static TimetableByDate ToObservable(this TimetableForTeacher timetableForTeacher)
-		=> new TimetableByDate(timetableForTeacher: timetableForTeacher);
+	public static Timetable ToObservable(this TimetableForTeacher timetableForTeacher)
+		=> new Timetable(timetableForTeacher: timetableForTeacher);
 }

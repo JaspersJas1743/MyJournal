@@ -64,8 +64,8 @@ public static class RoleHelper
 		TasksVM createdTasks = App.GetService<CreatedTasksVM>();
 		MarksVM receivedMarks = App.GetService<ReceivedMarksVM>();
 		MarksVM createdMarks = App.GetService<CreatedMarksVM>();
-		TimetableVM timetable = App.GetService<StudyTimetableVM>();
-		TimetableVM creatingTimetable = App.GetService<CreatingTimetableVM>();
+		BaseTimetableVM timetable = App.GetService<TimetableVM>();
+		BaseTimetableVM creatingTimetable = App.GetService<CreatingTimetableVM>();
 
 		return userRole switch
 		{

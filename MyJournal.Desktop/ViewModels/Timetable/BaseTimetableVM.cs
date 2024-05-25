@@ -4,14 +4,8 @@ using MyJournal.Desktop.Models.Timetable;
 
 namespace MyJournal.Desktop.ViewModels.Timetable;
 
-public sealed class TimetableVM(TimetableModel model) : BaseTimetableVM(model: model)
+public class BaseTimetableVM(BaseTimetableModel model) : MenuItemVM(model: model)
 {
-	public BaseTimetableVM Content
-	{
-		get => model.Content;
-		set => model.Content = value;
-	}
-
 	public override async Task SetUser(User user)
 		=> await model.SetUser(user: user);
 }
