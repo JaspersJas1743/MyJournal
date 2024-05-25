@@ -243,7 +243,7 @@ public sealed class WardStudyingSubjectCollection : IAsyncEnumerable<WardSubject
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnChangedTimetable(e: e),
-			filter: subject => e.SubjectIds.Contains(value: subject.Id)
+			filter: _ => true
 		);
 	}
 

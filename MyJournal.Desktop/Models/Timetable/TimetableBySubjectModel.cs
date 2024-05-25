@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -56,7 +55,6 @@ public sealed class TimetableBySubjectModel : BaseTimetableModel
 			return;
 
 		IEnumerable<Assets.Utilities.TimetableUtilities.Timetable> timetable = await SubjectSelectionModel.SelectedItem!.GetTimetable();
-		Debug.WriteLine($"timetable:\n\t{String.Join("\n\t", timetable.Select(x => $"{x.Subject.Number}. {x.Subject.Name}: {x.Subject.Start}-{x.Subject.End}"))}");
 		await Dispatcher.UIThread.InvokeAsync(callback: () => Timetable.Load(items: timetable));
 	}
 

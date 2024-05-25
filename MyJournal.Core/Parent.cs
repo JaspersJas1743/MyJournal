@@ -139,9 +139,9 @@ public sealed class Parent : User
 				}
 			));
 		});
-		_parentHubConnection.On<IEnumerable<int>>(methodName: ParentHubMethods.ChangedTimetable, handler: async (subjectIds) =>
+		_parentHubConnection.On(methodName: ParentHubMethods.ChangedTimetable, handler: async () =>
 		{
-			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: -1, subjectIds: subjectIds);
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: -1);
 			await InvokeIfWardSubjectStudyingAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
 			_timetable = new AsyncLazy<TimetableForWardCollection>(valueFactory: async () => await TimetableForWardCollection.Create(
 				client: Client,

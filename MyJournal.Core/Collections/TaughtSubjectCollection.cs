@@ -256,7 +256,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnChangedTimetable(e: e),
-			filter: subject => subject.ClassId == e.ClassId && e.SubjectIds.Contains(value: subject.Id)
+			filter: subject => subject.ClassId == e.ClassId
 		);
 
 		ChangedTimetable?.Invoke(e: e);
