@@ -58,10 +58,9 @@ public sealed class Subject
 			return teacherTimetable.Select(selector: t => new Timetable(timetableForTeacher: t));
 		}
 
-		IEnumerable<TimetableForStudent> timetable;
-		timetable = _studyingSubject is not null ?
-			await _studyingSubject.GetTimetable() :
-			await _wardSubjectStudying!.GetTimetable();
+		IEnumerable<TimetableForStudent> timetable = _studyingSubject is not null
+			? await _studyingSubject.GetTimetable()
+			: await _wardSubjectStudying!.GetTimetable();
 
 		return timetable.Select(selector: t => new Timetable(timetableForStudent: t));
 	}

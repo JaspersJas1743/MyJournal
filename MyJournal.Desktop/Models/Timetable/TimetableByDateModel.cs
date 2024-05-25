@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Avalonia.Controls.Notifications;
 using Avalonia.Threading;
 using DynamicData.Binding;
 using MyJournal.Core;
 using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
 using MyJournal.Desktop.ViewModels.Timetable;
 using ReactiveUI;
@@ -18,15 +16,13 @@ namespace MyJournal.Desktop.Models.Timetable;
 
 public sealed class TimetableByDateModel : BaseTimetableModel
 {
-	private readonly INotificationService _notificationService;
 	private User? _user;
 	private TimetableCollection _timetableCollection;
 	private IEnumerable<Assets.Utilities.TimetableUtilities.Timetable> _timetable;
 	private DateOnly? _selectedDate = null;
 
-	public TimetableByDateModel(INotificationService notificationService)
+	public TimetableByDateModel()
 	{
-		_notificationService = notificationService;
 		OnDaysSelectionChanged = ReactiveCommand.CreateFromTask(execute: DaysSelectionChangedHandler);
 		ChangeVisualizerToSubjects = ReactiveCommand.Create(execute: () => MessageBus.Current.SendMessage(
 			message: new ChangeTimetableVisualizerEventArgs(timetableVM: typeof(TimetableBySubjectVM))
@@ -123,12 +119,6 @@ public sealed class TimetableByDateModel : BaseTimetableModel
 			await UpdateTimetable();
 			await SetTimetableForNow();
 		});
-
-		await _notificationService.Show(
-			title: "Расписание",
-			content: "В расписание были внесены изменения!",
-			type: NotificationType.Information
-		);
 	}
 
 	private async Task SetTimetableForNow() =>

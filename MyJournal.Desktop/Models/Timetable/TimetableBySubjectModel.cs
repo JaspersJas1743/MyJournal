@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Selection;
+using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using MyJournal.Core;
+using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
 using MyJournal.Desktop.ViewModels.Timetable;
 using ReactiveUI;
@@ -24,11 +26,8 @@ public sealed class TimetableBySubjectModel : BaseTimetableModel
 	private SubjectCollection _studentSubjectCollection;
 	private string? _filter = String.Empty;
 
-	private readonly INotificationService _notificationService;
-
-	public TimetableBySubjectModel(INotificationService notificationService)
+	public TimetableBySubjectModel()
 	{
-		_notificationService = notificationService;
 		ChangeVisualizerToDate = ReactiveCommand.Create(execute: () => MessageBus.Current.SendMessage(
 			message: new ChangeTimetableVisualizerEventArgs(timetableVM: typeof(TimetableByDateVM))
 		));
@@ -44,18 +43,21 @@ public sealed class TimetableBySubjectModel : BaseTimetableModel
 			.Select(selector: _ => SortExpressionComparer<Subject>.Ascending(expression: s => s.Teacher != null ? 1 : 0)
 				.ThenByAscending(expression: s => s.Name!).ThenByAscending(expression: s => s.Teacher?.FullName ?? String.Empty));
 
-
 		_ = _subjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
 								  .Bind(readOnlyObservableCollection: out _subjects).DisposeMany().Subscribe();
 	}
 
 	private async Task SubjectSelectionChangedHandler()
+		=> await LoadTimetable();
+
+	private async Task LoadTimetable()
 	{
 		if (SubjectSelectionModel.SelectedItem is null)
 			return;
 
-		IEnumerable<Assets.Utilities.TimetableUtilities.Timetable> timetable = await SubjectSelectionModel.SelectedItem.GetTimetable();
-		Timetable.Load(items: timetable);
+		IEnumerable<Assets.Utilities.TimetableUtilities.Timetable> timetable = await SubjectSelectionModel.SelectedItem!.GetTimetable();
+		Debug.WriteLine($"timetable:\n\t{String.Join("\n\t", timetable.Select(x => $"{x.Subject.Number}. {x.Subject.Name}: {x.Subject.Start}-{x.Subject.End}"))}");
+		await Dispatcher.UIThread.InvokeAsync(callback: () => Timetable.Load(items: timetable));
 	}
 
 	public ReadOnlyObservableCollection<Subject> Subjects => _subjects;
@@ -82,14 +84,18 @@ public sealed class TimetableBySubjectModel : BaseTimetableModel
 
 	public override async Task SetUser(User user)
 	{
+		user.ChangedTimetable += OnChangedTimetable;
 		_studentSubjectCollection = user switch
 		{
 			Teacher teacher => new SubjectCollection(taughtSubjectCollection: await teacher.GetTaughtSubjects()),
-			Student student => new SubjectCollection(studyingSubjectCollection: await student!.GetStudyingSubjects()),
-			Parent parent => new SubjectCollection(wardStudyingSubjectCollection: await parent!.GetWardSubjectsStudying())
+			Student student => new SubjectCollection(studyingSubjectCollection: await student.GetStudyingSubjects()),
+			Parent parent => new SubjectCollection(wardStudyingSubjectCollection: await parent.GetWardSubjectsStudying())
 		};
 
 		List<Subject> subjects = await _studentSubjectCollection.ToListAsync();
 		_subjectsCache.Edit(updateAction: (a) => a.Load(items: subjects.Skip(count: 1)));
 	}
+
+	private async void OnChangedTimetable(ChangedTimetableEventArgs e)
+		=> await LoadTimetable();
 }
