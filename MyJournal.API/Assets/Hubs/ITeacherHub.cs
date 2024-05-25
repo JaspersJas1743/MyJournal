@@ -9,5 +9,5 @@ public interface ITeacherHub
 	Task CreatedAssessment(int assessmentId, int studentId, int subjectId);
 	Task ChangedAssessment(int assessmentId, int studentId, int subjectId);
 	Task DeletedAssessment(int assessmentId, int studentId, int subjectId);
-	Task ChangedTimetable(int classId, IEnumerable<int> subjectIds);
+	Task ChangedTimetable(int classId);
 }
