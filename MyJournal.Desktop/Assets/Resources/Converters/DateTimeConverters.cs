@@ -45,6 +45,6 @@ public static class DateTimeConverters
 	});
 
 	public static readonly IValueConverter During = new FuncValueConverter<SubjectOnTimetable, string>(
-		convert: subject => $"{subject?.Start:hh\\:mm} - {subject?.End:hh\\:mm}"
+		convert: subject => $@"{subject?.Start:hh\:mm} - {subject?.End:hh\:mm}"
 	);
 }

@@ -13,7 +13,7 @@ public sealed class Timetable
 	public Timetable(TimetableForTeacher timetableForTeacher)
 		=> _timetableForTeacher = timetableForTeacher;
 
-	public SubjectOnTimetable Subject => _timetableForStudent?.Subject ?? _timetableForTeacher!.Subject;
+	public MyJournal.Core.SubEntities.SubjectOnTimetable Subject => _timetableForStudent?.Subject ?? _timetableForTeacher!.Subject;
 	public BreakAfterSubject? Break => _timetableForStudent is not null ? _timetableForStudent.Break : _timetableForTeacher!.Break;
 
 	public bool IsTeacher => _timetableForTeacher is not null;

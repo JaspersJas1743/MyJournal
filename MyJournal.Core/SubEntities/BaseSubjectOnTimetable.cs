@@ -8,12 +8,14 @@ public abstract class BaseSubjectOnTimetable(int id, int number, TimeSpan start,
 	public TimeSpan End { get; init; } = end;
 }
 
-public sealed class SubjectOnTimetableByDay(int id, int number, TimeSpan start, TimeSpan end, string name) : BaseSubjectOnTimetable(id, number, start, end)
+public sealed class SubjectOnTimetableByDay(int id, int number, TimeSpan start, TimeSpan end, string name)
+	: BaseSubjectOnTimetable(id: id, number: number, start: start, end: end)
 {
 	public string Name { get; init; } = name;
 }
 
-public sealed class SubjectOnTimetable(int id, int number, TimeSpan start, TimeSpan end, string className, DateOnly date, string name) : BaseSubjectOnTimetable(id, number, start, end)
+public sealed class SubjectOnTimetable(int id, int number, TimeSpan start, TimeSpan end, string className, DateOnly date, string name)
+	: BaseSubjectOnTimetable(id: id, number: number, start: start, end: end)
 {
 	public string Name { get; init; } = name;
 	public string ClassName { get; init; } = className;

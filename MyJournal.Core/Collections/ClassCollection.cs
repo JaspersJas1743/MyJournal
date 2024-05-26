@@ -17,7 +17,6 @@ public sealed class ClassCollection : IAsyncEnumerable<Class>
 	private ClassCollection(
 		AsyncLazy<List<Class>> classes
 	) => _classes = classes;
-
 	#endregion
 
 	#region Records

@@ -394,6 +394,27 @@
 			</Setter>
 		</Style>
 
+		<Style Selector="^.Classes">
+			<Setter Property="VerticalAlignment" Value="Top" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="timetableUtilities:Class">
+					<Grid Margin="20 0" Width="450" Height="50">
+						<TextBlock	Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundColor}"
+									VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" FontSize="20" Classes="ClassName"/>
+					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
 		<Style Selector="^.AssignedTasks">
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="tasksUtilities:ObservableReceivedTask">
@@ -830,7 +851,7 @@
 												FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 								</Grid>
 							</Border>
-							<Grid Grid.Row="2" ColumnDefinitions="10*, 25*, 10*, 1605*" Classes="TestClass">
+							<Grid Grid.Row="2" ColumnDefinitions="10*, 25*, 10*, 1605*" Classes="Break">
 								<lottie:Lottie Grid.Column="1" Path="/Assets/Resources/Animations/Break.json" Margin="-20 -20 -20 0"/>
 								<TextBlock	Grid.Column="3" Text="{Binding Break.CountMinutes,StringFormat='Перерыв {0} минут',FallbackValue=''}"
 											FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"/>
@@ -872,6 +893,89 @@
 					</Viewbox>
 				</DataTemplate>
 			</Setter>
+		</Style>
+
+		<Style Selector="^.TimetableOnSubjectCreation">
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ItemsPanel">
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" Spacing="10" Width="1320" Margin="0 10"/>
+				</ItemsPanelTemplate>
+			</Setter>
+			<Setter Property="ItemTemplate">
+				<DataTemplate DataType="timetableUtilities:SubjectOnTimetable">
+					<Viewbox Width="1320" x:Name="PART_Viewbox">
+						<Grid RowDefinitions="55*, 20*, 55*" Width="1320" Background="Transparent" x:Name="PART_Host">
+							<Grid.ContextMenu>
+								<ContextMenu>
+									<MenuItem	Header="Удалить занятие" Foreground="{DynamicResource ErrorColor}"
+												Command="{Binding RemoveSubject}"/>
+								</ContextMenu>
+							</Grid.ContextMenu>
+							<Border x:Name="PART_Border" BorderBrush="{DynamicResource StrokeColor}"
+									Grid.Row="0" BorderThickness="5" CornerRadius="10">
+								<Grid ColumnDefinitions="55*, 1105*, 170*">
+									<Viewbox Grid.Column="0">
+										<ComboBox	PlaceholderForeground="{DynamicResource StrokeColor}" FontSize="24"
+													Classes="Empty" ItemsSource="{Binding PossibleNumbers}"
+													SelectedItem="{Binding Number}" Width="55" Height="55"
+													HorizontalContentAlignment="Center" Padding="0 10" PlaceholderText="№"/>
+									</Viewbox>
+									<Border Grid.Column="1" BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0 5 0">
+										<Viewbox>
+ 											<ComboBox	Classes="Empty" ItemsSource="{Binding PossibleSubjects}" Padding="20 10"
+														DisplayMemberBinding="{Binding Name}" Height="45" HorizontalContentAlignment="Left"
+														PlaceholderText="Не выбрано" PlaceholderForeground="{DynamicResource StrokeColor}"
+														SelectedItem="{Binding SelectedSubject,Mode=TwoWay}" Width="1075" FontSize="20"/>
+										</Viewbox>
+									</Border>
+									<StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+										<TimePicker Classes="Empty" SelectedTime="{Binding Start}"
+													Background="Transparent" MinuteIncrement="5"/>
+										<TextBlock FontSize="20" Text="-" VerticalAlignment="Center"/>
+										<TimePicker Classes="Empty" SelectedTime="{Binding End}"
+													Background="Transparent" MinuteIncrement="5"/>
+									</StackPanel>
+								</Grid>
+							</Border>
+							<Grid Grid.Row="2" ColumnDefinitions="10*, 25*, 10*, 1605*" Classes="Break" x:Name="PART_BreakPresenter">
+								<lottie:Lottie Grid.Column="1" Path="/Assets/Resources/Animations/Break.json" Margin="-20 -20 -20 0"/>
+								<TextBlock	Grid.Column="3" Text="{Binding Break,StringFormat='Перерыв {0} минут',FallbackValue='Перерыв __ минут',
+											TargetNullValue='Перерыв __ минут'}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"/>
+							</Grid>
+						</Grid>
+					</Viewbox>
+				</DataTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="^ Grid#PART_Host">
+			<Setter Property="Height" Value="130"/>
+		</Style>
+		<Style Selector="^ Grid#PART_BreakPresenter">
+			<Setter Property="IsVisible" Value="True"/>
+		</Style>
+		<Style Selector="^ Viewbox#PART_Viewbox">
+			<Setter Property="Height" Value="130"/>
+		</Style>
+		<Style Selector="^ Border#PART_Border">
+			<Setter Property="Grid.RowSpan" Value="1"/>
+		</Style>
+		<Style Selector="^ ListBoxItem:nth-last-child(1)">
+			<Style Selector="^ Grid#PART_Host">
+				<Setter Property="Height" Value="55"/>
+			</Style>
+			<Style Selector="^ Grid#PART_BreakPresenter">
+				<Setter Property="IsVisible" Value="False"/>
+			</Style>
+			<Style Selector="^ Viewbox#PART_Viewbox">
+				<Setter Property="Height" Value="55"/>
+			</Style>
+			<Style Selector="^ Border#PART_Border">
+				<Setter Property="Grid.RowSpan" Value="3"/>
+			</Style>
 		</Style>
 	</Style>
 </Styles>

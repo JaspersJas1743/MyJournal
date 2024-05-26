@@ -1,7 +1,7 @@
 namespace MyJournal.Core.SubEntities;
 
-public sealed class DayOfWeek : ISubEntity
+public sealed class DayOfWeek(int id, string name) : ISubEntity
 {
-	public int Id { get; init; }
-	public string Name { get; init; }
+	public int Id { get; init; } = id;
+	public string Name { get; init; } = name;
 }

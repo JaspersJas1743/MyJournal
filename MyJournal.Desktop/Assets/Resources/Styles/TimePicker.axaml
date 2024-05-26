@@ -60,6 +60,63 @@
 				</Grid>
 	        </ControlTemplate>
 	    </Setter>
+
+		<Style Selector="^.Empty">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+		    <Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
+		    <Setter Property="BorderThickness" Value="5"/>
+		    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+		    <Setter Property="HorizontalAlignment" Value="Left" />
+		    <Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="FontSize" Value="20"/>
+		    <Setter Property="Template">
+		        <ControlTemplate>
+					<Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}">
+						<Button		x:Name="PART_FlyoutButton"
+						            Theme="{StaticResource TimePickerButton}"
+						            Foreground="{TemplateBinding Foreground}"
+						            Background="{TemplateBinding Background}"
+						            CornerRadius="{TemplateBinding CornerRadius}"
+						            IsEnabled="{TemplateBinding IsEnabled}"
+						            MinWidth="{TemplateBinding MinWidth}"
+						            MaxWidth="{TemplateBinding MaxWidth}"
+						            HorizontalAlignment="Stretch"
+									ClipToBounds="True"
+									VerticalAlignment="Stretch">
+						    <Grid Name="PART_FlyoutButtonContentGrid">
+								<Border x:Name="PART_FirstPickerHost" Grid.Column="0" Padding="5"
+										HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+						            <TextBlock	x:Name="PART_HourTextBlock" HorizontalAlignment="Center"
+												Foreground="{TemplateBinding Foreground}"
+												FontSize="{TemplateBinding FontSize}"
+												VerticalAlignment="Center" Text="__"/>
+						        </Border>
+						        <Rectangle	Name="PART_FirstColumnDivider"/>
+								<TextBlock Text=":" Grid.Column="1" VerticalAlignment="Center"/>
+						        <Border x:Name="PART_SecondPickerHost" Grid.Column="2" Padding="5"
+										HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+						            <TextBlock	x:Name="PART_MinuteTextBlock" HorizontalAlignment="Center"
+												Foreground="{TemplateBinding Foreground}"
+												FontSize="{TemplateBinding FontSize}"
+												VerticalAlignment="Center" Text="__"/>
+						        </Border>
+						        <Rectangle Name="PART_SecondColumnDivider"/>
+						        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+										x:Name="PART_ThirdPickerHost" Grid.Column="4" Padding="5">
+						            <TextBlock	Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center"
+												FontSize="{TemplateBinding FontSize}" x:Name="PART_PeriodTextBlock"/>
+						        </Border>
+						    </Grid>
+						</Button>
+						<Popup	Name="PART_Popup" WindowManagerAddShadowHint="False" Placement="Bottom"
+								IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}">
+						  <TimePickerPresenter Name="PART_PickerPresenter" FontSize="{TemplateBinding FontSize}"/>
+						</Popup>
+					</Grid>
+		        </ControlTemplate>
+		    </Setter>
+		</Style>
 	</Style>
 
 	<Style Selector="TimePickerPresenter">

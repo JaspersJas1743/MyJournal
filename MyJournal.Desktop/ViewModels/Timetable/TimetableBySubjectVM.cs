@@ -14,6 +14,7 @@ public sealed class TimetableBySubjectVM(TimetableBySubjectModel model) : BaseTi
 {
 	public ReactiveCommand<Unit, Unit> ChangeVisualizerToDate => model.ChangeVisualizerToDate;
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged => model.OnSubjectSelectionChanged;
+	public ReactiveCommand<Unit, Unit> ClearSelection => model.ClearSelection;
 
 	public ReadOnlyObservableCollection<Subject> Subjects => model.Subjects;
 

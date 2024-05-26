@@ -13,18 +13,18 @@
 		<Viewbox>
 		<Grid	Height="1025" RowDefinitions="10*, 90*, 15*, 790*, 15*, 70*, 40*"
 				Width="1920" ColumnDefinitions="25*, 500*, 15*, 1360*, 20*">
-			<!-- <Button Command="{Binding ClearSelection}" IsVisible="False" HotKey="Escape"/> -->
+			<Button Command="{Binding ClearSelection}" IsVisible="False" HotKey="Escape"/>
 			<TextBox Grid.Column="1" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
 			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush ListBorder">
-				<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
-													Classes="Subjects TimetableSubjects" ItemsSource="{Binding Subjects}"
-													x:Name="Subjects" Selection="{Binding SubjectSelectionModel}">
+				<ListBox	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+							Classes="Subjects TimetableSubjects" ItemsSource="{Binding Subjects}"
+							x:Name="Subjects" Selection="{Binding SubjectSelectionModel}">
 					<interactivity:Interaction.Behaviors>
 						<interaction:EventTriggerBehavior EventName="SelectionChanged">
 							<interaction:InvokeCommandAction Command="{Binding OnSubjectSelectionChanged}"/>
 						</interaction:EventTriggerBehavior>
 					</interactivity:Interaction.Behaviors>
-				</controls:ListBoxWithLoadOnScroll>
+				</ListBox>
 			</Border>
 			<Viewbox Grid.Row="5" Grid.Column="1">
 				<Button Width="500" Height="70" Classes="MainAccentColor Corner20" FontSize="24" Content="День"

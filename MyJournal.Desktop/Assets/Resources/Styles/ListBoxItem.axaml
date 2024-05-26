@@ -155,6 +155,36 @@
 		</Style>
 	</Style>
 
+	<Style Selector="ListBox.Classes ListBoxItem">
+		<Setter Property="FocusAdorner" Value="{x:Null}"/>
+	    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:selected">
+			<Style Selector="^ TextBlock.ClassName">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+	            <Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	    </Style>
+		<Style Selector="^:nth-child(1)">
+			<Setter Property="CornerRadius" Value="15 15 0 0"/>
+		</Style>
+	</Style>
+
 	<Style Selector="ListBox.AssignedTasks ListBoxItem:nth-child(odd)">
 		<Setter Property="Margin" Value="20 10 10 10"/>
 	</Style>
@@ -595,7 +625,11 @@
 		</Style>
 	</Style>
 
-	<Style Selector="ListBox.TimetableByDate ListBoxItem:nth-last-child(1) Grid.TestClass">
+	<Style Selector="ListBox.TimetableByDate ListBoxItem:nth-last-child(1) Grid.Break">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<Style Selector="ListBox.TimetableOnSubjectCreation ListBoxItem:nth-last-child(1) Grid.Break">
 		<Setter Property="IsVisible" Value="False"/>
 	</Style>
 </Styles>

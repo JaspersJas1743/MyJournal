@@ -30,8 +30,8 @@ public sealed class TimetableBySubjectModel : BaseTimetableModel
 		ChangeVisualizerToDate = ReactiveCommand.Create(execute: () => MessageBus.Current.SendMessage(
 			message: new ChangeTimetableVisualizerEventArgs(timetableVM: typeof(TimetableByDateVM))
 		));
-
 		OnSubjectSelectionChanged = ReactiveCommand.CreateFromTask(execute: SubjectSelectionChangedHandler);
+		ClearSelection = ReactiveCommand.Create(execute: ClearSelectionHandler);
 
 		IObservable<Func<Subject, bool>> filter = this.WhenAnyValue(model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
@@ -44,6 +44,12 @@ public sealed class TimetableBySubjectModel : BaseTimetableModel
 
 		_ = _subjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
 								  .Bind(readOnlyObservableCollection: out _subjects).DisposeMany().Subscribe();
+	}
+
+	private void ClearSelectionHandler()
+	{
+		SubjectSelectionModel.SelectedItem = null;
+		Timetable.Clear();
 	}
 
 	private async Task SubjectSelectionChangedHandler()
@@ -72,6 +78,7 @@ public sealed class TimetableBySubjectModel : BaseTimetableModel
 
 	public ReactiveCommand<Unit, Unit> ChangeVisualizerToDate { get; }
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged { get; }
+	public ReactiveCommand<Unit, Unit> ClearSelection { get; }
 
 	public Func<Subject, bool> FilterFunction(string? text)
 	{
