@@ -9,14 +9,15 @@
 			xmlns:subEntities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
 			xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
 			xmlns:timetableUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TimetableUtilities"
+			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
 			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			x:DataType="vm:CreatingTimetableVM" x:Class="MyJournal.Desktop.Views.Timetable.CreatingTimetableView">
 	<UserControl.Styles>
 		<Style Selector="Border">
-			<Style Selector="^.WithoutButton">
+			<Style Selector="^.WithButton">
 				<Setter Property="Grid.RowSpan" Value="1"/>
 			</Style>
-			<Style Selector="^.WithOneButton">
+			<Style Selector="^.WithoutButton">
 				<Setter Property="Grid.RowSpan" Value="5"/>
 			</Style>
 		</Style>
@@ -26,9 +27,19 @@
 				Width="1920" ColumnDefinitions="20*, 500*, 20*, 1360*, 20*">
 			<Button Command="{Binding ClearSelection}" IsVisible="False" HotKey="Escape"/>
 			<TextBox Grid.Column="1" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
-			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush ListBorder"
-					Classes.WithoutButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}"
-					Classes.WithOneButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNull}}">
+			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush ListBorder">
+				<Classes.WithButton>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="!!Timetable.Count"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+					</MultiBinding>
+				</Classes.WithButton>
+				<Classes.WithoutButton>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<Binding Path="!Timetable.Count"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNull}"/>
+					</MultiBinding>
+				</Classes.WithoutButton>
 				<ListBox	Classes="Classes" Selection="{Binding SubjectSelectionModel}"
 							x:Name="Subjects" ItemsSource="{Binding Classes}">
 					<interactivity:Interaction.Behaviors>
@@ -38,13 +49,23 @@
 					</interactivity:Interaction.Behaviors>
 				</ListBox>
 			</Border>
-			<Viewbox	Grid.Row="5" IsVisible="{Binding SubjectSelectionModel.SelectedItem,
-						Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1">
+			<Viewbox Grid.Row="5" Grid.Column="1">
+				<Viewbox.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="!!Timetable.Count"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+					</MultiBinding>
+				</Viewbox.IsVisible>
 				<controls:ButtonWithAnimatedCommand Content="Сохранить все изменения" FontSize="24" Classes="MainAccentColor Corner20"
 													Width="500" Height="70" Command="{Binding SaveTimetable}"/>
 			</Viewbox>
-			<Viewbox	Grid.Row="7" IsVisible="{Binding SubjectSelectionModel.SelectedItem,
-						Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1">
+			<Viewbox Grid.Row="7" Grid.Column="1">
+				<Viewbox.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="!!Timetable.Count"/>
+						<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+					</MultiBinding>
+				</Viewbox.IsVisible>
 				<controls:ButtonWithAnimatedCommand	Width="500" Height="70" Content="Сохранить расписание класса" Classes="MainAccentColor Corner20"
 													FontSize="24" Command="{Binding SaveTimetableForSelectedClass}"/>
 			</Viewbox>
@@ -58,8 +79,8 @@
 						<TextBlock	Text="Выберите учебную группу для просмотра" Width="220" HorizontalAlignment="Right"
 									VerticalAlignment="Center" TextWrapping="Wrap" FontSize="20"/>
 					</Grid>
-					<Grid>
-						<Viewbox IsVisible="{Binding !!Timetable.Count}">
+					<Grid IsVisible="{Binding !!Timetable.Count}">
+						<Viewbox>
 							<controls:CustomTabControl	Width="1350" Height="966" ItemsSource="{Binding Timetable}"
 														IsVisible="{Binding !!Timetable.Count}">
 								<TabControl.ItemTemplate>
@@ -88,6 +109,18 @@
 								</TabControl.ContentTemplate>
 							</controls:CustomTabControl>
 						</Viewbox>
+					</Grid>
+					<Grid RowDefinitions="140*, 80*"
+						VerticalAlignment="Center" HorizontalAlignment="Center" Width="275" Height="220">
+						<Grid.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="!Timetable.Count"/>
+								<Binding Path="SubjectSelectionModel.SelectedItem" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+							</MultiBinding>
+						</Grid.IsVisible>
+						<lottie:Lottie Grid.Row="0" Path="/Assets/Resources/Animations/WithoutTimetable.json" Margin="-50"/>
+						<TextBlock	Grid.Row="1" Text="Занятия отсутствуют!" VerticalAlignment="Center"
+									HorizontalAlignment="Center" FontSize="20"/>
 					</Grid>
 				</Grid>
 			</Border>
