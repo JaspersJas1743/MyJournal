@@ -20,6 +20,7 @@ public sealed class LessonController(
 	public sealed record GetStudyingSubjectsResponse(int Id, string Name, Teacher Teacher);
 	public sealed record Class(int Id, string Name);
 	public sealed record GetTaughtSubjectsResponse(int Id, string Name, Class Class);
+	public sealed record GetSubjectsResponse(int Id, string Name);
 	#endregion
 
 	#region Methods
@@ -300,7 +301,7 @@ public sealed class LessonController(
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	GET api/subjects/class/{classId}/get
+	///	GET api/subjects/class/{classId}/taught/get
 	///
 	/// Параметры:
 	///
@@ -311,7 +312,7 @@ public sealed class LessonController(
 	/// <response code="200">Список дисциплин, преподаваемых указанному классу в текущем учебном периоде</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Administrator</response>
-	[HttpGet(template: "class/{classId:int}/get")]
+	[HttpGet(template: "class/{classId:int}/taught/get")]
 	[Authorize(Policy = nameof(UserRoles.Administrator))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetStudyingSubjectsResponse>))]
@@ -344,13 +345,52 @@ public sealed class LessonController(
 	}
 
 	/// <summary>
+	/// [Администратор] Получение списка дисциплин, преподаваемых указанному классу
+	/// </summary>
+	/// <remarks>
+	/// <![CDATA[
+	/// Пример запроса к API:
+	///
+	///	GET api/subjects/class/{classId}/get
+	///
+	/// Параметры:
+	///
+	///	classId - идентификатор класса, список дисциплин которого необходимо получить
+	///
+	/// ]]>
+	/// </remarks>
+	/// <response code="200">Список дисциплин, изучаемых в указанном классе</response>
+	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
+	/// <response code="403">Роль пользователя не соотвествует роли Administrator</response>
+	[HttpGet(template: "class/{classId:int}/all/get")]
+	[Authorize(Policy = nameof(UserRoles.Administrator))]
+	[Produces(contentType: MediaTypeNames.Application.Json)]
+	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetStudyingSubjectsResponse>))]
+	[ProducesResponseType(statusCode: StatusCodes.Status401Unauthorized, type: typeof(ErrorResponse))]
+	[ProducesResponseType(statusCode: StatusCodes.Status403Forbidden, type: typeof(ErrorResponse))]
+	public async Task<ActionResult<IEnumerable<GetStudyingSubjectsResponse>>> GetSubjectsForClass(
+		[FromRoute] int classId,
+		CancellationToken cancellationToken = default(CancellationToken)
+	)
+	{
+		IQueryable<GetSubjectsResponse> subjects = _context.Classes.AsNoTracking()
+			.Where(predicate: c => c.Id == classId)
+			.SelectMany(selector: c => c.EducationPeriodForClasses)
+			.SelectMany(selector: epfc => epfc.Lessons)
+			.Distinct().OrderBy(keySelector: r => r.Name)
+			.Select(selector: l => new GetSubjectsResponse(l.Id, l.Name));
+
+		return Ok(value: subjects);
+	}
+
+	/// <summary>
 	/// [Администратор] Получение списка дисциплин, преподаваемых указанному классу в текущий учебный период
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
 	/// Пример запроса к API:
 	///
-	///	GET api/subjects/class/{classId:int}/period/{period}/get
+	///	GET api/subjects/class/{classId:int}/taught/period/{period}/get
 	///
 	/// Параметры:
 	///
@@ -362,7 +402,7 @@ public sealed class LessonController(
 	/// <response code="200">Список дисциплин, преподаваемых указанному классу в текущем учебном периоде</response>
 	/// <response code="401">Пользователь не авторизован или авторизационный токен неверный</response>
 	/// <response code="403">Роль пользователя не соотвествует роли Administrator</response>
-	[HttpGet(template: "class/{classId:int}/period/{period}/get")]
+	[HttpGet(template: "class/{classId:int}/taught/period/{period}/get")]
 	[Authorize(Policy = nameof(UserRoles.Administrator))]
 	[Produces(contentType: MediaTypeNames.Application.Json)]
 	[ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(IEnumerable<GetStudyingSubjectsResponse>))]

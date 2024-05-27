@@ -9,6 +9,7 @@ public static class LessonControllerMethods
 	public static string GetStudyingSubjectsByPeriod(string period) => $"subjects/studying/period/{period}/get";
 	public static string GetTaughtSubjectsByPeriod(string period) => $"subjects/taught/period/{period}/get";
 	public static string GetSubjectsStudiedByWardByPeriod(string period) => $"subjects/children/studying/period/{period}/get";
-	public static string GetSubjectsStudiedInClassByPeriod(string period, int classId) => $"subjects/class/{classId}/period/{period}/get";
-	public static string GetSubjectsStudiedInClass(int classId) => $"subjects/class/{classId}/get";
+	public static string GetSubjectsStudiedInClassByPeriod(string period, int classId) => $"subjects/class/{classId}/taught/period/{period}/get";
+	public static string GetSubjectsStudiedInClass(int classId) => $"subjects/class/{classId}/taught/get";
+	public static string GetSubjectsForClass(int classId) => $"subjects/class/{classId}/all/get";
 }

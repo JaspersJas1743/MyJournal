@@ -17,6 +17,7 @@ using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.GoogleAuthenticator;
 using MyJournal.API.Assets.Hubs;
+using MyJournal.API.Assets.RegistrationCodeGenerator;
 using MyJournal.API.Assets.S3;
 using MyJournal.API.Assets.Security.Hash;
 using MyJournal.API.Assets.Security.JWT;
@@ -192,6 +193,8 @@ public class Program
 			});
 
 		builder.Services.AddScoped<IHashService, BCryptHashService>();
+
+		builder.Services.AddScoped<IRegistrationCodeGeneratorService, RegistrationCodeGeneratorService>();
 
 		builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 		builder.Services.AddSignalR();
