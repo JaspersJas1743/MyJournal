@@ -1,47 +1,34 @@
 using FluentValidation;
 using MyJournal.API.Assets.Controllers;
+using MyJournal.API.Assets.Utilities.SubjectComparers;
 using MyJournal.API.Assets.Validation.PropertyValidationExtensions;
 
 namespace MyJournal.API.Assets.Validation.Validators;
 
-public sealed class SubjectComparer : IEqualityComparer<TimetableController.SubjectOnTimetable>
-{
-	public bool Equals(TimetableController.SubjectOnTimetable? x, TimetableController.SubjectOnTimetable? y)
-	{
-		if (ReferenceEquals(x, y))
-			return true;
-
-		if (ReferenceEquals(x, null))
-			return false;
-
-		if (ReferenceEquals(y, null))
-			return false;
-
-		if (x.GetType() != y.GetType())
-			return false;
-
-		return x.Id == y.Id && x.Number == y.Number && x.Start.Equals(y.Start) && x.End.Equals(y.End);
-	}
-
-	public int GetHashCode(TimetableController.SubjectOnTimetable obj)
-		=> HashCode.Combine(obj.Id, obj.Number, obj.Start, obj.End);
-}
-
 public sealed class CreateTimetableRequestValidator : AbstractValidator<TimetableController.CreateTimetableRequest>
 {
+	private static readonly SubjectNumberComparer _numberComparer = new SubjectNumberComparer();
+	private static readonly SubjectStartTimeComparer _startTimeComparer = new SubjectStartTimeComparer();
+	private static readonly SubjectEndTimeComparer _endTimeComparer = new SubjectEndTimeComparer();
+
 	public CreateTimetableRequestValidator()
 	{
 		RuleFor(expression: request => request.ClassId)
 			.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор класса не может быть отрицательным.");
 
-		SubjectComparer comparer = new SubjectComparer();
 		RuleForEach(expression: request => request.Timetable).ChildRules(action: schedule =>
 		{
 			schedule.RuleFor(expression: s => s.DayOfWeekId)
 				.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(errorMessage: "Идентификатор дня недели не может быть отрицательным.");
 
 			schedule.RuleFor(expression: s => s.Subjects)
-					.IsUniqueCollection(comparer: comparer).WithMessage(errorMessage: "Значения в коллекции дублируются.");
+					.IsUniqueCollection(comparer: _numberComparer).WithMessage(errorMessage: "Несколько дисциплин имеют одинаковый порядковый номер.");
+
+			schedule.RuleFor(expression: s => s.Subjects)
+					.IsUniqueCollection(comparer: _startTimeComparer).WithMessage(errorMessage: "Несколько дисциплин начинаются в одно время.");
+
+			schedule.RuleFor(expression: s => s.Subjects)
+					.IsUniqueCollection(comparer: _endTimeComparer).WithMessage(errorMessage: "Несколько дисциплин заканчиваются в одно время.");
 
 			schedule.RuleForEach(expression: s => s.Subjects).ChildRules(action: subject =>
 			{

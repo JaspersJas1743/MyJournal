@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using MyJournal.API.Assets.DatabaseModels;
 using MyJournal.API.Assets.ExceptionHandlers;
 using MyJournal.API.Assets.Hubs;
+using MyJournal.API.Assets.Utilities;
 using MyJournal.API.Assets.Validation;
 using MyJournal.API.Assets.Validation.Validators;
 
@@ -677,6 +678,20 @@ public sealed class TimetableController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		IQueryable<Class> classes = _context.Classes.AsNoTracking().Where(predicate: c => c.Id == request.ClassId);
+		if (!classes.Any())
+			throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Указанный класс не найден.");
+
+		if (!await classes
+			.SelectMany(selector: c => c.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep =>
+				EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 &&
+				EF.Functions.DateDiffDay(ep.EndDate, now) <= 0
+			).AnyAsync(cancellationToken: cancellationToken)
+		) throw new HttpResponseException(statusCode: StatusCodes.Status400BadRequest, message: "Нельзя редактировать расписание во время каникул.");
+
 		IEnumerable<LessonTiming> addedTimings = request.Timetable.SelectMany(
 			selector: t => t.Subjects.Select(selector: s => new LessonTiming()
 			{
