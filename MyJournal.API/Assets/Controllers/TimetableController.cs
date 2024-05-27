@@ -587,6 +587,17 @@ public sealed class TimetableController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		if (!await _context.Classes.AsNoTracking()
+			.Where(predicate: c => c.Id == request.ClassId)
+			.SelectMany(selector: c => c.EducationPeriodForClasses)
+			.Select(selector: epfc => epfc.EducationPeriod)
+			.Where(predicate: ep =>
+				EF.Functions.DateDiffDay(ep.StartDate, now) >= 0 &&
+				EF.Functions.DateDiffDay(ep.EndDate, now) <= 0
+			).AnyAsync(cancellationToken: cancellationToken)
+		) return Ok(value: Enumerable.Empty<GetTimetableByClassResponse>());
+
 		GetTimetableByClassResponse[] timings = await _context.DaysOfWeeks.AsNoTracking()
 			.Where(predicate: d => d.TypeOfDayNavigation.DayType == TypesOfDay.WorkingDay)
 			.Select(selector: d => new GetTimetableByClassResponse(
