@@ -32,7 +32,10 @@ public class MainWindowModel : ModelBase
 		Close = ReactiveCommand.CreateFromTask(execute: async () =>
 		{
 			mainWindowView.Close();
-			Activity activity = await _user?.GetActivity()!;
+			if (_user is null)
+				return;
+
+			Activity activity = await _user.GetActivity();
 			await activity.SetOffline();
 		});
 		Content = startedContent;

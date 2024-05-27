@@ -2,17 +2,17 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.Core", "MyJournal.Core\MyJournal.Core.csproj", "{544928FA-7D55-4538-98AA-09C8AAFA7886}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.API", "MyJournal.API\MyJournal.API.csproj", "{455752B9-B663-47B2-B573-14FDF0699629}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyJournal.API", "MyJournal.API\MyJournal.API.csproj", "{455752B9-B663-47B2-B573-14FDF0699629}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.Tests", "MyJournal.Tests\MyJournal.Tests.csproj", "{EC2F3C97-3994-4873-9C38-7103B8F2EFC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyJournal.Tests", "MyJournal.Tests\MyJournal.Tests.csproj", "{EC2F3C97-3994-4873-9C38-7103B8F2EFC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CEDF0D7B-5469-4461-8D2D-B890CF07E8C7}"
 	ProjectSection(SolutionItems) = preProject
-		docker-compose.yml = docker-compose.yml
 		.env = .env
+		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyJournal.Desktop", "MyJournal.Desktop\MyJournal.Desktop.csproj", "{1257EEDF-4D11-4C88-A4FC-C262628C436C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyJournal.Desktop", "MyJournal.Desktop\MyJournal.Desktop.csproj", "{1257EEDF-4D11-4C88-A4FC-C262628C436C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

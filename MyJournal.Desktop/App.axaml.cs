@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Reactive;
 using System.Reflection;
 using System.Threading.Tasks;
 using AsyncImageLoader;
@@ -61,6 +62,7 @@ using MyJournal.Desktop.Views.Registration;
 using MyJournal.Desktop.Views.RestoringAccess;
 using MyJournal.Desktop.Views.Tasks;
 using MyJournal.Desktop.Views.Timetable;
+using ReactiveUI;
 
 namespace MyJournal.Desktop;
 
