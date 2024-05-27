@@ -33,7 +33,7 @@
 					Classes.WithoutButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}"
 					Classes.WithOneButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNull}}">
 				<ListBox	Classes="Classes" Selection="{Binding SubjectSelectionModel}"
-							x:Name="Subjects" ItemsSource="{Binding StudyingSubjects}">
+							x:Name="Subjects" ItemsSource="{Binding Classes}">
 					<interactivity:Interaction.Behaviors>
 						<interaction:EventTriggerBehavior EventName="SelectionChanged">
 							<interaction:InvokeCommandAction Command="{Binding OnClassSelectionChanged}"/>
@@ -43,13 +43,13 @@
 			</Border>
 			<Viewbox	Grid.Row="5" IsVisible="{Binding SubjectSelectionModel.SelectedItem,
 						Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1">
-				<Button		Width="500" Height="70" Content="Сохранить все изменения" Classes="MainAccentColor Corner20"
-							FontSize="24" Command="{Binding SaveTimetable}"/>
+				<controls:ButtonWithAnimatedCommand Content="Сохранить все изменения" FontSize="24" Classes="MainAccentColor Corner20"
+													Width="500" Height="70" Command="{Binding SaveTimetable}"/>
 			</Viewbox>
 			<Viewbox	Grid.Row="7" IsVisible="{Binding SubjectSelectionModel.SelectedItem,
 						Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1">
-				<Button		Width="500" Height="70" Content="Сохранить расписание класса" Classes="MainAccentColor Corner20"
-							FontSize="24" Command="{Binding SaveTimetableForSelectedClass}"/>
+				<controls:ButtonWithAnimatedCommand	Width="500" Height="70" Content="Сохранить расписание класса" Classes="MainAccentColor Corner20"
+													FontSize="24" Command="{Binding SaveTimetableForSelectedClass}"/>
 			</Viewbox>
 			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="7" Classes="TransitionBorderBrush ListBorder">
 				<Grid>

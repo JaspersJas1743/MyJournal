@@ -21,7 +21,7 @@ public sealed class CreatingTimetableVM(CreatingTimetableModel model) : BaseTime
 
 	public SelectionModel<Class> SubjectSelectionModel => model.SubjectSelectionModel;
 
-	public ReadOnlyObservableCollection<Class> StudyingSubjects => model.StudyingSubjects;
+	public ReadOnlyObservableCollection<Class> Classes => model.Classes;
 
 	public string? Filter
 	{

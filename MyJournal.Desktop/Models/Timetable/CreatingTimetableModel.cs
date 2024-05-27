@@ -24,7 +24,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 	private readonly INotificationService _notificationService;
 	private readonly SourceCache<Class, int> _teacherSubjectsCache = new SourceCache<Class, int>(keySelector: s => s.Id);
 	private ClassCollection? _classCollection;
-	private readonly ReadOnlyObservableCollection<Class> _studyingSubjects;
+	private readonly ReadOnlyObservableCollection<Class> _classes;
 	private string? _filter = String.Empty;
 	private bool _changeFromClient = false;
 
@@ -44,48 +44,15 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			.Select(selector: _ => SortExpressionComparer<Class>.Ascending(expression: s => Int32.Parse(s: s.Name!.Split()[0])));
 
 		_ = _teacherSubjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
-			.Bind(readOnlyObservableCollection: out _studyingSubjects).DisposeMany().Subscribe();
+			.Bind(readOnlyObservableCollection: out _classes).DisposeMany().Subscribe();
 	}
 
 	private async Task SaveTimetableHandler()
 	{
-	}
-
-	private async Task SaveTimetableForSelectedClassHandler()
-	{
-		if (SubjectSelectionModel.SelectedItem is null)
-			return;
-
 		try
 		{
-			ITimetableBuilder builder = SubjectSelectionModel.SelectedItem.CreateTimetable();
-			foreach (CreatingTimetable creatingTimetable in Timetable)
-			{
-				foreach (SubjectOnTimetable subjectOnTimetable in creatingTimetable.Subjects)
-				{
-					if (subjectOnTimetable.Number is null)
-						throw new Exception(message: $"Номер занятия не указан.");
-
-					if (subjectOnTimetable.SelectedSubject?.Id is null)
-						throw new Exception(message: $"Дисциплина для {subjectOnTimetable.Number} занятия не указана.");
-
-					if (subjectOnTimetable.Start is null)
-						throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указан.");
-
-					if (subjectOnTimetable.End is null)
-						throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указан.");
-
-					builder.ForDay(dayOfWeekId: creatingTimetable.DayOfWeek.Id)
-						   .AddSubject()
-						   .WithNumber(number: subjectOnTimetable.Number.Value)
-						   .WithSubject(subjectId: subjectOnTimetable.SelectedSubject.Id)
-						   .WithStartTime(time: subjectOnTimetable.Start.Value)
-						   .WithEndTime(time: subjectOnTimetable.End.Value);
-				}
-			}
-
-			await builder.Save();
-			_changeFromClient = true;
+			foreach (Class @class in Classes)
+				await SaveTimetableForClass(@class: @class);
 			await _notificationService.Show(
 				title: "Расписание",
 				content: "Расписание успешно изменено!",
@@ -102,6 +69,66 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 		}
 	}
 
+	private async Task SaveTimetableForSelectedClassHandler()
+	{
+		if (SubjectSelectionModel.SelectedItem is null)
+			return;
+
+		try
+		{
+			await SaveTimetableForClass(@class: SubjectSelectionModel.SelectedItem);
+			await _notificationService.Show(
+				title: "Расписание",
+				content: "Расписание успешно изменено!",
+				type: NotificationType.Success
+			);
+		}
+		catch (Exception ex)
+		{
+			await _notificationService.Show(
+				title: "Ошибка при сохранении",
+				content: ex.Message,
+				type: NotificationType.Error
+			);
+		}
+	}
+
+	private async Task SaveTimetableForClass(Class @class)
+	{
+		ObservableCollectionExtended<CreatingTimetable> existedTimetable = await @class.GetTimetable();
+		if (existedTimetable.Count <= 0)
+			return;
+
+		ITimetableBuilder builder = @class.CreateTimetable();
+		foreach (CreatingTimetable creatingTimetable in await @class.GetTimetable())
+		{
+			foreach (SubjectOnTimetable subjectOnTimetable in creatingTimetable.Subjects)
+			{
+				if (subjectOnTimetable.Number is null)
+					throw new Exception(message: $"Номер занятия не указан.");
+
+				if (subjectOnTimetable.SelectedSubject?.Id is null)
+					throw new Exception(message: $"Дисциплина для {subjectOnTimetable.Number} занятия не указана.");
+
+				if (subjectOnTimetable.Start is null)
+					throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указан.");
+
+				if (subjectOnTimetable.End is null)
+					throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указан.");
+
+				builder.ForDay(dayOfWeekId: creatingTimetable.DayOfWeek.Id)
+					   .AddSubject()
+					   .WithNumber(number: subjectOnTimetable.Number.Value)
+					   .WithSubject(subjectId: subjectOnTimetable.SelectedSubject.Id)
+					   .WithStartTime(time: subjectOnTimetable.Start.Value)
+					   .WithEndTime(time: subjectOnTimetable.End.Value);
+			}
+		}
+
+		await builder.Save();
+		_changeFromClient = true;
+	}
+
 	public ReactiveCommand<Unit, Unit> OnClassSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> SaveTimetableForSelectedClass { get; }
 	public ReactiveCommand<Unit, Unit> SaveTimetable { get; }
@@ -111,7 +138,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 	public ObservableCollectionExtended<CreatingTimetable> Timetable { get; } =
 		new ObservableCollectionExtended<CreatingTimetable>();
 
-	public ReadOnlyObservableCollection<Class> StudyingSubjects => _studyingSubjects;
+	public ReadOnlyObservableCollection<Class> Classes => _classes;
 
 	public string? Filter
 	{
