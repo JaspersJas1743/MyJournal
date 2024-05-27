@@ -531,7 +531,7 @@ public class StudentTest
 		Administrator? administrator = await GetAdministrator();
 		ClassCollection classes = await administrator?.GetClasses()!;
 		Class @class = await classes.SingleAsync(c => c.Id == 11);
-		ITimetableBuilder t = await @class.CreateTimetable();
+		ITimetableBuilder t = @class.CreateTimetable();
 		BaseTimetableForDayBuilder day = t.ForDay(dayOfWeekId: 1);
 		day.RemoveSubject(item: day.Last());
 		await t.Save();
@@ -550,7 +550,7 @@ public class StudentTest
 		Administrator? administrator = await GetAdministrator();
 		ClassCollection classes = await administrator?.GetClasses()!;
 		Class @class = await classes.SingleAsync(c => c.Id == 11);
-		ITimetableBuilder builder = await @class.CreateTimetable();
+		ITimetableBuilder builder = @class.CreateTimetable();
 		BaseTimetableForDayBuilder day = builder.ForDay(dayOfWeekId: 1);
 		day.RemoveSubject(item: day.Last());
 		await builder.Save();

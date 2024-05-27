@@ -69,7 +69,7 @@ public class CreatingTimetable : ReactiveObject
 			return;
 
 		SubjectOnTimetable previousSubject = Subjects[changedSubjectIndex - 1];
-		previousSubject.Break = (e.Start - previousSubject.End)!.Value.TotalMinutes;
+		previousSubject.Break = (e.Start - previousSubject.End)?.TotalMinutes;
 	}
 
 	private void SetBreakAfterChangedEndTimeOfSubjectHandler(SetEndTimeToSubjectOnTimetableEventArgs e)
@@ -84,11 +84,11 @@ public class CreatingTimetable : ReactiveObject
 			return;
 
 		SubjectOnTimetable nextSubject = Subjects[changedSubjectIndex + 1];
-		e.Subject.Break = (nextSubject.Start - e.End)!.Value.TotalMinutes;
+		e.Subject.Break = (nextSubject.Start - e.End)?.TotalMinutes;
 	}
 
 	private void CalculateHours()
-		=> TotalHours = Subjects.Sum(selector: s => (s.End - s.Start)!.Value.TotalMinutes / AcademicHourInMinutes);
+		=> TotalHours = Subjects.Sum(selector: s => ((s.End - s.Start)?.TotalMinutes / AcademicHourInMinutes) ?? 0);
 
 	private void OnSubjectsChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		=> CanAddSubject = Subjects.Count < 8;
@@ -118,7 +118,7 @@ public class CreatingTimetable : ReactiveObject
 	private void AddSubjectHandler()
 	{
 		Subjects.Add(item: new SubjectOnTimetable(
-			number: Subjects.LastOrDefault()?.Number ?? 0 + 1,
+			number: (Subjects.Any() ? Subjects.Last().Number : 0) + 1,
 			possibleSubjects: _possibleSubjects,
 			dayOfWeek: _dayOfWeek,
 			classId: _classId

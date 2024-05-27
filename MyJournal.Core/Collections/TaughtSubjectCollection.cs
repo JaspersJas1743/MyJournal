@@ -98,6 +98,9 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 						cancellationToken: cancellationToken
 					))
 				));
+				if (collection.Count <= 0)
+					return collection;
+
 				collection.Insert(index: 0, item: await TaughtSubject.Create(
 					client: client,
 					name: "Все классы",

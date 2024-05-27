@@ -92,7 +92,15 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 						cancellationToken: cancellationToken
 					)
 				)));
-				collection.Insert(index: 0, item: await StudyingSubject.Create(client: client, fileService: fileService, name: "Все дисциплины", cancellationToken: cancellationToken));
+				if (collection.Count <= 0)
+					return collection;
+
+				collection.Insert(index: 0, item: await StudyingSubject.Create(
+					client: client,
+					fileService: fileService,
+					name: "Все дисциплины",
+					cancellationToken: cancellationToken
+				));
 				return collection;
 			}),
 			educationPeriods: new AsyncLazy<List<EducationPeriod>>(valueFactory: async () =>

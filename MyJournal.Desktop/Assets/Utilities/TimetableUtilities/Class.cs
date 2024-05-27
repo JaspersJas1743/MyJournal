@@ -30,8 +30,8 @@ public sealed class Class : ReactiveObject
 	public int Id => _class.Id;
 	public string? Name => _class.Name;
 
-	public async Task<ITimetableBuilder> CreateTimetable()
-		=> await _class.CreateTimetable();
+	public ITimetableBuilder CreateTimetable()
+		=> _class.CreateTimetable();
 
 	public async Task<ObservableCollectionExtended<CreatingTimetable>> GetTimetable()
 	{

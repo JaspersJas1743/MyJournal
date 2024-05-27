@@ -61,11 +61,7 @@ internal sealed class TimetableBuilder : ITimetableBuilder
 
 		await _client.PutAsync<CreateTimetableRequest>(
 			apiMethod: TimetableControllerMethods.CreateTimetable,
-			arg: new CreateTimetableRequest(ClassId: _classId, Timetable: _days.Select(
-				selector: d => new Timetable(DayOfWeekId: d.Key, Subjects: d.Value.Subjects.Select(
-					selector: s => new SubjectOnTimetable(Id: s.SubjectId, Number: s.Number, Start: s.StartTime, End: s.EndTime)
-				))
-			)),
+			arg: request,
 			cancellationToken: cancellationToken
 		);
 	}

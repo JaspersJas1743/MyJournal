@@ -58,7 +58,7 @@ public sealed class SubjectOnTimetable : ReactiveObject
 		Start = start;
 		End = end;
 		Break = @break;
-		SelectedSubject = PossibleSubjects.First(predicate: s => s.Id == selectedSubjectId);
+		SelectedSubject = PossibleSubjects.FirstOrDefault(predicate: s => s.Id == selectedSubjectId);
 	}
 
 	public ObservableCollectionExtended<Subject> PossibleSubjects { get; }

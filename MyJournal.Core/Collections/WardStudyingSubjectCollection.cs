@@ -88,6 +88,9 @@ public sealed class WardStudyingSubjectCollection : IAsyncEnumerable<WardSubject
 						cancellationToken: cancellationToken
 					)
 				)));
+				if (collection.Count <= 0)
+					return collection;
+
 				collection.Insert(index: 0, item: await WardSubjectStudying.Create(
 					client: client,
 					fileService: fileService,
