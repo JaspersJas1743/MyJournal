@@ -20,14 +20,11 @@
 				<Setter Property="Grid.RowSpan" Value="5"/>
 			</Style>
 		</Style>
-		<Style Selector="TabControl.test">
-		</Style>
 	</UserControl.Styles>
-
 	<Viewbox>
 		<Grid	Height="1025" RowDefinitions="10*, 90*, 15*, 705*, 15*, 70*, 15*, 70*, 40*"
 				Width="1920" ColumnDefinitions="20*, 500*, 20*, 1360*, 20*">
-			<!-- <Button Command="{Binding ClearTasks}" IsVisible="False" HotKey="Escape"/> -->
+			<Button Command="{Binding ClearSelection}" IsVisible="False" HotKey="Escape"/>
 			<TextBox Grid.Column="1" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
 			<Border Grid.Column="1" Grid.Row="3" Classes="TransitionBorderBrush ListBorder"
 					Classes.WithoutButton="{Binding SubjectSelectionModel.SelectedItem,Converter={x:Static ObjectConverters.IsNotNull}}"

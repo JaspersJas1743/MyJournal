@@ -34,6 +34,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 		OnClassSelectionChanged = ReactiveCommand.CreateFromTask(execute: ClassSelectionChangedHandler);
 		SaveTimetableForSelectedClass = ReactiveCommand.CreateFromTask(execute: SaveTimetableForSelectedClassHandler);
 		SaveTimetable = ReactiveCommand.CreateFromTask(execute: SaveTimetableHandler);
+		ClearSelection = ReactiveCommand.Create(execute: ClearSelectionHandler);
 
 		IObservable<Func<Class, bool>> filter = this.WhenAnyValue(property1: model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
@@ -45,6 +46,12 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 		_ = _teacherSubjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
 			.Bind(readOnlyObservableCollection: out _classes).DisposeMany().Subscribe();
+	}
+
+	private void ClearSelectionHandler()
+	{
+		Timetable.Clear();
+		SubjectSelectionModel.SelectedItem = null;
 	}
 
 	private async Task SaveTimetableHandler()
@@ -132,6 +139,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 	public ReactiveCommand<Unit, Unit> OnClassSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> SaveTimetableForSelectedClass { get; }
 	public ReactiveCommand<Unit, Unit> SaveTimetable { get; }
+	public ReactiveCommand<Unit, Unit> ClearSelection { get; }
 
 	public SelectionModel<Class> SubjectSelectionModel { get; } = new SelectionModel<Class>();
 

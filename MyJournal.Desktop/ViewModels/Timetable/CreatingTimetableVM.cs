@@ -16,6 +16,7 @@ public sealed class CreatingTimetableVM(CreatingTimetableModel model) : BaseTime
 	public ReactiveCommand<Unit, Unit> OnClassSelectionChanged => model.OnClassSelectionChanged;
 	public ReactiveCommand<Unit, Unit> SaveTimetableForSelectedClass => model.SaveTimetableForSelectedClass;
 	public ReactiveCommand<Unit, Unit> SaveTimetable => model.SaveTimetable;
+	public ReactiveCommand<Unit, Unit> ClearSelection => model.ClearSelection;
 
 	public ObservableCollectionExtended<CreatingTimetable> Timetable => model.Timetable;
 
