@@ -135,5 +135,19 @@
 			<Setter Property="HorizontalAlignment" Value="Left"/>
 			<Setter Property="TextAlignment" Value="Left"/>
 		</Style>
+
+		<Style Selector="^.Weekend">
+			<Setter Property="Foreground" Value="{DynamicResource WeekendColor}"/>
+		</Style>
+
+		<Style Selector="^.WorkingDay">
+			<Setter Property="Foreground" Value="{DynamicResource WorkingDayColor}"/>
+		</Style>
+
+		<Style Selector="^.WithoutTransition">
+			<Setter Property="Transitions">
+				<Transitions/>
+			</Setter>
+		</Style>
 	</Style>
 </Styles>

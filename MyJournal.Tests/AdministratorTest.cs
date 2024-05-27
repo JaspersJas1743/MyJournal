@@ -510,7 +510,7 @@ public class AdministratorTest
 		Administrator? administrator = await GetAdministrator();
 		ClassCollection classes = await administrator?.GetClasses()!;
 		Class @class = await classes.SingleAsync(c => c.Id == 11);
-		ITimetableBuilder timetable = await @class.CreateTimetable();
+		ITimetableBuilder timetable = @class.CreateTimetable();
 		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
 		_ = day.First().WithNumber(7).WithStartTime(TimeSpan.Parse("15:00:00")).WithEndTime(TimeSpan.Parse("15:45:00"));
 		await timetable.Save();
@@ -522,7 +522,7 @@ public class AdministratorTest
 		Administrator? administrator = await GetAdministrator();
 		ClassCollection classes = await administrator?.GetClasses()!;
 		Class @class = await classes.SingleAsync(c => c.Id == 11);
-		ITimetableBuilder timetable = await @class.CreateTimetable();
+		ITimetableBuilder timetable = @class.CreateTimetable();
 		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
 		day.RemoveSubject(item: day.Last());
 		await timetable.Save();
@@ -534,7 +534,7 @@ public class AdministratorTest
 		Administrator? administrator = await GetAdministrator();
 		ClassCollection classes = await administrator?.GetClasses()!;
 		Class @class = await classes.SingleAsync(c => c.Id == 11);
-		ITimetableBuilder timetable = await @class.CreateTimetable();
+		ITimetableBuilder timetable = @class.CreateTimetable();
 		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
 		day.AddSubject().WithNumber(number: 1).WithSubject(subjectId: 47).WithStartTime(time: TimeSpan.Parse("09:00:00")).WithEndTime(time: TimeSpan.Parse("09:45:00"));
 		day.AddSubject().WithNumber(number: 2).WithSubject(subjectId: 47).WithStartTime(time: TimeSpan.Parse("10:00:00")).WithEndTime(time: TimeSpan.Parse("10:45:00"));
@@ -548,7 +548,7 @@ public class AdministratorTest
 		ClassCollection classes = await administrator?.GetClasses()!;
 		Class @class = await classes.SingleAsync(c => c.Id == 11);
 
-		ITimetableBuilder timetable = await @class.CreateTimetable();
+		ITimetableBuilder timetable = @class.CreateTimetable();
 		BaseTimetableForDayBuilder day = timetable.ForDay(dayOfWeekId: 1);
 		day.RemoveSubject(item: day.Last());
 		await timetable.Save();

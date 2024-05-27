@@ -32,6 +32,9 @@ public abstract class TimetableCollection<T>(
 		Dictionary<DateOnly, IEnumerable<T>> timetables = await timetableOnDate;
 
 		IEnumerable<DateOnly> dates = Enumerable.Range(start: -3, count: 7).Select(selector: date.AddDays).Except(second: timetables.Keys);
+		if (!dates.Any())
+			return timetables[key: date];
+
 		IEnumerable<TResponse> response = await client.GetAsync<IEnumerable<TResponse>, GetTimetableByDatesRequest>(
 			apiMethod: apiMethod,
 			argQuery: new GetTimetableByDatesRequest(Days: dates),

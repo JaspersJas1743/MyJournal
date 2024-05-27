@@ -76,13 +76,13 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
 		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		EducationPeriod educationPeriod = educationPeriods.First(predicate: p => p.StartDate <= now && p.EndDate >= now);
+		EducationPeriod? educationPeriod = educationPeriods.FirstOrDefault(predicate: p => p.StartDate <= now && p.EndDate >= now);
 		EducationPeriod currentPeriod = new EducationPeriod()
 		{
 			Id = 0,
 			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть",
-			StartDate = educationPeriod.StartDate,
-			EndDate = educationPeriod.EndDate
+			StartDate = educationPeriod?.StartDate,
+			EndDate = educationPeriod?.EndDate
 		};
 		return new StudyingSubjectInClassCollection(
 			client: client,
@@ -99,6 +99,9 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 						cancellationToken: cancellationToken
 					))
 				));
+				if (collection.Count <= 0)
+					return collection;
+
 				collection.Insert(index: 0, item: await StudyingSubjectInClass.Create(
 					client: client,
 					fileService: fileService,

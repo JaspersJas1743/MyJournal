@@ -150,9 +150,9 @@ public sealed class Teacher : User
 				}
 			));
 		});
-		_teacherHubConnection.On<int, IEnumerable<int>>(methodName: TeacherHubMethods.ChangedTimetable, handler: async (classId, subjectIds) =>
+		_teacherHubConnection.On<int>(methodName: TeacherHubMethods.ChangedTimetable, handler: async (classId) =>
 		{
-			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: classId, subjectIds: subjectIds);
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: classId);
 			await InvokeIfTaughtSubjectsAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
 			_timetable = new AsyncLazy<TimetableForTeacherCollection>(valueFactory: async () => await TimetableForTeacherCollection.Create(
 				client: Client,

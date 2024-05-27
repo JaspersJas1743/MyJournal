@@ -24,7 +24,8 @@
 		</Style>
 	</UserControl.Styles>
 	<Viewbox>
-		<Grid Height="1025" RowDefinitions="10*, 90*, 15*, 90*, 15*, 665*, 15*, 90*, 40*" Width="1920" ColumnDefinitions="25*, 235*, 20*, 245*, 15*, 1360*, 20*">
+		<Grid	Height="1025" RowDefinitions="10*, 90*, 15*, 90*, 15*, 665*, 15*, 90*, 40*"
+				Width="1920" ColumnDefinitions="25*, 235*, 20*, 245*, 15*, 1360*, 20*">
 			<Button Command="{Binding ClearTasks}" IsVisible="False" HotKey="Escape"/>
 			<TextBox Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Classes="Search" Text="{Binding Filter,Mode=TwoWay}"/>
 			<Viewbox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3">

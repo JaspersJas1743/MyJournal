@@ -138,9 +138,9 @@ public sealed class Student : User
 				}
 			));
 		});
-		_studentHubConnection.On<IEnumerable<int>>(methodName: StudentHubMethods.ChangedTimetable, handler: async (subjectIds) =>
+		_studentHubConnection.On(methodName: StudentHubMethods.ChangedTimetable, handler: async () =>
 		{
-			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: -1, subjectIds: subjectIds);
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: -1);
 			await InvokeIfStudyingSubjectsAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
 			_timetable = new AsyncLazy<TimetableForStudentCollection>(valueFactory: async () => await TimetableForStudentCollection.Create(
 				client: Client,

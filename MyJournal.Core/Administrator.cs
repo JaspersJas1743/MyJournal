@@ -141,7 +141,7 @@ public sealed class Administrator : User
 		});
 		_administratorHubConnection.On<int>(methodName: AdministratorHubMethod.ChangedTimetable, handler: async (classId) =>
 		{
-			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: classId, subjectIds: Enumerable.Empty<int>());
+			ChangedTimetableEventArgs e = new ChangedTimetableEventArgs(classId: classId);
 			await InvokeIfClassesAreCreated(invocation: async collection => await collection.OnChangedTimetable(e: e));
 			OnChangedTimetable(e: e);
 		});

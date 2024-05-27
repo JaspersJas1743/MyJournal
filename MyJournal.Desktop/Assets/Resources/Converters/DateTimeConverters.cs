@@ -43,4 +43,8 @@ public static class DateTimeConverters
 		DateTime end = period.EndDate.Value.ToDateTime(time: TimeOnly.MinValue);
 		return (end - now).TotalDays <= 0;
 	});
+
+	public static readonly IValueConverter During = new FuncValueConverter<SubjectOnTimetable, string>(
+		convert: subject => $@"{subject?.Start:hh\:mm} - {subject?.End:hh\:mm}"
+	);
 }

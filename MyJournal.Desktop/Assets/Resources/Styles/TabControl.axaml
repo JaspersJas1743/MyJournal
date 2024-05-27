@@ -1,0 +1,123 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls">
+
+	<Style Selector="controls|CustomTabControl">
+		<Setter Property="Margin" Value="0" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="{TemplateBinding CornerRadius}"
+						Background="{TemplateBinding Background}"
+						HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+						VerticalAlignment="{TemplateBinding VerticalAlignment}">
+					<DockPanel>
+						<Viewbox DockPanel.Dock="Top">
+							<ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+						</Viewbox>
+						<ContentPresenter Name="PART_SelectedContentHost"
+										Margin="{TemplateBinding Padding}"
+										HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+										VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+										Content="{TemplateBinding SelectedContent}"
+										ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+					</DockPanel>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<Style Selector="TabItem">
+		<Setter Property="FontSize" Value="20" />
+		<Setter Property="FontFamily" Value="{StaticResource Raleway}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="FontFeatures" Value="+lnum"/>
+		<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="Margin" Value="0" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="HorizontalAlignment" Value="Center" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border BorderBrush="{DynamicResource StrokeColor}"
+						Width="271" Name="PART_LayoutRoot">
+					<ContentPresenter	Name="PART_ContentPresenter"
+										HorizontalAlignment="Center"
+										VerticalAlignment="Center"
+										Content="{TemplateBinding Header}"
+										FontFamily="{TemplateBinding FontFamily}"
+										ContentTemplate="{TemplateBinding HeaderTemplate}"
+										FontSize="{TemplateBinding FontSize}"
+										FontWeight="{TemplateBinding FontWeight}" />
+				</Border>
+			</ControlTemplate>
+		</Setter>
+
+		<Style Selector="^.Previous > Border">
+			<Setter Property="CornerRadius" Value="0 0 15 0"/>
+			<Setter Property="BorderThickness" Value="5 0 5 5"/>
+		</Style>
+		<Style Selector="^.Default > Border">
+			<Setter Property="BorderThickness" Value="5 0 0 5"/>
+		</Style>
+		<Style Selector="^.Next > Border">
+			<Setter Property="CornerRadius" Value="0 0 0 15"/>
+		</Style>
+
+		<Style Selector="^:nth-child(1).Previous > Border">
+			<Setter Property="CornerRadius" Value="17.5 0 15 0"/>
+			<Setter Property="BorderThickness" Value="0 0 5 5"/>
+		</Style>
+		<Style Selector="^:nth-child(1).Default > Border">
+			<Setter Property="CornerRadius" Value="17.5 0 0 0"/>
+			<Setter Property="BorderThickness" Value="0 0 0 5"/>
+		</Style>
+
+		<Style Selector="^:nth-last-child(1).Previous > Border">
+			<Setter Property="CornerRadius" Value="0 17.5 0 15"/>
+		</Style>
+		<Style Selector="^:nth-last-child(1).Default > Border">
+			<Setter Property="CornerRadius" Value="0 17.5 0 0"/>
+		</Style>
+		<Style Selector="^:nth-last-child(1).Default.Next > Border">
+			<Setter Property="CornerRadius" Value="0 17.5 0 15"/>
+		</Style>
+
+		<Style Selector="^:selected">
+	        <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+	        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Style Selector="^ /template/ Border#PART_LayoutRoot">
+				<Setter Property="BorderThickness" Value="0 0 0 0"/>
+			</Style>
+			<Style Selector="^:nth-child(1) /template/ Border#PART_LayoutRoot">
+				<Setter Property="BorderThickness" Value="0"/>
+			</Style>
+			<Style Selector="^:pointerover /template/ Border#PART_LayoutRoot">
+				<Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+				<Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundColor}" />
+			</Style>
+			<Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+				<Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+				<Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundColor}" />
+			</Style>
+	    </Style>
+
+		<Style Selector="^:pointerover /template/ Border#PART_LayoutRoot">
+	        <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
+	        <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+
+	    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+			<Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+			<Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundColor}" />
+	    </Style>
+
+		<Style Selector="^:disabled /template/ Border#PART_LayoutRoot">
+		    <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+		    <Setter Property="TextElement.Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+	</Style>
+</Styles>

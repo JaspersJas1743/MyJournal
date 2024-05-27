@@ -7,7 +7,8 @@
 		xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
 		xmlns:marksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.MarksUtilities"
 		xmlns:entities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
-		xmlns:behaviors="clr-namespace:MyJournal.Desktop.Assets.Resources.Behaviors">
+		xmlns:behaviors="clr-namespace:MyJournal.Desktop.Assets.Resources.Behaviors"
+		xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
 	<Style Selector="ListBoxItem">
 		<Setter Property="Padding" Value="0"/>
@@ -134,6 +135,36 @@
 				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
 			</Style>
 			<Style Selector="^ TextBlock.SubjectTeacher">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+	            <Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}" />
+	        </Style>
+	    </Style>
+		<Style Selector="^:nth-child(1)">
+			<Setter Property="CornerRadius" Value="15 15 0 0"/>
+		</Style>
+	</Style>
+
+	<Style Selector="ListBox.Classes ListBoxItem">
+		<Setter Property="FocusAdorner" Value="{x:Null}"/>
+	    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+	        <Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+	    </Style>
+	    <Style Selector="^:selected">
+			<Style Selector="^ TextBlock.ClassName">
 				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
 			</Style>
 			<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
@@ -564,5 +595,41 @@
 				<Setter Property="BorderThickness" Value="3"/>
 			</Style>
 		</Style>
+	</Style>
+
+	<Style Selector="ListBox.Days ListBoxItem">
+		<Setter Property="Template">
+			<ControlTemplate x:DataType="sys:DateOnly">
+				<Viewbox Height="65">
+					<Border Width="180" Height="66" Padding="20 10"
+							Background="{DynamicResource BackgroundColor}">
+						<StackPanel>
+							<TextBlock	Text="{Binding Converter={x:Static converters:DateOnlyConverters.StringFormat}}" FontSize="20"
+										Classes.WorkingDay="{Binding Converter={x:Static converters:DateOnlyConverters.IsWorkingDay}}"
+										Classes.Weekend="{Binding Converter={x:Static converters:DateOnlyConverters.IsWeekend}}"
+										Classes="WithoutTransition"/>
+							<TextBlock	Text="{Binding Converter={x:Static converters:DateOnlyConverters.DayOfWeek}}"
+										FontSize="20" Foreground="{DynamicResource DateTimeColor}" Classes="WithoutTransition"/>
+						</StackPanel>
+					</Border>
+				</Viewbox>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:selected">
+			<Style Selector="^ /template/ Border">
+				<Setter Property="Background" Value="{DynamicResource MainAccentColor}"/>
+			</Style>
+			<Style Selector="^ /template/ TextBlock">
+				<Setter Property="Foreground" Value="{DynamicResource TextOnSelectedControlColor}"/>
+			</Style>
+		</Style>
+	</Style>
+
+	<Style Selector="ListBox.TimetableByDate ListBoxItem:nth-last-child(1) Grid.Break">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<Style Selector="ListBox.TimetableOnSubjectCreation ListBoxItem:nth-last-child(1) Grid.Break">
+		<Setter Property="IsVisible" Value="False"/>
 	</Style>
 </Styles>

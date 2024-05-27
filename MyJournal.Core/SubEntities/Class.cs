@@ -102,8 +102,8 @@ public class Class : ISubEntity
 	public async Task<IEnumerable<TimetableForClass>> GetTimetable()
 		=> await _timetable;
 
-	public async Task<ITimetableBuilder> CreateTimetable()
-		=> InitTimetableBuilder.Create(client: _client).ForClass(classId: Id, currentTimetable: await _timetable);
+	public ITimetableBuilder CreateTimetable()
+		=> InitTimetableBuilder.Create(client: _client).ForClass(classId: Id);
 
 	internal async Task OnChangedTimetable(ChangedTimetableEventArgs e)
 	{

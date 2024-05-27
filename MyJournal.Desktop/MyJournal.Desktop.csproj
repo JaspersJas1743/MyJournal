@@ -151,6 +151,17 @@
         <DependentUpon>MultiChatCreationView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Timetable\CreatingTimetableView.axaml.cs">
+        <DependentUpon>CreatingTimetableView.axaml</DependentUpon>
+      </Compile>
+      <Compile Update="Views\Timetable\TimetableByDateView.axaml.cs">
+        <DependentUpon>StudyTimetableByDateView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Timetable\TimetableBySubjectView.axaml.cs">
+        <DependentUpon>TimetableBySubjectView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

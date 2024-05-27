@@ -171,5 +171,13 @@
 			<Setter Property="Background" Value="{DynamicResource TruancyColor}"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource EmptyInputStrokeColor}"/>
 		</Style>
+		<Style Selector="^.Teacher">
+			<Setter Property="Grid.Column" Value="2"/>
+		</Style>
+
+		<Style Selector="^.NotTeacher">
+			<Setter Property="Grid.Column" Value="1"/>
+			<Setter Property="Grid.ColumnSpan" Value="2"/>
+		</Style>
 	</Style>
 </Styles>

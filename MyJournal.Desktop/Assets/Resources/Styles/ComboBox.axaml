@@ -23,7 +23,7 @@
 		<Setter Property="Template">
 	        <ControlTemplate>
 	            <Grid ColumnDefinitions="*,40">
-	                <Border x:Name="Background"
+	                <Border x:Name="PART_Background"
 	                        Grid.Column="0"
 	                        Grid.ColumnSpan="2"
 							Classes="TransitionBorderBrush TransitionBackground"
@@ -71,7 +71,7 @@
 	                        IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
 	                        MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
 	                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
-	                        PlacementTarget="Background"
+	                        PlacementTarget="PART_Background"
 	                        IsLightDismissEnabled="True"
 	                        InheritsTransform="True">
 	                    <Border x:Name="PopupBorder" ClipToBounds="True" Padding="-5"
@@ -92,7 +92,7 @@
 	            </Grid>
 	        </ControlTemplate>
 	    </Setter>
-		<Style Selector="^:pointerover /template/ Border#Background">
+		<Style Selector="^:pointerover /template/ Border#PART_Background">
 			<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource StrokeColor}"/>
 		</Style>
@@ -101,7 +101,7 @@
 			<Style Selector="^ /template/ controls|XamlSvg#DropDownGlyph">
 				<Setter Property="Foreground" Value="{DynamicResource ErrorColor}"/>
 			</Style>
-			<Style Selector="^:pointerover /template/ Border#Background">
+			<Style Selector="^:pointerover /template/ Border#PART_Background">
 				<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
 				<Setter Property="BorderBrush" Value="{DynamicResource ErrorColor}"/>
 			</Style>
@@ -188,6 +188,115 @@
 				<Style Selector="^ /template/ PathIcon#DropDownGlyph">
 					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 				</Style>
+			</Style>
+		</Style>
+		<Style Selector="^.Empty">
+			<Setter Property="Background" Value="{x:Null}"/>
+			<Setter Property="BorderBrush" Value="{x:Null}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="Template">
+		        <ControlTemplate>
+		            <Grid>
+		                <Border x:Name="Background" Grid.Column="0" Background="Transparent"/>
+		                <Border x:Name="HighlightBackground" Grid.Column="0" IsVisible="False"/>
+		                <TextBlock x:Name="PlaceholderTextBlock"
+		                           Grid.Column="0"
+		                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+		                           VerticalAlignment="Center" Margin="{TemplateBinding Padding}"
+		                           FontSize="{TemplateBinding FontSize}"
+		                           Text="{TemplateBinding PlaceholderText}"
+		                           Foreground="{TemplateBinding PlaceholderForeground}"
+		                           IsVisible="{TemplateBinding SelectedItem,Converter={x:Static ObjectConverters.IsNull}}" />
+		                <ContentControl HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Background="Transparent"
+										ContentTemplate="{TemplateBinding ItemTemplate}" VerticalAlignment="Center" x:Name="ContentPresenter" Margin="{TemplateBinding Padding}"
+										Content="{TemplateBinding SelectionBoxItem}" FontSize="{TemplateBinding FontSize}" Grid.Column="0"
+										VerticalContentAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+		                <Border x:Name="DropDownOverlay"
+		                        Background="Transparent"
+		                        Margin="0,1,1,1"
+		                        Width="30"
+		                        IsVisible="False"
+		                        HorizontalAlignment="Right" />
+		                <Popup  Grid.Column="0" Name="PART_Popup"
+		                        WindowManagerAddShadowHint="False"
+		                        IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+		                        MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+		                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+		                        PlacementTarget="Background"
+		                        IsLightDismissEnabled="True"
+		                        InheritsTransform="True">
+		                    <Border x:Name="PopupBorder" ClipToBounds="True" Margin="{TemplateBinding Padding}"
+									Classes="TransitionBorderBrush OpacityTransition TransitionBackground"
+		                            Background="{DynamicResource ComboBoxDropDownBackground}"
+		                            BorderBrush="{TemplateBinding BorderBrush}"
+		                            BorderThickness="{TemplateBinding BorderThickness}"
+		                            HorizontalAlignment="Stretch" CornerRadius="10"
+									Opacity="{TemplateBinding IsDropDownOpen,Converter={StaticResource BoolToDoubleConverter}}">
+								<ScrollViewer	HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+												VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+												IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}">
+		                            <ItemsPresenter Name="PART_ItemsPresenter" ClipToBounds="True" ItemsPanel="{TemplateBinding ItemsPanel}" />
+		                        </ScrollViewer>
+		                    </Border>
+		                </Popup>
+		            </Grid>
+		        </ControlTemplate>
+			</Setter>
+			<Style Selector="^ /template/ Popup > Border#PopupBorder">
+				<Setter Property="CornerRadius" Value="10"/>
+				<Setter Property="Background" Value="{TemplateBinding Background}"/>
+				<Setter Property="BorderBrush" Value="{x:Null}"/>
+				<Setter Property="BorderThickness" Value="0"/>
+			</Style>
+			<Style Selector="^ ComboBoxItem">
+				<Setter Property="BorderThickness" Value="0"/>
+				<Setter Property="FontSize" Value="20"/>
+				<Setter Property="Template">
+					<ControlTemplate>
+						<Grid Background="{TemplateBinding Background}">
+							<ContentPresenter Name="PART_ContentPresenter"
+											Background="{TemplateBinding Background}"
+											Foreground="{TemplateBinding Foreground}"
+											CornerRadius="{TemplateBinding CornerRadius}"
+											ContentTemplate="{TemplateBinding ContentTemplate}"
+											Content="{TemplateBinding Content}"
+											FontSize="{Binding $parent[ComboBox].FontSize}"
+											HorizontalContentAlignment="{Binding $parent[ComboBox].HorizontalContentAlignment}"
+											VerticalContentAlignment="Center"
+											Margin="{Binding $parent[ComboBox].Padding}" />
+						</Grid>
+					</ControlTemplate>
+				</Setter>
+				<Style Selector="^:nth-child(1) /template/ ContentPresenter#PART_ContentPresenter">
+					<Setter Property="Margin" Value="0 5 0 0 "/>
+					<Setter Property="CornerRadius" Value="10 10 0 0"/>
+					<Style Selector="^:pointerover">
+						<Setter Property="CornerRadius" Value="10 10 0 0"/>
+					</Style>
+				</Style>
+				<Style Selector="^:nth-last-child(1) /template/ ContentPresenter#PART_ContentPresenter">
+					<Setter Property="Margin" Value="0 0 0 5 "/>
+					<Setter Property="CornerRadius" Value="0 0 10 10"/>
+					<Style Selector="^:pointerover">
+						<Setter Property="CornerRadius" Value="0 0 10 10"/>
+					</Style>
+				</Style>
+				<Style Selector="^:pointerover">
+					<Setter Property="Background" Value="{DynamicResource ControlPointeroverColor}" />
+				</Style>
+			</Style>
+			<Style Selector="^:pointerover /template/ Border#Background">
+				<Setter Property="Background" Value="{x:Null}"/>
+				<Setter Property="BorderBrush" Value="{x:Null}"/>
+			</Style>
+			<Style Selector="^:focus-visible /template/ Border#HighlightBackground">
+				<Setter Property="BorderBrush" Value="{x:Null}"/>
+			</Style>
+			<Style Selector="^:pressed /template/ Border#Background">
+				<Setter Property="Background" Value="{x:Null}" />
+				<Setter Property="BorderBrush" Value="{x:Null}" />
 			</Style>
 		</Style>
 	</Style>

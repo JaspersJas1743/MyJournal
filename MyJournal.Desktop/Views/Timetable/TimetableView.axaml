@@ -4,7 +4,6 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			xmlns:vm="clr-namespace:MyJournal.Desktop.ViewModels.Timetable"
 			mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-			x:DataType="vm:WorkTimetableVM"
-			x:Class="MyJournal.Desktop.Views.Timetable.WorkTimetableView">
-	<TextBlock Text="Work timetable" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+			x:DataType="vm:TimetableVM" x:Class="MyJournal.Desktop.Views.Timetable.TimetableView">
+	<TransitioningContentControl Classes="CrossFade" Content="{Binding Content}"/>
 </UserControl>

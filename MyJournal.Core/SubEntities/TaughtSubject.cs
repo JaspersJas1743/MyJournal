@@ -67,7 +67,7 @@ public sealed class TaughtSubject : ISubEntity
 	#region Records
 	internal sealed record TaughtSubjectClass(int Id, string Name);
 	internal sealed record TaughtSubjectResponse(int Id, string Name, TaughtSubjectClass Class);
-	internal sealed record GetTimetableWithoutAssessmentsResponse(SubjectOnTimetable Subject, BreakAfterSubject? Break);
+	internal sealed record GetTimetableResponse(SubjectOnTimetable Subject, BreakAfterSubject? Break);
 	internal sealed record GetTimetableBySubjectRequest(int SubjectId, int ClassId);
 	#endregion
 
@@ -89,7 +89,7 @@ public sealed class TaughtSubject : ISubEntity
 	{
 		return new AsyncLazy<IEnumerable<TimetableForTeacher>>(valueFactory: async () =>
 		{
-			IEnumerable<GetTimetableWithoutAssessmentsResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableWithoutAssessmentsResponse>, GetTimetableBySubjectRequest>(
+			IEnumerable<GetTimetableResponse>? timetable = await client.GetAsync<IEnumerable<GetTimetableResponse>, GetTimetableBySubjectRequest>(
 				apiMethod: TimetableControllerMethods.GetTimetableBySubjectForTeacher,
 				argQuery: request,
 				cancellationToken: cancellationToken

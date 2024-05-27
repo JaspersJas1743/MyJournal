@@ -324,9 +324,9 @@ public sealed class ApiClient : IDisposable
 			if (pair.PropertyType.IsEquivalentTo(other: typeof(IEnumerable<DateOnly>)))
 			{
 				uri.Append(value: String.Join(
-					separator: '&',
+					separator: String.Empty,
 					values: (pair.GetValue(obj: arg) as IEnumerable<DateOnly>)!.Select(
-						selector: date => $"{pair.Name}={date:yyyy.MM.dd}"
+						selector: date => $"{pair.Name}={date:yyyy.MM.dd}&"
 					)
 				));
 			}

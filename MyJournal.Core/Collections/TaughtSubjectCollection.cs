@@ -98,6 +98,9 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 						cancellationToken: cancellationToken
 					))
 				));
+				if (collection.Count <= 0)
+					return collection;
+
 				collection.Insert(index: 0, item: await TaughtSubject.Create(
 					client: client,
 					name: "Все классы",
@@ -256,7 +259,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 	{
 		await InvokeIfSubjectsAreCreated(
 			invocation: async subject => await subject.OnChangedTimetable(e: e),
-			filter: subject => subject.ClassId == e.ClassId && e.SubjectIds.Contains(value: subject.Id)
+			filter: subject => subject.ClassId == e.ClassId
 		);
 
 		ChangedTimetable?.Invoke(e: e);

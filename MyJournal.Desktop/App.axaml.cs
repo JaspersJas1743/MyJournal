@@ -295,14 +295,19 @@ public partial class App : Application
 			.AddTransient<CreatingTimetableModel>()
 			#endregion
 			#region Study timetable
-			.AddTransient<StudyTimetableView>()
-			.AddTransient<StudyTimetableVM>()
-			.AddTransient<StudyTimetableModel>()
+			.AddTransient<TimetableView>()
+			.AddTransient<TimetableVM>()
+			.AddTransient<TimetableModel>()
 			#endregion
-			#region Work timetable
-			.AddTransient<WorkTimetableView>()
-			.AddTransient<WorkTimetableVM>()
-			.AddTransient<WorkTimetableModel>();
+			#region Study timetable by date
+			.AddTransient<TimetableByDateView>()
+			.AddTransient<TimetableByDateVM>()
+			.AddTransient<TimetableByDateModel>()
+			#endregion
+			#region Study timetable by subject
+			.AddTransient<TimetableBySubjectView>()
+			.AddTransient<TimetableBySubjectVM>()
+			.AddTransient<TimetableBySubjectModel>();
 			#endregion
 			#endregion
 		PlatformDetector.RunIfCurrentPlatformIsWindows(action: () => services.AddWindowsCredentialStorageService());
@@ -439,6 +444,11 @@ public partial class App : Application
 
 	private void SetTheme(IConfigurationService configurationService)
 	{
+		if (Avalonia.Controls.Design.IsDesignMode)
+		{
+			RequestedThemeVariant = ThemeVariant.Dark;
+			return;
+		}
 		ThemeVariant currentTheme = (typeof(ThemeVariant).GetProperty(
 			name: configurationService.Get(key: ConfigurationKeys.Theme) ?? nameof(ThemeVariant.Default),
 			bindingAttr: BindingFlags.Public | BindingFlags.Static
