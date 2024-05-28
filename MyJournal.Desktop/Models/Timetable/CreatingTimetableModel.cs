@@ -82,8 +82,17 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableForSelectedClassHandler()
 	{
-		if (SubjectSelectionModel.SelectedItem is null || !SubjectSelectionModel.SelectedItem.HaveChanges)
+		if (SubjectSelectionModel.SelectedItem is null)
 			return;
+
+		if (!SubjectSelectionModel.SelectedItem.HaveChanges)
+		{
+			await _notificationService.Show(
+				title: "Расписание",
+				content: $"В расписании {SubjectSelectionModel.SelectedItem.Name} изменения отсутствуют!",
+				type: NotificationType.Success
+			);
+		}
 
 		try
 		{
