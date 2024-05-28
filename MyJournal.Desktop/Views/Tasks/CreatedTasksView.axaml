@@ -59,10 +59,9 @@
 			<Border Grid.Column="3" Grid.Row="1" Grid.RowSpan="5" Classes="TransitionBorderBrush ListBorder">
 				<Grid>
 					<Grid IsVisible="{Binding !!Tasks.Count}">
-						<controls:ListBoxWithLoadOnScroll	ItemsSource="{Binding Tasks}"
-															Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
+						<controls:ListBoxWithLoadOnScroll	Classes.LargeCount="{Binding $self.ItemCount,Converter={StaticResource ChatsCountIsLargeConverter}}"
 															ThresholdPercentage="80" ComparisonOperations="GreaterOrEquals" Command="{Binding LoadTasks}"
-															Classes="Tasks CreatedTasks">
+															ItemsSource="{Binding Tasks}" Classes="Tasks CreatedTasks">
 							<Classes.FirstTask>
 								<MultiBinding Converter="{x:Static BoolConverters.And}">
 									<Binding Path="ShowTaskCreation"/>

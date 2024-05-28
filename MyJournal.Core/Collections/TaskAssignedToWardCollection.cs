@@ -28,6 +28,7 @@ public sealed class TaskAssignedToWardCollection : LazyCollection<TaskAssignedTo
 		int offset
 	) : base(client: client, collection: collection, count: count, offset: offset)
 	{
+		_fileService = fileService;
 		_subjectId = subjectId;
 	}
 	#endregion

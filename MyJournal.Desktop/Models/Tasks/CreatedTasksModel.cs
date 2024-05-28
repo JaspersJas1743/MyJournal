@@ -331,16 +331,15 @@ public sealed class CreatedTasksModel : TasksModel
 		if (taughtSubjectCollection is not null)
 		{
 			_classes = await taughtSubjectCollection.SelectAwait(selector: async s => new
-				{
-					Subject = new Subject(subject: s),
-					Class = await s.GetTaughtClass()
-				})
-				.GroupBy(keySelector: o => o.Class).Skip(count: 1)
-				.Select(selector: o => new Class(
-					id: o.Key.Id,
-					name: o.Key.Name,
-					subjectsFactory: async () => await o.Select(selector: x => x.Subject).ToListAsync()
-				)).ToListAsync();
+			{
+				Subject = new Subject(subject: s),
+				Class = await s.GetTaughtClass()
+			}).GroupBy(keySelector: o => o.Class.Id)
+			.SelectAwait(selector: async o => new Class(
+				id: o.Key,
+				name: (await o.Select(selector: x => x.Class).FirstAsync()).Name,
+				subjectsFactory: async () => await o.Select(selector: x => x.Subject).ToListAsync()
+			)).Skip(count: 1).ToListAsync();
 		}
 
 		List<TeacherSubject> subjects = await _teacherSubjectCollection.ToListAsync();

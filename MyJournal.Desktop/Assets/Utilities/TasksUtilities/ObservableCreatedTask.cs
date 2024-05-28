@@ -76,42 +76,6 @@ public sealed class ObservableCreatedTask : ReactiveObject, IValidatableViewMode
 		});
 	}
 
-	private async Task SaveCurrentTask()
-	{
-		try
-		{
-			await _taskBuilder!.SetClass(classId: SelectedClass!.Id)
-				.SetSubject(subjectId: SelectedSubject!.Id)
-				.SetText(text: String.IsNullOrWhiteSpace(value: EnteredText) ? null : EnteredText)
-				.SetDateOfRelease(dateOfRelease: SelectedDate!.Value.Date.Add(value: SelectedTime!.Value))
-				.Save();
-			await _notificationService.Show(title: "Успех", content: "Задание сохранено!", type: NotificationType.Success);
-		} catch (Exception ex)
-		{
-			await _notificationService.Show(title: "Ошибка сохранения", content: ex.Message, type: NotificationType.Error);
-			return;
-		}
-		_taskBuilder = _taskBuilderFactory?.Invoke();
-		EnteredText = String.Empty;
-		AttachmentsCount = 0;
-		MessageBus.Current.SendMessage(message: new TaskSavedEventArgs());
-	}
-
-	private async void ClassSelectionChangedHandler()
-	{
-		Subjects = await _classes?.Find(match: c => c.Id == SelectedClass!.Id)?.GetSubjects()!;
-		this.RaisePropertyChanged(propertyName: nameof(SingleSubject));
-	}
-
-	public async Task SetSelectedClass(Class? selectedClass)
-	{
-		SelectedClass = selectedClass;
-		Subjects = selectedClass is not null ? await selectedClass.GetSubjects() : null;
-	}
-
-	public async Task SetSelectedSubject(int selectedSubjectId)
-		=> SelectedSubject = Subjects?.FirstOrDefault(predicate: s => s.Id == selectedSubjectId);
-
 	public ObservableCreatedTask(
 		CreatedTask task,
 		bool showClassAndLesson,
@@ -132,12 +96,6 @@ public sealed class ObservableCreatedTask : ReactiveObject, IValidatableViewMode
 	}
 
 	~ObservableCreatedTask() => _timer.Dispose();
-
-	private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
-	{
-		this.RaisePropertyChanged(propertyName: nameof(ReleasedTime));
-		this.RaisePropertyChanged(propertyName: nameof(IsExpired));
-	}
 
 	public CreatedTask? Observable => _taskToObservable;
 	public int? Id => _taskToObservable?.Id;
@@ -219,13 +177,13 @@ public sealed class ObservableCreatedTask : ReactiveObject, IValidatableViewMode
 	public ReactiveCommand<Unit, Unit>? OnClassSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit>? SaveTask { get; }
 
+	public ValidationContext ValidationContext { get; } = new ValidationContext();
+
 	private void RaiseCompletionCount()
 	{
 		this.RaisePropertyChanged(propertyName: nameof(CountOfCompletedTask));
 		this.RaisePropertyChanged(propertyName: nameof(CountOfUncompletedTask));
 	}
-
-	public ValidationContext ValidationContext { get; } = new ValidationContext();
 
 	private void SetValidationRule()
 	{
@@ -249,6 +207,48 @@ public sealed class ObservableCreatedTask : ReactiveObject, IValidatableViewMode
 		);
 
 		this.ValidationRule(validationObservable: emptyContentObservable, message: "Содержимое задачи отсутствует.");
+	}
+
+	private async Task SaveCurrentTask()
+	{
+		try
+		{
+			await _taskBuilder!.SetClass(classId: SelectedClass!.Id)
+				.SetSubject(subjectId: SelectedSubject!.Id)
+				.SetText(text: String.IsNullOrWhiteSpace(value: EnteredText) ? null : EnteredText)
+				.SetDateOfRelease(dateOfRelease: SelectedDate!.Value.Date.Add(value: SelectedTime!.Value))
+				.Save();
+			await _notificationService.Show(title: "Успех", content: "Задание сохранено!", type: NotificationType.Success);
+		} catch (Exception ex)
+		{
+			await _notificationService.Show(title: "Ошибка сохранения", content: ex.Message, type: NotificationType.Error);
+			return;
+		}
+		_taskBuilder = _taskBuilderFactory?.Invoke();
+		EnteredText = String.Empty;
+		AttachmentsCount = 0;
+		MessageBus.Current.SendMessage(message: new TaskSavedEventArgs());
+	}
+
+	private async void ClassSelectionChangedHandler()
+	{
+		Subjects = await _classes?.Find(match: c => c.Id == SelectedClass!.Id)?.GetSubjects()!;
+		this.RaisePropertyChanged(propertyName: nameof(SingleSubject));
+	}
+
+	public async Task SetSelectedClass(Class? selectedClass)
+	{
+		SelectedClass = selectedClass;
+		Subjects = selectedClass is not null ? await selectedClass.GetSubjects() : null;
+	}
+
+	public async Task SetSelectedSubject(int selectedSubjectId)
+		=> SelectedSubject = Subjects?.FirstOrDefault(predicate: s => s.Id == selectedSubjectId);
+
+	private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+	{
+		this.RaisePropertyChanged(propertyName: nameof(ReleasedTime));
+		this.RaisePropertyChanged(propertyName: nameof(IsExpired));
 	}
 }
 
