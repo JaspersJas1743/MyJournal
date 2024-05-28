@@ -48,7 +48,25 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			.Bind(readOnlyObservableCollection: out _classes).DisposeMany().Subscribe();
 	}
 
-	private void ClearSelectionHandler()
+	public ReactiveCommand<Unit, Unit> OnClassSelectionChanged { get; }
+	public ReactiveCommand<Unit, Unit> SaveTimetableForSelectedClass { get; }
+	public ReactiveCommand<Unit, Unit> SaveTimetable { get; }
+	public ReactiveCommand<Unit, Unit> ClearSelection { get; }
+
+	public SelectionModel<Class> SubjectSelectionModel { get; } = new SelectionModel<Class>();
+
+	public ObservableCollectionExtended<CreatingTimetable> Timetable { get; } =
+		new ObservableCollectionExtended<CreatingTimetable>();
+
+	public ReadOnlyObservableCollection<Class> Classes => _classes;
+
+	public string? Filter
+	{
+		get => _filter;
+		set => this.RaiseAndSetIfChanged(backingField: ref _filter, newValue: value);
+	}
+
+		private void ClearSelectionHandler()
 	{
 		Timetable.Clear();
 		SubjectSelectionModel.SelectedItem = null;
@@ -144,34 +162,16 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 					throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указано.");
 
 				builder.ForDay(dayOfWeekId: creatingTimetable.DayOfWeek.Id)
-					   .AddSubject()
-					   .WithNumber(number: subjectOnTimetable.Number.Value)
-					   .WithSubject(subjectId: subjectOnTimetable.SelectedSubject.Id)
-					   .WithStartTime(time: subjectOnTimetable.Start.Value)
-					   .WithEndTime(time: subjectOnTimetable.End.Value);
+					.AddSubject()
+					.WithNumber(number: subjectOnTimetable.Number.Value)
+					.WithSubject(subjectId: subjectOnTimetable.SelectedSubject.Id)
+					.WithStartTime(time: subjectOnTimetable.Start.Value)
+					.WithEndTime(time: subjectOnTimetable.End.Value);
 			}
 		}
 
 		_changeFromClient = true;
 		await builder.Save();
-	}
-
-	public ReactiveCommand<Unit, Unit> OnClassSelectionChanged { get; }
-	public ReactiveCommand<Unit, Unit> SaveTimetableForSelectedClass { get; }
-	public ReactiveCommand<Unit, Unit> SaveTimetable { get; }
-	public ReactiveCommand<Unit, Unit> ClearSelection { get; }
-
-	public SelectionModel<Class> SubjectSelectionModel { get; } = new SelectionModel<Class>();
-
-	public ObservableCollectionExtended<CreatingTimetable> Timetable { get; } =
-		new ObservableCollectionExtended<CreatingTimetable>();
-
-	public ReadOnlyObservableCollection<Class> Classes => _classes;
-
-	public string? Filter
-	{
-		get => _filter;
-		set => this.RaiseAndSetIfChanged(backingField: ref _filter, newValue: value);
 	}
 
 	private async Task ClassSelectionChangedHandler()
@@ -185,7 +185,6 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 		await Dispatcher.UIThread.InvokeAsync(
 			callback: async () => Timetable.Load(items: await SubjectSelectionModel.SelectedItem.GetTimetable())
 		);
-		SubjectSelectionModel.SelectedItem.HaveChanges = false;
 	}
 
 	public Func<Class, bool> FilterFunction(string? text)
