@@ -114,8 +114,9 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			await _notificationService.Show(
 				title: "Расписание",
 				content: $"В расписании {SubjectSelectionModel.SelectedItem.Name} изменения отсутствуют!",
-				type: NotificationType.Success
+				type: NotificationType.Information
 			);
+			return;
 		}
 
 		try
