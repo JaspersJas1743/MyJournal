@@ -133,6 +133,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			}
 		}
 
+		@class.HaveChanges = false;
 		_changeFromClient = true;
 		await builder.Save();
 	}
@@ -166,6 +167,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 		await Dispatcher.UIThread.InvokeAsync(
 			callback: async () => Timetable.Load(items: await SubjectSelectionModel.SelectedItem.GetTimetable())
 		);
+		SubjectSelectionModel.SelectedItem.HaveChanges = false;
 	}
 
 	public Func<Class, bool> FilterFunction(string? text)

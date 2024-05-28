@@ -42,7 +42,7 @@ public sealed class Class : ReactiveObject
 
 	public int Id => _class.Id;
 	public string? Name => _class.Name;
-	public bool HaveChanges { get; private set; }
+	public bool HaveChanges { get; set; }
 
 	public ITimetableBuilder CreateTimetable()
 		=> _class.CreateTimetable();
