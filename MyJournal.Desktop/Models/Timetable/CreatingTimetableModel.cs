@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -74,7 +75,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableHandler()
 	{
-		bool success = true;
+		bool success = Classes.Any(predicate: c => c.HaveChanges);
 		foreach (Class @class in Classes)
 		{
 			try
