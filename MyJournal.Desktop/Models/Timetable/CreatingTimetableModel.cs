@@ -56,24 +56,27 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableHandler()
 	{
-		try
+		foreach (Class @class in Classes)
 		{
-			foreach (Class @class in Classes)
+			try
+			{
 				await SaveTimetableForClass(@class: @class);
-			await _notificationService.Show(
-				title: "Расписание",
-				content: "Расписание изменено успешно!",
-				type: NotificationType.Success
-			);
+				@class.HaveChanges = false;
+			}
+			catch (Exception ex)
+			{
+				await _notificationService.Show(
+					title: $"Ошибка при сохранении расписания для {@class.Name}а",
+					content: ex.Message,
+					type: NotificationType.Error
+				);
+			}
 		}
-		catch (Exception ex)
-		{
-			await _notificationService.Show(
-				title: "Ошибка при сохранении",
-				content: ex.Message,
-				type: NotificationType.Error
-			);
-		}
+		await _notificationService.Show(
+			title: "Расписание",
+			content: "Расписание изменено успешно!",
+			type: NotificationType.Success
+		);
 		_changeFromClient = true;
 	}
 
@@ -90,6 +93,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				content: $"Расписание для {SubjectSelectionModel.SelectedItem.Name}а изменено успешно!",
 				type: NotificationType.Success
 			);
+			SubjectSelectionModel.SelectedItem.HaveChanges = false;
 		}
 		catch (Exception ex)
 		{
@@ -133,7 +137,6 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			}
 		}
 
-		@class.HaveChanges = false;
 		_changeFromClient = true;
 		await builder.Save();
 	}
