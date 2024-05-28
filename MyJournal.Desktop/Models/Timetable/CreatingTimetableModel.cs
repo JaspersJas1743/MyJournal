@@ -65,7 +65,6 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				content: "Расписание изменено успешно!",
 				type: NotificationType.Success
 			);
-			_changeFromClient = true;
 		}
 		catch (Exception ex)
 		{
@@ -75,6 +74,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				type: NotificationType.Error
 			);
 		}
+		_changeFromClient = true;
 	}
 
 	private async Task SaveTimetableForSelectedClassHandler()
@@ -90,7 +90,6 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				content: $"Расписание для {SubjectSelectionModel.SelectedItem.Name}а изменено успешно!",
 				type: NotificationType.Success
 			);
-			_changeFromClient = true;
 		}
 		catch (Exception ex)
 		{
@@ -100,6 +99,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				type: NotificationType.Error
 			);
 		}
+		_changeFromClient = true;
 	}
 
 	private async Task SaveTimetableForClass(Class @class)
@@ -113,16 +113,16 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			foreach (SubjectOnTimetable subjectOnTimetable in creatingTimetable.Subjects)
 			{
 				if (subjectOnTimetable.Number is null)
-					throw new Exception(message: $"Номер занятия не указан.");
+					throw new Exception(message: "Номер занятия не указан.");
 
 				if (subjectOnTimetable.SelectedSubject?.Id is null)
 					throw new Exception(message: $"Дисциплина для {subjectOnTimetable.Number} занятия не указана.");
 
 				if (subjectOnTimetable.Start is null)
-					throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указан.");
+					throw new Exception(message: $"Время начала {subjectOnTimetable.Number} занятия не указано.");
 
 				if (subjectOnTimetable.End is null)
-					throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указан.");
+					throw new Exception(message: $"Время окончания {subjectOnTimetable.Number} занятия не указано.");
 
 				builder.ForDay(dayOfWeekId: creatingTimetable.DayOfWeek.Id)
 					   .AddSubject()
