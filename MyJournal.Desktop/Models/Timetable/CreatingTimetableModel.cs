@@ -56,6 +56,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableHandler()
 	{
+		bool success = true;
 		foreach (Class @class in Classes)
 		{
 			try
@@ -66,17 +67,22 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			catch (Exception ex)
 			{
 				await _notificationService.Show(
-					title: $"Ошибка при сохранении расписания для {@class.Name}а",
+					title: $"Ошибка в расписании {@class.Name}а",
 					content: ex.Message,
 					type: NotificationType.Error
 				);
+				success = false;
 			}
 		}
-		await _notificationService.Show(
-			title: "Расписание",
-			content: "Расписание изменено успешно!",
-			type: NotificationType.Success
-		);
+
+		if (success)
+		{
+			await _notificationService.Show(
+				title: "Расписание",
+				content: "Расписание изменено успешно!",
+				type: NotificationType.Success
+			);
+		}
 		_changeFromClient = true;
 	}
 
