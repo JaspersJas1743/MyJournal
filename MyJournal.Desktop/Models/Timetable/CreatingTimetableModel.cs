@@ -79,7 +79,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableForSelectedClassHandler()
 	{
-		if (SubjectSelectionModel.SelectedItem is null)
+		if (SubjectSelectionModel.SelectedItem is null || !SubjectSelectionModel.SelectedItem.HaveChanges)
 			return;
 
 		try
