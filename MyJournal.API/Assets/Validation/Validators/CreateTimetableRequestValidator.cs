@@ -30,6 +30,13 @@ public sealed class CreateTimetableRequestValidator : AbstractValidator<Timetabl
 			schedule.RuleFor(expression: s => s.Subjects)
 					.IsUniqueCollection(comparer: _endTimeComparer).WithMessage(errorMessage: "Несколько дисциплин заканчиваются в одно время.");
 
+			schedule.RuleFor(expression: s => s.Subjects).Must(predicate: subjects => subjects.All(
+				predicate: subject => !subjects.Any(predicate: s =>
+					s.Start > subject.Start && s.Start < subject.End ||
+					s.End > subject.Start && s.End < subject.End
+				)
+			)).WithMessage(errorMessage: "Время для проведения занятий пересекаются.");
+
 			schedule.RuleForEach(expression: s => s.Subjects).ChildRules(action: subject =>
 			{
 				subject.RuleFor(expression: s => s.Id)

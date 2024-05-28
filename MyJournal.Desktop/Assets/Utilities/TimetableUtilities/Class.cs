@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using DynamicData.Binding;
@@ -7,6 +9,8 @@ using MyJournal.Core.Builders.TimetableBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
+using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
@@ -15,13 +19,22 @@ public sealed class Class : ReactiveObject
 {
 	private readonly ObservableCollectionExtended<CreatingTimetable> _timetable =
 		new ObservableCollectionExtended<CreatingTimetable>();
+	private readonly INotificationService _notificationService;
 	private readonly Core.SubEntities.Class _class;
 	private bool _timetableIsActual = false;
 
-	public Class(Core.SubEntities.Class @class)
+	public Class(
+		INotificationService notificationService,
+		Core.SubEntities.Class @class
+	)
 	{
+		_notificationService = notificationService;
 		_class = @class;
 		_class.ChangedTimetable += OnChangedTimetable;
+
+		MessageBus.Current.Listen<ChangeOnClassTimetableEventArgs>()
+			.Where(predicate: e => e.ClassId == Id)
+			.Subscribe(onNext: _ => HaveChanges = true);
 	}
 
 	private void OnChangedTimetable(ChangedTimetableEventArgs e)
@@ -29,6 +42,7 @@ public sealed class Class : ReactiveObject
 
 	public int Id => _class.Id;
 	public string? Name => _class.Name;
+	public bool HaveChanges { get; private set; }
 
 	public ITimetableBuilder CreateTimetable()
 		=> _class.CreateTimetable();
@@ -45,6 +59,7 @@ public sealed class Class : ReactiveObject
 		await Dispatcher.UIThread.InvokeAsync(callback: () =>
 		{
 			_timetable.Load(items: timetable.Select(selector: t => new CreatingTimetable(
+				notificationService: _notificationService,
 				dayOfWeek: t.DayOfWeek,
 				totalHours: t.TotalHours,
 				possibleSubjects: possibleSubjects,

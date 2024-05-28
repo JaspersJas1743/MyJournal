@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using DynamicData.Binding;
 using MyJournal.Core.SubEntities;
+using MyJournal.Core.Utilities.Api;
 using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
@@ -223,18 +224,24 @@ public sealed class ObservableStudent : ReactiveObject
 
 	private async Task SaveNewGradeHandler()
 	{
-		await Grade!.Add()
-			.WithGrade(gradeId: SelectedAssessment!.Id)
-			.WithComment(commentId: SelectedComment!.Id)
-			.WithCreationDate(creationDate: Date.DateTime)
-			.Save();
+		string content = "Отметка успешно добавлена!";
+		NotificationType type = NotificationType.Success;
+		try
+		{
+			await Grade!.Add()
+				.WithGrade(gradeId: SelectedAssessment!.Id)
+				.WithComment(commentId: SelectedComment!.Id)
+				.WithCreationDate(creationDate: Date.DateTime)
+				.Save();
 
-		await _notificationService.Show(
-			title: "Успеваемость",
-			content: "Отметка успешно добавлена!",
-			type: NotificationType.Success
-		);
-		_previousGradeType = null;
+			_previousGradeType = null;
+		} catch (ApiException ex)
+		{
+			content = ex.Message;
+			type = NotificationType.Information;
+		}
+
+		await _notificationService.Show(title: "Успеваемость", content: content, type: type);
 	}
 
 	private async Task SaveEditableGradeHandler()

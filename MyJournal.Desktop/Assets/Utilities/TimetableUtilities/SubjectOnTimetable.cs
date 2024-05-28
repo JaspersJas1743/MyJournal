@@ -32,11 +32,25 @@ public sealed class SubjectOnTimetable : ReactiveObject
 		PossibleSubjects = new ObservableCollectionExtended<Subject>(collection: possibleSubjects);
 
 		RemoveSubject = ReactiveCommand.Create(execute: RemoveSubjectHandler);
+
 		this.WhenAnyValue(property1: s => s.Start)
 			.WhereNotNull().Subscribe(onNext: StartTimeChangedHandler);
 
 		this.WhenAnyValue(property1: s => s.End)
 			.WhereNotNull().Subscribe(onNext: EndTimeChangedHandler);
+
+		this.WhenAnyValue(property1: s => s.Number).WhereNotNull().Subscribe(onNext: _ =>
+		{
+			MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId));
+			MessageBus.Current.SendMessage(message: new ChangeNumberOfSubjectOnTimetableEventArgs(
+				classId: _classId,
+				dayOfWeekId: _dayOfWeek.Id,
+				subject: this
+			));
+		});
+
+		this.WhenAnyValue(property1: s => s.SelectedSubject)
+			.WhereNotNull().Subscribe(onNext: _ => MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId)));
 	}
 
 	public SubjectOnTimetable(
@@ -106,6 +120,7 @@ public sealed class SubjectOnTimetable : ReactiveObject
 			dayOfWeek: _dayOfWeek,
 			classId: _classId
 		));
+		MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId));
 	}
 
 	private void StartTimeChangedHandler(TimeSpan? time)
@@ -116,6 +131,7 @@ public sealed class SubjectOnTimetable : ReactiveObject
 			dayOfWeek: _dayOfWeek,
 			classId: _classId
 		));
+		MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId));
 	}
 
 	private void RemoveSubjectHandler()

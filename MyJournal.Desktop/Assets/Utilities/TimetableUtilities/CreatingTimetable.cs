@@ -4,8 +4,10 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Controls.Notifications;
 using DynamicData.Binding;
 using MyJournal.Desktop.Assets.MessageBusEvents;
+using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 using DayOfWeek = MyJournal.Core.SubEntities.DayOfWeek;
 
@@ -14,6 +16,7 @@ namespace MyJournal.Desktop.Assets.Utilities.TimetableUtilities;
 public class CreatingTimetable : ReactiveObject
 {
 	private const double AcademicHourInMinutes = 45;
+	private readonly INotificationService _notificationService;
 	private readonly IEnumerable<Subject> _possibleSubjects;
 	private readonly int _classId;
 	private DayOfWeek _dayOfWeek;
@@ -21,6 +24,7 @@ public class CreatingTimetable : ReactiveObject
 	private bool _canAddSubject = false;
 
 	public CreatingTimetable(
+		INotificationService notificationService,
 		DayOfWeek dayOfWeek,
 		double totalHours,
 		IEnumerable<Subject> possibleSubjects,
@@ -28,6 +32,7 @@ public class CreatingTimetable : ReactiveObject
 		int classId
 	)
 	{
+		_notificationService = notificationService;
 		AddSubject = ReactiveCommand.Create(execute: AddSubjectHandler);
 
 		_classId = classId;
@@ -55,40 +60,112 @@ public class CreatingTimetable : ReactiveObject
 			.Where(predicate: e => e.DayOfWeek.Id == _dayOfWeek.Id)
 			.Distinct()
 			.Subscribe(onNext: SetBreakAfterChangedEndTimeOfSubjectHandler);
+
+		MessageBus.Current.Listen<ChangeNumberOfSubjectOnTimetableEventArgs>()
+			.Where(predicate: e => e.ClassId == _classId)
+			.Where(predicate: e => e.DayOfWeekId == _dayOfWeek.Id)
+			.Distinct()
+			.Subscribe(onNext: ChangeNumberOfSubjectOnTimetableHandler);
 	}
 
-	private void SetBreakAfterChangedStartTimeOfSubjectHandler(SetStartTimeToSubjectOnTimetableEventArgs e)
+	private void ChangeNumberOfSubjectOnTimetableHandler(ChangeNumberOfSubjectOnTimetableEventArgs e)
+	{
+		SubjectOnTimetable[] sorted = Subjects.OrderBy(keySelector: s => s.Number).ToArray();
+		if (sorted.SequenceEqual(second: Subjects))
+			return;
+
+		e.Subject.Start = null;
+		e.Subject.End = null;
+
+		for (int i = 0; i < sorted.Length - 1; i++)
+		{
+			SubjectOnTimetable current = sorted[i];
+			SubjectOnTimetable next = sorted[i + 1];
+			current.Break = (next.Start - current.End)?.TotalMinutes;
+		}
+
+		Subjects.Load(items: sorted);
+	}
+
+	private async void SetBreakAfterChangedStartTimeOfSubjectHandler(SetStartTimeToSubjectOnTimetableEventArgs e)
 	{
 		int changedSubjectIndex = Subjects.IndexOf(item: e.Subject);
+		if (e.Subject.Start >= e.Subject.End && e.Subject.Start is not null && e.Subject.End is not null)
+		{
+			await _notificationService.Show(
+				title: "Расписание",
+				content: "Занятие не может закончиться до его начала.",
+				type: NotificationType.Information
+			);
+			e.Subject.Start = null;
+			return;
+		}
 		e.Subject.End ??= e.Start.Add(ts: TimeSpan.FromMinutes(value: 45));
-		if (e.Subject.Start >= e.Subject.End)
-			e.Subject.Start = e.Subject.End;
 
-		CalculateHours();
 		if (changedSubjectIndex <= 0)
 			return;
 
 		SubjectOnTimetable previousSubject = Subjects[changedSubjectIndex - 1];
-		previousSubject.Break = (e.Start - previousSubject.End)?.TotalMinutes;
+		double? @break = (e.Start - previousSubject.End)?.TotalMinutes;
+		if (@break > 0)
+		{
+			previousSubject.Break = @break;
+			CalculateHours();
+			return;
+		}
+
+		await _notificationService.Show(
+			title: "Расписание",
+			content: "Занятие не может начинаться до окончания предыдующего.",
+			type: NotificationType.Information
+		);
+		e.Subject.Start = null;
+		previousSubject.Break = null;
+		CalculateHours();
 	}
 
-	private void SetBreakAfterChangedEndTimeOfSubjectHandler(SetEndTimeToSubjectOnTimetableEventArgs e)
+	private async void SetBreakAfterChangedEndTimeOfSubjectHandler(SetEndTimeToSubjectOnTimetableEventArgs e)
 	{
 		int changedSubjectIndex = Subjects.IndexOf(item: e.Subject);
+		if (e.Subject.Start >= e.Subject.End && e.Subject.Start is not null && e.Subject.End is not null)
+		{
+			await _notificationService.Show(
+				title: "Расписание",
+				content: "Занятие не может закончиться до его начала.",
+				type: NotificationType.Information
+			);
+			e.Subject.End = null;
+			return;
+		}
 		e.Subject.Start ??= e.End.Add(ts: TimeSpan.FromMinutes(value: -45));
-		if (e.Subject.Start >= e.Subject.End)
-			e.Subject.End = e.Subject.Start;
 
-		CalculateHours();
 		if (changedSubjectIndex >= Subjects.Count - 1)
 			return;
 
 		SubjectOnTimetable nextSubject = Subjects[changedSubjectIndex + 1];
-		e.Subject.Break = (nextSubject.Start - e.End)?.TotalMinutes;
+		double? @break = (nextSubject.Start - e.End)?.TotalMinutes;
+		if (@break > 0)
+		{
+			e.Subject.Break = @break;
+			CalculateHours();
+			return;
+		}
+		await _notificationService.Show(
+			title: "Расписание",
+			content: "Занятие не может заканчиваться после начала следующего.",
+			type: NotificationType.Information
+		);
+		e.Subject.End = null;
+		e.Subject.Break = null;
+		CalculateHours();
 	}
 
 	private void CalculateHours()
-		=> TotalHours = Subjects.Sum(selector: s => ((s.End - s.Start)?.TotalMinutes / AcademicHourInMinutes) ?? 0);
+	{
+		TotalHours = Subjects.Where(predicate: s => s.Start is not null && s.End is not null).Sum(
+			selector: s => (s.End - s.Start)!.Value.TotalMinutes / AcademicHourInMinutes
+		);
+	}
 
 	private void OnSubjectsChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		=> CanAddSubject = Subjects.Count < 8;
@@ -123,11 +200,13 @@ public class CreatingTimetable : ReactiveObject
 			dayOfWeek: _dayOfWeek,
 			classId: _classId
 		));
+		MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId));
 	}
 
 	private void RemoveSubjectHandler(RemoveSubjectOnTimetableEventArgs e)
 	{
 		Subjects.Remove(item: e.SubjectToRemove);
 		CalculateHours();
+		MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId));
 	}
 }

@@ -62,9 +62,10 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				await SaveTimetableForClass(@class: @class);
 			await _notificationService.Show(
 				title: "Расписание",
-				content: "Расписание успешно изменено!",
+				content: "Расписание изменено успешно!",
 				type: NotificationType.Success
 			);
+			_changeFromClient = true;
 		}
 		catch (Exception ex)
 		{
@@ -86,9 +87,10 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			await SaveTimetableForClass(@class: SubjectSelectionModel.SelectedItem);
 			await _notificationService.Show(
 				title: "Расписание",
-				content: "Расписание успешно изменено!",
+				content: $"Расписание для {SubjectSelectionModel.SelectedItem.Name}а изменено успешно!",
 				type: NotificationType.Success
 			);
+			_changeFromClient = true;
 		}
 		catch (Exception ex)
 		{
@@ -102,8 +104,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableForClass(Class @class)
 	{
-		ObservableCollectionExtended<CreatingTimetable> existedTimetable = await @class.GetTimetable();
-		if (existedTimetable.Count <= 0)
+		if (!@class.HaveChanges)
 			return;
 
 		ITimetableBuilder builder = @class.CreateTimetable();
@@ -132,8 +133,8 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			}
 		}
 
-		await builder.Save();
 		_changeFromClient = true;
+		await builder.Save();
 	}
 
 	public ReactiveCommand<Unit, Unit> OnClassSelectionChanged { get; }
@@ -175,24 +176,21 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 		Administrator administrator = (user as Administrator)!;
 		administrator.ChangedTimetable += ChangedTimetableHandler;
 		_classCollection = new ClassCollection(classCollection: await administrator.GetClasses());
-		List<Class> subjects = await _classCollection.ToListAsync();
+		List<Class> subjects = await _classCollection.ToListAsync(notificationService: _notificationService);
 		_teacherSubjectsCache.Edit(updateAction: a => a.AddOrUpdate(items: subjects));
 	}
 
 	private async void ChangedTimetableHandler(ChangedTimetableEventArgs e)
 	{
 		if (_changeFromClient)
-		{
-			_changeFromClient = false;
 			return;
-		}
 
 		if (SubjectSelectionModel.SelectedItem?.Id == e.ClassId)
 			await UpdateTimetable();
 
 		await _notificationService.Show(
 			title: "Расписание",
-			content: $"Расписание для {e.ClassId} класса было изменено!",
+			content: $"Расписание было изменено!",
 			type: NotificationType.Information
 		);
 	}
