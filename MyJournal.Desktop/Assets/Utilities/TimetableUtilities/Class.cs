@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using DynamicData.Binding;
@@ -9,7 +7,6 @@ using MyJournal.Core.Builders.TimetableBuilder;
 using MyJournal.Core.Collections;
 using MyJournal.Core.SubEntities;
 using MyJournal.Core.Utilities.EventArgs;
-using MyJournal.Desktop.Assets.MessageBusEvents;
 using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
 
@@ -22,6 +19,7 @@ public sealed class Class : ReactiveObject
 	private readonly INotificationService _notificationService;
 	private readonly Core.SubEntities.Class _class;
 	private bool _timetableIsActual = false;
+	private bool _timetableIsInitialized = false;
 
 	public Class(
 		INotificationService notificationService,
@@ -31,18 +29,18 @@ public sealed class Class : ReactiveObject
 		_notificationService = notificationService;
 		_class = @class;
 		_class.ChangedTimetable += OnChangedTimetable;
-
-		MessageBus.Current.Listen<ChangeOnClassTimetableEventArgs>()
-			.Where(predicate: e => e.ClassId == Id)
-			.Subscribe(onNext: _ => HaveChanges = true);
 	}
 
 	private void OnChangedTimetable(ChangedTimetableEventArgs e)
-		=> _timetableIsActual = false;
+	{
+		_timetableIsInitialized = false;
+		_timetableIsActual = false;
+	}
 
 	public int Id => _class.Id;
 	public string? Name => _class.Name;
-	public bool HaveChanges { get; set; }
+
+	public bool GetHaveChange() => _timetableIsActual && _timetableIsInitialized && _timetable.Any(predicate: t => t.GetHaveChange());
 
 	public ITimetableBuilder CreateTimetable()
 		=> _class.CreateTimetable();
@@ -76,6 +74,7 @@ public sealed class Class : ReactiveObject
 				))
 			)));
 		});
+		_timetableIsInitialized = true;
 		_timetableIsActual = true;
 		return _timetable;
 	}

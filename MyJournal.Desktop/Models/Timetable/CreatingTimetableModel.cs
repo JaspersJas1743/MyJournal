@@ -75,13 +75,23 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableHandler()
 	{
-		bool success = Classes.Any(predicate: c => c.HaveChanges);
+		if (!Classes.Any(predicate: c => c.GetHaveChange()))
+		{
+			await _notificationService.Show(
+				title: "Расписание",
+				content: $"В расписании отсутствуют изменения.",
+				type: NotificationType.Information
+			);
+			return;
+		}
+
+		bool success = true;
 		foreach (Class @class in Classes)
 		{
 			try
 			{
 				await SaveTimetableForClass(@class: @class);
-				@class.HaveChanges = false;
+				// @class.HaveChanges = false;
 			}
 			catch (Exception ex)
 			{
@@ -94,15 +104,15 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			}
 		}
 
-		if (success)
-		{
-			await _notificationService.Show(
-				title: "Расписание",
-				content: "Расписание изменено успешно!",
-				type: NotificationType.Success
-			);
-		}
 		_changeFromClient = true;
+		if (!success)
+			return;
+
+		await _notificationService.Show(
+			title: "Расписание",
+			content: "Расписание изменено успешно!",
+			type: NotificationType.Success
+		);
 	}
 
 	private async Task SaveTimetableForSelectedClassHandler()
@@ -110,11 +120,11 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 		if (SubjectSelectionModel.SelectedItem is null)
 			return;
 
-		if (!SubjectSelectionModel.SelectedItem.HaveChanges)
+		if (!SubjectSelectionModel.SelectedItem.GetHaveChange())
 		{
 			await _notificationService.Show(
 				title: "Расписание",
-				content: $"В расписании {SubjectSelectionModel.SelectedItem.Name} изменения отсутствуют!",
+				content: $"В расписании {SubjectSelectionModel.SelectedItem.Name} отсутствуют изменения.",
 				type: NotificationType.Information
 			);
 			return;
@@ -128,7 +138,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				content: $"Расписание для {SubjectSelectionModel.SelectedItem.Name}а изменено успешно!",
 				type: NotificationType.Success
 			);
-			SubjectSelectionModel.SelectedItem.HaveChanges = false;
+			// SubjectSelectionModel.SelectedItem.HaveChanges = false;
 		}
 		catch (Exception ex)
 		{
@@ -143,7 +153,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async Task SaveTimetableForClass(Class @class)
 	{
-		if (!@class.HaveChanges)
+		if (!@class.GetHaveChange())
 			return;
 
 		ITimetableBuilder builder = @class.CreateTimetable();
@@ -203,15 +213,15 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 
 	private async void ChangedTimetableHandler(ChangedTimetableEventArgs e)
 	{
-		if (_changeFromClient)
-			return;
-
 		if (SubjectSelectionModel.SelectedItem?.Id == e.ClassId)
 			await UpdateTimetable();
 
+		if (_changeFromClient)
+			return;
+
 		await _notificationService.Show(
 			title: "Расписание",
-			content: $"Расписание было изменено!",
+			content: "Расписание было изменено!",
 			type: NotificationType.Information
 		);
 	}

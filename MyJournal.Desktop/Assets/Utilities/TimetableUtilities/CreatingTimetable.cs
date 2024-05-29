@@ -193,6 +193,8 @@ public class CreatingTimetable : ReactiveObject
 
 	public ObservableCollectionExtended<SubjectOnTimetable> Subjects { get; }
 
+	public bool GetHaveChange() => Subjects.Any(predicate: s => s.GetHaveChange());
+
 	public ReactiveCommand<Unit, Unit> AddSubject { get; }
 
 	private void AddSubjectHandler()
@@ -203,13 +205,11 @@ public class CreatingTimetable : ReactiveObject
 			dayOfWeek: _dayOfWeek,
 			classId: _classId
 		));
-		MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId));
 	}
 
 	private void RemoveSubjectHandler(RemoveSubjectOnTimetableEventArgs e)
 	{
 		Subjects.Remove(item: e.SubjectToRemove);
 		CalculateHours();
-		MessageBus.Current.SendMessage(message: new ChangeOnClassTimetableEventArgs(classId: _classId));
 	}
 }
