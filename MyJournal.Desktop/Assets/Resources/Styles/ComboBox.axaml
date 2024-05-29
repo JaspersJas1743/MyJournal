@@ -228,11 +228,12 @@
 		                        IsLightDismissEnabled="True"
 		                        InheritsTransform="True">
 		                    <Border x:Name="PopupBorder" ClipToBounds="True" Margin="{TemplateBinding Padding}"
+									Width="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
 									Classes="TransitionBorderBrush OpacityTransition TransitionBackground"
 		                            Background="{DynamicResource ComboBoxDropDownBackground}"
 		                            BorderBrush="{TemplateBinding BorderBrush}"
 		                            BorderThickness="{TemplateBinding BorderThickness}"
-		                            HorizontalAlignment="Stretch" CornerRadius="10"
+		                            CornerRadius="10"
 									Opacity="{TemplateBinding IsDropDownOpen,Converter={StaticResource BoolToDoubleConverter}}">
 								<ScrollViewer	HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
 												VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"

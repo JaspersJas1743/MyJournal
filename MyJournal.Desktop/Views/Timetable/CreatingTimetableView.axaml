@@ -6,7 +6,6 @@
 			xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			xmlns:interactivity="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			xmlns:controls="clr-namespace:MyJournal.Desktop.Assets.Controls"
-			xmlns:subEntities="clr-namespace:MyJournal.Core.SubEntities;assembly=MyJournal.Core"
 			xmlns:converters="clr-namespace:MyJournal.Desktop.Assets.Resources.Converters"
 			xmlns:timetableUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TimetableUtilities"
 			xmlns:lottie="clr-namespace:Avalonia.Labs.Lottie;assembly=Avalonia.Labs.Lottie"
