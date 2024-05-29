@@ -50,7 +50,7 @@ public sealed class AssessmentController(
 
 	public sealed record GetAssessmentResponse(string AverageAssessment, Grade Assessment, int PeriodId);
 
-	public sealed record GetPossibleAssessmentsResponse(int Id, string Assessment, GradeTypes GradeType);
+	public sealed record GetPossibleAssessmentsResponse(int Id, string Assessment, GradeTypes GradeType, IEnumerable<GetCommentsForAssessmentsResponse> Comments);
 
 	public sealed record GetCommentsForAssessmentsResponse(int Id, string? Comment, string Description);
 
@@ -746,7 +746,12 @@ public sealed class AssessmentController(
 			selector: g => new GetPossibleAssessmentsResponse(
 				g.Id,
 				g.Assessment,
-				g.GradeType.Type
+				g.GradeType.Type,
+				g.GradeType.CommentsOnGrades.Select(c => new GetCommentsForAssessmentsResponse(
+					c.Id,
+					c.Comment,
+					c.Description
+				))
 			)
 		));
 	}
