@@ -31,7 +31,7 @@ public static class DateTimeConverters
 
 		DateTime now = DateTime.Now;
 		DateTime end = period.EndDate.Value.ToDateTime(time: TimeOnly.MinValue);
-		return (end - now).TotalDays > 0;
+		return (end - now).TotalDays is >= 0 and <= 10;
 	});
 
 	public static readonly IValueConverter CanNotSetFinalGrade = new FuncValueConverter<EducationPeriod, bool>(convert: period =>
@@ -41,7 +41,7 @@ public static class DateTimeConverters
 
 		DateTime now = DateTime.Now;
 		DateTime end = period.EndDate.Value.ToDateTime(time: TimeOnly.MinValue);
-		return (end - now).TotalDays <= 0;
+		return (end - now).TotalDays is < 0 or > 10;
 	});
 
 	public static readonly IValueConverter During = new FuncValueConverter<SubjectOnTimetable, string>(

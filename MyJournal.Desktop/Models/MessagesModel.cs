@@ -25,7 +25,6 @@ using MyJournal.Core.Utilities.EventArgs;
 using MyJournal.Desktop.Assets.Utilities;
 using MyJournal.Desktop.Assets.Utilities.ChatCreationService;
 using MyJournal.Desktop.Assets.Utilities.ChatUtilities;
-using MyJournal.Desktop.Assets.Utilities.ConfigurationService;
 using MyJournal.Desktop.Assets.Utilities.FileService;
 using MyJournal.Desktop.Assets.Utilities.NotificationService;
 using ReactiveUI;
@@ -37,7 +36,6 @@ public sealed class MessagesModel : ModelBase
 {
 	private readonly Timer _timer = new Timer(interval: TimeSpan.FromSeconds(value: 30));
 	private readonly IFileStorageService _fileStorageService;
-	private readonly IConfigurationService _configurationService;
 	private readonly IChatCreationService _chatCreationService;
 	private readonly INotificationService _notificationService;
 
@@ -54,6 +52,7 @@ public sealed class MessagesModel : ModelBase
 	private ObservableCollectionExtended<Attachment>? _attachments = new ObservableCollectionExtended<Attachment>();
 	private ObservableCollectionExtended<ExtendedMessage> _messages = new ObservableCollectionExtended<ExtendedMessage>();
 	private bool _chatsUpdate = false;
+	private bool _chatAreSelected = false;
 	private bool _isLoaded = false;
 	private bool _chatsAreLoaded = true;
 	private bool _messagesAreLoaded = true;
@@ -66,13 +65,11 @@ public sealed class MessagesModel : ModelBase
 
 	public MessagesModel(
 		IFileStorageService fileStorageService,
-		IConfigurationService configurationService,
 		IChatCreationService chatCreationService,
 		INotificationService notificationService
 	)
 	{
 		_fileStorageService = fileStorageService;
-		_configurationService = configurationService;
 		_chatCreationService = chatCreationService;
 		_notificationService = notificationService;
 
@@ -285,14 +282,20 @@ public sealed class MessagesModel : ModelBase
 
 	private async Task UpdateMessages()
 	{
+		if (_chatAreSelected)
+			return;
+
 		MessagesAreLoaded = false;
 		Messages.Clear();
 		_messageFromSelectedChat = await Selection.SelectedItem?.Observable.GetMessages()!;
 		List<Message> messages = await _messageFromSelectedChat.ToListAsync();
 		MessagesAreLoaded = true;
-		Messages = new ObservableCollectionExtended<ExtendedMessage>(collection: messages.Select(selector: m => m.ToExtended(
-			isSingleChat: Selection.SelectedItem.Observable.IsSingleChat
-		)));
+		Dispatcher.UIThread.Invoke(callback: () =>
+		{
+			Messages.Load(items: messages.Select(selector: m => m.ToExtended(
+				isSingleChat: Selection.SelectedItem.Observable.IsSingleChat
+			)));
+		});
 
 		_lastMessageIsSelected = false;
 		SelectedMessage = Messages.LastOrDefault() ?? null;
@@ -405,6 +408,7 @@ public sealed class MessagesModel : ModelBase
 
 	private async void OnReceivedMessageInChat(ReceivedMessageEventArgs e)
 	{
+		_chatAreSelected = true;
 		ObservableChat? chat = Chats.FirstOrDefault(predicate: chat => chat.Observable.Id == e.ChatId);
 		bool selected = false;
 		if (chat is not null)
@@ -431,8 +435,9 @@ public sealed class MessagesModel : ModelBase
 		if (!receivedMessage.Message.FromMe && selected)
 			await chat.Read();
 
-		Messages.Add(item: receivedMessage);
+		Dispatcher.UIThread.Invoke(callback: () => Messages.Add(item: receivedMessage));
 		SelectedMessage = receivedMessage;
+		_chatAreSelected = false;
 	}
 
 	private void OnLostSelection(object? sender, EventArgs args)
@@ -450,9 +455,12 @@ public sealed class MessagesModel : ModelBase
 		int currentLength = _messageFromSelectedChat.Length;
 		await _messageFromSelectedChat.LoadNext();
 		IEnumerable<Message> messages = await _messageFromSelectedChat.GetByRange(start: 0, end: _messageFromSelectedChat.Length - currentLength);
-		Messages.InsertRange(collection: messages.Select(selector: m => m.ToExtended(
-			isSingleChat: Selection.SelectedItem?.IsSingleChat == true
-		)), index: 0);
+		Dispatcher.UIThread.Invoke(callback: () =>
+		{
+			Messages.InsertRange(collection: messages.Select(selector: m => m.ToExtended(
+				isSingleChat: Selection.SelectedItem?.IsSingleChat == true
+			)), index: 0);
+		});
 		_lastMessageIsSelected = false;
 		SelectedMessage = Messages[_messageFromSelectedChat.Length - currentLength];
 		_lastMessageIsSelected = true;
