@@ -34,7 +34,8 @@ public sealed class CreatedTasksModel : TasksModel
 	private ObservableCreatedTask _taskCreator;
 	private readonly INotificationService _notificationService;
 	private readonly IFileStorageService _fileStorageService;
-	private readonly SourceCache<TeacherSubject, int> _teacherSubjectsCache = new SourceCache<TeacherSubject, int>(keySelector: s => s.Id);
+	private readonly SourceList<TeacherSubject> _teacherSubjectsCache =
+		new SourceList<TeacherSubject>();
 	private readonly ReadOnlyObservableCollection<TeacherSubject> _studyingSubjects;
 	private TeacherSubjectCollection _teacherSubjectCollection;
 	private CreatedTaskCollection? _taskCollection;
@@ -69,10 +70,10 @@ public sealed class CreatedTasksModel : TasksModel
 
 		IObservable<SortExpressionComparer<TeacherSubject>> sort = this.WhenAnyValue(model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
-			.Select(selector: _ => SortExpressionComparer<TeacherSubject>.Ascending(expression: s => s.ClassName != null ? 1 : 0)
-				.ThenByAscending(expression: s => s.Name!).ThenByAscending(expression: s => s.ClassName ?? String.Empty));
+			.Select(selector: _ => SortExpressionComparer<TeacherSubject>.Ascending(expression: s => s.ClassId != null ? 1 : 0)
+				.ThenByAscending(expression: s => s.ClassId ?? 0).ThenByAscending(expression: s => s.Name!));
 
-		_ = _teacherSubjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
+		_ = _teacherSubjectsCache.Connect().RefCount().Filter(predicate: filter).Sort(comparerChanged: sort)
 			.Bind(readOnlyObservableCollection: out _studyingSubjects).DisposeMany().Subscribe();
 
 		TaskCompletionStatuses.Load(items: Enum.GetValues<CreatedTaskCompletionStatus>());
@@ -343,7 +344,11 @@ public sealed class CreatedTasksModel : TasksModel
 		}
 
 		List<TeacherSubject> subjects = await _teacherSubjectCollection.ToListAsync();
-		_teacherSubjectsCache.Edit(updateAction: (a) => a.AddOrUpdate(items: subjects));
+		_teacherSubjectsCache.Edit(updateAction: a =>
+		{
+			a.Clear();
+			a.AddRange(items: subjects);
+		});
 
 		ShowTaskCreation = administrator is null;
 

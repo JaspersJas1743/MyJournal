@@ -37,7 +37,7 @@ public sealed class TeacherSubjectCollection
 				return a.Select(selector: studyingSubjectInClass => new TeacherSubject(
 					studyingSubjectInClass: studyingSubjectInClass,
 					classId: @class.Id,
-					className: studyingSubjectInClass.Name?.Contains(value: "Все дисциплины") == true ? null : @class.Name
+					className: @class.Name
 				));
 			}).ToListAsync();
 		}

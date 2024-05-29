@@ -13,7 +13,7 @@ public sealed class TeacherSubjectCollection
 	private readonly ClassCollection? _classCollection;
 	private readonly IEnumerable<PossibleAssessment> _possibleAssessments;
 
-	public TeacherSubjectCollection(
+	private TeacherSubjectCollection(
 		IEnumerable<PossibleAssessment> possibleAssessments
 	) => _possibleAssessments = possibleAssessments;
 

@@ -97,34 +97,6 @@ public class ParentTest
 		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		await CheckWardSubjectsStudying(collection: studyingSubjects, startIndex: 1);
 	}
-
-	[Test]
-	public async Task ParentGetStudyingSubjectsForPeriod_WithCorrectData_ShouldPassed()
-	{
-		Parent? parent = await GetParent();
-		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
-		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
-		EducationPeriod educationPeriod = educationPeriods.Last();
-		await studyingSubjects.SetEducationPeriod(period: educationPeriod);
-		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 3));
-		await CheckWardSubjectsStudying(collection: studyingSubjects, startIndex: 0);
-	}
-
-	[Test]
-	public async Task ParentGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
-	{
-		Parent? parent = await GetParent();
-		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
-		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
-		EducationPeriod lastEducationPeriod = educationPeriods.Last();
-		EducationPeriod firstEducationPeriod = educationPeriods.First();
-		await studyingSubjects.SetEducationPeriod(period: lastEducationPeriod);
-		await studyingSubjects.SetEducationPeriod(period: firstEducationPeriod);
-		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
-		WardSubjectStudying firstStudyingSubject = await studyingSubjects.GetByIndex(index: 0);
-		Assert.That(actual: firstStudyingSubject.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
-		await CheckWardSubjectsStudying(collection: studyingSubjects, startIndex: 1);
-	}
 	#endregion
 
 	#region Tasks
@@ -345,20 +317,6 @@ public class ParentTest
 		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
 		Grade<Estimation> grade = await GetGrade(collection: studyingSubjects);
 		await CheckGrade(grade: grade);
-	}
-
-	[Test]
-	public async Task ParentGetAssessments_WithChangePeriod_ShouldPassed()
-	{
-		Parent? parent = await GetParent();
-		WardStudyingSubjectCollection studyingSubjects = await parent.GetWardSubjectsStudying();
-		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
-		await studyingSubjects.SetEducationPeriod(period: educationPeriods.Single(predicate: ep => ep.Id == 8));
-		Grade<Estimation> grade = await GetGrade(collection: studyingSubjects);
-		Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
-		Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments = await grade.GetEstimations();
-		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
 	}
 
 	[Test]

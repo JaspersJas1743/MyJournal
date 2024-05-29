@@ -141,39 +141,6 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 		);
 	}
 
-	public async Task SetEducationPeriod(
-		EducationPeriod period,
-		CancellationToken cancellationToken = default(CancellationToken)
-	)
-	{
-		if (_currentPeriod == period)
-			return;
-
-		IEnumerable<TaughtSubject.TaughtSubjectResponse> response = await LoadSubjectCollection(
-			client: _client,
-			apiMethod: period.Id == 0
-				? LessonControllerMethods.GetTaughtSubjects
-				: LessonControllerMethods.GetTaughtSubjectsByPeriod(period: period.Name),
-			cancellationToken: cancellationToken
-		);
-		List<TaughtSubject> subjects = new List<TaughtSubject>(collection: await Task.WhenAll(
-			tasks: response.Select(selector: async s => await TaughtSubject.CreateWithoutTasks(
-				fileService: _fileService,
-				response: s,
-				educationPeriodId: period.Id,
-				cancellationToken: cancellationToken
-			))
-		));
-
-		if (period.Id == 0)
-			subjects.Insert(index: 0, item: TaughtSubject.CreateWithoutTasks(name: "Все классы", fileService: _fileService));
-
-		List<TaughtSubject> collection = await _subjects;
-		collection.Clear();
-		collection.AddRange(collection: subjects);
-		_currentPeriod = period;
-	}
-
 	public ITaskBuilder CreateTask()
 		=> TaskBuilder.Create(fileService: _fileService);
 

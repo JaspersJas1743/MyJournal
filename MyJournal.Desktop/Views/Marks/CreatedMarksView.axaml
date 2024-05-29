@@ -147,7 +147,8 @@
 			<Border Grid.Column="5" Grid.Row="1" Grid.RowSpan="9" Classes="TransitionBorderBrush ListBorder">
 				<Grid>
 					<Grid	Width="305" Height="75" VerticalAlignment="Center" HorizontalAlignment="Center"
-							IsVisible="{Binding !Students.Count}">
+							IsVisible="{Binding SubjectSelectionModel.SelectedItem,
+							Converter={x:Static ObjectConverters.IsNull}}">
 						<controls:XamlSvg	Classes="NotSelectedSubjectImage" Foreground="{DynamicResource MainAccentColor}"
 											HorizontalAlignment="Left" VerticalAlignment="Center" Width="75"/>
 						<TextBlock	Text="Выберите учебную группу для просмотра" Width="220" HorizontalAlignment="Right"

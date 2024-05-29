@@ -91,7 +91,6 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 			try
 			{
 				await SaveTimetableForClass(@class: @class);
-				// @class.HaveChanges = false;
 			}
 			catch (Exception ex)
 			{
@@ -138,7 +137,6 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 				content: $"Расписание для {SubjectSelectionModel.SelectedItem.Name}а изменено успешно!",
 				type: NotificationType.Success
 			);
-			// SubjectSelectionModel.SelectedItem.HaveChanges = false;
 		}
 		catch (Exception ex)
 		{

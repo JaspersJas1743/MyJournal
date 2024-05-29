@@ -86,35 +86,6 @@ public class TeacherTest
 		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все классы"));
 		await CheckTaughtSubject(subject: await taughtSubjects.GetByIndex(index: 1));
 	}
-
-	[Test]
-	public async Task TeacherGetTaughtSubjectsForPeriod_WithCorrectData_ShouldPassed()
-	{
-		Teacher? teacher = await GetTeacher();
-		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
-		IEnumerable<EducationPeriod> educationPeriods = await taughtSubjects.GetEducationPeriods();
-		EducationPeriod educationPeriod = educationPeriods.Last();
-		await taughtSubjects.SetEducationPeriod(period: educationPeriod);
-		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 1));
-		await CheckTaughtSubject(subject: await taughtSubjects.GetByIndex(index: 0));
-	}
-
-	[Test]
-	public async Task TeacherGetTaughtSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
-	{
-		Teacher? teacher = await GetTeacher();
-		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
-		IEnumerable<EducationPeriod> educationPeriods = await taughtSubjects.GetEducationPeriods();
-		EducationPeriod lastEducationPeriod = educationPeriods.Last();
-		EducationPeriod firstEducationPeriod = educationPeriods.First();
-		await taughtSubjects.SetEducationPeriod(period: lastEducationPeriod);
-		await taughtSubjects.SetEducationPeriod(period: firstEducationPeriod);
-		Assert.That(actual: await taughtSubjects.GetLength(), expression: Is.EqualTo(expected: 2));
-		TaughtSubject firstTaughtSubject = await taughtSubjects.GetByIndex(index: 0);
-		Assert.That(actual: firstTaughtSubject.Id, expression: Is.EqualTo(expected: 0));
-		Assert.That(actual: firstTaughtSubject.Name, expression: Is.EqualTo(expected: "Все классы"));
-		await CheckTaughtSubject(subject: await taughtSubjects.GetByIndex(index: 1));
-	}
 	#endregion
 
 	#region Tasks
@@ -363,33 +334,6 @@ public class TeacherTest
             Assert.That(actual: fourEstimation.GradeType, expression: Is.EqualTo(expected: GradeTypes.Assessment));
         });
     }
-
-	[Test]
-	public async Task TeacherGetAssessments_WithChangePeriod_ShouldPassed()
-	{
-		Teacher? teacher = await GetTeacher();
-		TaughtSubjectCollection taughtSubjects = await teacher.GetTaughtSubjects();
-		IEnumerable<EducationPeriod> educationPeriods = await taughtSubjects.GetEducationPeriods();
-		await taughtSubjects.SetEducationPeriod(period: educationPeriods.Single(predicate: ep => ep.Id == 8));
-		TaughtSubject subject = await taughtSubjects.GetByIndex(index: 0);
-		Assert.That(actual: subject.Id, expression: Is.EqualTo(expected: 47));
-		Assert.That(actual: subject.Name, expression: Is.EqualTo(expected: "Физическая культура"));
-		TaughtClass @class = await subject.GetTaughtClass();
-		Assert.That(actual: @class.Id, expression: Is.EqualTo(expected: 11));
-		Assert.That(actual: @class.Name, expression: Is.EqualTo(expected: "11 класс"));
-		IEnumerable<StudentInTaughtClass> students = @class.Students;
-		Assert.That(actual: students.Count(), expression: Is.EqualTo(expected: 2));
-		GradeOfStudent firstStudentGrade = await GetGradeOfFirstStudentIfCorrect(students: students);
-		Assert.That(actual: firstStudentGrade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
-		Assert.That(actual: firstStudentGrade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments = await firstStudentGrade.GetEstimations();
-		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
-		GradeOfStudent secondStudentGrade = await GetGradeOfLastStudentIfCorrect(students: students);
-		Assert.That(actual: secondStudentGrade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
-		Assert.That(actual: secondStudentGrade.FinalAssessment, expression: Is.EqualTo(expected: null));
-		IEnumerable<Estimation> assessments2 = await secondStudentGrade.GetEstimations();
-		Assert.That(actual: assessments2.Count(), expression: Is.EqualTo(expected: 0));
-	}
 
 	[Test]
 	public async Task TeacherGetAssessments_WithDefaultValue_ShouldPassed()

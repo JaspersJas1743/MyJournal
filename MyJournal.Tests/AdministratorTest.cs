@@ -100,34 +100,6 @@ public class AdministratorTest
 		Assert.That(actual: allSubjects.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
 		await CheckStudyingSubjectsInClass(collection: studyingSubjects, startIndex: 1);
 	}
-
-	[Test]
-	public async Task AdministratorGetStudyingSubjectsForPeriod_WithCorrectData_ShouldPassed()
-	{
-		Administrator? administrator = await GetAdministrator();
-		StudyingSubjectInClassCollection studyingSubjects = await GetStudyingSubjectInClassCollection(administrator: administrator);
-		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
-		EducationPeriod educationPeriod = educationPeriods.Last();
-		await studyingSubjects.SetEducationPeriod(period: educationPeriod);
-		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 3));
-		await CheckStudyingSubjectsInClass(collection: studyingSubjects, startIndex: 0);
-	}
-
-	[Test]
-	public async Task AdministratorGetStudyingSubjectsForPeriod_WithSetDefaultPeriod_ShouldPassed()
-	{
-		Administrator? administrator = await GetAdministrator();
-		StudyingSubjectInClassCollection studyingSubjects = await GetStudyingSubjectInClassCollection(administrator: administrator);
-		IEnumerable<EducationPeriod> educationPeriods = await studyingSubjects.GetEducationPeriods();
-		EducationPeriod lastEducationPeriod = educationPeriods.Last();
-		EducationPeriod firstEducationPeriod = educationPeriods.First();
-		await studyingSubjects.SetEducationPeriod(period: lastEducationPeriod);
-		await studyingSubjects.SetEducationPeriod(period: firstEducationPeriod);
-		Assert.That(actual: await studyingSubjects.GetLength(), expression: Is.EqualTo(expected: 4));
-		StudyingSubjectInClass allSubjects = await studyingSubjects.GetByIndex(index: 0);
-		Assert.That(actual: allSubjects.Name, expression: Is.EqualTo(expected: "Все дисциплины"));
-		await CheckStudyingSubjectsInClass(collection: studyingSubjects, startIndex: 1);
-	}
 	#endregion
 
 	#region Tasks
@@ -343,24 +315,6 @@ public class AdministratorTest
 		StudyingSubjectInClassCollection subjects = await GetStudyingSubjectInClassCollection(administrator: administrator);
 		StudentOfSubjectInClass student = await GetStudentIfCorrect(collection: subjects);
 		await CheckDefaultAssessments(grade: await student.GetGrade());
-	}
-
-	[Test]
-	public async Task AdministratorGetAssessments_WithChangePeriod_ShouldPassed()
-	{
-		Administrator? administrator = await GetAdministrator();
-		StudyingSubjectInClassCollection subjects = await GetStudyingSubjectInClassCollection(administrator: administrator);
-		IEnumerable<EducationPeriod> educationPeriods = await subjects.GetEducationPeriods();
-		await subjects.SetEducationPeriod(period: educationPeriods.Single(predicate: ep => ep.Id == 8));
-		StudentOfSubjectInClass student = await GetStudentIfCorrect(collection: subjects);
-		GradeOfStudent grade = await student.GetGrade();
-        Assert.Multiple(testDelegate: () =>
-        {
-            Assert.That(actual: grade.AverageAssessment, expression: Is.EqualTo(expected: "-.--"));
-            Assert.That(actual: grade.FinalAssessment, expression: Is.EqualTo(expected: null));
-        });
-        IEnumerable<Estimation> assessments = await grade.GetEstimations();
-		Assert.That(actual: assessments.Count(), expression: Is.EqualTo(expected: 0));
 	}
 
 	[Test]

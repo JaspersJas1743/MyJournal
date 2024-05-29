@@ -90,7 +90,7 @@ public class CreatingTimetable : ReactiveObject
 	private async void SetBreakAfterChangedStartTimeOfSubjectHandler(SetStartTimeToSubjectOnTimetableEventArgs e)
 	{
 		int changedSubjectIndex = Subjects.IndexOf(item: e.Subject);
-		if (changedSubjectIndex <= 0)
+		if (changedSubjectIndex < 0)
 			return;
 
 		if (e.Subject.Start >= e.Subject.End)
@@ -104,13 +104,16 @@ public class CreatingTimetable : ReactiveObject
 			return;
 		}
 		e.Subject.End ??= e.Start.Add(ts: TimeSpan.FromMinutes(value: 45));
+		CalculateHours();
+
+		if (changedSubjectIndex <= 0)
+			return;
 
 		SubjectOnTimetable previousSubject = Subjects[changedSubjectIndex - 1];
 		double? @break = (e.Start - previousSubject.End)?.TotalMinutes;
 		if (@break > 0 || previousSubject.End is null)
 		{
 			previousSubject.Break = @break;
-			CalculateHours();
 			return;
 		}
 
@@ -141,6 +144,7 @@ public class CreatingTimetable : ReactiveObject
 			return;
 		}
 		e.Subject.Start ??= e.End.Add(ts: TimeSpan.FromMinutes(value: -45));
+		CalculateHours();
 
 		if (changedSubjectIndex >= Subjects.Count - 1)
 			return;
@@ -150,7 +154,6 @@ public class CreatingTimetable : ReactiveObject
 		if (@break > 0 || nextSubject.Start is null)
 		{
 			e.Subject.Break = @break;
-			CalculateHours();
 			return;
 		}
 		await _notificationService.Show(

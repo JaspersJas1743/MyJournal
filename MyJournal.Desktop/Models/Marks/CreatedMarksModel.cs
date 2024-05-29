@@ -22,8 +22,7 @@ namespace MyJournal.Desktop.Models.Marks;
 public sealed class CreatedMarksModel : MarksModel
 {
 	private readonly INotificationService _notificationService;
-	private readonly SourceCache<TeacherSubject, int> _teacherSubjectsCache =
-		new SourceCache<TeacherSubject, int>(keySelector: s => s.Id);
+	private readonly SourceList<TeacherSubject> _teacherSubjectsCache = new SourceList<TeacherSubject>();
 	private readonly ReadOnlyObservableCollection<TeacherSubject> _studyingSubjects;
 	private TeacherSubjectCollection _teacherSubjectCollection;
 	private string? _filter = String.Empty;
@@ -55,10 +54,10 @@ public sealed class CreatedMarksModel : MarksModel
 
 		IObservable<SortExpressionComparer<TeacherSubject>> sort = this.WhenAnyValue(model => model.Filter).WhereNotNull()
 			.Throttle(dueTime: TimeSpan.FromSeconds(value: 0.25), scheduler: RxApp.TaskpoolScheduler)
-			.Select(selector: _ => SortExpressionComparer<TeacherSubject>.Ascending(expression: s => s.ClassName != null ? 1 : 0)
-				.ThenByAscending(expression: s => s.Name!).ThenByAscending(expression: s => s.ClassName ?? String.Empty));
+			.Select(selector: _ => SortExpressionComparer<TeacherSubject>.Ascending(expression: s => s.ClassId != null ? 1 : 0)
+				.ThenByAscending(expression: s => s.ClassId ?? 0).ThenByAscending(expression: s => s.Name!));
 
-		_ = _teacherSubjectsCache.Connect().RefCount().Filter(predicateChanged: filter).Sort(comparerObservable: sort)
+		_ = _teacherSubjectsCache.Connect().RefCount().Filter(predicate: filter).Sort(comparerChanged: sort)
 			.Bind(readOnlyObservableCollection: out _studyingSubjects).DisposeMany().Subscribe();
 
 		this.WhenAnyValue(property1: model => model.SelectedDateForAttendance)
@@ -196,7 +195,11 @@ public sealed class CreatedMarksModel : MarksModel
             : new TeacherSubjectCollection(classCollection: classCollection!, possibleAssessments: possibleAssessments);
 
 		List<TeacherSubject> subjects = await _teacherSubjectCollection.ToListAsync(notificationService: _notificationService);
-		_teacherSubjectsCache.Edit(updateAction: (a) => a.AddOrUpdate(items: subjects));
+		_teacherSubjectsCache.Edit(updateAction: (a) =>
+		{
+			a.Clear();
+			a.AddRange(items: subjects);
+		});
 	}
 
 	private async Task MoveToGrade()
