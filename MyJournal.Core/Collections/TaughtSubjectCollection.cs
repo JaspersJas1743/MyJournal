@@ -95,6 +95,7 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 						client: client,
 						fileService: fileService,
 						response: s,
+						educationPeriodId: educationPeriod is null ? educationPeriods.First().Id : currentPeriod.Id,
 						cancellationToken: cancellationToken
 					))
 				));
@@ -112,7 +113,10 @@ public class TaughtSubjectCollection : IAsyncEnumerable<TaughtSubject>
 			educationPeriods: new AsyncLazy<List<EducationPeriod>>(valueFactory: async () =>
 			{
 				List<EducationPeriod> collection = new List<EducationPeriod>(collection: educationPeriods);
-				collection.Insert(index: 0, item: currentPeriod);
+
+				if (educationPeriod is not null)
+					collection.Insert(index: 0, item: currentPeriod);
+
 				return collection;
 			}),
 			currentPeriod: currentPeriod

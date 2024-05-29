@@ -96,6 +96,7 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 						classId: classId,
 						subjectId: s.Id,
 						response: s,
+						educationPeriodId: educationPeriod is null ? educationPeriods.First().Id : currentPeriod.Id,
 						cancellationToken: cancellationToken
 					))
 				));
@@ -114,7 +115,10 @@ public class StudyingSubjectInClassCollection : IAsyncEnumerable<StudyingSubject
 			educationPeriods: new AsyncLazy<List<EducationPeriod>>(valueFactory: async () =>
 			{
 				List<EducationPeriod> collection = new List<EducationPeriod>(collection: educationPeriods);
-				collection.Insert(index: 0, item: currentPeriod);
+
+				if (educationPeriod is not null)
+					collection.Insert(index: 0, item: currentPeriod);
+
 				return collection;
 			}),
 			currentPeriod: currentPeriod

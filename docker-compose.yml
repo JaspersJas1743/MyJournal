@@ -1,5 +1,4 @@
-﻿version: '3.9'
-services:
+﻿services:
   myjournal.api:
     image: myjournal.api
     env_file:

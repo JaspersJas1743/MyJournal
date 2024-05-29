@@ -74,10 +74,14 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			apiMethod: StudentControllerMethods.GetEducationPeriods,
 			cancellationToken: cancellationToken
 		) ?? throw new InvalidOperationException();
+		DateOnly now = DateOnly.FromDateTime(dateTime: DateTime.Now);
+		EducationPeriod? educationPeriod = educationPeriods.FirstOrDefault(predicate: p => p.StartDate <= now && p.EndDate >= now);
 		EducationPeriod currentPeriod = new EducationPeriod()
 		{
 			Id = 0,
-			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть"
+			Name = educationPeriods.Count() == 2 ? "Текущий семестр" : "Текущая четверть",
+			StartDate = educationPeriod?.StartDate,
+			EndDate = educationPeriod?.EndDate
 		};
 		return new StudyingSubjectCollection(
 			client: client,
@@ -89,6 +93,7 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 						client: client,
 						fileService: fileService,
 						response: s,
+						educationPeriodId: educationPeriod is null ? educationPeriods.First().Id : currentPeriod.Id,
 						cancellationToken: cancellationToken
 					)
 				)));
@@ -106,7 +111,10 @@ public sealed class StudyingSubjectCollection : IAsyncEnumerable<StudyingSubject
 			educationPeriods: new AsyncLazy<List<EducationPeriod>>(valueFactory: async () =>
 			{
 				List<EducationPeriod> collection = new List<EducationPeriod>(collection: educationPeriods);
-				collection.Insert(index: 0, item: currentPeriod);
+
+				if (educationPeriod is not null)
+					collection.Insert(index: 0, item: currentPeriod);
+
 				return collection;
 			}),
 			currentPeriod: currentPeriod
