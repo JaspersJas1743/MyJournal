@@ -6,7 +6,7 @@
 	<Style Selector="asyncImageLoader|AdvancedImage">
 		<Setter Property="Template">
 			<ControlTemplate>
-				<lottie:Lottie	Path="/Assets/Resources/Animations/ImageAndMessagesLoader.json"
+				<lottie:Lottie	Path="/Assets/Resources/Animations/Loader.json"
 								IsVisible="{TemplateBinding IsLoading}"/>
 			</ControlTemplate>
 		</Setter>

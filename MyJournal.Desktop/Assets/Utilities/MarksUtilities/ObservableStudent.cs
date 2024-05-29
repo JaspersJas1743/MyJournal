@@ -246,7 +246,7 @@ public sealed class ObservableStudent : ReactiveObject
 
 	private async Task SaveEditableGradeHandler()
 	{
-		string content = "Отметка успешно добавлена!";
+		string content = "Отметка успешно изменена!";
 		NotificationType type = NotificationType.Success;
 		try
 		{

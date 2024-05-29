@@ -308,6 +308,7 @@
 	</Style>
 
 	<Style Selector="ListBox.Students > ListBoxItem">
+		<Setter Property="Margin" Value="0 10"/>
 		<Setter Property="Template">
 			<ControlTemplate x:DataType="marksUtilities:ObservableStudent">
 				<Viewbox>
@@ -447,6 +448,12 @@
 				</Viewbox>
 			</ControlTemplate>
 		</Setter>
+		<Style Selector="^:nth-child(1)">
+			<Setter Property="Margin" Value="0 0 0 10"/>
+		</Style>
+		<Style Selector="^:nth-last-child(1)">
+			<Setter Property="Margin" Value="0 10 0 0"/>
+		</Style>
 		<Style Selector="^:selected">
 			<Style Selector="^ /template/ Border#PART_Border">
 				<Style Selector="^[Tag=True]">

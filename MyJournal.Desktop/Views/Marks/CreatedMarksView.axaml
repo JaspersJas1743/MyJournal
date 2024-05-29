@@ -159,15 +159,20 @@
 							<MultiBinding Converter="{x:Static BoolConverters.And}">
 								<Binding Path="!AttendanceIsChecking"/>
 								<Binding Path="!FinalGradesIsCreating"/>
+								<Binding Path="!StudentsAreLoading"/>
 							</MultiBinding>
 						</ListBox.IsVisible>
 					</ListBox>
+					<Grid IsVisible="{Binding StudentsAreLoading}">
+						<lottie:Lottie	Path="/Assets/Resources/Animations/Loader.json" Margin="0 100 0 0"
+										Width="200" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center"/>
+					</Grid>
 					<Grid RowDefinitions="20*, 50*, 20*, 870*, 20*" IsVisible="{Binding AttendanceIsChecking}">
 						<StackPanel Grid.Row="1" HorizontalAlignment="Center" Orientation="Horizontal" Spacing="15">
 							<TextBlock	Text="{Binding SubjectSelectionModel.SelectedItem.ClassName,
 										StringFormat='Посещаемость учеников {0}а от'}" VerticalAlignment="Center" FontSize="20"/>
 							<Viewbox>
-								<DatePicker SelectedDate="{Binding SelectedDateForAttendance,Mode=TwoWay}"
+								<DatePicker SelectedDate="{Binding SelectedDateForAttendance}"
 											Width="250" Height="50" CornerRadius="10"/>
 							</Viewbox>
 						</StackPanel>

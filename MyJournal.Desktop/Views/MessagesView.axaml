@@ -90,7 +90,7 @@
 											SelectedItem="{Binding SelectedMessage}"
 											IsVisible="{Binding !!Messages.Count}"
 											Command="{Binding OnMessagesLoaded}"/>
-								<lottie:Lottie	Path="/Assets/Resources/Animations/ImageAndMessagesLoader.json" Margin="0 100 0 0"
+								<lottie:Lottie	Path="/Assets/Resources/Animations/Loader.json" Margin="0 100 0 0"
 												Width="200" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center"
 												IsVisible="{Binding !MessagesAreLoaded}"/>
 								<Border Background="{DynamicResource FirstMessageBadgeColor}" Width="300"

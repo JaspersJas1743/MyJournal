@@ -677,7 +677,7 @@
 			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
 			<Setter Property="ItemsPanel">
 				<ItemsPanelTemplate>
-					<StackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Spacing="20" Margin="20"/>
+					<VirtualizingStackPanel Orientation="Vertical" Width="1320" HorizontalAlignment="Center" Margin="20"/>
 				</ItemsPanelTemplate>
 			</Setter>
 		</Style>

@@ -31,7 +31,8 @@ public sealed class CreatedMarksModel : MarksModel
 	private bool _attendanceIsChecking = false;
 	private bool _finalGradesIsCreating = false;
 	private DateTimeOffset? _attendanceLoadedAt = null;
-	private bool _loaded = false;
+	private bool _isLoaded = false;
+	private bool _studentsAreLoading = false;
 	private bool _isAdmin = false;
 
 	public CreatedMarksModel(
@@ -111,6 +112,12 @@ public sealed class CreatedMarksModel : MarksModel
 		set => this.RaiseAndSetIfChanged(backingField: ref _isAdmin, newValue: value);
 	}
 
+	public bool StudentsAreLoading
+	{
+		get => _studentsAreLoading;
+		set => this.RaiseAndSetIfChanged(backingField: ref _studentsAreLoading, newValue: value);
+	}
+
 	public ReactiveCommand<Unit, Unit> OnSubjectSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> OnEducationPeriodSelectionChanged { get; }
 	public ReactiveCommand<Unit, Unit> ClearTasks { get; }
@@ -119,12 +126,12 @@ public sealed class CreatedMarksModel : MarksModel
 	public ReactiveCommand<Unit, Unit> ToFinalAssessments { get; }
 	public ReactiveCommand<Unit, Unit> ToGrade { get; }
 
-	private async void SelectedDateForAttendanceHandler(DateTimeOffset _)
+	private async void SelectedDateForAttendanceHandler(DateTimeOffset offset)
 	{
-		if (_attendanceLoadedAt != SelectedDateForAttendance)
+		if (_attendanceLoadedAt != offset)
 			await LoadAttendanceForStudents();
 
-		_attendanceLoadedAt = SelectedDateForAttendance;
+		_attendanceLoadedAt = offset;
 	}
 
 	public Func<TeacherSubject, bool> FilterFunction(string? text)
@@ -138,19 +145,23 @@ public sealed class CreatedMarksModel : MarksModel
 		if (SubjectSelectionModel.SelectedItem?.ClassId is null)
 			return;
 
-		if (_loaded)
+		if (_isLoaded)
 			return;
-		_loaded = true;
+		_isLoaded = true;
 
+		StudentsAreLoading = true;
 		int classId = SubjectSelectionModel.SelectedItem.ClassId.Value;
 		IEnumerable<EducationPeriod> periods = await _teacherSubjectCollection.GetEducationPeriods(classId: classId);
 		EducationPeriods.Load(items: periods);
 		SelectedPeriod = EducationPeriods[index: 0];
 
-		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriod: SelectedPeriod);
+		if (SubjectSelectionModel.SelectedItem.CurrentEducationPeriod != SelectedPeriod)
+			await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriod: SelectedPeriod);
+
 		IEnumerable<ObservableStudent> students = await SubjectSelectionModel.SelectedItem.GetClass();
 		Students.Load(items: students);
-		_loaded = false;
+		StudentsAreLoading = false;
+		_isLoaded = false;
 	}
 
 	private async Task EducationPeriodSelectionChangedHandler()
@@ -158,14 +169,18 @@ public sealed class CreatedMarksModel : MarksModel
 		if (SelectedPeriod is null || SubjectSelectionModel.SelectedItem?.ClassId is null || FinalGradesIsCreating || AttendanceIsChecking)
 			return;
 
-		if (_loaded)
+		if (_isLoaded)
 			return;
-		_loaded = true;
+		_isLoaded = true;
 
-		await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriod: SelectedPeriod);
+		StudentsAreLoading = true;
+		if (SubjectSelectionModel.SelectedItem.CurrentEducationPeriod != SelectedPeriod)
+			await SubjectSelectionModel.SelectedItem.SetEducationPeriod(educationPeriod: SelectedPeriod);
+
 		IEnumerable<ObservableStudent> students = await SubjectSelectionModel.SelectedItem.GetClass();
 		Students.Load(items: students);
-		_loaded = false;
+		StudentsAreLoading = false;
+		_isLoaded = false;
 	}
 
 	private void ClearSelection()
@@ -213,6 +228,7 @@ public sealed class CreatedMarksModel : MarksModel
 		if (SubjectSelectionModel.SelectedItem is null)
 			return;
 
+		StudentsAreLoading = true;
 		await SubjectSelectionModel.SelectedItem.SetAttendance(
 			date: SelectedDateForAttendance.Date,
 			attendance: Students.Select(selector: s => new Attendance(
@@ -221,6 +237,7 @@ public sealed class CreatedMarksModel : MarksModel
 				CommentId: s.IsAttend ? null : s.SelectedAttendanceComment?.Id
 			))
 		);
+		StudentsAreLoading = false;
 		AttendanceIsChecking = false;
 
 		await _notificationService.Show(
@@ -240,6 +257,7 @@ public sealed class CreatedMarksModel : MarksModel
 	{
 		AttendanceIsChecking = true;
 		await LoadAttendanceForStudents();
+		_attendanceLoadedAt = SelectedDateForAttendance;
 	}
 
 	private async Task LoadAttendanceForStudents()

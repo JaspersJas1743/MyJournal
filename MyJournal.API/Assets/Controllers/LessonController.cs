@@ -70,7 +70,7 @@ public sealed class LessonController(
 	}
 
 	/// <summary>
-	/// [Преподаватель] Получение списка преподаваемых дисциплин по классам в текущий учебный период
+	/// [Преподаватель] Получение списка преподаваемых дисциплин по классам
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -94,14 +94,10 @@ public sealed class LessonController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
 		IEnumerable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
-			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
-				epfc.EducationPeriod.StartDate <= nowDate &&
-				epfc.EducationPeriod.EndDate >= nowDate
-			))).SelectMany(selector: tl => tl.Classes
+			.SelectMany(selector: tl => tl.Classes
 				.Select(c => new GetTaughtSubjectsResponse(
 					 tl.LessonId,
 					 tl.Lesson.Name,
@@ -119,7 +115,7 @@ public sealed class LessonController(
 	}
 
 	/// <summary>
-	/// [Родитель] Получение списка дисциплин, преподаваемых подопечному в текущий учебный период
+	/// [Родитель] Получение списка дисциплин, преподаваемых подопечному
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -143,26 +139,19 @@ public sealed class LessonController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
 		IQueryable<GetStudyingSubjectsResponse> learnedSubjects = _context.Parents.AsNoTracking()
 			.Where(predicate: p => p.UserId == userId)
-			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
-			.Where(predicate: epfc =>
-				epfc.EducationPeriod.StartDate <= nowDate &&
-				epfc.EducationPeriod.EndDate >= nowDate
-			).SelectMany(selector: epfc => epfc.Lessons)
-			.OrderBy(keySelector: l => l.Name)
-			.SelectMany(selector: l => l.TeachersLessons
-				.Where(tl => tl.LessonId == l.Id)
-				.Select(tl => new GetStudyingSubjectsResponse(
-					l.Id,
-					l.Name,
-					new Teacher(
-						tl.Teacher.Id,
-						tl.Teacher.User.Surname,
-						tl.Teacher.User.Name,
-						tl.Teacher.User.Patronymic
-					)
+			.Select(selector: p => p.Children.Class)
+			.SelectMany(selector: c => c.TeachersLessons)
+			.OrderBy(keySelector: tl => tl.Lesson.Name)
+			.Select(selector: tl => new GetStudyingSubjectsResponse(
+				tl.LessonId,
+				tl.Lesson.Name,
+				new Teacher(
+					tl.Teacher.Id,
+					tl.Teacher.User.Surname,
+					tl.Teacher.User.Name,
+					tl.Teacher.User.Patronymic
 				)
 			));
 
@@ -170,7 +159,7 @@ public sealed class LessonController(
 	}
 
 	/// <summary>
-	/// [Администратор] Получение списка дисциплин, преподаваемых указанному классу в текущий учебный период
+	/// [Администратор] Получение списка дисциплин, преподаваемых указанному классу
 	/// </summary>
 	/// <remarks>
 	/// <![CDATA[
@@ -198,14 +187,9 @@ public sealed class LessonController(
 		CancellationToken cancellationToken = default(CancellationToken)
 	)
 	{
-		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
 		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes.AsNoTracking()
 			.Where(predicate: c => c.Id == classId)
 			.SelectMany(selector: c => c.TeachersLessons)
-			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
-				epfc.EducationPeriod.StartDate <= nowDate &&
-				epfc.EducationPeriod.EndDate >= nowDate
-			)))
 			.OrderBy(keySelector: tl => tl.Lesson.Name)
 			.Select(selector: tl => new GetStudyingSubjectsResponse(
 				tl.LessonId,

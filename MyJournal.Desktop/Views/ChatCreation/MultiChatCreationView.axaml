@@ -55,7 +55,7 @@
 					</Button.IsVisible>
 					<controls:XamlSvg Classes="Camera" Foreground="{DynamicResource CameraOnChatCreation}"/>
 				</Button>
-				<lottie:Lottie	Path="/Assets/Resources/Animations/ImageAndMessagesLoader.json">
+				<lottie:Lottie	Path="/Assets/Resources/Animations/Loader.json">
 					<lottie:Lottie.IsVisible>
 						<MultiBinding Converter="{x:Static BoolConverters.Or}">
 							<Binding Path="LoadingPhoto"/>

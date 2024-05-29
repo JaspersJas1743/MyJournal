@@ -66,6 +66,8 @@ public sealed class TeacherSubject : TeacherSubjectBase
 		Name = studyingSubjectInClass.Name;
 	}
 
+	public EducationPeriod CurrentEducationPeriod { get; private set; }
+
 	public async Task LoadClass()
 	{
 		_taughtClass = await _taughtSubject?.GetTaughtClass()!;
