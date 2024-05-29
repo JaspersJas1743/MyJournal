@@ -447,10 +447,10 @@
 								<TextBlock	HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" TextAlignment="Center"
 											Text="{Binding ReleasedTime}" TextTrimming="CharacterEllipsis"/>
 							</Border>
-							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
-										TextAlignment="Center" Text="{Binding Text}" FontSize="20"
-										HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							<SelectableTextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+													Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+													TextAlignment="Center" Text="{Binding Text}" FontSize="20"
+													HorizontalAlignment="Center" VerticalAlignment="Center"/>
 							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNullOrEmpty}}"
 										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
 										TextAlignment="Center" Text="Текст задания отсутствует" Foreground="{DynamicResource StrokeColor}"
@@ -524,10 +524,10 @@
 								<TextBlock	Text="{Binding ReleasedTime}" TextTrimming="CharacterEllipsis"
 											VerticalAlignment="Center" FontSize="20" HorizontalAlignment="Center"/>
 							</Border>
-							<TextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
-										TextAlignment="Center" Text="{Binding Text}" FontSize="20" HorizontalAlignment="Center"
-										VerticalAlignment="Center"/>
+							<SelectableTextBlock	IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+													Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" Margin="20 20 20 0" TextTrimming="CharacterEllipsis"
+													TextAlignment="Center" Text="{Binding Text}" FontSize="20" HorizontalAlignment="Center"
+													VerticalAlignment="Center"/>
 							<TextBlock	FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource StrokeColor}"
 										IsVisible="{Binding Text,Converter={x:Static StringConverters.IsNullOrEmpty}}"
 										Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="9" TextAlignment="Center" Text="Текст задания отсутствует."/>

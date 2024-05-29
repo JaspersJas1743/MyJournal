@@ -917,10 +917,11 @@ public sealed class AssessmentController(
 	{
 		if (
 			await _context.Assessments.AsNoTracking().Where(predicate: a =>
-			EF.Functions.DateDiffDay(a.Datetime, request.Datetime) == 0 &&
-			!a.IsDeleted && a.Grade.GradeType.Type == GradeTypes.Truancy &&
-			a.LessonId == request.SubjectId && a.GradeId == request.GradeId &&
-			request.StudentId == a.StudentId).AnyAsync(cancellationToken: cancellationToken)
+				EF.Functions.DateDiffDay(a.Datetime, request.Datetime) == 0 &&
+				!a.IsDeleted && a.Grade.GradeType.Type == GradeTypes.Truancy &&
+				a.LessonId == request.SubjectId && a.GradeId == request.GradeId &&
+				request.StudentId == a.StudentId
+			).AnyAsync(cancellationToken: cancellationToken)
 		)
 		{
 			string now = request.Datetime.ToString(format: "d MMMM", provider: CultureInfo.GetCultureInfo(name: "RU-ru"));
@@ -1124,12 +1125,28 @@ public sealed class AssessmentController(
 		Assessment assessment = await _context.Assessments
 			.Include(assessment => assessment.Student)
 			.SingleOrDefaultAsync(
-				predicate: a => a.Id == request.ChangedAssessmentId,
+				predicate: a => a.Id == request.ChangedAssessmentId && !a.IsDeleted,
 				cancellationToken: cancellationToken
 			) ?? throw new HttpResponseException(
 				statusCode: StatusCodes.Status404NotFound,
 				message: "Оценка с указанным идентификатором не найдена."
 			);
+
+		if (
+			await _context.Assessments.AsNoTracking().Where(predicate: a =>
+				EF.Functions.DateDiffDay(a.Datetime, request.Datetime) == 0 &&
+				!a.IsDeleted && a.Grade.GradeType.Type == GradeTypes.Truancy &&
+				a.LessonId == assessment.LessonId && a.GradeId == request.NewGradeId &&
+				assessment.StudentId == a.StudentId
+			).AnyAsync(cancellationToken: cancellationToken)
+		)
+		{
+			string now = request.Datetime.ToString(format: "d MMMM", provider: CultureInfo.GetCultureInfo(name: "RU-ru"));
+			throw new HttpResponseException(
+				statusCode: StatusCodes.Status400BadRequest,
+				message: $"Посещаемость за {now} для данного студента уже установлена."
+			);
+		}
 
 		assessment.Datetime = request.Datetime == DateTime.MinValue ? assessment.Datetime : request.Datetime;
 		assessment.CommentId = request.CommentId == -1 ? assessment.CommentId : request.CommentId;

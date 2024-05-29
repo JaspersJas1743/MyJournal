@@ -246,18 +246,24 @@ public sealed class ObservableStudent : ReactiveObject
 
 	private async Task SaveEditableGradeHandler()
 	{
-		await SelectedEstimation!.Change()
-			.GradeTo(newGradeId: SelectedAssessment!.Id)
-			.CommentTo(newCommentId: SelectedComment!.Id)
-			.DatetimeTo(newDateTime: Date.DateTime)
-			.Save();
+		string content = "Отметка успешно добавлена!";
+		NotificationType type = NotificationType.Success;
+		try
+		{
+			await SelectedEstimation!.Change()
+				.GradeTo(newGradeId: SelectedAssessment!.Id)
+				.CommentTo(newCommentId: SelectedComment!.Id)
+				.DatetimeTo(newDateTime: Date.DateTime)
+				.Save();
 
-		await _notificationService.Show(
-			title: "Успеваемость",
-			content: "Отметка успешно изменена!",
-			type: NotificationType.Success
-		);
-		_previousGradeType = null;
+			_previousGradeType = null;
+		}
+		catch (ApiException ex)
+		{
+			content = ex.Message;
+			type = NotificationType.Information;
+		}
+		await _notificationService.Show(title: "Успеваемость", content: content, type: type);
 	}
 
 	private async Task EstimationSelectionChangedHandler(ListBoxItem item)

@@ -58,9 +58,20 @@ public sealed class LessonController(
 				epfc.EducationPeriod.StartDate <= nowDate &&
 				epfc.EducationPeriod.EndDate >= nowDate
 			).SelectMany(selector: epfc => epfc.Lessons)
-			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
-				l.Id, l.Name, new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
-			)));
+			.OrderBy(keySelector: l => l.Name)
+			.SelectMany(selector: l => l.TeachersLessons
+				.Where(tl => tl.LessonId == l.Id)
+				.Select(tl => new GetStudyingSubjectsResponse(
+					l.Id,
+					l.Name,
+					new Teacher(
+						tl.Teacher.Id,
+						tl.Teacher.User.Surname,
+						tl.Teacher.User.Name,
+						tl.Teacher.User.Patronymic
+					)
+				)
+			));
 
 		return Ok(value: learnedSubjects);
 	}
@@ -100,16 +111,20 @@ public sealed class LessonController(
 			.SelectMany(selector: s => s.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc => epfc.EducationPeriod.Period == period)
 			.SelectMany(selector: epfc => epfc.Lessons)
-			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id).Select(tl => new GetStudyingSubjectsResponse(
-				l.Id,
-				l.Name,
-				new Teacher(
-					tl.Teacher.Id,
-					tl.Teacher.User.Surname,
-					tl.Teacher.User.Name,
-					tl.Teacher.User.Patronymic
+			.OrderBy(l => l.Name)
+			.SelectMany(selector: l => l.TeachersLessons
+				.Where(tl => tl.LessonId == l.Id)
+				.Select(tl => new GetStudyingSubjectsResponse(
+					l.Id,
+					l.Name,
+					new Teacher(
+						tl.Teacher.Id,
+						tl.Teacher.User.Surname,
+						tl.Teacher.User.Name,
+						tl.Teacher.User.Patronymic
+					)
 				)
-			)));
+			));
 
 		return Ok(value: learnedSubjects);
 	}
@@ -140,15 +155,25 @@ public sealed class LessonController(
 	{
 		int userId = GetAuthorizedUserId();
 		DateOnly nowDate = DateOnly.FromDateTime(dateTime: DateTime.Now);
-		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking()
+		IEnumerable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
 				epfc.EducationPeriod.StartDate <= nowDate &&
 				epfc.EducationPeriod.EndDate >= nowDate
-			))).SelectMany(selector: tl => tl.Classes.Select(c => new GetTaughtSubjectsResponse(
-				tl.LessonId, tl.Lesson.Name, new Class(c.Id, c.Name)
-			)));
+			))).SelectMany(selector: tl => tl.Classes
+				.Select(c => new GetTaughtSubjectsResponse(
+					 tl.LessonId,
+					 tl.Lesson.Name,
+					 new Class(
+						 c.Id,
+						 c.Name
+					 )
+				))
+			)
+			.AsEnumerable()
+			.OrderBy(keySelector: r => r.Class.Id)
+			.ThenBy(keySelector: r => r.Name);
 
 		return Ok(value: taughtSubjects);
 	}
@@ -183,18 +208,25 @@ public sealed class LessonController(
 	)
 	{
 		int userId = GetAuthorizedUserId();
-		IQueryable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking()
+		IEnumerable<GetTaughtSubjectsResponse> taughtSubjects = _context.Teachers.AsNoTracking()
 			.Where(predicate: t => t.UserId == userId)
 			.SelectMany(selector: t => t.TeachersLessons)
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc => epfc.EducationPeriod.Period == period)))
-			.SelectMany(selector: tl => tl.Classes.Select(c => new GetTaughtSubjectsResponse(
-				tl.LessonId,
-				tl.Lesson.Name,
-				new Class(
-					c.Id,
-					c.Name
+			.SelectMany(selector: tl => tl.Classes
+				.OrderBy(c => c.Id)
+				.ThenBy(c => tl.Lesson.Name)
+				.Select(c => new GetTaughtSubjectsResponse(
+					tl.LessonId,
+					tl.Lesson.Name,
+					new Class(
+						c.Id,
+						c.Name
+					)
 				)
-			)));
+			))
+			.AsEnumerable()
+			.OrderBy(keySelector: r => r.Class.Id)
+			.ThenBy(keySelector: r => r.Name);
 
 		return Ok(value: taughtSubjects);
 	}
@@ -232,11 +264,18 @@ public sealed class LessonController(
 				epfc.EducationPeriod.StartDate <= nowDate &&
 				epfc.EducationPeriod.EndDate >= nowDate
 			).SelectMany(selector: epfc => epfc.Lessons)
-			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id)
+			.OrderBy(keySelector: l => l.Name)
+			.SelectMany(selector: l => l.TeachersLessons
+				.Where(tl => tl.LessonId == l.Id)
 				.Select(tl => new GetStudyingSubjectsResponse(
 					l.Id,
 					l.Name,
-					new Teacher(tl.Teacher.Id, tl.Teacher.User.Surname, tl.Teacher.User.Name, tl.Teacher.User.Patronymic)
+					new Teacher(
+						tl.Teacher.Id,
+						tl.Teacher.User.Surname,
+						tl.Teacher.User.Name,
+						tl.Teacher.User.Patronymic
+					)
 				)
 			));
 
@@ -278,7 +317,9 @@ public sealed class LessonController(
 			.SelectMany(selector: p => p.Children.Class.EducationPeriodForClasses)
 			.Where(predicate: epfc => epfc.EducationPeriod.Period == period)
 			.SelectMany(selector: epfc => epfc.Lessons)
-			.SelectMany(selector: l => l.TeachersLessons.Where(tl => tl.LessonId == l.Id)
+			.OrderBy(keySelector: l => l.Name)
+			.SelectMany(selector: l => l.TeachersLessons
+				.Where(tl => tl.LessonId == l.Id)
 				.Select(tl => new GetStudyingSubjectsResponse(
 					l.Id,
 					l.Name,
@@ -330,7 +371,9 @@ public sealed class LessonController(
 			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc =>
 				epfc.EducationPeriod.StartDate <= nowDate &&
 				epfc.EducationPeriod.EndDate >= nowDate
-			))).Select(selector: tl => new GetStudyingSubjectsResponse(
+			)))
+			.OrderBy(keySelector: tl => tl.Lesson.Name)
+			.Select(selector: tl => new GetStudyingSubjectsResponse(
 				tl.LessonId,
 				tl.Lesson.Name,
 				new Teacher(
@@ -417,7 +460,10 @@ public sealed class LessonController(
 		IQueryable<GetStudyingSubjectsResponse> studyingSubjects = _context.Classes.AsNoTracking()
 			.Where(predicate: c => c.Id == classId)
 			.SelectMany(selector: c => c.TeachersLessons)
-			.Where(predicate: tl => tl.Classes.Any(c => c.EducationPeriodForClasses.Any(epfc => epfc.EducationPeriod.Period == period)))
+			.Where(predicate: tl => tl.Classes.Any(c =>
+				c.EducationPeriodForClasses.Any(epfc => epfc.EducationPeriod.Period == period)
+			))
+			.OrderBy(keySelector: tl => tl.Lesson.Name)
 			.Select(selector: tl => new GetStudyingSubjectsResponse(
 				tl.LessonId,
 				tl.Lesson.Name,
