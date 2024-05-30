@@ -18,7 +18,7 @@ public static class DateOnlyConverters
 	public static readonly IValueConverter DayOfWeek = new FuncValueConverter<DateOnly, string>(convert: date =>
 		date.DayOfWeek switch
 		{
-			System.DayOfWeek.Sunday     => "Суббота",
+			System.DayOfWeek.Sunday     => "Воскресенье",
 			System.DayOfWeek.Monday     => "Понедельник",
 			System.DayOfWeek.Tuesday	=> "Вторник",
 			System.DayOfWeek.Wednesday	=> "Среда",

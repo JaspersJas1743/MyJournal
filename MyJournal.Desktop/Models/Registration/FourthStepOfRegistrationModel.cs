@@ -1,26 +1,27 @@
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input.Platform;
 using MyJournal.Desktop.Assets.MessageBusEvents;
-using MyJournal.Desktop.Assets.Resources.Transitions;
 using MyJournal.Desktop.ViewModels.Registration;
-using MyJournal.Desktop.Views.Registration;
+using MyJournal.Desktop.Views;
 using ReactiveUI;
 
 namespace MyJournal.Desktop.Models.Registration;
 
 public sealed class FourthStepOfRegistrationModel : ModelBase
 {
+	private readonly IClipboard? _clipboard;
+
 	private string _qrCode = String.Empty;
 	private string _code = String.Empty;
 	private bool _codeIsDisplayed = false;
 
-	public FourthStepOfRegistrationModel()
+	public FourthStepOfRegistrationModel(MainWindowView mainWindow)
 	{
+		_clipboard = TopLevel.GetTopLevel(visual: mainWindow)!.Clipboard;
 		ToNextStep = ReactiveCommand.CreateFromTask(execute: MoveToNextStep);
 		ShowCode = ReactiveCommand.Create(execute: ShowCodeExecute);
 		CopyToClipboard = ReactiveCommand.CreateFromTask(execute: async (Button button) => await CopyCodeToClipboard(button));
@@ -61,8 +62,7 @@ public sealed class FourthStepOfRegistrationModel : ModelBase
 
 	public async Task CopyCodeToClipboard(Button currentButton)
 	{
-		IClipboard? clipboard = TopLevel.GetTopLevel(visual: (Application.Current as App)!.GetService<FourthStepOfRegistrationView>())!.Clipboard;
-		await clipboard?.SetTextAsync(text: Code)!;
+		await _clipboard?.SetTextAsync(text: Code)!;
 		FlyoutBase.ShowAttachedFlyout(flyoutOwner: currentButton);
 	}
 }
