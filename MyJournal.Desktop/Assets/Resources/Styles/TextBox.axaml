@@ -138,11 +138,11 @@
 		    <Style Selector="^:focus /template/ Border#PART_BorderElement">
 			    <Setter Property="BorderBrush" Value="{DynamicResource CodeEntrySelection}"/>
 		    </Style>
-            <Style Selector="^:pointerover">
-                <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource Mode=Self},Path=Foreground}"/>
-            </Style>
             <Style Selector="^:focus">
                 <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+	            <Style Selector="^:pointerover">
+	                <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+	            </Style>
             </Style>
 	    </Style>
         <Style Selector="^.ErrorCodeEntryCell">
@@ -313,14 +313,13 @@
 			<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
 			<Style Selector="^:pointerover">
 				<Style Selector="^ /template/ Border#PART_BorderElement">
-					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
+					<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
 				</Style>
 			</Style>
 			<Style Selector="^:focus">
 				<Setter Property="Foreground" Value="{DynamicResource ContentOnControlColor}"/>
 				<Style Selector="^ /template/ Border#PART_BorderElement">
-					<Setter Property="Background" Value="{DynamicResource UnsatisfactoryGradeColor}"/>
-					<Setter Property="BorderThickness" Value="0"/>
+					<Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
 				</Style>
 			</Style>
 		</Style>

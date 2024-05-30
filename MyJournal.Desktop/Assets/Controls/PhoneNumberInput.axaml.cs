@@ -59,10 +59,8 @@ public partial class PhoneNumberInput : UserControl
 
 		foreach (MaskedTextBox mtb in _cells)
 		{
-			mtb.AddHandler(routedEvent: GotFocusEvent, handler: OnCellGotFocus);
 			mtb.AddHandler(routedEvent: KeyDownEvent, handler: OnKeyDownToCell, routes: RoutingStrategies.Tunnel);
 			mtb.AddHandler(routedEvent: TextBox.TextChangedEvent, handler: OnTextChanged);
-			mtb.AddHandler(routedEvent: TextBox.PastingFromClipboardEvent, handler: OnPastingToCellFromClipboard);
 			mtb.WhenAnyValue(property1: textBox => textBox.Text)
 				.Subscribe(onNext: _ =>
 				{
