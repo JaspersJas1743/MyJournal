@@ -205,7 +205,7 @@ public sealed class MessagesModel : ModelBase
 		DateTime userOnlineAt = Selection.SelectedItem!.OnlineAt.Value.ToLocalTime();
 		TimeSpan? dateDifference = (DateTime.Now - userOnlineAt);
 
-		if (dateDifference?.TotalMinutes is < 1 and > 0)
+		if (dateDifference?.TotalMinutes is < 1)
 			return "был(-а) в сети только что";
 
 		if (dateDifference?.Days < 1)

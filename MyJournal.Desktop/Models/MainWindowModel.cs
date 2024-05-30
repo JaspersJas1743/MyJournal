@@ -31,12 +31,12 @@ public class MainWindowModel : ModelBase
 		Restore = ReactiveCommand.Create(execute: () => mainWindowView.WindowState = WindowState.Normal);
 		Close = ReactiveCommand.CreateFromTask(execute: async () =>
 		{
+			if (_user is not null)
+			{
+				Activity activity = await _user.GetActivity();
+				await activity.SetOffline();
+			}
 			mainWindowView.Close();
-			if (_user is null)
-				return;
-
-			Activity activity = await _user.GetActivity();
-			await activity.SetOffline();
 		});
 		Content = startedContent;
 	}
