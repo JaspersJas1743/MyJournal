@@ -16,6 +16,7 @@ public sealed class Class : ReactiveObject
 {
 	private readonly ObservableCollectionExtended<CreatingTimetable> _timetable =
 		new ObservableCollectionExtended<CreatingTimetable>();
+	
 	private readonly INotificationService _notificationService;
 	private readonly Core.SubEntities.Class _class;
 	private bool _timetableIsActual = false;

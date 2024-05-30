@@ -19,6 +19,7 @@ public class CreatingTimetable : ReactiveObject
 	private readonly INotificationService _notificationService;
 	private readonly IEnumerable<Subject> _possibleSubjects;
 	private readonly int _classId;
+	private readonly int _initializeCount;
 	private DayOfWeek _dayOfWeek;
 	private double _totalHours;
 	private bool _canAddSubject = false;
@@ -41,6 +42,7 @@ public class CreatingTimetable : ReactiveObject
 		_totalHours = totalHours;
 		Subjects = new ObservableCollectionExtended<SubjectOnTimetable>(collection: subjects);
 		CanAddSubject = Subjects.Count < 8;
+		_initializeCount = Subjects.Count;
 		Subjects.CollectionChanged += OnSubjectsChanged;
 
 		MessageBus.Current.Listen<RemoveSubjectOnTimetableEventArgs>()
@@ -196,7 +198,8 @@ public class CreatingTimetable : ReactiveObject
 
 	public ObservableCollectionExtended<SubjectOnTimetable> Subjects { get; }
 
-	public bool GetHaveChange() => Subjects.Any(predicate: s => s.GetHaveChange());
+	public bool GetHaveChange()
+		=> Subjects.Any(predicate: s => s.GetHaveChange()) || Subjects.Count != _initializeCount;
 
 	public ReactiveCommand<Unit, Unit> AddSubject { get; }
 

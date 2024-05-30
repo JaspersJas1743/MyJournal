@@ -79,7 +79,7 @@ public sealed class CreatingTimetableModel : BaseTimetableModel
 		{
 			await _notificationService.Show(
 				title: "Расписание",
-				content: $"В расписании отсутствуют изменения.",
+				content: "В расписании отсутствуют изменения.",
 				type: NotificationType.Information
 			);
 			return;

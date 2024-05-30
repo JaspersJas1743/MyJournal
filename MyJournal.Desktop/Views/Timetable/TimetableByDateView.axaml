@@ -35,8 +35,7 @@
 				<Button Width="180" Height="70" Content="Дисциплина" Classes="MainAccentColor Corner20" FontSize="22"
 						Command="{Binding  ChangeVisualizerToSubjects}"/>
 			</Viewbox>
-			<Border Grid.Row="1" Grid.RowSpan="5" Grid.Column="3" Classes="ListBorder"
-					Padding="20">
+			<Border Grid.Row="1" Grid.RowSpan="5" Grid.Column="3" Classes="ListBorder">
 				<Grid>
 					<ListBox	ItemsSource="{Binding Timetable}" Classes="TimetableByDate"
 								IsVisible="{Binding !!Timetable.Count}"/>

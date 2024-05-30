@@ -820,43 +820,41 @@
 			<Setter Property="Padding" Value="0" />
 			<Setter Property="ItemsPanel">
 				<ItemsPanelTemplate>
-					<StackPanel Orientation="Vertical" Spacing="20" Width="1640"/>
+					<StackPanel Orientation="Vertical" Spacing="20" Width="1640" Margin="20"/>
 				</ItemsPanelTemplate>
 			</Setter>
 			<Setter Property="ItemTemplate">
 				<DataTemplate DataType="timetableUtilities:Timetable">
-					<Viewbox Width="1640" Height="130">
-						<Grid RowDefinitions="55*, 20*, 55*" Width="1650" Height="130">
-							<Border Grid.Row="0" BorderBrush="{DynamicResource StrokeColor}"
-									BorderThickness="5" CornerRadius="10">
-								<Grid ColumnDefinitions="45*, 150*, 1285, 170*">
-									<TextBlock	Grid.Column="0" Text="{Binding Subject.Number}"
-												FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-									<Border Grid.Column="1" BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0 0 0"
-											IsVisible="{Binding IsTeacher}">
-										<TextBlock	TextTrimming="CharacterEllipsis" Margin="20 0" FontSize="20"
-													VerticalAlignment="Center" HorizontalAlignment="Center"
-													Text="{Binding Subject.ClassName}"/>
-									</Border>
-									<Border BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0"
-											Classes.Teacher="{Binding IsTeacher}"
-											Classes.NotTeacher="{Binding !IsTeacher}">
-										<TextBlock	TextTrimming="CharacterEllipsis" Margin="20 0" FontSize="20"
-													VerticalAlignment="Center" HorizontalAlignment="Left"
-													Text="{Binding Subject.Name}"/>
-									</Border>
-									<TextBlock	Grid.Column="3" Text="{Binding Subject,
-												Converter={x:Static converters:DateTimeConverters.During}}"
-												FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-								</Grid>
-							</Border>
-							<Grid Grid.Row="2" ColumnDefinitions="10*, 25*, 10*, 1605*" Classes="Break">
-								<lottie:Lottie Grid.Column="1" Path="/Assets/Resources/Animations/Break.json" Margin="-20 -20 -20 0"/>
-								<TextBlock	Grid.Column="3" Text="{Binding Break.CountMinutes,StringFormat='Перерыв {0} минут',FallbackValue=''}"
-											FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"/>
+					<Grid RowDefinitions="55*, 20*, 55*" Width="1640" Height="130">
+						<Border Grid.Row="0" BorderBrush="{DynamicResource StrokeColor}"
+								BorderThickness="5" CornerRadius="10">
+							<Grid ColumnDefinitions="45*, 150*, 1285, 170*">
+								<TextBlock	Grid.Column="0" Text="{Binding Subject.Number}"
+											FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+								<Border Grid.Column="1" BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0 0 0"
+										IsVisible="{Binding IsTeacher}">
+									<TextBlock	TextTrimming="CharacterEllipsis" Margin="20 0" FontSize="20"
+												VerticalAlignment="Center" HorizontalAlignment="Center"
+												Text="{Binding Subject.ClassName}"/>
+								</Border>
+								<Border BorderBrush="{DynamicResource StrokeColor}" BorderThickness="5 0"
+										Classes.Teacher="{Binding IsTeacher}"
+										Classes.NotTeacher="{Binding !IsTeacher}">
+									<TextBlock	TextTrimming="CharacterEllipsis" Margin="20 0" FontSize="20"
+												VerticalAlignment="Center" HorizontalAlignment="Left"
+												Text="{Binding Subject.Name}"/>
+								</Border>
+								<TextBlock	Grid.Column="3" Text="{Binding Subject,
+											Converter={x:Static converters:DateTimeConverters.During}}"
+											FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 							</Grid>
+						</Border>
+						<Grid Grid.Row="2" ColumnDefinitions="10*, 25*, 10*, 1605*" Classes="Break">
+							<lottie:Lottie Grid.Column="1" Path="/Assets/Resources/Animations/Break.json" Margin="-20 -20 -20 0"/>
+							<TextBlock	Grid.Column="3" Text="{Binding Break.CountMinutes,StringFormat='Перерыв {0} минут',FallbackValue=''}"
+										FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"/>
 						</Grid>
-					</Viewbox>
+					</Grid>
 				</DataTemplate>
 			</Setter>
 		</Style>
