@@ -12,7 +12,6 @@
 		xmlns:utilities="clr-namespace:MyJournal.Desktop.Assets.Utilities"
 		xmlns:marksUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.MarksUtilities"
 		xmlns:timetableUtilities="clr-namespace:MyJournal.Desktop.Assets.Utilities.TimetableUtilities">
-
 	<Style Selector="ListBox">
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
 		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />

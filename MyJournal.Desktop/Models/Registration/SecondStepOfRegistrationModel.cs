@@ -49,7 +49,7 @@ public sealed class SecondStepOfRegistrationModel : ModelWithErrorMessage
 			newVM.SetData(login: Login, registrationCode: RegistrationCode);
 
 			MessageBus.Current.SendMessage(message: new ChangeWelcomeVMContentEventArgs(
-				newVMType: typeof(ThirdStepOfRegistrationVM),
+				newVM: newVM,
 				animationType: AnimationType.DirectionToRight
 			));
 		}
